@@ -1,0 +1,378 @@
+from django.apps import apps
+from django.db.models import F, Func
+from django.conf import settings
+from django.core import serializers
+from mighty.apps import MightyConfig as conf
+
+from Crypto import Cipher, Random
+from pathlib import Path
+import base64, datetime, string, random, unicodedata, re, json, sys
+
+BS = conf.Crypto.BS
+pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
+unpad = lambda s : s[:-ord(s[len(s)-1:])]
+numeric_const_pattern = "[-+]? (?: (?: \d* [\.,] \d+ ) | (?: \d+ [\.,]? ) )(?: [Ee] [+-]? \d+ ) ?"
+
+"""
+Round function for sql usage
+"""
+class Round(Func):
+  function = "ROUND"
+  arity = 2
+
+"""
+List of default tempates
+"""
+tpl = lambda a, n, t: [
+    "%s/%s/%s.html" % (a, n, t),
+    "%s/%s.html" % (n, t),
+    "%s/%s.html" % (a, t),
+    "%s.html" % t,]
+
+"""
+List of default templates AJAX
+"""
+tplx = lambda a, n, t: [
+    "%s/%s/ajax/%s.html" % (a, n, t),
+    "%s/ajax/%s.html" % (n, t),
+    "ajax/%s.html" % t,]
+
+"""
+Shortcut to get a setting django
+"""
+def setting(name, default=None):
+    return getattr(settings, name, default)
+
+"""
+Return True/False if input not in search list
+[input_str] the data tested
+[search] the list to tested the data
+"""
+def test(input_str=None, search=conf.Test.search, *args, **kwargs):
+    if "positive" in kwargs and input_str in kwargs["positive"]: return True
+    return True if str(input_str).strip().lower().replace(" ", "") not in search else False
+
+"""
+Return a data or none
+"""
+def get_or_none(data):
+    return data if not test(data) else None
+
+"""
+Return a key
+"""
+def key(size=32, generator=string.hexdigits):
+    return "".join(random.choice(generator) for x in range(size))
+
+"""
+Return a code with the length used
+"""
+def randomcode(size=8):
+    return key(size=32, generator="123456789")
+
+"""
+Cast input in float
+"""
+def make_float(flt):
+    if test(flt):
+        flt = re.compile(numeric_const_pattern, re.VERBOSE).search(flt).group().replace(",", ".")
+        return float(flt)
+    return None
+
+"""
+Cast input in integer
+"""
+def make_int(itg):
+    if test(itg):
+        return int(make_float(itg))
+    return None
+
+"""
+Get and cast the string from the input
+"""
+def make_string(input_str):
+    if ("," in input_str):
+        input_str = re.sub(r"[^\w\s]"," ",input_str).strip()
+        return input_str
+    return re.sub(r"[^\w\s]"," ", input_str).strip()
+
+"""
+Return comments splitted from the input
+"""
+def split_comment(input_str):
+    return re.search( "([\w\d'&,\. ]+)?\((.*)\)" , input_str)
+
+"""
+Return encrypted data with a key in base64 encoded
+[key] key used to encrypt raw
+[raw] string to encrypt
+"""
+def encrypt(key, raw):
+    raw = pad(raw)
+    iv = Random.new().read(Cipher.AES.block_size)
+    _cipher = Cipher.AES.new(key, Cipher.AES.MODE_CFB, iv)
+    return base64.b64encode(iv+_cipher.encrypt(raw)) 
+
+"""
+Decrypt data with a key
+[key] key to decrypt
+[enc] string base64 encoded
+"""
+def decrypt(key, enc):
+    enc = base64.b64decode(enc)
+    iv = enc[:16]
+    _cipher = Cipher.AES.new(key, Cipher.AES.MODE_CFB, iv)
+    return unpad(_cipher.decrypt(enc[16:]))
+
+"""
+Return a model from a label and a model name
+[label] label of the model
+[model] name of the model
+"""
+def get_model(label, model):
+    return apps.get_model(label, model)
+
+"""
+Get a model from a label and a model name
+[reference] info about to get the model
+"""
+def input_get_model(reference):
+    label = input("What label is for the reference %s: " % reference)
+    model = input("What model is for the reference %s: " % reference)
+    return get_model(label, model)
+
+"""
+Ask a boolean question
+[question] the question
+[default] answer default
+"""
+def boolean_input(question, default="n"):
+    result = input("%s " % question)
+    while len(result) < 1 or result[0].lower() not in "yn":
+        result = input("Please answer yes(y) or no(n), default(%s): " % default)
+    return result[0].lower() == "y"
+
+"""
+Ask to search in a model
+[model] model to search
+[reference] info about the search
+"""
+def object_search(model, reference):
+    result = input("Make a search that refers to %s (keep empty for pass): " % reference)
+    if test(result):
+        objects_list = model.objects.filter(search__contains=make_searchable(result))
+        return multipleobjects_onechoice(objects_list, reference, model)
+    return None
+
+"""
+Ask for choice a model if multiple objects was return
+[objects_list] list of objects
+[reference] info to get the list
+[model] model expected
+"""
+def multipleobjects_onechoice(objects_list, reference, model):
+    objects = [None, ]
+    i = 0
+    print("0. for search")
+    for obj in objects_list:
+        i += 1
+        objects.append(obj)
+        print("%s. %s (%s)" % (i, str(obj), obj.id))
+    result = input("choose the object that refers to %s (keep empty for pass): " % reference)
+    if test(result):
+        choice = make_int(result)
+        if choice == 0:
+            return object_search(model, reference)
+        else:
+            return objects[choice]
+    return None
+
+"""
+Return model from a foreignkey
+[model] Model contain the foreignkey
+[field] Field of the foreignkey
+[data] Value of the foreignkey
+[ret] Attribute to return
+"""
+def foreignkey_from(model, field, data, ret):
+    return getattr(model.objects.get(**{field: data}), ret)
+
+"""
+Make a string searchable
+"""
+def make_searchable(input_str):
+    for i in conf.Test.replace:
+        input_str = input_str.replace(i, " ")
+    input_str = re.sub(" +", " ", input_str)
+    nfkd_form = unicodedata.normalize("NFKD", input_str)
+    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
+
+"""
+Make a directory of image by date and content type
+/contenttype/year/month/{uid,id}/image
+"""
+def image_directory_path(instance, filename):
+    directory = str(instance.__class__.__name__).lower()
+    date = datetime.datetime.now()
+    ext = filename.split(".")[-1:]
+    if hasattr(instance, "uid"):
+        return "{0}/{1}/{2}/{3}.{4}".format(directory, date.year, date.month, instance.uid, ext)
+    else:
+        return "{0}/{1}/{2}/{3}.{4}".format(directory, date.year, date.month, instance.id, ext)
+
+"""
+Make a directory of file by date and content type
+/contenttype/year/month/{uid,id}/file
+"""
+def file_directory_path(instance, filename):
+    directory = str(instance.__class__.__name__).lower()
+    date = datetime.datetime.now()
+    ext = filename.split(".")[-1:]
+    if hasattr(instance, "parent"):
+        return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, instance.parent.uid if hasattr(instance.parent, "uid") else intance.parent.id, filename)
+    elif hasattr(instance, instance.fieldparent):
+        parent = getattr(instance, instance.fieldparent)
+        return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, parent.uid if hasattr(parent, "uid") else parent.id, filename)
+    return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, instance.uid if hasattr(instance, "uid") else intance.id, filename)
+
+"""
+Return a score of similarity out of 100 between two strings
+"""
+# String score
+def similar_str(str1, str2):
+    max_len = tmp = pos1 = pos2 = 0
+    len1, len2 = len(str1), len(str2)
+    for p in range(len1):
+        for q in range(len2):
+            tmp = 0
+            while p + tmp < len1 and q + tmp < len2 \
+                    and str1[p + tmp] == str2[q + tmp]:
+                tmp += 1
+            if tmp > max_len:
+                max_len, pos1, pos2 = tmp, p, q
+    return max_len, pos1, pos2
+
+# Char score
+def similar_char(str1, str2):
+    max_len, pos1, pos2 = similar_str(str1, str2)
+    total = max_len
+    if max_len != 0:
+        if pos1 and pos2:
+            total += similar_char(str1[:pos1], str2[:pos2])
+        if pos1 + max_len < len(str1) and pos2 + max_len < len(str2):
+            total += similar_char(str1[pos1 + max_len:], str2[pos2 + max_len:]);
+    return total
+
+# Get the score
+def similar_text(str1, str2):
+    if not (isinstance(str1, str) or isinstance(str1, unicode)):
+        raise TypeError("must be str or unicode")
+    elif not (isinstance(str2, str) or isinstance(str2, unicode)):
+        raise TypeError("must be str or unicode")
+    elif len(str1) == 0 and len(str2) == 0:
+        return 0.0
+    else:
+        return int(similar_char(str1, str2) * 200.0 / (len(str1) + len(str2)))
+
+"""
+Return an array of words rarely found in an input
+[input_str] the text where search
+[exclude] list of words to exclude to the search
+- optionals
+-- [split] split regex
+-- [weight] size of minimal weight
+"""
+def weight_words(input_str, exclude=conf.exclude, *args, **kwargs):
+    split  = kwargs["split"] if "split" in kwargs else "[^\w]"
+    weight  = kwargs["weight"] if "weight" in kwargs else 3
+    words = []
+    input_split = re.sub(split, " ",  input_str).split()
+    for word in input_split:
+        word = make_searchable(word)
+        if len(word) > weight and word not in words and word not in exclude:
+            words.append(word)
+    return words
+
+"""
+Get a file json and return datas loaded
+"""
+def get_jsonfile(fil):
+    if Path(fil).is_file():
+        with open(fil) as json_file:
+            return json.load(json_file)
+    return False
+
+"""
+Make a json file with datas
+[datas] json datas to write
+[fil] the file name (.json if possible)
+[tmp] the path file
+"""
+def to_jsonfile(datas, fil, tmp="/tmp/"):
+    with open(tmp + fil, "w") as f:
+        json.dump(datas, f, ensure_ascii=False, indent=4)
+
+"""
+Make a file with the sql result in json
+[sql] the query sql
+[fil] the file name (.json if possible)
+[tmp] the path file
+"""
+def sql_to_jsonfile(sql, fil, tmp="/tmp/"):
+    to_jsonfile(sql, fil, tmp)
+
+"""
+Log what you want in your configured system.
+You can configure the MIGHTY config array Log:
+-- Log
+    - log_level
+    - log_type (systlog, file, console)
+[app] Your app name where the log from
+[lvl] Level log
+0 	Emergency 	  emerg (panic)	 Système inutilisable.
+1 	Alert 	      alert          Une intervention immédiate est nécessaire.
+2 	Critical 	  crit 	         Erreur critique pour le système.
+3 	Error 	      err (error) 	 Erreur de fonctionnement.
+4 	Warning 	  warn (warning) Avertissement (une erreur peut intervenir si aucune action n"est prise).
+5 	Notice 	      notice  	     Evénement normal méritant d"être signalé.
+6 	Informational info 	         Pour information.
+7 	Debugging 	  debug 	     Message de mise au point.
+[msg] Message about the log
+[user] If is not none add the user in the log
+"""
+def logger(app, lvl, msg, user=None, *args, **kwargs):
+    loglvlauth = kwargs["loglvlauth"] if "loglvlauth" in kwargs else conf.Log.log_level
+    logtype = kwargs["logtype"] if "logtype" in kwargs else conf.Log.log_type
+    loglvl = getattr(conf.Log, conf.Log.format_code.format(lvl))
+    if loglvl <= loglvlauth:
+        if user is not None: msg = conf.Log.format_user.format(user.username, user.id, msg)
+        if app is not None: msg = "[%s] %s" % (app, msg)
+        now = datetime.datetime.now()
+        msg = conf.Log.format_log.format(now.hour, now.minute, now.second, now.microsecond, lvl, msg)
+        getattr(sys.modules[__name__], "logger_%s" % logtype)(lvl, loglvl, msg, user)
+
+# Logger in syslog
+def logger_syslog(lvl, loglvl, msg, user):
+    syslog.openlog(logoption=syslog.LOG_PID)
+    syslog.syslog(loglvl, msg)
+    syslog.closelog()
+
+# Logger in file
+def logger_file(lvl, loglvl, msg, user):
+    now = datetime.datetime.now()
+    log = open(logfile, conf.Log.file_open_method)
+    log.write(msg)
+    log.close()
+
+# Logger in console
+def logger_console(lvl, loglvl, msg, user):
+    color = getattr(conf.Log, conf.Log.format_color.format(lvl))
+    print("%s%s%s" % (color, msg, conf.Log.default_color))
+
+# Logger in database
+def logger_database(lvl, loglvl, msg, user):
+    dblog = Log()
+    dblog.loglvl = loglvl
+    dblog.message = msg
+    if user: dblog.user = user.id
+    dblog.save()

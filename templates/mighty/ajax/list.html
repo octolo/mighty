@@ -1,0 +1,44 @@
+{% extends "mighty/includes/base.html" %}
+{% load static mighty %}
+
+{% block css %}
+.links:nth-child(even) { background: darkslateblue;}
+.links:nth-child(odd) { background: cornflowerblue;}
+.avatars { background-position: center; background-size: contain; }
+input[type="checkbox"].on:not(:checked) ~ * { background: gainsboro; color: gray; }
+input[type="checkbox"].on:checked ~ * { background: limegreen; }
+{% endblock %}
+
+{% block content %}
+<div class="omd-wt-pr70 mg-auto">
+    {% include "mighty/ajax/tools.html" %}
+    <div id="render-{{ opts.model_name }}"></div>
+    {% include "mighty/ajax/tools.html" %}
+</div>
+{% endblock %}
+
+{% block template %}{% endblock %}
+
+{% block file_js %}
+<script src="{% static 'js/handlebars.min.js' %}"></script>
+<script src="{% static 'js/mighty.common.core.js' %}"></script>
+<script src="{% static 'js/mighty.common.basic.js' %}"></script>
+<script src="{% static 'js/mighty.common.ajax.js' %}"></script>
+<script src="{% static 'js/mighty.common.tools.js' %}"></script>
+{% endblock %}
+
+{% block js %}
+var list = new MightyAjax({url: "{% url opts.app_label|add:":api-"|add:opts.model_name|add:"-list" %}", debug: 1});
+list.add("{{ opts.model_name }}", "id", "{{ opts.model_name }}");
+list.add("{{ opts.model_name }}", "loader", true);
+
+var tools = new MightyTools(list, {debug: 1});
+tools.add("search", "class", "{{ opts.model_name }}");
+tools.add("searchex", "class", "{{ opts.model_name }}");
+tools.add("next", "class", "{{ opts.model_name }}");
+tools.add("previous", "class", "{{ opts.model_name }}");
+tools.process();
+
+list.tools = tools;
+list.process(0);
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "admin/submit_line.html" %}
+{% load i18n admin_urls mighty %}
+
+{% block submit-row %}
+    {{ block.super }}
+    {% if original %}
+    {% has_perm original request.user "enable" as show_enable_link %}
+    {% has_perm original request.user "disable" as show_disable_link %}
+    {% if show_enable_link and original.is_disable %}
+        {% url opts|admin_urlname:'enable' original.pk|admin_urlquote as enable_url %}
+        <p class="deletelink-box"><a href="{% add_preserved_filters enable_url %}" class="deletelink enablelink">{{ original.title.enable }}</a></p>
+    {% endif %}
+    {% if show_disable_link and original.is_enable %}
+        {% url opts|admin_urlname:'disable' original.pk|admin_urlquote as disable_url %}
+        <p class="deletelink-box"><a href="{% add_preserved_filters disable_url %}" class="deletelink disablelink">{{ original.title.disable }}</a></p>
+    {% endif %}
+    {% endif %}
+{% endblock %}

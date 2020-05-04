@@ -1,0 +1,58 @@
+{% extends "mighty/base.html" %}
+
+{% load mighty static %}
+{% block css %}
+h1 { border-bottom: 1px solid black; }
+small { border-bottom: 1px solid black; }
+{% endblock %}
+
+{% block content %}
+<section class="mg-auto wt-pr50 md-wt-px400 sm-wt-pr100 bg-c-gainsboro mg-tp-px100 md-mg-tp-px0 omd-bd-rd-px20">
+    {% block logo %}
+    <div class="tx-al-center pgy-px10">
+        <img src="{% static "login_logo.png" %}" class="mx-wt-px250">
+    </div>
+    {% endblock %}
+
+    <div class="mgx-px10">
+        {% block title %}
+        <h1 class="pg-tp-px20">{{ header.title }}</h1>
+        {% endblock %}
+        
+        {% block form %}
+        <form class="signin mg-tp-px20" method="post">{% csrf_token %}
+            {% if form.non_field_errors %}<div class="tx-al-left pg-bt-px20">{{ form.non_field_errors }}</div>{% endif %}
+        
+            <div class="tx-al-center">
+                <label for="{{ form.search.id_for_label }}" class="dp-block mg-bt-px5 pg-rg-px20">{{ form.search.label }}</label>
+                {% with attr="class:wt-pr100 mx-wt-px500 lh-px25,placeholder:"|add:form.search.help_text|safe %}
+                {{ form.search|add_attr:attr }}
+                {% endwith %}
+            </div>
+
+            <div class="">
+                    <small class="dp-block mg-tp-px20 mg-bt-px10"><b>{{ send_method }}</b></small>
+                    <div class="dp-flex wt-pr30-ch pg-px10-ch mg-px10-ch md-dp-block md-wt-pr100-ch md-mg-px0-ch md-mg-bt-px5-ch">
+                    {% if enable_sms %}
+                    <button class="" type="submit" name="method" value="sms">
+                        <i class="fas fa-mobile-alt">&nbsp;</i>{{ method_sms }}
+                    </button>
+                    {% endif %}
+                    {% if enable_email %}
+                    <button class="" type="submit" name="method" value="email">
+                        <i class="fas fa-at">&nbsp;</i>{{ method_email }}
+                    </button>
+                    {% endif %}
+                    {% if enable_basic %}
+                    <button class="" type="submit" name="method" value="basic">
+                        <i class="fas fa-keyboard">&nbsp;</i>{{ method_basic }}
+                    </button>
+                    {% endif %}
+                    </div>
+                </div>
+
+        </form>
+        {% endblock %}
+    </div>
+</section>
+{% endblock %}

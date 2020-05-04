@@ -1,0 +1,13 @@
+{% load admin_urls mighty %}
+
+<form method="POST">{% csrf_token %}
+    <p>{{ form.non_field_errors }}</p>
+    {% for field in form %}
+    <div>
+        <p>{{ field.errors }}</p>
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+    </div>
+    {% endfor %}
+    <input type="submit">
+</form>

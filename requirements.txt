@@ -1,0 +1,12 @@
+requests
+pillow
+pycrypto
+django-jsonfield
+django-json-widget
+djangorestframework
+django-oauth-toolkit
+django-cors-headers
+django-ckeditor
+django-phone-field
+phonenumbers
+django-phonenumber-field

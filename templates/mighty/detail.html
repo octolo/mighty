@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load mighty %}
+
+{% block content %}
+<section>
+    <h1>{{ object }}</h1>
+    {% for field,type in object.fields.items %}
+    {% if type not in "ManyToOneRel AutoField ManyToManyField" and field not in "uid search" %}
+    {% field_name object field %}: {% field_value object field %}<br>
+    {% endif %}
+    {% endfor %}
+</section>
+{% endblock %}

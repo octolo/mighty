@@ -1,0 +1,32 @@
+{% extends "mighty/base.html" %}
+
+{% load mighty static %}
+{% block css %}
+h1 { border-bottom: 1px solid black; }
+small { border-bottom: 1px solid black; }
+{% endblock %}
+
+{% block content %}
+<section class="mg-auto wt-pr50 md-wt-px400 sm-wt-pr100 bg-c-gainsboro mg-tp-px100 md-mg-tp-px0 omd-bd-rd-px20">
+    {% block logo %}
+    <div class="tx-al-center pgy-px10">
+        <img src="{% static "login_logo.png" %}" class="mx-wt-px250">
+    </div>
+    {% endblock %}
+
+    <div class="mgx-px10">
+        {% block title %}
+        <h1 class="pg-tp-px20">{{ header.title }}</h1>
+        {% endblock %}
+        
+        {% block form %}
+        {{ howto }}
+        <br>
+
+        <a class="pg-px10-ch md-wt-pr100" href="/">
+            <i class="fas fa-map-marked-alt">&nbsp;</i>{{ home }}
+        </a>
+        {% endblock %}
+    </div>
+</section>
+{% endblock %}

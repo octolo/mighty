@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for object in object_list %}
+<a href="{{object.detail_url}}">{{ object }}</a><br>
+{% endfor %}
+{% endblock %}

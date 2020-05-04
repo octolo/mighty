@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+        <title>{% if metat.title %}{{ meta.title }}{% else %}{{ title }}{% endif %}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+        <link rel="stylesheet" href="{% static "css/wr/wr.css" %}">
+        <link rel="stylesheet" href="{% static "css/wr/text.css" %}">
+        <link rel="stylesheet" href="{% static "css/wr/colors.css" %}">
+        <link rel="stylesheet" href="{% static "css/wr/border.css" %}">
+        <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet"> 
+        {% block file_css %}{% endblock %}
+        <style>
+        * { font-family: 'Orbitron', sans-serif; }
+        .nav-title {
+            border-right-color: cornflowerblue;
+            border-right-style: solid;
+            border-right-width: 1px;
+        }
+        .loader {
+            border: solid #f3f3f3; /* Light grey */
+            border-top: solid #3498db; /* Blue */
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}
+        {% block css %}{% endblock %}
+        </style>
+    </head>
+    <body>
+        {% include "mighty/includes/navigator.html" %}
+        <div class="mg-auto">{% block content %}{% endblock %}</div>
+        {% block template %}{% endblock %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+        {% block file_js %}{% endblock %}
+        <script>
+        (function() {
+            {% block js %}{% endblock %}
+        })();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,19 @@
+{% load admin_urls mighty %}
+
+{% if request.user.is_staff and has_change_permission %}
+<a class="btn btn-secondary mb-3" href="{{ links.admin.change }}"><i class="fas fa-user-shield">&nbsp;</i>{{ questions.admin_view}}</a>
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% with attr="class:form-control,placeholder:"|add:field.help_text|safe %}
+        {{ field|add_attr:attr }}
+        {% endwith %}
+    </div>
+    {% endfor %}
+    <input type="submit" value="{{ titles.change }}">
+</form>

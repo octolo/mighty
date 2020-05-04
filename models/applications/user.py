@@ -1,0 +1,23 @@
+from django.db import models
+from mighty.functions import setting
+from mighty.applications.user.models import User, Email, Phone, InternetProtocol
+
+if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
+    from mighty.models.applications.nationality import Nationality
+    class User(User):
+        nationalities = models.ManyToManyField(Nationality, blank=True)
+else:
+    class User(User):
+        pass
+
+class Email(Email):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_email')
+
+class Phone(Phone):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_phone')
+
+#class Address(Address):
+#    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_address')
+
+class InternetProtocol(InternetProtocol):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_ip')
