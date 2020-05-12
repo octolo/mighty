@@ -1,0 +1,46 @@
+{% extends "mighty/includes/base.html" %}
+
+{% block content %}
+<div class="login-wrap">
+    <h2>{{ mighty.login }}</h2>
+    <form class="form" method="post">{% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alerts">
+            <div class="message">
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            <span class="close" onclick="this.parentElement.style.display='none';">&times;</span> 
+        </div>
+        {% endif %}
+        {% if form.password.errors %}
+        <div class="alerts">
+            <div class="message">
+                {% for error in form.password.errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            <span class="close" onclick="this.parentElement.style.display='none';">&times;</span> 
+        </div>
+        {% endif %}
+        <input type="password" placeholder="{{ howto }}" name="{{ form.password.name }}" id="myPassword">
+        <label><input type="checkbox" onclick="togglePassword()"><span>&nbsp;Show code</span></label>
+        <button>{{ submit }}</button>
+    </form>
+    <div class="links">
+        <a href="#"><p>I did not get the sms</p></a>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+function togglePassword() {
+    var x = document.getElementById("myPassword");
+    if (x.type === "password") {
+      x.type = "text";
+    } else {
+      x.type = "password";
+    }
+}
+{% endblock %}

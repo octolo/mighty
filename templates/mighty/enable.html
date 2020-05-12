@@ -1,3 +1,7 @@
+{% if request.user.is_staff %}
+<a href="{{ object.admin_enable_url }}">{{ mighty.admin_view}}</a>
+{% endif %}
+
 <form method="post">{% csrf_token %}
     <p>{{ object.question_enable }}</p>
     <input type="submit">

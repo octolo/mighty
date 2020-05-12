@@ -68,7 +68,7 @@ def key(size=32, generator=string.hexdigits):
 Return a code with the length used
 """
 def randomcode(size=8):
-    return key(size=32, generator="123456789")
+    return key(size=size, generator="123456789")
 
 """
 Cast input in float

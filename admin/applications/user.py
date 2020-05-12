@@ -3,8 +3,8 @@ from django.contrib import admin
 from django.contrib.auth.models import Permission
 from django.contrib.auth.admin import UserAdmin
 
-from mighty.models.applications.user import User, Email, Phone, InternetProtocol
-from mighty.applications.user.admin import UserAdmin, EmailAdmin, PhoneAdmin, InternetProtocolAdmin
+from mighty.models.applications.user import ProxyUser, Email, Phone, InternetProtocol, UserAgent
+from mighty.applications.user.admin import UserAdmin, EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin
 
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
@@ -19,13 +19,16 @@ class PhoneAdmin(PhoneAdmin):
 class InternetProtocolAdmin(InternetProtocolAdmin):
     model = InternetProtocol
 
-@admin.register(User)
-class UserAdmin(UserAdmin):
+class UserAgentAdmin(UserAgentAdmin):
+    model = UserAgent
 
+@admin.register(ProxyUser)
+class UserAdmin(UserAdmin):
+    view_on_site = False
     def add_view(self, *args, **kwargs):
         self.inlines = []
         return super(UserAdmin, self).add_view(*args, **kwargs)
 
     def change_view(self, *args, **kwargs):
-        self.inlines = [EmailAdmin, PhoneAdmin, InternetProtocolAdmin]
+        self.inlines = [EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin]
         return super(UserAdmin, self).change_view(*args, **kwargs)

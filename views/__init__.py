@@ -16,13 +16,16 @@ class TemplateView(BaseView, TemplateView):
 
 # ListView overrided
 class ListView(ModelView, ListView):
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"title": self.model._meta.verbose_name_plural,})
+        return context
 
 # CreateView overrided and rename with an empty object
 class AddView(ModelView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'object': self.model()})
+        context.update({"title": "%s %s" % (self.model.mighty.perm_title['add'], self.model._meta.verbose_name)})
         return context
 
     def get_success_url(self):
@@ -30,20 +33,38 @@ class AddView(ModelView, CreateView):
 
 # DetailView overrided
 class DetailView(ModelView, DetailView):
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"title": self.object})
+        return context
 
 # ChangeView overrided
 class ChangeView(ModelView, UpdateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"title": "%s %s" % (self.model.mighty.perm_title['change'], self.model._meta.verbose_name)})
+        return context
+
     def get_success_url(self):
         return self.object.detail_url
 
 # DeleteView overrided
 class DeleteView(ModelView, DeleteView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"title": "%s %s" % (self.object.mighty.perm_title['delete'], self.object._meta.verbose_name)})
+        return context
+
     def get_success_url(self):
         return self.object.list_url
 
 # EnableView is like deleteview but set is_disable to false
 class EnableView(DeleteView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"title": "%s %s" % (self.model.mighty.perm_title['enable'], context["fake"]._meta.verbose_name)})
+        return context
+
     def get_success_url(self):
         return self.object.detail_url
 
@@ -55,6 +76,11 @@ class EnableView(DeleteView):
 
 # EnableView is like deleteview but set is_disable to true
 class DisableView(DeleteView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"title": "%s %s" % (self.model.mighty.perm_title['disable'], self.object._meta.verbose_name)})
+        return context
+
     def get_success_url(self):
         return self.object.list_url
 

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import UserManager
 
-PrefetchRelated = ('user_email', 'user_phone', 'user_ip')
+PrefetchRelated = ('user_email', 'user_phone', 'user_ip', 'user_useragent')
 class UserManager(UserManager):
     def create_superuser(self, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault('method', 'CREATESUPERUSER')

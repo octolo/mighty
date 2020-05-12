@@ -42,26 +42,19 @@ class BaseAdmin(admin.ModelAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        for field in fields.image+fields.display+fields.search:
+        for field in fields.image:
             if hasattr(model, field):
                 self.add_field(_.more, (field,))
-        for field in fields.base+fields.uid+fields.disable:
+        for field in fields.base:
             if hasattr(model, field):
                 self.add_field(_.informations, (field,))
                 self.readonly_fields += (field,)
-        for field in fields.alert+fields.error:
-            if hasattr(model, field):
-                self.add_field(_.alerts_and_errors, (field,))
         for field in fields.source:
             if hasattr(model, field):
                 self.add_field(_.source, (field,))
         for field in fields.keywords:
             if hasattr(model, field):
                 self.add_field(_.more, (field,))
-        if hasattr(model, 'is_disable'):
-            self.actions = admin.ModelAdmin.actions + [disable_selected, enable_selected]
-            self.list_display += ('is_disable',)
-            self.list_filter += fields.disable
         if hasattr(model, 'alerts'): self.list_filter += (InAlertListFilter,)
         if hasattr(model, 'errors'): self.list_filter += (InErrorListFilter,)
 

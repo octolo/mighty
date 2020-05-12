@@ -4,9 +4,9 @@ from django.contrib.auth.models import Group
 
 from mighty.admin.site import AdminSite
 
-mysite = AdminSite()
-admin.site = mysite
-admin.sites.site = mysite
+#mysite = AdminSite()
+#admin.site = mysite
+#admin.sites.site = mysite
 
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.admin.applications import user

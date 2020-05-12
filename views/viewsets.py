@@ -1,11 +1,11 @@
-from copy import deepcopy
-from mighty import views
 from django.urls import path
+from mighty import views
+from mighty.functions import logger
+from copy import deepcopy
 
 view_attr = {
     'add_to_context': {},
     'is_ajax': False,
-    'no_permission': False,
 }
 
 model_attr = (
@@ -35,8 +35,9 @@ class ViewSet(object):
         self.views[name] = {'view': view, 'url': url}
 
     def config_view(self, View, view):
+        logger("twofactor", "debug", "-- ViewType: %s" % view)
         for attr, default in view_attr.items(): setattr(View, attr, self.Vgetattr(View, view, attr, default))
-        if not self.Vgetattr(View, view, 'no_permission', False): View.permission_required = self.Vgetattr(View, view, attr, ())
+        if not self.Vgetattr(View, view, 'no_permission', False): View.permission_required = self.Vgetattr(View, view, "permission_required", ())
         return View
 
     def view(self, view, *args, **kwargs):
@@ -44,12 +45,13 @@ class ViewSet(object):
         for k, v in kwargs.items(): setattr(View, k, v)
         return self.config_view(View, view)
 
-    def url(self, view, config):
-        return config['url']
-
+    def url(self, view, config): return config['url']
     def url_name(self, view): return '%s-%s' % (str(self.model.__name__.lower()), view)
     @property
     def urls(self):
+        logger("mighty", "debug", "- ViewSet: %s" % self.__class__.__name__)
+        for view,config in self.views.items():
+            print(self.url_name(view))
         return [path(self.url(view, config), self.view(view).as_view(), name=self.url_name(view)) for view,config in self.views.items()]
 
 class ModelViewSet(ViewSet):
@@ -79,14 +81,10 @@ class ModelViewSet(ViewSet):
         View = super().config_view(View, view)
         View.model = self.model
         for attr in model_attr: setattr(View, attr, self.Vgetattr(View, view, attr))
-        if not self.Vgetattr(View, view, 'no_permission', False): View.permission_required = self.Vgetattr(View, view, attr, (self.model().perm(view),))
+        if not self.Vgetattr(View, view, 'no_permission', False): View.permission_required = self.Vgetattr(View, view, "permission_required", (self.model().perm(view),))
         return View
 
-    def add_view(self, name, view, url, useid=False): 
-        self.views[name] = {'view': view, 'url': url,}
-
     def url(self, view, config):
-        if 'slug' in config: return config['url'] % self.slug
         return config['url']
 
 from mighty.views import api as apiviews

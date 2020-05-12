@@ -1,7 +1,18 @@
-{% extends "base.html" %}
-
+{% extends "mighty/includes/base.html" %}
+{% load mighty %}
 {% block content %}
+
+<div>
+{% if can_add %}
+<a href="{{fake.add_url}}">Add</a>
+{% if request.user.is_staff %}
+<a href="{{ fake.admin_list_url }}">{{ mighty.admin_view}}</a>
+{% endif %}
+{% endif %}
+</div>
+
 {% for object in object_list %}
 <a href="{{object.detail_url}}">{{ object }}</a><br>
 {% endfor %}
+
 {% endblock %}

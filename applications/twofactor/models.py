@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.module_loading import import_string
 
 from mighty.models.base import Base
 from mighty.applications.twofactor import translates as _
@@ -22,14 +23,13 @@ class Twofactor(Base):
     code = models.PositiveIntegerField(default=generate_code, db_index=True)
     is_consumed = models.BooleanField(default=False)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='code_user')
-    subject = models.CharField(max_length=255)
-    html = models.TextField()
-    txt = models.TextField()
     mode = models.CharField(choices=CHOICES_MODE, max_length=255)
-
     status = models.CharField(choices=CHOICES_STATUS, default=STATUS_PREPARE, max_length=100, editable=False, help_text='<a href="check"></a>')
     backend = models.CharField(max_length=255, editable=False)
     response = models.TextField(editable=False)
+    subject = models.CharField(max_length=255)
+    html = models.TextField()
+    txt = models.TextField()
 
     class Meta(Base.Meta):
         abstract = True
@@ -40,7 +40,6 @@ class Twofactor(Base):
         return str(self.code)
 
     def get_backend(self):
-        from django.utils.module_loading import import_string
         backend = import_string(self.backend)()
         return backend
 

@@ -1,0 +1,50 @@
+/* Global */
+* { font-family: 'Orbitron', sans-serif; }
+html, body { margin: 0 auto; }
+* { box-sizing: border-box; margin: 0; padding: 0 }
+.loader {
+    border: solid #f3f3f3; /* Light grey */
+    border-top: solid #3498db; /* Blue */
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+}
+@keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}
+
+
+/* Navigator */
+#navigator {
+    height: 65px;
+}
+
+/* alerts */
+.alerts { display: flex; padding: 10px; margin: 5px 0; }
+.message { width: 95%; }
+.close {
+    text-align: center;
+    width: 5%;
+    font-weight: bold;
+    float: right;
+    font-size: 2em;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Login Page */
+.login-wrap { margin: 100px auto 0; width: 380px; border-radius: 5px; padding: 15px; }
+.login-wrap h2 { text-align: center; font-weight: 200; font-size: 2em; margin-top: 10px; }
+.login-wrap form { padding-top: 20px; }
+.login-wrap input, .login-wrap span { vertical-align: middle; }
+.login-wrap input[type="text"], .login-wrap input[type="password"], .login-wrap button, .login-wrap label {
+    width: 80%;
+    margin-left: 10%;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 5px;
+    outline: 0;
+}
+.login-wrap input[type="text"], .login-wrap input[type="password"] { border-style: solid; border-width: 1px; padding: 0 0 0 10px; font-size: 14px; }
+.login-wrap button { margin-top: 5px; border: none; font-size: 18px; font-weight: 200; cursor: pointer; transition: box-shadow .4s ease; }
+.login-wrap .links { margin-top: 10px; margin-left: 10%; }
+.login-wrap .links a { font-size: 0.8em; margin-top: 5px; display: block; }
+

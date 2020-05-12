@@ -1,5 +1,9 @@
 {% load admin_urls mighty %}
 
+{% if request.user.is_staff %}
+<a href="{{ object.admin_add_url }}">{{ mighty.admin_view}}</a>
+{% endif %}
+
 <form method="POST">{% csrf_token %}
     <p>{{ form.non_field_errors }}</p>
     {% for field in form %}

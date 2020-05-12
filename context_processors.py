@@ -1,24 +1,18 @@
 from django.conf import settings
 from django.utils.module_loading import import_string
-from mighty.translates import templates as _
+from mighty import translates as _
 
 # Generate menus from the MIGHTY_BACKOFFICE setting
 def menus(request):
     if hasattr(settings, "MIGHTY_BACKOFFICE"): 
         return {"applications": {label: [import_string(model)() for model in models] for label,models in settings.MIGHTY_BACKOFFICE.items()}}
 
-# Add additionnal value in all context
-def additionnal(request):
-    if hasattr(settings, "CONTEXT_ADD"): 
-        return {"additional": settings.CONTEXT_ADD}
-
-# Add debug setting in all context
-def debug(request):
-    return {"debug": settings.DEBUG}
-
 # Add translates in all context
-def translate(request):
+def mighty(request):
     return {
+        "additional": settings.CONTEXT_ADD if hasattr(settings, "CONTEXT_ADD") else {},
+        "logo": settings.LOGO_STATIC if hasattr(settings, "LOGO_STATIC") else "img/django.svg",
+        "debug": settings.DEBUG,
         "mighty": {
             "home": _.home,
             "login": _.login,

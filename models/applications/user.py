@@ -1,6 +1,6 @@
 from django.db import models
 from mighty.functions import setting
-from mighty.applications.user.models import User, Email, Phone, InternetProtocol
+from mighty.applications.user.models import User, Email, Phone, InternetProtocol, UserAgent
 
 if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
     from mighty.models.applications.nationality import Nationality
@@ -16,8 +16,15 @@ class Email(Email):
 class Phone(Phone):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_phone')
 
-#class Address(Address):
-#    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_address')
-
 class InternetProtocol(InternetProtocol):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_ip')
+
+class UserAgent(UserAgent):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_useragent')
+
+class ProxyUser(User):
+    class Meta:
+        app_label = 'auth'
+        proxy = True
+        verbose_name = User.Meta.verbose_name
+        verbose_name_plural = User.Meta.verbose_name_plural

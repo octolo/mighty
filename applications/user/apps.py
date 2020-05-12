@@ -4,7 +4,7 @@ from django.conf import settings
 class Config:
     class Field:
         username = 'email'
-        required = ('username', 'phone')
+        required = ('username',)
 
 if hasattr(settings, 'UserConfig'):
     for config,configs in getattr(settings, 'UserConfig').items():

@@ -24,14 +24,14 @@ class BaseView(PermissionRequiredMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         logger("mighty", "info", "view: %s" % self.__class__.__name__, self.request.user)
-        context.update({"view": self.__class__.__name__, "permissions": self.request.user.get_all_permissions()})
+        context.update({"view": self.__class__.__name__, "perms": self.request.user.get_all_permissions()})
         context.update(self.add_to_context)
         return context
 
     def get_template_names(self):
         if self.is_ajax: self.template_name = self.template_name or tplx(self.app_label, self.model_name, str(self.__class__.__name__).lower())
         else: self.template_name = self.template_name or tpl(self.app_label, self.model_name, str(self.__class__.__name__).lower())
-        logger("mighty", "info", "template: %s" % self.template_name)
+        logger("mighty", "info", "template: %s" % self.template_name, self.request.user)
         return self.template_name
 
 """
@@ -42,12 +42,24 @@ app_label + model_name are mandatory
 [paginate_by] number of data by page
 """
 class ModelView(BaseView):
-    is_ajax = None
+    is_ajax = False
     paginate_by = conf.paginate_by
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"opts": self.model._meta, "title": self.model.title, "fake": self.model()})
+        context.update({
+            "opts": self.model._meta,
+            "fake": self.model(),
+        })
+        context.update({
+            "can_add": self.request.user.has_perm(context["fake"].perm("add")),
+            "can_change": self.request.user.has_perm(context["fake"].perm("change")),
+            "can_delete": self.request.user.has_perm(context["fake"].perm("delete")),
+            "can_export": self.request.user.has_perm(context["fake"].perm("export")),
+            "can_import": self.request.user.has_perm(context["fake"].perm("import")),
+            "can_disable": self.request.user.has_perm(context["fake"].perm("disable")),
+            "can_enable": self.request.user.has_perm(context["fake"].perm("enable")),
+        })
         return context
 
     def get_template_names(self):
@@ -61,5 +73,5 @@ class ModelView(BaseView):
                 self.app_label or str(self.model._meta.app_label).lower(), 
                 self.model_name or str(self.model.__name__).lower(),
                 str(self.__class__.__name__).lower())
-        logger("mighty", "info", "template: %s" % self.template_name)
+        logger("mighty", "info", "template: %s" % self.template_name, self.request.user)
         return self.template_name

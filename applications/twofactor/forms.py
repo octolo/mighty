@@ -17,7 +17,7 @@ methods_ws = method = [method for method in TwofactorConfig.methods_ws if hasatt
 
 
 class UserSearchForm(forms.Form):
-    search = forms.CharField(label=_.search)
+    search = forms.CharField(label=_.search, required=True)
     method = forms.CharField(widget=forms.HiddenInput)
     user_cache = None
     method_cache = None
@@ -31,32 +31,31 @@ class UserSearchForm(forms.Form):
     }
 
     def clean(self):
-        search = self.cleaned_data.get('search').lower()
+        search = self.cleaned_data.get('search')
         method = self.cleaned_data.get("method")
-   
-        try:
-            self.user_cache = UserModel.objects.get(Q(username=search) | Q(email=search) | Q(phone=search))
-            self.confirm_login_allowed(self.user_cache)
-            self.method_cache = self.cleaned_data.get('method')
-            if self.method_cache not in methods:
-                raise forms.ValidationError(self.error_messages['method_not_allowed'], code='method_not_allowed',)
-            if self.method_cache in methods_ws:
-                if self.method_cache == 'sms' and self.user_cache.phone is None:
-                    raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
-                if self.method_cache == 'email' and self.user_cache.email is None:
-                    raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
-                status = send_sms(self.user_cache) if self.method_cache == 'sms' else send_email(self.user_cache)
-                if not status:
-                    raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
-        except UserModel.DoesNotExist:
-            raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search',)
-
-        try:
-            useruidandmethod = '%s:%s' % (method, str(self.user_cache.uid))
-            useruidandmethod = encrypt(settings.SECRET_KEY[:16], useruidandmethod).decode('utf-8')
-            self.success_url = reverse('twofactor:login-%s' % method, kwargs={'uid': quote_plus(useruidandmethod)})
-        except NoReverseMatch:
-            raise forms.ValidationError(self.error_messages['invalid_method'], code='invalid_method',)
+        if search and method:
+            try:
+                self.user_cache = UserModel.objects.get(Q(username=search) | Q(email=search) | Q(phone=search))
+                self.confirm_login_allowed(self.user_cache)
+                self.method_cache = self.cleaned_data.get('method')
+                if self.method_cache not in methods:
+                    raise forms.ValidationError(self.error_messages['method_not_allowed'], code='method_not_allowed',)
+                if self.method_cache in methods_ws:
+                    if self.method_cache == 'sms' and self.user_cache.phone is None:
+                        raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
+                    if self.method_cache == 'email' and self.user_cache.email is None:
+                        raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
+                    status = send_sms(self.user_cache) if self.method_cache == 'sms' else send_email(self.user_cache)
+                    if not status:
+                        raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
+            except UserModel.DoesNotExist:
+                raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search',)
+            try:
+                useruidandmethod = '%s:%s' % (method, str(self.user_cache.uid))
+                useruidandmethod = encrypt(settings.SECRET_KEY[:16], useruidandmethod).decode('utf-8')
+                self.success_url = reverse('mighty:twofactor-%s' % method, kwargs={'uid': quote_plus(useruidandmethod)})
+            except NoReverseMatch:
+                raise forms.ValidationError(self.error_messages['invalid_method'], code='invalid_method',)
         return self.cleaned_data
 
     def confirm_login_allowed(self, user):

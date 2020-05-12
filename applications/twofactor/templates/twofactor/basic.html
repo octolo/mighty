@@ -1,0 +1,26 @@
+{% extends "mighty/includes/base.html" %}
+
+{% block content %}
+<div class="login-wrap">
+    <h2>{{ mighty.login }}</h2>
+    <form class="form" method="post">{% csrf_token %}
+        <input type="password" placeholder="{{ form.password.label }}" name="{{ form.password.name }}" id="myPassword">
+        <label><input type="checkbox" onclick="togglePassword()"><span>&nbsp;Show Password</span></label>
+        <button>{{ submit }}</button>
+    </form>
+    <div class="links">
+        <a href="#"><p>Forget my password</p></a>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+function togglePassword() {
+    var x = document.getElementById("myPassword");
+    if (x.type === "password") {
+      x.type = "text";
+    } else {
+      x.type = "password";
+    }
+}
+{% endblock %}

@@ -1,7 +1,11 @@
-{% extends "base.html" %}
+{% extends "mighty/includes/base.html" %}
 {% load mighty %}
 
 {% block content %}
+{% if can_disable %}
+<a href="{{ object.disable_url }}">disable</a>
+{% endif %}
+
 <section>
     <h1>{{ object }}</h1>
     {% for field,type in object.fields.items %}

@@ -8,17 +8,26 @@ from mighty.applications.user.forms import UserCreationForm
 from mighty.admin.models import BaseAdmin
 from mighty.applications.user.models import METHOD_BACKEND
 
-class EmailAdmin(admin.TabularInline):
-    extra = 1
-
-
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
+
+class EmailAdmin(admin.TabularInline):
+    fields = ('email',)
+    extra = 0
+
 class PhoneAdmin(admin.TabularInline):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
-    extra = 1
+    fields = ('phone',)
+    extra = 0
 
 class InternetProtocolAdmin(admin.TabularInline):
+    fields = ('ip',)
+    readonly_fields = ('ip',)
+    extra = 0
+
+class UserAgentAdmin(admin.TabularInline):
+    fields = ('useragent',)
+    readonly_fields = ('useragent',)
     extra = 0
 
 class UserAdmin(UserAdmin, BaseAdmin):
