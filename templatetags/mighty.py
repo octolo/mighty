@@ -1,6 +1,8 @@
 from django import template
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
+import datetime
+
 register = template.Library()
 
 guardian = False
@@ -60,7 +62,7 @@ def add_attr(field, css):
 
 @register.simple_tag(name='number_hread')
 def number_hread(number, separator=None):
-    return '{:,}'.format(number).replace(",", separator) if separator else '{:,}'.format(number)
+    return '{:,}'.format(int(number)).replace(",", separator) if separator else '{:,}'.format(int(number))
 
 @register.filter
 def index(indexable, i):
@@ -77,3 +79,7 @@ def is_type(data):
 @register.simple_tag(name='define')
 def define(val=None):
   return val
+
+@register.simple_tag(name='convert_date')
+def convert_date(date, origin, convert):
+    return datetime.datetime.strptime(date, origin).strftime(convert)

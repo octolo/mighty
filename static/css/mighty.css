@@ -1,6 +1,7 @@
 /* Global */
 * { font-family: 'Orbitron', sans-serif; }
 html, body { margin: 0 auto; }
+body { margin-bottom: 20px;}
 * { box-sizing: border-box; margin: 0; padding: 0 }
 .loader {
     border: solid #f3f3f3; /* Light grey */
@@ -12,9 +13,7 @@ html, body { margin: 0 auto; }
 
 
 /* Navigator */
-#navigator {
-    height: 65px;
-}
+#navigator { height: 65px; }
 
 /* alerts */
 .alerts { display: flex; padding: 10px; margin: 5px 0; }
@@ -47,4 +46,3 @@ html, body { margin: 0 auto; }
 .login-wrap button { margin-top: 5px; border: none; font-size: 18px; font-weight: 200; cursor: pointer; transition: box-shadow .4s ease; }
 .login-wrap .links { margin-top: 10px; margin-left: 10%; }
 .login-wrap .links a { font-size: 0.8em; margin-top: 5px; display: block; }
-

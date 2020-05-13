@@ -11,7 +11,6 @@ from mighty.applications.twofactor.models import (
 
 import datetime
 
-
 UserModel = get_user_model()
 class TwoFactorBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
@@ -24,10 +23,13 @@ class TwoFactorBackend(ModelBackend):
         else:
             if self.user_can_authenticate(user):
                 try:
-                    code = Twofactor.objects.get(user=user, code=password)
+                    now = datetime.datetime.now()
+                    earlier = now - datetime.timedelta(minutes=1)
+                    code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now))
                     code.is_consumed = True
                     code.save()
-                    if hasattr(request, 'META'): user.get_client_ip(request)
+                    user.get_client_ip(request)
+                    user.get_user_agent(request)
                     return user
                 except Exception as e:
                     UserModel().set_password(password)

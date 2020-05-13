@@ -1,16 +1,15 @@
-body { background-color: #454545; }
-#navigator { background-color: #1f1f1f; }
-
+.dark { background-color: #454545; }
+.dark #navigator { background-color: #1f1f1f; }
 
 /* alerts */
-.alerts { background-color: #f44336; color: white; }
-.message { width: 95%; }
-.close { color: white; }
-.close:hover { color: black; }
+.dark .alerts { background-color: #f44336; color: white; }
+.dark .message { width: 95%; }
+.dark .close { color: white; }
+.dark .close:hover { color: black; }
 
 /* Login Page */
-.login-wrap { background: #ecf0f1; box-shadow: 3px 3px 10px #1f1f1f; }
-.login-wrap h2 { color: #1f1f1f; }
-.login-wrap input[type="text"], .login-wrap input[type="password"] { border-color: #d2d2d2; }
-.login-wrap button { background: #1f1f1f; color: white; }
-.login-wrap .links a { color: #1f1f1f; }
+.dark .login-wrap { background: #ecf0f1; box-shadow: 3px 3px 10px #1f1f1f; }
+.dark .login-wrap h2 { color: #1f1f1f; }
+.dark .login-wrap input[type="text"], .login-wrap input[type="password"] { border-color: #d2d2d2; }
+.dark .login-wrap button { background: #1f1f1f; color: white; }
+.dark .login-wrap .links a { color: #1f1f1f; }

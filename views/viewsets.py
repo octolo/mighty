@@ -50,8 +50,6 @@ class ViewSet(object):
     @property
     def urls(self):
         logger("mighty", "debug", "- ViewSet: %s" % self.__class__.__name__)
-        for view,config in self.views.items():
-            print(self.url_name(view))
         return [path(self.url(view, config), self.view(view).as_view(), name=self.url_name(view)) for view,config in self.views.items()]
 
 class ModelViewSet(ViewSet):
