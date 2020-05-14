@@ -39,6 +39,7 @@ class User(AbstractUser, Base, Image):
     method = models.CharField(_.method, choices=CHOICES_METHOD, default=METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
     gender = models.CharField(_.gender, max_length=1, choices=CHOICES_GENDER, blank=True, null=True)
+    #css = models.CharField(max_length=255, default="dark")
 
     class Meta(Base.Meta):
         db_table = 'auth_user'
