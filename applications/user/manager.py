@@ -1,8 +1,10 @@
 from django.contrib.auth.models import UserManager
+from mighty.applications.user.functions import username_generator
 
 PrefetchRelated = ('user_email', 'user_phone', 'user_ip', 'user_useragent')
 class UserManager(UserManager):
-    def create_superuser(self, username, email=None, password=None, **extra_fields):
+    def create_superuser(self, username=None, email=None, password=None, **extra_fields):
+        if username is None: username = username_generator(email)
         extra_fields.setdefault('method', 'CREATESUPERUSER')
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
