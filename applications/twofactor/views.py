@@ -22,6 +22,7 @@ class Login(FormView):
     app_label = 'mighty'
     model_name = 'twofactor'
     form_class = UserSearchForm
+    over_add_to_context = { "help": _.help_login }
 
     def get(self, request):
         if request.user.is_authenticated:
@@ -43,16 +44,15 @@ class Login(FormView):
         })
         return context
 
-    def set_url_by_method(self, user, method):
+    def set_url_by_method(self, method):
         try:
-            useruidandmethod = '%s:%s' % (method, str(user.uid))
-            useruidandmethod = encrypt(settings.SECRET_KEY[:16], useruidandmethod).decode('utf-8')
-            self.success_url = reverse('mighty:twofactor-%s' % method, kwargs={'uid': quote_plus(useruidandmethod)})
+            self.success_url = reverse('mighty:twofactor-%s' % method)
         except NoReverseMatch:
             raise forms.add_error(None,'test error reverse')
 
     def form_valid(self, form):
-        self.set_url_by_method(form.user_cache, form.method_cache)
+        self.request.session['login_uid'] = str(form.user_cache.uid)
+        self.set_url_by_method(form.method_cache)
         if self.request.GET: self.success_url += "?%s" % urlencode(self.request.GET, quote_via=quote_plus)
         return super().form_valid(form)
 
@@ -82,9 +82,8 @@ class LoginView(BaseView, LoginView):
     over_add_to_context = {"help": _.help_login,}
 
     def get_form_kwargs(self):
-        kwargs = super(LoginView, self).get_form_kwargs()
-        useruidandmethod = decrypt(settings.SECRET_KEY[:16], unquote_plus(self.kwargs.get('uid'))).decode('utf-8').split(':')
-        kwargs.update({'request' : self.request, 'uid': useruidandmethod[1], 'method': useruidandmethod[0]})
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'request' : self.request, 'uid': self.request.session['login_uid']})
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -98,11 +97,26 @@ class LoginView(BaseView, LoginView):
 class LoginEmail(LoginView):
     over_add_to_context = {'howto': _.howto_email_code, 'submit': _.submit_code, "help": _.help_email}
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'method' : 'email'})
+        return kwargs
+
 class LoginSms(LoginView):
     over_add_to_context = {'howto': _.howto_sms_code, 'submit': _.submit_code, "help": _.help_sms}
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'method' : 'sms'})
+        return kwargs
+
 class LoginBasic(LoginView):
     over_add_to_context = {'howto': _.howto_basic_code, 'submit': _.submit_code, "help": _.help_basic}
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'method' : 'basic'})
+        return kwargs
 
 class Logout(BaseView, LogoutView):
     over_no_permission = True
@@ -118,7 +132,7 @@ class TwofactorViewSet(ModelViewSet):
         super().__init__()
         self.add_view('register', Register, 'register/')
         self.add_view('login', Login, 'login/')
-        self.add_view('email', LoginEmail, 'login/email/%s/' % self.slug)
-        self.add_view('sms', LoginSms, 'login/sms/%s/' % self.slug)
-        self.add_view('basic', LoginBasic, 'login/basic/%s/' % self.slug)
+        self.add_view('email', LoginEmail, 'login/email/')
+        self.add_view('sms', LoginSms, 'login/sms/')
+        self.add_view('basic', LoginBasic, 'login/basic/')
         self.add_view('logout', Logout, 'logout/')
