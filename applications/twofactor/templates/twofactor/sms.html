@@ -4,32 +4,21 @@
 <div class="login-wrap">
     <h2>{{ mighty.login }}</h2>
     <form class="form" method="post">{% csrf_token %}
-        {% if form.non_field_errors %}
-        <div class="alerts">
-            <div class="message">
-                {% for error in form.non_field_errors %}
-                {{ error }}
-                {% endfor %}
-            </div>
-            <span class="close" onclick="this.parentElement.style.display='none';">&times;</span> 
-        </div>
-        {% endif %}
-        {% if form.password.errors %}
-        <div class="alerts">
-            <div class="message">
-                {% for error in form.password.errors %}
-                {{ error }}
-                {% endfor %}
-            </div>
-            <span class="close" onclick="this.parentElement.style.display='none';">&times;</span> 
-        </div>
-        {% endif %}
+        {% include "mighty/message.html" with message=message_phone level="info" %}
+
+        {% for error in form.non_field_errors %}
+        {% include "mighty/message.html" with message=error level="alert" %}
+        {% endfor %}
+
+        {% for error in form.password.errors %}
+        {% include "mighty/message.html" with message=error level="alert" %}
+        {% endfor %}
         <input type="password" placeholder="{{ howto }}" name="{{ form.password.name }}" id="myPassword">
         <label><input type="checkbox" onclick="togglePassword()"><span>&nbsp;Show code</span></label>
         <button>{{ submit }}</button>
     </form>
     <div class="links">
-        <a href="#"><p>I did not get the sms</p></a>
+        <a href="#"><p>{{ help }}</p></a>
     </div>
 </div>
 {% endblock %}

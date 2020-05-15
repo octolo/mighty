@@ -38,7 +38,6 @@ class UserViewSet(ModelViewSet):
     def __init__(self):
         super().__init__()
         self.add_view('profile', UserProfile, 'profile/')
-        self.add_view('register', UserRegister, 'register/')
 
 class UserApiViewSet(ApiModelViewSet):
     model = User

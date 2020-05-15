@@ -1,4 +1,11 @@
 {% load mighty static %}
-<div id="navigator" class="d-flex">
-    <div class="h-pr100"><a href="#"><img class="h-pr100 p-px5" src="{% static logo %}"></a></div>
+<div id="navigator" class="d-f w-ch">
+    <div class="logo">
+        <a href="/"><img alt="Logo" src="{% static logo %}"></a>
+    </div>
+    <div>
+        {% if user.is_authenticated %}
+        {% include "mighty/user/navigator.html" %}
+        {% endif %}
+    </div>
 </div>

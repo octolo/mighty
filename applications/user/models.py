@@ -14,6 +14,7 @@ from mighty.applications.user.manager import UserManager
 from mighty.applications.user import translates as _, fields
 
 from phonenumber_field.modelfields import PhoneNumberField
+import uuid
 
 guardian = False
 if 'guardian' in settings.INSTALLED_APPS:
@@ -33,9 +34,9 @@ CHOICES_METHOD = (
     (METHOD_IMPORT, _.METHOD_IMPORT))
 CHOICES_GENDER = ((GENDER_MAN, _.GENDER_MAN), (GENDER_WOMAN, _.GENDER_WOMAN))
 class User(AbstractUser, Base, Image):
-    username = models.CharField(_.username, max_length=254, validators=[AbstractUser.username_validator], unique=True, blank=True, null=True)
+    username = models.CharField(_.username, max_length=254, unique=True, blank=True, null=True)
     email = models.EmailField(_.email, unique=True)
-    phone = PhoneNumberField(_.phone, blank=True, null=True)
+    phone = PhoneNumberField(_.phone, blank=True, null=True, unique=True)
     method = models.CharField(_.method, choices=CHOICES_METHOD, default=METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
     gender = models.CharField(_.gender, max_length=1, choices=CHOICES_GENDER, blank=True, null=True)
@@ -88,9 +89,23 @@ class User(AbstractUser, Base, Image):
     def set_search(self):
         self.search = ' '.join([getattr(self, field) for field in fields.searchs if hasattr(self, field) and test(getattr(self, field))])
 
+    def gen_username(self):
+        prefix = "".join([l for l in getattr(self, UserConfig.Field.username) if l.isalpha()])
+        prefix = prefix[:3] if len(prefix) >= 3 else prefix
+        exist = True
+        while exist:
+            username = '%s%s' % ('%s-' % prefix if prefix else '', str(uuid.uuid4())[:8])
+            username = username.lower()
+            try:
+                type(self).objects.get(username=username)
+            except type(self).DoesNotExist:
+                exist = False
+        return username
+
     def save(self, *args, **kwargs):
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: self.username = self.username.lower()
+        else: self.username = self.gen_username()
         super().save(*args, **kwargs)
 
 class Email(Base):

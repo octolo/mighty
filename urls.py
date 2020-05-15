@@ -1,7 +1,11 @@
 from django.conf import settings
+from django.urls import path
 
 app_name = "mighty"
 urlpatterns = []
+
+from mighty.views import HomePageView
+urlpatterns.append(path('', HomePageView.as_view()))
 
 # Enable app nationality
 if "mighty.applications.nationality" in settings.INSTALLED_APPS:

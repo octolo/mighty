@@ -11,7 +11,7 @@ from django_json_widget.widgets import JSONEditorWidget
 
 from mighty import fields
 from mighty.models import JSONField
-from mighty.translates import descriptions as _
+from mighty import translates as _
 from mighty.admin.actions.disable import disable_selected, enable_selected
 from mighty.admin.filters.alerts import InAlertListFilter
 from mighty.admin.filters.errors import InErrorListFilter

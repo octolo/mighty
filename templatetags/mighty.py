@@ -48,8 +48,12 @@ def field_value(obj, field):
     attr = attr() if callable(attr) else attr
     return None if attr is None else attr
 
-@register.filter(name='add_attr')
-def add_attr(field, css):
+@register.simple_tag(name='add_attr')
+def add_attr(field, attr, value):
+    return field.as_widget(attrs={attr: value})
+
+@register.filter(name='add_attrs')
+def add_attrs(field, css):
     attrs = {}
     definition = css.split(',')
     for d in definition:

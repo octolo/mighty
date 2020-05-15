@@ -1,0 +1,16 @@
+{% extends "mighty/includes/base.html" %}
+{% load mighty %}
+
+{% block content %}
+<section class="homepage">
+    <h2>Home Page</h2>
+    <div class="links">
+        {% if request.user.is_authenticated %}
+        <a href="/accounts/logout/">Me déconnecter</a>
+        {% else %}
+        <a href="/accounts/register/">S'inscrire</a>
+        <a href="/accounts/login/">Se connecter</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

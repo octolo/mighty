@@ -4,10 +4,10 @@ from django.conf import settings
 class Config:
     class Field:
         username = 'email'
-        required = ('username',)
+        required = ()
 
-if hasattr(settings, 'UserConfig'):
-    for config,configs in getattr(settings, 'UserConfig').items():
+if hasattr(settings, 'USER'):
+    for config,configs in getattr(settings, 'USER').items():
         if hasattr(Config, config):
             for key,value in configs.items():
                 if hasattr(getattr(Config, config), key):

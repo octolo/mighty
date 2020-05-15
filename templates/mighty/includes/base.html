@@ -15,13 +15,26 @@
         {% block css %}{% endblock %}
         </style>
     </head>
-    <body class="dark">
+    <body id="daddy" class="dark">
         {% include "mighty/includes/navigator.html" %}
         <div class="m-a">{% block content %}{% endblock %}</div>
         {% block template %}{% endblock %}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
         {% block file_js %}{% endblock %}
         <script>
+        {% if user.is_authenticated %}
+        var navuser = document.getElementById('navuser');
+        document.addEventListener("click", function(evt){
+            var flyoutElement = document.getElementById('usernav'), targetElement = evt.target;
+            if (targetElement == flyoutElement && navuser.style.display != "block") {
+                navuser.style.display = "block";
+            }else {
+                navuser.style.display = "none";
+            }
+
+        });
+        {% endif %}
+
         {% block js %}{% endblock %}
         </script>
     </body>

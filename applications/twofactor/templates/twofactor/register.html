@@ -1,0 +1,25 @@
+{% extends "mighty/includes/base.html" %}
+{% load mighty %}
+
+{% block content %}
+<div class="login-wrap">
+    <h2>{{ register }}</h2>
+    <form class="form" method="post">{% csrf_token %}
+        {% for error in form.non_field_errors %}
+        {% include "mighty/message.html" with message=error level="alert" %}
+        {% endfor %}
+
+        {% for field in form %}
+        {% for error in field.errors %}
+        {% include "mighty/message.html" with message=error level="alert" %}
+        {% endfor %}
+        {% add_attr field "placeholder" field.label %}
+        <div class="input-break"></div>
+        {% endfor %}
+        <button>{{ submit }}</button>
+    </form>
+    <div class="links">
+        <a href="/accounts/login/"><p>{{ help }}</p></a>
+    </div>
+</div>
+{% endblock %}

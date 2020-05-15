@@ -8,26 +8,13 @@
 <div class="login-wrap">
     <h2>{{ mighty.login }}</h2>
     <form class="form" method="post">{% csrf_token %}
-        {% if form.non_field_errors %}
-        <div class="alerts">
-            <div class="message">
-                {% for error in form.non_field_errors %}
-                {{ error }}
-                {% endfor %}
-            </div>
-            <span class="close" onclick="this.parentElement.style.display='none';">&times;</span> 
-        </div>
-        {% endif %}
-        {% if form.search.errors %}
-        <div class="alerts">
-            <div class="message">
-                {% for error in form.search.errors %}
-                {{ error }}
-                {% endfor %}
-            </div>
-            <span class="close" onclick="this.parentElement.style.display='none';">&times;</span> 
-        </div>
-        {% endif %}
+        {% for error in form.non_field_errors %}
+        {% include "mighty/message.html" with message=error level="alert" %}
+        {% endfor %}
+
+        {% for error in form.search.errors %}
+        {% include "mighty/message.html" with message=error level="alert" %}
+        {% endfor %}
         <input type="text" placeholder="{{ form.search.label }}" name="{{ form.search.name }}" />
         <div class="send">
             {% if enable_basic %}
@@ -48,8 +35,7 @@
         </div>
     </form>
     <div class="links">
-        <a href="#"><p>Don't have an account? Register</p></a>
-        <a href="#"><p>Forget my account</p></a>
+        <a href="/accounts/register/"><p>{{ help }}</p></a>
     </div>
 </div>
 {% endblock %}

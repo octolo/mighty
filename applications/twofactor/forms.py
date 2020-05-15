@@ -21,7 +21,7 @@ class UserSearchForm(forms.Form):
     method = forms.CharField(widget=forms.HiddenInput)
     user_cache = None
     method_cache = None
-    success_url = None
+    #success_url = None
     error_messages = {
         'invalid_search': _.invalid_search,
         'invalid_method': _.invalid_method,
@@ -50,12 +50,12 @@ class UserSearchForm(forms.Form):
                         raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
             except UserModel.DoesNotExist:
                 raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search',)
-            try:
-                useruidandmethod = '%s:%s' % (method, str(self.user_cache.uid))
-                useruidandmethod = encrypt(settings.SECRET_KEY[:16], useruidandmethod).decode('utf-8')
-                self.success_url = reverse('mighty:twofactor-%s' % method, kwargs={'uid': quote_plus(useruidandmethod)})
-            except NoReverseMatch:
-                raise forms.ValidationError(self.error_messages['invalid_method'], code='invalid_method',)
+            #try:
+            #    useruidandmethod = '%s:%s' % (method, str(self.user_cache.uid))
+            #    useruidandmethod = encrypt(settings.SECRET_KEY[:16], useruidandmethod).decode('utf-8')
+            #    self.success_url = reverse('mighty:twofactor-%s' % method, kwargs={'uid': quote_plus(useruidandmethod)})
+            #except NoReverseMatch:
+            #    raise forms.ValidationError(self.error_messages['invalid_method'], code='invalid_method',)
         return self.cleaned_data
 
     def confirm_login_allowed(self, user):
@@ -82,3 +82,24 @@ class TwoFactorForm(AuthenticationForm):
             else:
                 self.confirm_login_allowed(self.user_cache)
         return self.cleaned_data
+
+from django.contrib.auth import get_user_model
+from mighty.applications.user.apps import UserConfig
+from mighty.applications.user.forms import UserCreationForm
+from phonenumber_field.widgets import PhoneNumberPrefixWidget
+from phonenumber_field.formfields import PhoneNumberField
+class SignUpForm(UserCreationForm):
+    def __init__(self, *args, **kwargs): 
+        super(SignUpForm, self).__init__(*args, **kwargs) 
+        self.fields.pop('password1')
+        self.fields.pop('password2')
+
+    class Meta(UserCreationForm.Meta):
+        model = get_user_model()
+        fields = (UserConfig.Field.username,) + UserConfig.Field.required
+
+    def save(self, commit=True):
+        import secrets, string
+        self.cleaned_data["password1"] = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(20))
+        user = super(SignUpForm, self).save(commit)
+        return user

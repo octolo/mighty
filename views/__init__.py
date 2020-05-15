@@ -122,3 +122,6 @@ class ExportView(ListView):
         response = StreamingHttpResponse(streaming_content=(self.iter_items(objects_list, Echo())), content_type='text/csv',)
         response['Content-Disposition'] = 'attachment;filename=%s.csv' % get_valid_filename(make_searchable(self.model._meta.verbose_name))
         return response
+
+class HomePageView(TemplateView):
+    template_name = 'home.html'

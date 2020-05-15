@@ -30,16 +30,22 @@ class UserAgentAdmin(admin.TabularInline):
     readonly_fields = ('useragent',)
     extra = 0
 
+
+from mighty import translates as _
+
+
 class UserAdmin(UserAdmin, BaseAdmin):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
     add_form = UserCreationForm
     add_fieldsets = ((None, {
         'classes': ('wide',),
         'fields': (UserConfig.Field.username,) + UserConfig.Field.required + ('password1', 'password2')}),)
+    readonly_fields = ('method',)
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.fieldsets[1][1]['fields'] += ('phone',)
+        self.add_field(_.informations, ('method',))
 
     def save_model(self, request, obj, form, change):
         if not change: obj.method = METHOD_BACKEND
