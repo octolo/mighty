@@ -4,7 +4,6 @@ from django.template import Context, Template
 
 from mighty.models import JSONField
 from mighty.models.base import Base
-from mighty.models.uid import Uid
 from mighty.applications.grapher import translates as _
 
 BAR = "BAR"
@@ -99,7 +98,7 @@ class Template(Base):
             except Exception:
                 pass
 
-class Graphic(Uid, Base):
+class Graphic(Base):
     title = models.CharField(_.title, max_length=255)
     is_responsive = models.BooleanField(_.is_responsive, default=False)
 
