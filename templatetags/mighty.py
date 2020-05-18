@@ -87,3 +87,8 @@ def define(val=None):
 @register.simple_tag(name='convert_date')
 def convert_date(date, origin, convert):
     return datetime.datetime.strptime(date, origin).strftime(convert)
+
+@register.filter(name='has_m2m')
+def has_m2m(m2mfield, m2m, field='id'):
+    m2m_id = int(getattr(m2m, field))
+    return m2mfield.filter(**{field: m2m_id}).count()

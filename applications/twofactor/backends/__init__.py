@@ -43,7 +43,7 @@ class TwoFactorBackend(ModelBackend):
         twofactor.txt = sms
         twofactor.backend = backend_path
         twofactor.save()
-        return True
+        return twofactor
 
     def check_sms(self, email):
         response = sms.response
@@ -62,7 +62,7 @@ class TwoFactorBackend(ModelBackend):
         twofactor.txt=txt
         twofactor.backend = backend_path
         twofactor.save()
-        return True
+        return twofactor
 
     def check_email(self, user, backend_path):
         response = email.response

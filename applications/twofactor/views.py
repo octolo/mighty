@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
+from django.contrib.auth.models import Group
+
 
 from mighty.views.viewsets import ModelViewSet
 from mighty.views import DetailView, FormView, BaseView
@@ -10,7 +12,7 @@ from mighty.applications.user.forms import UserCreationForm
 from mighty.models.applications.twofactor import Twofactor
 from mighty.applications.twofactor.forms import UserSearchForm, TwoFactorForm, SignUpForm
 from mighty.applications.twofactor.apps import TwofactorConfig
-from mighty.applications.twofactor import translates as _
+from mighty.applications.twofactor import translates as _, send_sms, send_email
 
 from django.urls import reverse, NoReverseMatch
 from urllib.parse import quote_plus, unquote_plus, urlencode
@@ -50,8 +52,11 @@ class Login(FormView):
         except NoReverseMatch:
             raise forms.add_error(None,'test error reverse')
 
+    def set_session_with_uid(self, uid):
+        self.request.session['login_uid'] = uid
+
     def form_valid(self, form):
-        self.request.session['login_uid'] = str(form.user_cache.uid)
+        self.set_session_with_uid(str(form.user_cache.uid))
         self.set_url_by_method(form.method_cache)
         if self.request.GET: self.success_url += "?%s" % urlencode(self.request.GET, quote_via=quote_plus)
         return super().form_valid(form)
@@ -61,11 +66,17 @@ class Register(Login):
     over_add_to_context = { 'register': _.register, 'submit': _.submit_register, "help": _.help_register }
 
     def form_valid(self, form):
-        from mighty.applications.twofactor import send_sms, send_email, translates as _
         user = form.save()
+        if 'groups_onsave' in settings.TWOFACTOR:
+            print('okkk')
+            for group in settings.TWOFACTOR['groups_onsave']:
+                print(group)
+                group = Group.objects.get(name=group) 
+                user.groups.add(group)
+        self.set_session_with_uid(str(user.uid))
         if user.phone:
             status = send_sms(user)
-            self.set_url_by_method(user, 'sms')
+            self.set_url_by_method('sms')
             self.success_url += "?phone=%s" % user.phone
         else:
             status = send_email(user)
