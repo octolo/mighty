@@ -9,12 +9,19 @@ from mighty.applications.twofactor.backends import TwoFactorBackend
 conf = settings.TWOFACTOR
 
 class TwoFactorBackend(TwoFactorBackend):
-   def send_sms(self, user, backend_path):
+    def send_sms(self, user, backend_path):
         twofactor = super().senf_sms(user, backend_path)
+        send_mail(
+            '%s - Auth Code' % conf.site,
+            twofactor.txt,
+            conf.sender_mail,
+            [user.email],
+            fail_silently=False
+        )
+        return twofactor
 
     def send_email(self, user, backend_path):
         BOARDDATA_MAIL_FROM = "balos@boarddata.fr"
-
         send_mail(
             '%s - Auth Code' % conf.site,
             twofactor.txt,
@@ -23,3 +30,4 @@ class TwoFactorBackend(TwoFactorBackend):
             fail_silently=False
         )
         twofactor = super().send_email(user, backend_path)
+        return twofactor
