@@ -14,20 +14,19 @@ class TwoFactorBackend(TwoFactorBackend):
         send_mail(
             '%s - Auth Code' % conf['site'],
             twofactor.txt,
-            conf['sender_mail'],
+            conf['sender_email'],
             [user.email],
             fail_silently=False
         )
         return twofactor
 
     def send_email(self, user, backend_path):
-        BOARDDATA_MAIL_FROM = "balos@boarddata.fr"
+        twofactor = super().send_email(user, backend_path)
         send_mail(
             '%s - Auth Code' % conf['site'],
             twofactor.txt,
-            conf['sender_mail'],
+            conf['sender_email'],
             [user.email],
             fail_silently=False
         )
-        twofactor = super().send_email(user, backend_path)
         return twofactor
