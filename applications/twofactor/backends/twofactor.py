@@ -10,11 +10,11 @@ conf = settings.TWOFACTOR
 
 class TwoFactorBackend(TwoFactorBackend):
     def send_sms(self, user, backend_path):
-        twofactor = super().senf_sms(user, backend_path)
+        twofactor = super().send_sms(user, backend_path)
         send_mail(
-            '%s - Auth Code' % conf.site,
+            '%s - Auth Code' % conf['site'],
             twofactor.txt,
-            conf.sender_mail,
+            conf['sender_mail'],
             [user.email],
             fail_silently=False
         )
@@ -23,9 +23,9 @@ class TwoFactorBackend(TwoFactorBackend):
     def send_email(self, user, backend_path):
         BOARDDATA_MAIL_FROM = "balos@boarddata.fr"
         send_mail(
-            '%s - Auth Code' % conf.site,
+            '%s - Auth Code' % conf['site'],
             twofactor.txt,
-            conf.sender_mail,
+            conf['sender_mail'],
             [user.email],
             fail_silently=False
         )
