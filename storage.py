@@ -1,8 +1,9 @@
 from django.utils._os import safe_join
 from django.utils.module_loading import import_string
-from mighty.functions import setting, logger
+from mighty.functions import setting, get_logger
 import os
 
+logger = get_logger()
 storage_default = "django.core.files.storage.FileSystemStorage"
 storage_choice = setting("STORAGE", storage_default)
 Storage = import_string(storage_choice)
@@ -17,7 +18,7 @@ Usefull for cost service.
 class CloudStorage(Storage):
     def __init__(self, **settings):
         todel = [name for name, value in settings.items() if not hasattr(self, name)]
-        logger("mighy", "debug", "CloudStorage: delete settings: %s" % todel)
+        logger.info("CloudStorage: delete settings: %s" % todel)
         for field in todel: del settings[field]
         super().__init__(**settings)
 

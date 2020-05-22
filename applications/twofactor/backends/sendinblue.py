@@ -1,5 +1,4 @@
 from django.conf import settings
-from mighty.functions import logger
 from mighty.applications.twofactor.backends import TwoFactorBackend
 from mighty.applications.twofactor import translates as _
 from mighty.models.applications.twofactor import Twofactor
@@ -24,7 +23,6 @@ class SendinblueBackend(TwoFactorBackend):
             'api-key': settings.SENDINBLUE['api-key']
         }
         response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
-        logger('authenticate', 'info', response.text) 
         code.txt=sms
         code.response=response.text
         code.save()
@@ -41,7 +39,6 @@ class SendinblueBackend(TwoFactorBackend):
                 'api-key': settings.SENDINBLUE['api-key']
             }
             response = requests.request("GET", url, headers=headers, params=querystring)
-            logger('authenticate', 'info', response.text)
             response = json.loads(response.text)
             response = response['events'].pop()
             if response['event'] in [ 'sent', ]:
@@ -79,7 +76,6 @@ class SendinblueBackend(TwoFactorBackend):
             'api-key': settings.SENDINBLUE['api-key']
         }
         response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
-        logger('authenticate', 'info', response.text)
         code.subject=subject
         code.html=html
         code.txt=txt
@@ -99,7 +95,6 @@ class SendinblueBackend(TwoFactorBackend):
                 'api-key': settings.SENDINBLUE['api-key']
             }
             response = requests.request("GET", url, headers=headers, params=querystring)
-            logger('authenticate', 'info', response.text)
             response = json.loads(response.text)
             if 'events' in response:
                 response = response['events'].pop()

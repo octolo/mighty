@@ -4,6 +4,13 @@ class Unit:
     dollar = "$"
     pound = "£"
 
+#stdtypes = {
+#    'numeric': [int, float, complex],
+#    'sequential': [list, tuple, range],
+#    'text': [str,]
+#    'mapping': [dict,]
+#}
+
 units = {
     "currency": ["¤",  "&#164;",  "&curren;", ],
     "dollar":   ["$",  "&#36;",   "&dollar;", ],

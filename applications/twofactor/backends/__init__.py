@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
-from mighty.functions import logger
+from mighty.functions import get_logger
 from mighty.models.applications.twofactor import Twofactor
 from mighty.applications.twofactor import translates as _
 from mighty.applications.twofactor.models import (
@@ -11,7 +11,9 @@ from mighty.applications.twofactor.models import (
 
 import datetime
 
+logger = get_logger()
 UserModel = get_user_model()
+
 class TwoFactorBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None or password is None:
@@ -39,7 +41,7 @@ class TwoFactorBackend(ModelBackend):
         earlier = now - datetime.timedelta(minutes=1)
         twofactor, created = Twofactor.objects.get_or_create(user=user, is_consumed=False, mode=MODE_SMS, backend=backend_path, date_create__range=(earlier,now))
         sms = _.tpl_txt %(settings.TWOFACTOR['site'], twofactor.code)
-        logger("twofactor", "info", "send sms: %s" % twofactor.code, user)
+        logger.info("send sms: %s" % twofactor.code, user, app="twofactor")
         twofactor.txt = sms
         twofactor.backend = backend_path
         twofactor.save()
@@ -56,7 +58,7 @@ class TwoFactorBackend(ModelBackend):
         subject = _.tpl_subject % settings.TWOFACTOR['site']
         html = _.tpl_html % (settings.TWOFACTOR['site'], str(twofactor.code))
         txt = _.tpl_txt %(settings.TWOFACTOR['site'], str(twofactor.code))
-        logger("twofactor", "info", "send email: %s" % str(twofactor.code), user)
+        logger.info("send email: %s" % str(twofactor.code), user, app="twofactor")
         twofactor.subject=subject
         twofactor.html=html
         twofactor.txt=txt

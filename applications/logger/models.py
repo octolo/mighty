@@ -1,14 +1,16 @@
 from django.db import models
-from mighty.models.uid import Uid
+from mighty.applications.logger.apps import LoggerConfig as conf
+from django.contrib.auth import get_user_model
+UserModel = get_user_model()
 
-EMERG = 0
-ALERT = 1
-CRITICAL = 2
-ERROR = 3
-WARNING = 4
-NOTICE = 5
-INFO = 6
-DEBUG = 7
+EMERG = conf.Code.emerg
+ALERT = conf.Code.alert
+CRITICAL = conf.Code.critical
+ERROR = conf.Code.error
+WARNING = conf.Code.warning
+NOTICE = conf.Code.notice
+INFO = conf.Code.info
+DEBUG = conf.Code.debug
 LEVEL_CHOICES = (
     (EMERG, "EMERGENCY"),
     (ALERT, "ALERT"),
@@ -19,9 +21,9 @@ LEVEL_CHOICES = (
     (INFO, "INFO"),
     (DEBUG, "DEBUG"),
 )
-class Log(Uid):
+class Log(models.Model):
     date = models.DateTimeField(auto_now_add=True, editable=False)
     code = models.SmallPositiveIntegerField(choices=LEVEL_CHOICES, default=DEBUG, editable=False)
     message = models.TextField(editable=False)
-    user = models.PositiveIntegerField(blank=True, editable=False, null=True)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=True, editable=False, null=True)
 

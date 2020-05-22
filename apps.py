@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from django.conf import settings
 from mighty import exclude
-import os
+import os, logging
 
 class Config:
     site_header = "Back office"
@@ -34,30 +34,30 @@ class Config:
 
     class Log:
         logger = "logger_{}"
-        log_type = "console"
+        log_type = "default"
         log_level = 7
-        format_log = "{}:{}:{}.{} - {} | {}"
+        format_log = "{} - {} | {}"
         format_user = "{}.{} - {}"
         format_code = "{}_code"
         format_color = "{}_color"
         file_open_method = "a"
         name_file = "{}/{}_{}_{}_{}.log"
         default_color = "\033[0m"
-        emerg_code = 0
+        emerg_code = 60
         emerg_color = "\033[1;93;5;101m"
-        alert_code = 1
+        alert_code = 55
         alert_color = "\033[1;30;5;105m"
-        crit_code = 2
+        crit_code = logging.CRITICAL #50
         crit_color = "\033[1;97;5;101m"
-        error_code = 3
+        error_code = logging.ERROR #40
         error_color = "\033[1;91;5;107m"
-        warning_code = 4
+        warning_code = logging.WARNING #30
         warning_color = "\033[0;91m"
-        notice_code = 5
+        notice_code = 25
         notice_color = "\033[0;97m"
-        info_code = 6
+        info_code = logging.INFO #20
         info_color = "\033[0;94m"
-        debug_code = 7
+        debug_code = logging.DEBUG #10
         debug_color = "\033[0;30;100m"
 
 """

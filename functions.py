@@ -2,15 +2,22 @@ from django.apps import apps
 from django.db.models import F, Func
 from django.conf import settings
 from django.core import serializers
+from django.utils.module_loading import import_string
 from mighty.apps import MightyConfig as conf
 
 from Crypto import Cipher, Random
 from pathlib import Path
 import base64, datetime, string, random, unicodedata, re, json, sys
 
+if conf.Log.log_type == 'default':
+    import logging
+    logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+if conf.Log.log_type == 'syslog':
+    import syslog
+
 BS = conf.Crypto.BS
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
-unpad = lambda s : s[:-ord(s[len(s)-1:])]
+pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+unpad = lambda s: s[:-ord(s[len(s)-1:])]
 numeric_const_pattern = "[-+]? (?: (?: \d* [\.,] \d+ ) | (?: \d+ [\.,]? ) )(?: [Ee] [+-]? \d+ ) ?"
 
 """
@@ -321,58 +328,48 @@ Make a file with the sql result in json
 def sql_to_jsonfile(sql, fil, tmp="/tmp/"):
     to_jsonfile(sql, fil, tmp)
 
-"""
-Log what you want in your configured system.
-You can configure the MIGHTY config array Log:
--- Log
-    - log_level
-    - log_type (systlog, file, console)
-[app] Your app name where the log from
-[lvl] Level log
-0 	Emergency 	  emerg (panic)	 Système inutilisable.
-1 	Alert 	      alert          Une intervention immédiate est nécessaire.
-2 	Critical 	  crit 	         Erreur critique pour le système.
-3 	Error 	      err (error) 	 Erreur de fonctionnement.
-4 	Warning 	  warn (warning) Avertissement (une erreur peut intervenir si aucune action n"est prise).
-5 	Notice 	      notice  	     Evénement normal méritant d"être signalé.
-6 	Informational info 	         Pour information.
-7 	Debugging 	  debug 	     Message de mise au point.
-[msg] Message about the log
-[user] If is not none add the user in the log
-"""
-def logger(app, lvl, msg, user=None, *args, **kwargs):
-    loglvlauth = kwargs["loglvlauth"] if "loglvlauth" in kwargs else conf.Log.log_level
-    logtype = kwargs["logtype"] if "logtype" in kwargs else conf.Log.log_type
-    loglvl = getattr(conf.Log, conf.Log.format_code.format(lvl))
-    if loglvl <= loglvlauth:
-        if user is not None: msg = conf.Log.format_user.format(user.username, user.id, msg)
-        if app is not None: msg = "[%s] %s" % (app, msg)
-        now = datetime.datetime.now()
-        msg = conf.Log.format_log.format(now.hour, now.minute, now.second, now.microsecond, lvl, msg)
-        getattr(sys.modules[__name__], "logger_%s" % logtype)(lvl, loglvl, msg, user)
+def get_logger():
+    return import_string(settings.LOGGER_BACKEND)()
 
-# Logger in syslog
-def logger_syslog(lvl, loglvl, msg, user):
-    syslog.openlog(logoption=syslog.LOG_PID)
-    syslog.syslog(loglvl, msg)
-    syslog.closelog()
 
-# Logger in file
-def logger_file(lvl, loglvl, msg, user):
-    now = datetime.datetime.now()
-    log = open(logfile, conf.Log.file_open_method)
-    log.write(msg)
-    log.close()
-
-# Logger in console
-def logger_console(lvl, loglvl, msg, user):
-    color = getattr(conf.Log, conf.Log.format_color.format(lvl))
-    print("%s%s%s" % (color, msg, conf.Log.default_color))
-
-# Logger in database
-def logger_database(lvl, loglvl, msg, user):
-    dblog = Log()
-    dblog.loglvl = loglvl
-    dblog.message = msg
-    if user: dblog.user = user.id
-    dblog.save()
+#def logger(app, lvl, msg, user=None, *args, **kwargs):
+#    loglvlauth = kwargs["loglvlauth"] if "loglvlauth" in kwargs else conf.Log.log_level
+#    logtype = kwargs["logtype"] if "logtype" in kwargs else conf.Log.log_type
+#    loglvl = getattr(conf.Log, conf.Log.format_code.format(lvl))
+#    if loglvl >= loglvlauth:
+#        if user is not None: msg = conf.Log.format_user.format(user.username, user.id, msg)
+#        if app is not None: msg = "[%s] %s" % (app, msg)
+#        msg = conf.Log.format_log.format(f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S.%f}", lvl, msg)
+#        getattr(sys.modules[__name__], "logger_%s" % logtype)(lvl, loglvl, msg, user, *args, **kwargs)
+#
+## Logger in syslog
+#def logger_syslog(lvl, loglvl, msg, user, *args, **kwargs):
+#    syslog.openlog(logoption=syslog.LOG_PID)
+#    syslog.syslog(loglvl, msg)
+#    syslog.closelog()
+#
+## Logger in file
+#def logger_file(lvl, loglvl, msg, user, *args, **kwargs):
+#    logfile = '%s/%s' % (settings.LOG_DIRECTORY, f"{datetime.datetime.now():%Y%m%d}")
+#    if 'logfile' in kwargs: logfile = kwargs['logfile']
+#    log = open(logfile, conf.Log.file_open_method)
+#    log.write(msg)
+#    log.close()
+#
+## Logger in console
+#def logger_console(lvl, loglvl, msg, user, *args, **kwargs):
+#    color = getattr(conf.Log, conf.Log.format_color.format(lvl))
+#    print("%s%s%s" % (color, msg, conf.Log.default_color))
+#
+## Logger in database
+#def logger_database(lvl, loglvl, msg, user, *args, **kwargs):
+#    dblog = Log()
+#    dblog.loglvl = loglvl
+#    dblog.message = msg
+#    if user: dblog.user = user.id
+#    dblog.save()
+#
+## Logger django by default
+#def logger_default(lvl, loglvl, msg, user, *args, **kwargs):
+#    logger = logging.getLogger(__name__)
+#    logger.log(getattr(logging, lvl.upper()), msg)

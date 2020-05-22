@@ -1,20 +1,12 @@
 from django.urls import path
 from mighty import views
-from mighty.functions import logger
+from mighty.functions import get_logger
 from copy import deepcopy
 
-view_attr = {
-    'add_to_context': {},
-    'is_ajax': False,
-}
+logger = get_logger()
 
-model_attr = (
-    'fields',
-    'slug',
-    'slug_field',
-    'slug_url_kwarg',
-    'filter_model',
-)
+view_attr = {'add_to_context': {}, 'is_ajax': False}
+model_attr = ( 'fields', 'slug', 'slug_field', 'slug_url_kwarg', 'filter_model')
 
 class ViewSet(object):
     views = {}
@@ -35,7 +27,7 @@ class ViewSet(object):
         self.views[name] = {'view': view, 'url': url}
 
     def config_view(self, View, view):
-        logger("twofactor", "debug", "-- ViewType: %s" % view)
+        logger.info("-- ViewType: %s" % view, app=self.__class__.__name__)
         for attr, default in view_attr.items(): setattr(View, attr, self.Vgetattr(View, view, attr, default))
         if not self.Vgetattr(View, view, 'no_permission', False): View.permission_required = self.Vgetattr(View, view, "permission_required", ())
         return View
@@ -49,7 +41,6 @@ class ViewSet(object):
     def url_name(self, view): return '%s-%s' % (str(self.model.__name__.lower()), view)
     @property
     def urls(self):
-        logger("mighty", "debug", "- ViewSet: %s" % self.__class__.__name__)
         return [path(self.url(view, config), self.view(view).as_view(), name=self.url_name(view)) for view,config in self.views.items()]
 
 class ModelViewSet(ViewSet):

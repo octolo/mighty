@@ -1,7 +1,9 @@
 from django.db.models import Q
-from mighty.functions import make_searchable, test, logger
+from mighty.functions import make_searchable, test, get_logger
 from functools import reduce
 import operator
+
+logger = get_logger()
 
 class Filter:
     class Separators:
@@ -57,27 +59,27 @@ class Filter:
 
     def get_distinct(self):
         param = self.args.get(self.Arguments.distinct) if self.request else None
-        logger("mighty", "debug", "distinct: %s" % param, self.request.user if self.request else None)
+        logger.info("distinct: %s" % param, self.request.user if self.request else None, app=self.__class__.__name__)
         return True if param else False
 
     def get_qdistinct(self):
         param = self.args.get(self.Arguments.qdistinct) if self.request else None
-        logger("mighty", "debug", "qdistinct: %s" % param, self.request.user if self.request else None)
+        logger.info("qdistinct: %s" % param, self.request.user if self.request else None, app=self.__class__.__name__)
         return param.split(self.Separators._category) if test(param) else self.qdistinct
 
     def get_fdistinct(self):
         param = self.args.get(self.Arguments.fdistinct) if self.request else None
-        logger("mighty", "debug", "fdistinct: %s" % param, self.request.user if self.request else None)
+        logger.info("fdistinct: %s" % param, self.request.user if self.request else None, app=self.__class__.__name__)
         return param.split(self.Separators._category) if test(param) else self.fdistinct
 
     def get_limits(self):
         param = self.args.get(self.Arguments.limit) if self.request else None
-        logger("mighty", "debug", "limit: %s" % param, self.request.user if self.request else None)
+        logger.info("limit: %s" % param, self.request.user if self.request else None, app=self.__class__.__name__)
         return param.split(self.Separators._pos) if test(param) else self.limit
 
     def get_order(self):
         param = self.args.get(self.Arguments.order) if self.request else None
-        logger("mighty", "debug", "order: %s" % param, self.request.user if self.request else None)
+        logger.info("order: %s" % param, self.request.user if self.request else None, app=self.__class__.__name__)
         return param.split(self.Separators._pos) if test(param) else self.order
 
     def dispatch(self, data):
@@ -91,7 +93,7 @@ class Filter:
 
     def add_param(self, param, field, *args, **kwargs):
         mask = kwargs["mask"] if "mask" in kwargs else "icontains"
-        logger("mighty", "debug", "param: %s, field: %s, mask: %s" % (param, field, mask), self.request.user if self.request else None)
+        logger.info("param: %s, field: %s, mask: %s" % (param, field, mask), self.request.user if self.request else None, app=self.__class__.__name__)
         if param not in self.nparams: self.nparams[param] = {"mask": mask, "fields": []}
         if field not in self.nparams[param]["fields"]: self.nparams[param]["fields"].append(field)
 
@@ -140,11 +142,11 @@ class Filter:
                 qfields = [fields_separator]
                 for field in fields: qfields.append(self.field(field[0], field[1]))
                 parser[category]["fields"].append(qfields)
-            logger("mighty", "debug", "%s - array: %s" % (param, parser), self.request.user if self.request else None)
+            logger.info("%s - array: %s" % (param, parser), self.request.user if self.request else None, app=self.__class__.__name__)
             sql = []
             for category, options in parser.items():
                 sql.append(reduce(options["operator"], [reduce(fields.pop(0), (field for field in fields)) for fields in options["fields"]]))
-            logger("mighty", "debug", "%s - sql: %s" % (param, sql), self.request.user if self.request else None)
+            logger.info("%s - sql: %s" % (param, sql), self.request.user if self.request else None, app=self.__class__.__name__)
             return [parser, sql]
         return []
 
@@ -165,7 +167,6 @@ class Filter:
         queryset = self.get_queryset()
         if self.nparams:
             params = self.params()
-            logger("mighty", "debug", params)
             queryset = queryset.filter(params)
         if len(self.excludes):
             for sql in self.excludes[1]:
