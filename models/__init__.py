@@ -10,12 +10,12 @@ class JSONField(JSONField):
 
 if 'tinymce' in settings.INSTALLED_APPS:
     from tinymce.models import HTMLField
-    class HTMLField(HTMLField):
+    class RichTextField(HTMLField):
         pass
 
 if 'ckeditor' in settings.INSTALLED_APPS:
     from ckeditor.fields import RichTextField
-    class HTMLField(RichTextField):
+    class RichTextField(RichTextField):
         pass
 
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:

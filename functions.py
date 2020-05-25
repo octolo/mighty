@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
 from mighty.apps import MightyConfig as conf
+from mighty import stdtypes
 
 from Crypto import Cipher, Random
 from pathlib import Path
@@ -328,9 +329,29 @@ Make a file with the sql result in json
 def sql_to_jsonfile(sql, fil, tmp="/tmp/"):
     to_jsonfile(sql, fil, tmp)
 
+"""
+Make a file with the sql result in json
+[clas] Config class to override
+[conf] dict() contain the config to override
+"""
+def over_config(clas, conf):
+    settable = stdtypes['mapping']+stdtypes['numeric']+stdtypes['text']+stdtypes['sequential']
+    for key, val in conf.items():
+        if hasattr(clas, key) and type(getattr(clas, key)) in settable:
+            if type(getattr(clas, key)) in stdtypes['mapping']:
+                getattr(clas, key).update(val)
+            else:
+                setattr(clas, key, val)
+        elif type(getattr(clas, key)) == type:
+            over_config(getattr(clas, key), val)
+        else:
+            setattr(clas, key, val)
+
+"""
+Return the logger set
+"""
 def get_logger():
     return import_string(settings.LOGGER_BACKEND)()
-
 
 #def logger(app, lvl, msg, user=None, *args, **kwargs):
 #    loglvlauth = kwargs["loglvlauth"] if "loglvlauth" in kwargs else conf.Log.log_level

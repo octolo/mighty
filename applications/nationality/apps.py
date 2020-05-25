@@ -1,17 +1,12 @@
-from django.conf import settings
 from django.apps import AppConfig
+from django.conf import settings
+from mighty.functions import over_config
 import os.path
 
 class Config:
     directory = os.path.dirname(os.path.realpath(__file__))
 
-if hasattr(settings, 'NationalityConfig'):
-    for config,configs in getattr(settings, 'NationalityConfig').items():
-        if hasattr(Config, config):
-            for key,value in configs.items():
-                if hasattr(getattr(Config, config), key):
-                    setattr(getattr(Config, config), key, value)
-
-
+if hasattr(settings, 'NATIONALITY'):
+    over_config(Config, settings.NATIONALITY)
 class NationalityConfig(AppConfig, Config):
     name = 'mighty.applications.nationality'
