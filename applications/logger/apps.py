@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 from django.conf import settings
-from mighty.functions import over_config
+from mighty import over_config
 import logging
 
 class Config:
@@ -36,7 +36,6 @@ class Config:
         info = 20
         debug = 10
 
-if hasattr(settings, 'LOGGER'):
-    over_config(Config, settings.LOGGER)
+if hasattr(settings, 'LOGGER'): over_config(Config, settings.LOGGER)
 class LoggerConfig(AppConfig, Config):
     name = 'mighty.applications.logger'

@@ -3,7 +3,6 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
 
-
 from mighty.views.viewsets import ModelViewSet
 from mighty.views import DetailView, FormView, BaseView
 from mighty.functions import decrypt
@@ -18,13 +17,11 @@ from django.urls import reverse, NoReverseMatch
 from urllib.parse import quote_plus, unquote_plus, urlencode
 from mighty.functions import encrypt
 
-class Login(FormView):
-    redirect_authenticated_user=True
+class LoginStepOne(FormView):
+    redirect_authenticated_user = True
     over_no_permission = True
-    app_label = 'mighty'
-    model_name = 'twofactor'
     form_class = UserSearchForm
-    over_add_to_context = { "help": _.help_login }
+    template_name = 'twofactor/stepone.html'
 
     def get(self, request):
         if request.user.is_authenticated:
@@ -35,6 +32,7 @@ class Login(FormView):
         context = super().get_context_data(**kwargs)
         context.update({
             'title': _.login,
+            "help": _.help_login,
             'enable_email': TwofactorConfig.method.email,
             'enable_sms': TwofactorConfig.method.sms,
             'enable_basic': TwofactorConfig.method.basic,
@@ -46,88 +44,66 @@ class Login(FormView):
         })
         return context
 
-    def set_url_by_method(self, method):
-        try:
-            self.success_url = reverse('mighty:twofactor-%s' % method)
-        except NoReverseMatch:
-            raise forms.add_error(None,'test error reverse')
-
     def set_session_with_uid(self, uid):
         self.request.session['login_uid'] = uid
 
     def form_valid(self, form):
         self.set_session_with_uid(str(form.user_cache.uid))
-        self.set_url_by_method(form.method_cache)
-        if self.request.GET: self.success_url += "?%s" % urlencode(self.request.GET, quote_via=quote_plus)
+        self.success_url = reverse('mighty:twofactor-second')
         return super().form_valid(form)
 
-class Register(Login):
+class Register(LoginStepOne):
     form_class = SignUpForm
     over_add_to_context = { 'register': _.register, 'submit': _.submit_register, "help": _.help_register }
 
     def form_valid(self, form):
         user = form.save()
         if 'groups_onsave' in settings.TWOFACTOR:
-            print('okkk')
             for group in settings.TWOFACTOR['groups_onsave']:
-                print(group)
                 group = Group.objects.get(name=group) 
                 user.groups.add(group)
         self.set_session_with_uid(str(user.uid))
         if user.phone:
             status = send_sms(user)
             self.set_url_by_method('sms')
-            self.success_url += "?phone=%s" % user.phone
+            self.success_url += "?sms=%s" % user.phone
         else:
             status = send_email(user)
             self.set_url_by_method(user, 'email')
             self.success_url += "?email=%s" % user.email
         return super(FormView, self).form_valid(form)
 
-class LoginView(BaseView, LoginView):
-    redirect_authenticated_user=True
+class LoginStepTwo(BaseView, LoginView):
+    redirect_authenticated_user = True
     over_no_permission = True
-    app_label = 'mighty'
-    model_name = 'twofactor'
     form_class = TwoFactorForm
-    over_add_to_context = {"help": _.help_login,}
+    template_name = 'twofactor/steptwo.html'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({'request' : self.request, 'uid': self.request.session['login_uid']})
         return kwargs
 
+    def form_valid(self, form):
+        del self.request.session['login_uid']
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'message_email': _.message_email % self.request.GET.get('email') if self.request.GET.get('email') else None,
-            'message_phone': _.message_phone % self.request.GET.get('phone') if self.request.GET.get('phone') else None
-        })
+        context.update({'submit': _.submit_code, 'howto': _.howto_basic_code, 'help': _.help_basic })
+        if self.request.GET.get('email'):
+            context.update({
+                'howto': _.howto_email_code,
+                'message': _.message_email % self.request.GET.get('email'),
+                'help': _.help_email,
+            })
+        elif self.request.GET.get('sms'):
+            context.update({
+                'howto': _.howto_sms_code,
+                'message': _.message_sms % self.request.GET.get('sms'),
+                'help': _.help_sms,
+            })
         return context
-
-class LoginEmail(LoginView):
-    over_add_to_context = {'howto': _.howto_email_code, 'submit': _.submit_code, "help": _.help_email}
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'method' : 'email'})
-        return kwargs
-
-class LoginSms(LoginView):
-    over_add_to_context = {'howto': _.howto_sms_code, 'submit': _.submit_code, "help": _.help_sms}
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'method' : 'sms'})
-        return kwargs
-
-class LoginBasic(LoginView):
-    over_add_to_context = {'howto': _.howto_basic_code, 'submit': _.submit_code, "help": _.help_basic}
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'method' : 'basic'})
-        return kwargs
 
 class Logout(BaseView, LogoutView):
     over_no_permission = True
@@ -142,8 +118,6 @@ class TwofactorViewSet(ModelViewSet):
     def __init__(self):
         super().__init__()
         self.add_view('register', Register, 'register/')
-        self.add_view('login', Login, 'login/')
-        self.add_view('email', LoginEmail, 'login/email/')
-        self.add_view('sms', LoginSms, 'login/sms/')
-        self.add_view('basic', LoginBasic, 'login/basic/')
+        self.add_view('login', LoginStepOne, 'login/')
+        self.add_view('second', LoginStepTwo, 'login/second/')
         self.add_view('logout', Logout, 'logout/')

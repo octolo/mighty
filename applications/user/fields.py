@@ -1,7 +1,7 @@
 from mighty import fields
 from mighty.functions import setting
 
-searchs = ('username', 'email', 'last_name', 'first_name')
+searchs = ('username', 'email', 'last_name', 'first_name', 'search')
 params = ('uid', 'gender')
 serializer = fields.detail_url + fields.image_url + ('username', 'email', 'last_name', 'first_name', 'last_login', 'get_gender_display')
 

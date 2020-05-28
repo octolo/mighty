@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from mighty.functions import setting
 from mighty.applications.user.models import User, Email, Phone, InternetProtocol, UserAgent
 
@@ -21,6 +22,11 @@ class InternetProtocol(InternetProtocol):
 
 class UserAgent(UserAgent):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_useragent')
+
+if 'mighty.applications.address' in settings.INSTALLED_APPS:
+    from mighty.applications.address.models import Address
+    class UserAddress(Address):
+        user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_address')
 
 class ProxyUser(User):
     class Meta:

@@ -4,7 +4,7 @@
 <div class="login-wrap">
     <h2>{{ mighty.login }}</h2>
     <form class="form" method="post">{% csrf_token %}
-        {% include "mighty/message.html" with message=message_phone level="info" %}
+        {% include "mighty/message.html" with message=message level="info" %}
 
         {% for error in form.non_field_errors %}
         {% include "mighty/message.html" with message=error level="alert" %}

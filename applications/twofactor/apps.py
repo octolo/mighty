@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 from django.conf import settings
-from mighty.functions import over_config
+from mighty import over_config
 
 class Config:
     methods = ['email', 'sms', 'basic']
@@ -17,7 +17,6 @@ class Config:
         sms = True
         basic = True
 
-if hasattr(settings, 'TWOFACTOR'):
-    over_config(Config, settings.TWOFACTOR)
+if hasattr(settings, 'TWOFACTOR'): over_config(Config, settings.TWOFACTOR)
 class TwofactorConfig(AppConfig, Config):
     name = 'mighty.applications.twofactor'

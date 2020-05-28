@@ -15,13 +15,11 @@ UserModel = get_user_model()
 methods = [method for method in TwofactorConfig.methods if hasattr(TwofactorConfig.method, method) and getattr(TwofactorConfig.method, method)]
 methods_ws = method = [method for method in TwofactorConfig.methods_ws if hasattr(TwofactorConfig.method, method) and getattr(TwofactorConfig.method, method)]
 
-
 class UserSearchForm(forms.Form):
     search = forms.CharField(label=_.search, required=True)
     method = forms.CharField(widget=forms.HiddenInput)
     user_cache = None
     method_cache = None
-    #success_url = None
     error_messages = {
         'invalid_search': _.invalid_search,
         'invalid_method': _.invalid_method,
@@ -50,29 +48,22 @@ class UserSearchForm(forms.Form):
                         raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
             except UserModel.DoesNotExist:
                 raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search',)
-            #try:
-            #    useruidandmethod = '%s:%s' % (method, str(self.user_cache.uid))
-            #    useruidandmethod = encrypt(settings.SECRET_KEY[:16], useruidandmethod).decode('utf-8')
-            #    self.success_url = reverse('mighty:twofactor-%s' % method, kwargs={'uid': quote_plus(useruidandmethod)})
-            #except NoReverseMatch:
-            #    raise forms.ValidationError(self.error_messages['invalid_method'], code='invalid_method',)
         return self.cleaned_data
 
     def confirm_login_allowed(self, user):
-            if not user.is_active:
-                raise forms.ValidationError(self.error_messages['inactive'], code='inactive', )
+        if not user.is_active:
+            raise forms.ValidationError(self.error_messages['inactive'], code='inactive', )
             
 class TwoFactorForm(AuthenticationForm):
-    def __init__(self, uid, method, *args, **kwargs): 
+    def __init__(self, uid, *args, **kwargs): 
         super().__init__(*args, **kwargs) 
         self.uid = uid
-        self.method = method
         self.fields.pop('username')
 
     def clean(self):
         password = self.cleaned_data.get('password')
         if password:
-            self.user_cache = authenticate(self.request, username=self.uid, password=password, **{'method': self.method})
+            self.user_cache = authenticate(self.request, username=self.uid, password=password)
             if self.user_cache is None:
                 raise forms.ValidationError(
                     self.error_messages['invalid_login'],

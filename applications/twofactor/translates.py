@@ -45,7 +45,7 @@ method_sms = _("SMS")
 method_basic = _("password")
 
 message_email = _("An authenticate code has been sent to the email address %s")
-message_phone = _("An authenticate code has been sent to the phone number %s")
+message_sms = _("An authenticate code has been sent to the phone number %s")
 
 register = _('registration')
 login = _("sign in")

@@ -19,7 +19,7 @@ if 'ckeditor' in settings.INSTALLED_APPS:
         pass
 
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-    from mighty.models.application import logger
+    from mighty.models.applications import logger
 
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.models.applications import user

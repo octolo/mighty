@@ -1,0 +1,1 @@
+default_app_config = 'mighty.applications.nationality.apps.NationalityConfig'

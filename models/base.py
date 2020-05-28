@@ -132,7 +132,7 @@ class Base(models.Model):
         self.save()
 
     def get_search(self):
-        return make_searchable(str(' '.join([getattr(self, field) for field in self.search_fields])))
+        return make_searchable(str(' '.join([str(getattr(self, field)) for field in self.search_fields])))
 
     def set_search(self):
         self.search = self.get_search()

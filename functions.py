@@ -10,12 +10,6 @@ from Crypto import Cipher, Random
 from pathlib import Path
 import base64, datetime, string, random, unicodedata, re, json, sys
 
-if conf.Log.log_type == 'default':
-    import logging
-    logging.basicConfig(format='%(message)s', level=logging.DEBUG)
-if conf.Log.log_type == 'syslog':
-    import syslog
-
 BS = conf.Crypto.BS
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 unpad = lambda s: s[:-ord(s[len(s)-1:])]
@@ -330,67 +324,12 @@ def sql_to_jsonfile(sql, fil, tmp="/tmp/"):
     to_jsonfile(sql, fil, tmp)
 
 """
-Make a file with the sql result in json
-[clas] Config class to override
-[conf] dict() contain the config to override
-"""
-def over_config(clas, conf):
-    settable = stdtypes['mapping']+stdtypes['numeric']+stdtypes['text']+stdtypes['sequential']
-    for key, val in conf.items():
-        if hasattr(clas, key) and type(getattr(clas, key)) in settable:
-            if type(getattr(clas, key)) in stdtypes['mapping']:
-                getattr(clas, key).update(val)
-            else:
-                setattr(clas, key, val)
-        elif type(getattr(clas, key)) == type:
-            over_config(getattr(clas, key), val)
-        else:
-            setattr(clas, key, val)
-
-"""
 Return the logger set
 """
 def get_logger():
-    return import_string(settings.LOGGER_BACKEND)()
-
-#def logger(app, lvl, msg, user=None, *args, **kwargs):
-#    loglvlauth = kwargs["loglvlauth"] if "loglvlauth" in kwargs else conf.Log.log_level
-#    logtype = kwargs["logtype"] if "logtype" in kwargs else conf.Log.log_type
-#    loglvl = getattr(conf.Log, conf.Log.format_code.format(lvl))
-#    if loglvl >= loglvlauth:
-#        if user is not None: msg = conf.Log.format_user.format(user.username, user.id, msg)
-#        if app is not None: msg = "[%s] %s" % (app, msg)
-#        msg = conf.Log.format_log.format(f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S.%f}", lvl, msg)
-#        getattr(sys.modules[__name__], "logger_%s" % logtype)(lvl, loglvl, msg, user, *args, **kwargs)
-#
-## Logger in syslog
-#def logger_syslog(lvl, loglvl, msg, user, *args, **kwargs):
-#    syslog.openlog(logoption=syslog.LOG_PID)
-#    syslog.syslog(loglvl, msg)
-#    syslog.closelog()
-#
-## Logger in file
-#def logger_file(lvl, loglvl, msg, user, *args, **kwargs):
-#    logfile = '%s/%s' % (settings.LOG_DIRECTORY, f"{datetime.datetime.now():%Y%m%d}")
-#    if 'logfile' in kwargs: logfile = kwargs['logfile']
-#    log = open(logfile, conf.Log.file_open_method)
-#    log.write(msg)
-#    log.close()
-#
-## Logger in console
-#def logger_console(lvl, loglvl, msg, user, *args, **kwargs):
-#    color = getattr(conf.Log, conf.Log.format_color.format(lvl))
-#    print("%s%s%s" % (color, msg, conf.Log.default_color))
-#
-## Logger in database
-#def logger_database(lvl, loglvl, msg, user, *args, **kwargs):
-#    dblog = Log()
-#    dblog.loglvl = loglvl
-#    dblog.message = msg
-#    if user: dblog.user = user.id
-#    dblog.save()
-#
-## Logger django by default
-#def logger_default(lvl, loglvl, msg, user, *args, **kwargs):
-#    logger = logging.getLogger(__name__)
-#    logger.log(getattr(logging, lvl.upper()), msg)
+    if hasattr(settings, 'LOGGER_BACKEND'):
+        return import_string(settings.LOGGER_BACKEND)()
+    else:
+        import logging
+        logger = logging.getLogger(__name__)
+        return logger

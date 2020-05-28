@@ -107,3 +107,22 @@ exclude = ["je", "me", "moi", "tu", "te", "toi", "nous", "vous", "il", "elle",
     "certains", "certaine", "certains", "certaines", "tel", "telle", "tels", "telles", "tout", "toute", "tous", "toutes",
     "même", "même", "mêmes", "nul", "nulle", "nuls", "nulles", "quelqu", "quelques uns", "quelques unes",
     "autrui", "quiconque", "mais", "donc", "or", "ni", "car", "cas", "avec", "sans", "pour", "contre", "malgré", "en", "par", "sur"]
+
+
+"""
+Make a file with the sql result in json
+[clas] Config class to override
+[conf] dict() contain the config to override
+"""
+def over_config(clas, conf):
+    settable = stdtypes['mapping']+stdtypes['numeric']+stdtypes['text']+stdtypes['sequential']
+    for key, val in conf.items():
+        if hasattr(clas, key) and type(getattr(clas, key)) in settable:
+            if type(getattr(clas, key)) in stdtypes['mapping']:
+                getattr(clas, key).update(val)
+            else:
+                setattr(clas, key, val)
+        elif type(getattr(clas, key)) == type:
+            over_config(getattr(clas, key), val)
+        else:
+            setattr(clas, key, val)

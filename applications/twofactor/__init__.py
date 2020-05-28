@@ -1,3 +1,5 @@
+default_app_config = 'mighty.applications.twofactor.apps.TwofactorConfig'
+
 from django.contrib.auth import _get_backends
 
 def send_sms(user):
