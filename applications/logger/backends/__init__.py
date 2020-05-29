@@ -21,10 +21,10 @@ from django.conf import settings
 from mighty.applications.logger.apps import LoggerConfig as conf
 import datetime
 
-DB_ACTIVE = False
-if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-    from mighty.models.applications.logger import Log
-    DB_ACTIVE = True
+#DB_ACTIVE = False
+#if 'mighty.applications.logger' in settings.INSTALLED_APPS:
+#    from mighty.models import Log
+#    DB_ACTIVE = True
 
 class LoggerBackend:
     def __init__(self):
@@ -65,5 +65,6 @@ class LoggerBackend:
         pass
 
     def send_db(self, lvl, log, user=None):
-        dblog = Log(code=lvl, message=log, user=User)
-        dblog.save()
+        pass
+        #dblog = Log(code=lvl, message=log, user=User)
+        #dblog.save()

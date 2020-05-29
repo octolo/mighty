@@ -4,7 +4,7 @@ from mighty.applications.user.forms import UserCreationForm
 
 from mighty.views import DetailView, FormView, CreateView
 from mighty.views.viewsets import ModelViewSet, ApiModelViewSet
-from mighty.models.applications.user import User
+from mighty.models import User
 from mighty.applications.user import translates as _, serializers, filters
 
 is_ajax = True if 'rest_framework' in settings.INSTALLED_APPS else False

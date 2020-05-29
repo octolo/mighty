@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from mighty import fields
-from mighty.translates import descriptions as _
+from mighty import fields, translates as _
 from mighty.applications.user.apps import UserConfig
 from mighty.applications.user.forms import UserCreationForm
 from mighty.admin.models import BaseAdmin
@@ -29,10 +28,6 @@ class UserAgentAdmin(admin.TabularInline):
     fields = ('useragent',)
     readonly_fields = ('useragent',)
     extra = 0
-
-
-from mighty import translates as _
-
 
 class UserAdmin(UserAdmin, BaseAdmin):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}

@@ -8,7 +8,7 @@ from mighty.views import DetailView, FormView, BaseView
 from mighty.functions import decrypt
 from mighty.applications.user.forms import UserCreationForm
 
-from mighty.models.applications.twofactor import Twofactor
+from mighty.models import Twofactor
 from mighty.applications.twofactor.forms import UserSearchForm, TwoFactorForm, SignUpForm
 from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.twofactor import translates as _, send_sms, send_email

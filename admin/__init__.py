@@ -1,24 +1,69 @@
 from django.contrib import admin
 from django.conf import settings
 from django.contrib.auth.models import Group
-
+from django.contrib.auth.models import Permission
 from mighty.admin.site import AdminSite
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_filter = ('content_type',)
+
+if 'mighty.applications.user' in settings.INSTALLED_APPS:
+    from django.contrib.auth.admin import UserAdmin
+    from mighty.models import ProxyUser, Email, Phone, InternetProtocol, UserAgent, UserAddress
+    from mighty.applications.user.admin import UserAdmin, EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin
+
+    class EmailAdmin(EmailAdmin):
+        model = Email
+
+    class PhoneAdmin(PhoneAdmin):
+        model = Phone
+
+    class InternetProtocolAdmin(InternetProtocolAdmin):
+        model = InternetProtocol
+
+    class UserAgentAdmin(UserAgentAdmin):
+        model = UserAgent
+
+    if 'mighty.applications.address' in settings.INSTALLED_APPS:
+        from mighty.applications.address.admin import AddressAdminInline
+        class UserAdminInline(AddressAdminInline):
+            model = UserAddress
+
+    @admin.register(ProxyUser)
+    class UserAdmin(UserAdmin):
+        view_on_site = False
+        def add_view(self, *args, **kwargs):
+            self.inlines = []
+            return super(UserAdmin, self).add_view(*args, **kwargs)
+
+        def change_view(self, *args, **kwargs):
+            self.inlines = [EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin]
+            if 'mighty.applications.address' in settings.INSTALLED_APPS:
+                self.inlines.append(UserAdminInline)
+            return super(UserAdmin, self).change_view(*args, **kwargs)
+
+if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
+    from mighty.models import Twofactor
+    from mighty.applications.twofactor.admin import TwofactorAdmin
+    @admin.register(Twofactor)
+    class TwofactorAdmin(TwofactorAdmin):
+        pass
+
+if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
+    from mighty.models import Nationality
+    from mighty.applications.nationality.admin import NationalityAdmin
+    @admin.register(Nationality)
+    class NationalityAdmin(NationalityAdmin):
+        pass
 
 #mysite = AdminSite()
 #admin.site = mysite
 #admin.sites.site = mysite
 
-if 'mighty.applications.user' in settings.INSTALLED_APPS:
-    from mighty.admin.applications import user
 
-if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
-    from mighty.admin.applications import twofactor
-
-if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-    from mighty.admin.applications import nationality
-
-if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
-    from mighty.admin.applications import grapher
+#if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
+#    from mighty.admin.applications import grapher
 
 #from django.apps import apps
 #apps.get_model('auth.Group')._meta.app_label = 'mighty'

@@ -42,7 +42,7 @@ class DetailView(ModelView, DetailView):
 class ChangeView(ModelView, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": "%s %s" % (self.model.mighty.perm_title['change'], self.model._meta.verbose_name)})
+        #context.update({"title": "%s %s" % (self.model.mighty.perm_title['change'], self.model._meta.verbose_name)})
         return context
 
     def get_success_url(self):

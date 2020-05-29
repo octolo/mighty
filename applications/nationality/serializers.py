@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from mighty.models.applications.nationality import Nationality
+from mighty.models import Nationality
 from mighty.applications.nationality import fields
 
 class NationalitySerializer(ModelSerializer):

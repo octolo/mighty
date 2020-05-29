@@ -5,7 +5,7 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse, resolve
 from django.views.decorators.cache import never_cache
 
-from mighty.translates import descriptions as _
+from mighty import translates as _
 from mighty.apps import MightyConfig
 
 class AdminSite(admin.AdminSite):

@@ -1,5 +1,5 @@
 from django.contrib.auth.models import UserManager
-from mighty.applications.user.functions import username_generator
+from mighty.applications.user import username_generator
 
 PrefetchRelated = ('user_email', 'user_phone', 'user_ip', 'user_useragent')
 class UserManager(UserManager):

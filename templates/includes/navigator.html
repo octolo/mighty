@@ -1,0 +1,11 @@
+{% load mighty static %}
+<div id="navigator" class="d-f w-ch">
+    <div class="logo">
+        <a href="/"><img alt="Logo" src="{% static logo %}"></a>
+    </div>
+    <div>
+        {% if user.is_authenticated %}
+        {% include "user/navigator.html" %}
+        {% endif %}
+    </div>
+</div>

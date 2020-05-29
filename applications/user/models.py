@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
-from mighty.models import JSONField
+from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.models.image import Image
 from mighty.functions import test, get_logger
@@ -41,7 +41,7 @@ class User(AbstractUser, Base, Image):
     method = models.CharField(_.method, choices=CHOICES_METHOD, default=METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
     gender = models.CharField(_.gender, max_length=1, choices=CHOICES_GENDER, blank=True, null=True)
-    #css = models.CharField(max_length=255, default="dark")
+    style = models.CharField(max_length=255, default="dark")
 
     class Meta(Base.Meta):
         db_table = 'auth_user'
@@ -66,6 +66,8 @@ class User(AbstractUser, Base, Image):
     def admin_enable_url(self): return reverse('admin:auth_proxyuser_enable', kwargs={"object_id": self.pk})
     @property
     def fullname(self): return "%s %s" % (self.last_name, self.first_name)
+    @property
+    def logname(self): return '%s.%s' % (self.username, self.id)
 
     def __str__(self):
         if self.last_name and self.first_name:
@@ -107,7 +109,7 @@ class User(AbstractUser, Base, Image):
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: self.username = self.username.lower()
         else: self.username = self.gen_username()
-        super().save(*args, **kwargs)
+        super(User, self).save(*args, **kwargs)
 
 class Email(Base):
     email = models.EmailField(_.email, unique=True)

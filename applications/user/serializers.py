@@ -1,9 +1,8 @@
+from django.conf import settings
 from rest_framework.serializers import ModelSerializer
 
-from mighty.models.applications.user import User, Email, Phone, InternetProtocol
+from mighty.models import User, Email, Phone, InternetProtocol
 from mighty.applications.user import fields
-
-from mighty.functions import setting
 from mighty.applications.nationality import serializers as nationality_serializers
 
 class EmailSerializer(ModelSerializer):
@@ -30,6 +29,6 @@ class UserSerializer(ModelSerializer):
         model = User
         fields = fields.serializer
 
-if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
+if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     class UserSerializer(UserSerializer):
         nationalities = nationality_serializers.NationalitySerializer(many=True)

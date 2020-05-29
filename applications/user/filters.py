@@ -1,5 +1,5 @@
 from mighty.filters import Filter
-from mighty.models.applications.user import User
+from mighty.models import User
 from mighty.applications.user.fields import searchs, params
 
 def UserFilter(view, request):

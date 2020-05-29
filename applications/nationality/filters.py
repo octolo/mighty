@@ -1,5 +1,5 @@
 from mighty.filters import Filter
-from mighty.models.applications.nationality import Nationality
+from mighty.models import Nationality
 from mighty.applications.nationality.fields import searchs, params
 
 def NationalityFilter(view, request):

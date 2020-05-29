@@ -1,5 +1,5 @@
-from django.db.models.signals import post_save, post_delete
-from mighty.models.applications.user import Email, Phone
+from django.db.models.signals import post_save, pre_save, post_delete
+from mighty.models import Email, Phone, ProxyUser
 
 def AfterAddAnEmail(sender, instance, created, **kwargs):
     post_save.disconnect(AfterAddAnEmail, Email)
@@ -32,3 +32,9 @@ def AfterDeleteAPhone(sender, instance, created, **kwargs):
         phone.default = True
         phone.save()
 post_delete.connect(AfterDeleteAPhone, Phone)
+
+from django.contrib.auth import get_user_model
+def changelog(sender, update_fields, **kwargs):
+    print(kwargs)
+    print(update_fields)
+pre_save.connect(changelog, get_user_model())

@@ -2,35 +2,41 @@ from django.db import models
 from django.urls import reverse
 from django.utils.html import format_html
 
-from mighty.models import JSONField
+from mighty.fields import JSONField
 from mighty.functions import make_searchable
-from mighty.translates import fields as _, descriptions as _d
+from mighty import translates as _
 from uuid import uuid4
 
 def default_logfield_dict():
     return {"emerg": {}, "alert": {}, "critical": {}, "error": {}, "warning": {}, "notice": {}, "info": {}, "debug": {}}
 
-PERM_ADD = 'add'
-PERM_DETAIL = 'detail'
-PERM_LIST = 'list'
-PERM_CHANGE = 'change'
-PERM_DELETE = 'delete'
-PERM_EXPORT = 'export'
-PERM_IMPORT = 'import'
-PERM_DISABLE = 'disable'
-PERM_ENABLE = 'enable'
-PERM_TITLE = {
-    PERM_ADD: _.PERM_ADD,
-    PERM_LIST: _.PERM_LIST,
-    PERM_DETAIL: _.PERM_DETAIL,
-    PERM_CHANGE: _.PERM_CHANGE,
-    PERM_DELETE: _.PERM_DELETE,
-    PERM_DISABLE: _.PERM_DISABLE,
-    PERM_ENABLE: _.PERM_ENABLE,
-    PERM_EXPORT: _.PERM_EXPORT,
-    PERM_IMPORT: _.PERM_IMPORT,
+ADD = 'add'
+DETAIL = 'detail'
+LIST = 'list'
+CHANGE = 'change'
+DELETE = 'delete'
+EXPORT = 'export'
+IMPORT = 'import'
+DISABLE = 'disable'
+ENABLE = 'enable'
+FILTERLVL0 = 'filter_lvl0'
+FILTERLVL1 = 'filter_lvl1'
+FILTERLVL2 = 'filter_lvl2'
+CHOICES_PERMISSIONS = {
+    ADD: _.ADD,
+    LIST: _.LIST,
+    DETAIL: _.DETAIL,
+    CHANGE: _.CHANGE,
+    DELETE: _.DELETE,
+    DISABLE: _.DISABLE,
+    ENABLE: _.ENABLE,
+    EXPORT: _.EXPORT,
+    IMPORT: _.IMPORT,
+    FILTERLVL0: _.FILTERLVL0,
+    FILTERLVL1: _.FILTERLVL1,
+    FILTERLVL2: _.FILTERLVL2,
 }
-permissions = (PERM_ADD, PERM_DETAIL, PERM_LIST, PERM_CHANGE, PERM_DELETE, PERM_DISABLE, PERM_ENABLE, PERM_EXPORT, PERM_IMPORT)
+PERMISSIONS = sorted(list(CHOICES_PERMISSIONS), key=lambda x: x[0])
 class Base(models.Model):
     search_fields = []
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
@@ -38,17 +44,18 @@ class Base(models.Model):
     is_disable = models.BooleanField(_.is_disable, default=False, editable=False)
     search = models.TextField(db_index=True, blank=True, null=True)
     date_create = models.DateTimeField(_.date_create, auto_now_add=True, editable=False)
+    create_by = models.CharField(_.create_by, blank=True, editable=False, max_length=254, null=True)
     date_update = models.DateTimeField(_.date_update, auto_now=True, editable=False)
     update_by = models.CharField(_.update_by, blank=True, editable=False, max_length=254, null=True)
 
     class mighty:
-        perm_title = PERM_TITLE
+        perm_title = CHOICES_PERMISSIONS
         fields_str = ('__str__',)
         url_field = 'uid'
 
     class Meta:
         abstract = True
-        default_permissions = permissions
+        default_permissions = PERMISSIONS
         
     """
     Properties
@@ -152,6 +159,6 @@ class Base(models.Model):
             '&times;</span>%s</div>' % self.logfields[lvl][field],]        
         return  format_html("".join(alert))
 
-    def save(self, *args, **kwargs):
-        self.set_search()
-        super().save(*args, **kwargs)
+    #def save(self, *args, **kwargs):
+    #    self.set_search()
+    #    super().save(*args, **kwargs)

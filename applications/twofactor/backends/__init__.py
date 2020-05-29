@@ -3,7 +3,7 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
 from mighty.functions import get_logger
-from mighty.models.applications.twofactor import Twofactor
+from mighty.models import Twofactor
 from mighty.applications.twofactor import translates as _
 from mighty.applications.twofactor.models import (
     STATUS_PREPARE, STATUS_SENT, STATUS_RECEIVED, STATUS_ERROR,

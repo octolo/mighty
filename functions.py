@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
 from mighty.apps import MightyConfig as conf
-from mighty import stdtypes
+from mighty import stdtypes, fields
 
 from Crypto import Cipher, Random
 from pathlib import Path
@@ -210,6 +210,18 @@ def make_searchable(input_str):
     return u"".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
 
 """
+Return differences between 2 models
+you can exclude some field with arg [exclude]
+"""
+def models_difference(first, second, exclude=fields.base):
+    nfirst, nsecond = {}, {}
+    for field in first.fields():
+        if field not in exclude and getattr(first, field) != getattr(second, field):
+            nfirst[field] = getattr(first, field)
+            nsecond[field] = getattr(second, field)
+    return nfirst, nsecond
+
+"""
 Make a directory of image by date and content type
 /contenttype/year/month/{uid,id}/image
 """
@@ -333,3 +345,8 @@ def get_logger():
         import logging
         logger = logging.getLogger(__name__)
         return logger
+
+"""
+"""
+def to_binary(data):
+    return ' '.join(format(x, 'b') for x in bytearray(data, 'utf-8'))

@@ -1,6 +1,6 @@
 
 from mighty.views.viewsets import ModelViewSet, ApiModelViewSet
-from mighty.models.applications.nationality import Nationality
+from mighty.models import Nationality
 from mighty.applications.nationality import serializers, filters
 
 
