@@ -36,6 +36,10 @@ class BaseCommand(BaseCommand):
         sys.stdout.flush()
         if self.position == self.get_total(): print()
 
+    def create_parser(self, prog_name, subcommand, **kwargs):
+        self.subcommand = subcommand
+        return super().create_parser(prog_name, subcommand)
+
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument('--total', default=0)
@@ -66,10 +70,6 @@ class ModelBaseCommand(BaseCommand):
     manager = 'objects'
     label = None
     model = None
-
-    def create_parser(self, prog_name, subcommand, **kwargs):
-        self.subcommand = subcommand
-        return super().create_parser(prog_name, subcommand)
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

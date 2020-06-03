@@ -1,25 +1,10 @@
-from django.db.models import Q
-from mighty.functions import make_searchable, test, get_logger
+from mighty.functions import get_logger
 from functools import reduce
 import operator
 
 logger = get_logger()
-
-
-class Filter:
-    way = ''
-    field = ''
-    value = ''
-    common_fields = {}
-
-    def common(self):
-        return [getattr(self, field)(field) for field in self.common_fields]
-
-    def definition(self, value=None):
-        return Q({'%s%s' % (self.way, self.field): value if value else self.value})
-
 class RequestManager:
-    model = None
+    queryset = None
     request = None
 
     class Config:
@@ -27,8 +12,19 @@ class RequestManager:
         url_filters = False
         method = 'GET'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, queryset, request, *args, **kwargs):
+        self.filters = []
+        self.queryset = queryset
+        self.request = request
         self.Config.method = kwargs.get('method', self.Config.method)
         self.Config.filters = kwargs.get('filters', self.Config.filters)
         self.Config.url_filters = kwargs.get('url_filters', self.Config.url_filters)
-        self.arguments = args
+        logger.info(args)
+        logger.info(kwargs)
+
+    def add_filter(self, filtr):
+        self.filters.append(filtr)
+
+    def objects(self, request, op=operator.and_):
+        filters = reduce(op, (filtr.F(request) for filtr in self.filters if filtr.F(request)))
+        return self.queryset.filter(filters)
