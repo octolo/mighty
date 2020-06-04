@@ -1,8 +1,10 @@
 from mighty.management import BaseCommand
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
 from django.db import models
+from mighty.apps import MightyConfig as conf
 from itertools import chain
-import datetime, csv, os
+import datetime, csv, os, tarfile, shutil
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -12,8 +14,9 @@ class Command(BaseCommand):
         parser.add_argument('--backupdir', default='backups')
         parser.add_argument('--delimiter', default=';')
         parser.add_argument('--quotechar', default='"')
-        parser.add_argument('--quoting', default=csv.QUOTE_MINIMAL)
+        parser.add_argument('--quoting', default=csv.QUOTE_ALL)
         parser.add_argument('--mode', default='w')
+        parser.add_argument('--uid', action='store_true')
 
     def handle(self, *args, **options):
         self.media = options.get('media')
@@ -23,6 +26,7 @@ class Command(BaseCommand):
         self.quotechar = options.get('quotechar')
         self.quoting = options.get('quoting')
         self.mode = options.get('mode')
+        self.uid = options.get('uid')
         super().handle(*args, **options)
 
     def get_dir(self):
@@ -38,66 +42,45 @@ class Command(BaseCommand):
         row = []
         field_names = set([field.name for field in obj._meta.fields])
         m2mfield_names = set([field.name for field in obj._meta.many_to_many])
-        row += [getattr(obj, field) for field in field_names]
-        row += [getattr(obj, field).values_list('id', flat=True) for field in m2mfield_names]
+        for field in field_names:
+            if type(obj._meta.get_field(field)) == models.ForeignKey and hasattr(getattr(obj, field), 'uid'):
+                row.append(getattr(getattr(obj, field), 'uid'))
+            else:
+                row.append(getattr(obj, field))
+        for field in m2mfield_names:
+            m2ms = getattr(obj, field).all()
+            if m2ms and hasattr(m2ms[0], 'uid'):
+                row.append(",".join([str(m2m.uid) for m2m in m2ms]))
+            else:
+                row.append(",".join([str(m2m.id) for m2m in m2ms]))
         return row
 
-    def do(self):
-        self.get_dir()
-        date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    def backup_db(self, archive):
         for ct in ContentType.objects.all():
-            table = '%s_%s' % (ct.app_label, ct.model)
+            tablefile = '%s_%s.csv' % (ct.app_label, ct.model)
+            fullpath = self.backupdir + '/%s' % tablefile
             model = ct.model_class()
-            with open('%s/%s_%s.csv' % (self.backupdir, table, date), self.mode) as csvfile:
+            with open(fullpath, self.mode) as csvfile:
                 writer = csv.writer(csvfile, delimiter=self.delimiter, quotechar=self.quotechar, quoting=self.quoting)
                 writer.writerow(self.get_header(model))
                 for obj in model.objects.all(): writer.writerow(self.get_line(obj))
+            archive.add(fullpath, arcname='db/%s' % tablefile)
+            os.remove(fullpath)
 
+    def backup_cloud(self, archive):
+        cloudstorage = settings.MEDIA_ROOT + '/%s' % conf.Directory.cloud
+        if os.path.isdir(cloudstorage):
+            archive.add(cloudstorage, arcname=conf.Directory.cloud[:-1])
+            shutil.rmtree(cloudstorage)
 
-#import csv
-#from django.http import HttpResponse
-#from setuptools.compat import unicode
+    def backup_media(self, archive):
+        mediastorage = settings.MEDIA_ROOT
+        if os.path.isdir(mediastorage):
+            archive.add(mediastorage, arcname=settings.MEDIA_URL.replace('/', ''))
 
-
-#def export_as_csv_action(description="Export selected objects as CSV file",
-#						 fields=None, exclude=None, header=True):
-#	"""
-#	This function returns an export csv action
-#	'fields' and 'exclude' work like in django ModelForm
-#	'header' is whether or not to output the column names as the first row
-#	"""
-#
-#	from itertools import chain
-#
-#	def export_as_csv(modeladmin, request, queryset):
-#		"""
-#		Generic csv export admin action.
-#		based on http://djangosnippets.org/snippets/2369/
-#		"""
-#		opts = modeladmin.model._meta
-#		field_names = set([field.name for field in opts.fields])
-#		many_to_many_field_names = set([many_to_many_field.name for many_to_many_field in opts.many_to_many])
-#		if fields:
-#			fieldset = set(fields)
-#			field_names = field_names & fieldset
-#		elif exclude:
-#			excludeset = set(exclude)
-#			field_names = field_names - excludeset
-#
-#		response = HttpResponse(content_type='text/csv')
-#		response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
-#
-#		writer = csv.writer(response)
-#		if header:
-#			writer.writerow(list(chain(field_names, many_to_many_field_names)))
-#		for obj in queryset:
-#			row = []
-#			for field in field_names:
-#				row.append(unicode(getattr(obj, field)))
-#			for field in many_to_many_field_names:
-#				row.append(unicode(getattr(obj, field).all()))
-#
-#			writer.writerow(row)
-#		return response
-#	export_as_csv.short_description = description
-#	return export_as_csv
+    def do(self):
+        self.get_dir()
+        with tarfile.open(self.backupdir + "/backup_%s.tar.gz" % datetime.datetime.now().strftime('%Y%m%d_%H%M%S'), "w:gz") as archive:
+            self.backup_db(archive)
+            self.backup_cloud(archive)
+            self.backup_media(archive)
