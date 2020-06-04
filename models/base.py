@@ -159,6 +159,6 @@ class Base(models.Model):
             '&times;</span>%s</div>' % self.logfields[lvl][field],]        
         return  format_html("".join(alert))
 
-    #def save(self, *args, **kwargs):
-    #    self.set_search()
-    #    super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        self.set_search()
+        super().save(*args, **kwargs)
