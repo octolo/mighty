@@ -39,7 +39,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.fieldsets[1][1]['fields'] += ('phone',)
+        self.fieldsets[1][1]['fields'] += ('phone', 'style')
         self.add_field(_.informations, ('method',))
 
     def save_model(self, request, obj, form, change):

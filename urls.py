@@ -26,3 +26,8 @@ if "mighty.applications.twofactor" in settings.INSTALLED_APPS:
 if "mighty.applications.grapher" in settings.INSTALLED_APPS:
     from mighty.applications.grapher.urls import urlpatterns as urls_grapher
     urlpatterns += urls_grapher
+
+# Enable app chat
+if "mighty.applications.chat" in settings.INSTALLED_APPS:
+    from mighty.applications.chat.urls import urlpatterns as urls_chat
+    urlpatterns += urls_chat

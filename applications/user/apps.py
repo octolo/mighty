@@ -6,6 +6,7 @@ class Config:
     class Field:
         username = 'email'
         required = ()
+        style = ['dark', 'light']
 
 if hasattr(settings, 'USER'): over_config(Config, settings.USER)
 class UserConfig(AppConfig, Config):

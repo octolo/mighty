@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from mighty.applications.user.forms import UserCreationForm
+from mighty.applications.user.apps import UserConfig
 
 from mighty.views import DetailView, FormView, CreateView
 from mighty.views.viewsets import ModelViewSet, ApiModelViewSet
@@ -27,6 +28,19 @@ class UserProfile(DetailView):
         context.update({"meta": {"title": _.profil}})
         return context
 
+from django.http import JsonResponse
+class UserSwitchStyle(UserProfile):
+    def get_context_data(self, **kwargs):
+        style = self.kwargs['style'] if self.kwargs['style'] in UserConfig.Field.style else UserConfig.Field.style[0]
+        self.request.user.style = style
+        self.request.user.save()
+        context = {'style': style }
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context, **response_kwargs)
+
+
 class UserViewSet(ModelViewSet):
     model = User
     is_ajax = is_ajax
@@ -38,6 +52,7 @@ class UserViewSet(ModelViewSet):
     def __init__(self):
         super().__init__()
         self.add_view('profile', UserProfile, 'profile/')
+        self.add_view('style', UserSwitchStyle, 'style/<str:style>/')
 
 class UserApiViewSet(ApiModelViewSet):
     model = User
