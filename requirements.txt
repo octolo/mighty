@@ -3,5 +3,6 @@ pillow
 pycrypto
 django-jsonfield
 django-json-widget
-djangorestframework
 django-phonenumber-field
+channels
+channels-redis

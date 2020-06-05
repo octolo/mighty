@@ -8,6 +8,13 @@ from mighty.admin.site import AdminSite
 class PermissionAdmin(admin.ModelAdmin):
     list_filter = ('content_type',)
 
+from django.contrib.sessions.models import Session
+@admin.register(Session)
+class SessionAdmin(admin.ModelAdmin):
+    def _session_data(self, obj):
+        return obj.get_decoded()
+    list_display = ['session_key', '_session_data', 'expire_date']
+
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from django.contrib.auth.admin import UserAdmin
     from mighty.models import ProxyUser, Email, Phone, InternetProtocol, UserAgent, UserAddress

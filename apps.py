@@ -17,6 +17,7 @@ class Config:
         cache        = "%s/cache" % settings.BASE_DIR
         logs         = "%s/logs" % settings.BASE_DIR
         cloud        = 'cloud/'
+        process      = 'process/'
 
     class Test:
         search = ["none", "", 0, "na", "n/a", "-", "/", "\\", "?", "??", "#n/a", "#value!", "nc", "n/c", "ns",]

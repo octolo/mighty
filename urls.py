@@ -4,8 +4,11 @@ from django.urls import path
 app_name = "mighty"
 urlpatterns = []
 
-from mighty.views import HomePageView
-urlpatterns.append(path('', HomePageView.as_view()))
+from mighty.views import HomePageView, Widget
+urlpatterns += [
+    path('', HomePageView.as_view()),
+    path('widgets/<str:widget>/', Widget.as_view())
+]
 
 # Enable app nationality
 if "mighty.applications.nationality" in settings.INSTALLED_APPS:
@@ -26,3 +29,8 @@ if "mighty.applications.twofactor" in settings.INSTALLED_APPS:
 if "mighty.applications.grapher" in settings.INSTALLED_APPS:
     from mighty.applications.grapher.urls import urlpatterns as urls_grapher
     urlpatterns += urls_grapher
+
+# Enable app chat
+if "mighty.applications.chat" in settings.INSTALLED_APPS:
+    from mighty.applications.chat.urls import urlpatterns as urls_chat
+    urlpatterns += urls_chat

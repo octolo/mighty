@@ -125,3 +125,7 @@ class ExportView(ListView):
 
 class HomePageView(TemplateView):
     template_name = 'home.html'
+
+class Widget(TemplateView):
+    def get_template_names(self):
+        return 'widgets/%s' % self.kwargs['widget']

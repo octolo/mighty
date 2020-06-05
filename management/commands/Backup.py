@@ -17,6 +17,8 @@ class Command(BaseCommand):
         parser.add_argument('--quoting', default=csv.QUOTE_ALL)
         parser.add_argument('--mode', default='w')
         parser.add_argument('--uid', action='store_true')
+        parser.add_argument('--excludes', default='')
+        parser.add_argument('--backup', default='csv,media,cloud')
 
     def handle(self, *args, **options):
         self.media = options.get('media')
@@ -27,6 +29,8 @@ class Command(BaseCommand):
         self.quoting = options.get('quoting')
         self.mode = options.get('mode')
         self.uid = options.get('uid')
+        self.excludes = options.get('excludes').split(',')
+        self.backup = options.get('backup').split(',')
         super().handle(*args, **options)
 
     def get_dir(self):
@@ -55,7 +59,7 @@ class Command(BaseCommand):
                 row.append(",".join([str(m2m.id) for m2m in m2ms]))
         return row
 
-    def backup_db(self, archive):
+    def backup_csv(self, archive):
         for ct in ContentType.objects.all():
             tablefile = '%s_%s.csv' % (ct.app_label, ct.model)
             fullpath = self.backupdir + '/%s' % tablefile
@@ -81,6 +85,9 @@ class Command(BaseCommand):
     def do(self):
         self.get_dir()
         with tarfile.open(self.backupdir + "/backup_%s.tar.gz" % datetime.datetime.now().strftime('%Y%m%d_%H%M%S'), "w:gz") as archive:
-            self.backup_db(archive)
-            self.backup_cloud(archive)
-            self.backup_media(archive)
+            if 'csv' in self.backup:
+                self.backup_csv(archive)
+            if 'cloud' in self.backup:
+                self.backup_cloud(archive)
+            if 'media' in self.backup:
+                self.backup_media(archive)
