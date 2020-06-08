@@ -1,5 +1,5 @@
-const roomName = JSON.parse(document.getElementById('room-name').textContent);
-const chatSocket = new WebSocket('ws://'+window.location.host+'/ws/chat/'+roomName+'/');
+//const roomName = JSON.parse(document.getElementById('room-name').textContent);
+const chatSocket = new WebSocket('ws://'+window.location.host+'/mighty.ws');
 chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     document.querySelector('#chat-log').value += (data.message + '\n');

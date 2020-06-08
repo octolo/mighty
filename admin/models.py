@@ -58,6 +58,8 @@ class BaseAdmin(admin.ModelAdmin):
         if hasattr(model, 'errors'): self.list_filter += (InErrorListFilter,)
 
     def save_model(self, request, obj, form, change):
+        if not change or not obj.create_by:
+            if hasattr(obj, 'update_by'): obj.create_by = getattr(request.user, 'logname', 'username')
         if hasattr(obj, 'update_by'): obj.update_by = getattr(request.user, 'logname', 'username')
         super().save_model(request, obj, form, change)
 

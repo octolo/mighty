@@ -37,6 +37,7 @@ function get_widget(widget, callback) {
 
 function Mconfig(options) {
     this.protocol = location.protocol + '//' + location.host + location.pathname;
+    this.location = window.location.host;
     this.loglvl = { debug: "#FFFFFF", info: "#7bd5ff", warn: "#FF7F5D", error: "#FF3232" };
     this.options = options === undefined ? {} : options;
     for(var option in this.options) { this[option] = this.options[option]; }
@@ -67,6 +68,43 @@ function Mconfig(options) {
 
 var Mwebsocket = function(options) {
     Mconfig.call(this, options);
+    this.url = 'ws://'+this.location+'/mighty.ws'
+    
+    this.ws = function() {
+        if (this._ws === undefined) {
+            this._ws = new WebSocket(this.url);
+            var self = this;
+            this._ws.onmessage = function(e) { self.receive(e); }
+            this._ws.onclose = function(e) { self.disconnect(e); }
+        }
+        return this._ws;
+    }
+
+    this.send = function(cmd, args) {
+        args = args === undefined ? {} : args;
+        if (cmd !== undefined) {
+            if (this._ws.readyState === 1) {
+                this._ws.send(JSON.stringify({'cmd': cmd, 'args': args}));
+            } else {
+                var self = this;
+                setTimeout(function () { self.send(cmd, args); }, 100);
+            }
+        }
+    }
+
+    this.receive = function(e) {
+        const data = JSON.parse(e.data)
+        if (data.message === undefined) {
+            alert(data.error);
+        } else {
+            alert(data.message);
+        }
+    }
+
+    this.disconnect = function(e) {
+        delete this._ws;
+        this._ws = this.ws();
+    }
 
     this.chat_support = function(id) {
         get_widget('chat.html', function(widget){

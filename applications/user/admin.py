@@ -35,12 +35,12 @@ class UserAdmin(UserAdmin, BaseAdmin):
     add_fieldsets = ((None, {
         'classes': ('wide',),
         'fields': (UserConfig.Field.username,) + UserConfig.Field.required + ('password1', 'password2')}),)
-    readonly_fields = ('method',)
+    readonly_fields = ('method', 'channel')
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.fieldsets[1][1]['fields'] += ('phone', 'style')
-        self.add_field(_.informations, ('method',))
+        self.add_field(_.informations, ('method', 'channel'))
 
     def save_model(self, request, obj, form, change):
         if not change: obj.method = METHOD_BACKEND

@@ -42,6 +42,8 @@ class User(AbstractUser, Base, Image):
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
     gender = models.CharField(_.gender, max_length=1, choices=CHOICES_GENDER, blank=True, null=True)
     style = models.CharField(max_length=255, default="dark")
+    channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
+    search_fields = fields.searchs
 
     class Meta(Base.Meta):
         db_table = 'auth_user'
@@ -95,9 +97,6 @@ class User(AbstractUser, Base, Image):
         obj, created = useragent.objects.get_or_create(useragent=request.META['HTTP_USER_AGENT'], user=self)
         logger.info('usereagent: %s' % request.META['HTTP_USER_AGENT'], self, app="user")
 
-    def set_search(self):
-        self.search = ' '.join([getattr(self, field) for field in fields.searchs if hasattr(self, field) and test(getattr(self, field))])
-
     def gen_username(self):
         prefix = "".join([l for l in getattr(self, UserConfig.Field.username) if l.isalpha()])
         prefix = prefix[:3] if len(prefix) >= 3 else prefix
@@ -120,6 +119,7 @@ class User(AbstractUser, Base, Image):
 class Email(Base):
     email = models.EmailField(_.email, unique=True)
     default = models.BooleanField(default=False)
+    search_fields = ('email',)
 
     class Meta(Base.Meta):
         abstract = True
@@ -127,6 +127,7 @@ class Email(Base):
 class Phone(Base):
     phone = PhoneNumberField(_.phone, unique=True)
     default = models.BooleanField(default=False)
+    search_fields = ('phone',)
 
     class Meta(Base.Meta):
         abstract = True

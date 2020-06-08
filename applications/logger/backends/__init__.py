@@ -18,6 +18,7 @@ You can configure the MIGHTY config array Log:
 [user] If is not none add the user in the log
 """
 from django.conf import settings
+from logging import StreamHandler
 from mighty.applications.logger.apps import LoggerConfig as conf
 import datetime
 
@@ -26,7 +27,13 @@ import datetime
 #    from mighty.models import Log
 #    DB_ACTIVE = True
 
-class LoggerBackend:
+class LoggerBackendTest(StreamHandler):
+    def __init__(self):
+        self.lvl_auth = conf.Log.log_level
+        self.log_type = conf.Log.log_type
+
+
+class LoggerBackend(StreamHandler):
     def __init__(self):
         self.lvl_auth = conf.Log.log_level
         self.log_type = conf.Log.log_type
