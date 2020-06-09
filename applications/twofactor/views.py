@@ -2,20 +2,17 @@ from django.conf import settings
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
+from django.urls import reverse, NoReverseMatch
 
 from mighty.views.viewsets import ModelViewSet
 from mighty.views import DetailView, FormView, BaseView
-from mighty.functions import decrypt
-from mighty.applications.user.forms import UserCreationForm
-
 from mighty.models import Twofactor
+from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.twofactor.forms import UserSearchForm, TwoFactorForm, SignUpForm
 from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.twofactor import translates as _, send_sms, send_email
-
-from django.urls import reverse, NoReverseMatch
 from urllib.parse import quote_plus, unquote_plus, urlencode
-from mighty.functions import encrypt
+
 
 class LoginStepOne(FormView):
     redirect_authenticated_user = True

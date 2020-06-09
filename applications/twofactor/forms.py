@@ -5,10 +5,8 @@ from django.contrib.auth import get_user_model, authenticate
 from django.db.models import Q
 from django.urls import reverse, NoReverseMatch
 
-from mighty.functions import encrypt
 from mighty.applications.twofactor import send_sms, send_email, translates as _
 from mighty.applications.twofactor.apps import TwofactorConfig
-
 from urllib.parse import quote_plus, unquote_plus
 UserModel = get_user_model()
 

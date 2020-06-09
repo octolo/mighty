@@ -27,12 +27,16 @@ function add_css(href, callback){
     head.appendChild(link);
 }
 
-function get_widget(widget, callback) {
-    var xhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
-    xhttp.open('GET', '/widgets/'+widget+'/');
-    xhttp.timeout = 500;
-    xhttp.onload = function(event) { callback(xhttp.response); }
-    xhttp.send();
+function get_widget(widget, id, callback) {
+    if (document.getElementById(widget+'-'+id) === null) {
+        var xhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+        xhttp.open('GET', '/widgets/'+widget+'/'+id+'/');
+        xhttp.timeout = 500;
+        xhttp.onload = function(event) { callback(xhttp.response); }
+        xhttp.send();
+    }else{
+        callback(null);
+    }
 }
 
 function Mconfig(options) {
@@ -94,10 +98,15 @@ var Mwebsocket = function(options) {
 
     this.receive = function(e) {
         const data = JSON.parse(e.data)
-        if (data.message === undefined) {
-            alert(data.error);
-        } else {
-            alert(data.message);
+        if (data.status !== undefined) {
+            this.log('debug', data.event+':'+data.status);
+        }
+        if (data.action !== undefined) {
+            switch(data.action) {
+                case 'chat.message.support':
+                    document.getElementById('chat-support-history').innerHTML += '<p>' + data.message + '</p>';
+                break;
+            }
         }
     }
 
@@ -107,8 +116,12 @@ var Mwebsocket = function(options) {
     }
 
     this.chat_support = function(id) {
-        get_widget('chat.html', function(widget){
-            document.getElementById(id).innerHTML += widget;
+        get_widget('chat', 'support', function(widget){
+            if(widget) {
+                document.getElementById(id).innerHTML += widget;
+            }else{
+                document.getElementById('chat-support').style.display = 'block';
+            }
         });
     }
 }

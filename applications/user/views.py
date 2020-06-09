@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.user.apps import UserConfig
 
 from mighty.views import DetailView, FormView, CreateView
-from mighty.views.viewsets import ModelViewSet, ApiModelViewSet
+from mighty.views.viewsets import ModelViewSet
 from mighty.models import User
-from mighty.applications.user import translates as _, serializers, filters
+from mighty.applications.user import translates as _, filters
 
 is_ajax = True if 'rest_framework' in settings.INSTALLED_APPS else False
 
@@ -28,7 +29,6 @@ class UserProfile(DetailView):
         context.update({"meta": {"title": _.profil}})
         return context
 
-from django.http import JsonResponse
 class UserSwitchStyle(UserProfile):
     def get_context_data(self, **kwargs):
         style = self.kwargs['style'] if self.kwargs['style'] in UserConfig.Field.style else UserConfig.Field.style[0]
@@ -39,7 +39,6 @@ class UserSwitchStyle(UserProfile):
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
-
 
 class UserViewSet(ModelViewSet):
     model = User
@@ -54,11 +53,14 @@ class UserViewSet(ModelViewSet):
         self.add_view('profile', UserProfile, 'profile/')
         self.add_view('style', UserSwitchStyle, 'style/<str:style>/')
 
-class UserApiViewSet(ApiModelViewSet):
-    model = User
-    slug = '<uuid:uid>'
-    slug_field = "uid"
-    slug_url_kwarg = "uid"
-    lookup_field = "uid"
-    serializer_class = serializers.UserSerializer
-    filter_model = filters.UserFilter
+if 'rest_framework' in settings.INSTALLED_APPS:
+    from mighty.views.viewsets import ApiModelViewSet
+    from mighty.applications.user import serializers
+    class UserApiViewSet(ApiModelViewSet):
+        model = User
+        slug = '<uuid:uid>'
+        slug_field = "uid"
+        slug_url_kwarg = "uid"
+        lookup_field = "uid"
+        serializer_class = serializers.UserSerializer
+        filter_model = filters.UserFilter

@@ -9,9 +9,9 @@ def pre_change_log(sender, instance, **kwargs):
 
 def post_change_log(sender, instance, created, **kwargs):
     if not created:
-        new, old = models_difference(instance, instance._unmodified, base+instance.log_exclude)
-        instance.log_model.objects.bulk_create([
-            instance.log_model(**{
+        new, old = models_difference(instance, instance._unmodified, base+instance.changelog_exclude)
+        instance.changelog_model.objects.bulk_create([
+            instance.changelog_model(**{
                 'model_id': instance,
                 'field': field,
                 'value': bytes(value, 'utf-8'),

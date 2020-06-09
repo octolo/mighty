@@ -7,16 +7,16 @@ from django.urls import reverse
 from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.models.image import Image
-from mighty.functions import test, get_logger
+from mighty.functions import test
 
 from mighty.applications.user.apps import UserConfig
 from mighty.applications.user.manager import UserManager
 from mighty.applications.user import translates as _, fields
 
 from phonenumber_field.modelfields import PhoneNumberField
-import uuid
+import uuid, logging
+logger = logging.getLogger(__name__)
 
-logger = get_logger()
 guardian = False
 if 'guardian' in settings.INSTALLED_APPS:
     from guardian.core import ObjectPermissionChecker
@@ -90,12 +90,12 @@ class User(AbstractUser, Base, Image):
         if ip is not None:
             internetprotocol = ContentType.objects.get(app_label='mighty', model='internetprotocol').model_class()
             obj, created = internetprotocol.objects.get_or_create(ip=ip, user=self)
-            logger.info('connected from ip: %s',self, app="user")
+            logger.info('connected from ip: %s' % ip, extra={'user': self})
 
     def get_user_agent(self, request):
         useragent = ContentType.objects.get(app_label='mighty', model='useragent').model_class()
         obj, created = useragent.objects.get_or_create(useragent=request.META['HTTP_USER_AGENT'], user=self)
-        logger.info('usereagent: %s' % request.META['HTTP_USER_AGENT'], self, app="user")
+        logger.info('usereagent: %s' % request.META['HTTP_USER_AGENT'], extra={'user': self})
 
     def gen_username(self):
         prefix = "".join([l for l in getattr(self, UserConfig.Field.username) if l.isalpha()])

@@ -22,36 +22,77 @@
 </div>
 {% endblock %}
 
-
 {% block content %}
 <div id="content-main">
 <div class="module">
 
 {% if logs %}
+    <div>
+        <small><b>args:</b> {% field_name fake 'args' %}</small><br>
+        <small><b>created:</b> {% field_name fake 'created' %}</small><br>
+        <small><b>exc_info:</b> {% field_name fake 'exc_info' %}</small><br>
+        <small><b>filename:</b> {% field_name fake 'filename' %}</small><br>
+        <small><b>funcName:</b> {% field_name fake 'funcName' %}</small><br>
+        <small><b>levelno:</b> {% field_name fake 'levelno' %}</small><br>
+        <small><b>lineno:</b> {% field_name fake 'lineno' %}</small><br>
+        <small><b>module:</b> {% field_name fake 'module' %}</small><br>
+        <small><b>msecs:</b> {% field_name fake 'msecs' %}</small><br>
+        <small><b>msg:</b> {% field_name fake 'msg' %}</small><br>
+        <small><b>name:</b> {% field_name fake 'name' %}</small><br>
+        <small><b>pathname:</b> {% field_name fake 'pathname' %}</small><br>
+        <small><b>process:</b> {% field_name fake 'process' %}</small><br>
+        <small><b>processName:</b> {% field_name fake 'processName' %}</small><br>
+        <small><b>relativeCreated:</b> {% field_name fake 'relativeCreated' %}</small><br>
+        <small><b>stack_info:</b> {% field_name fake 'stack_info' %}</small><br>
+        <small><b>thread:</b> {% field_name fake 'thread' %}</small><br>
+    </div><br>
+
     <table id="change-history">
         <thead>
         <tr>
-            <th scope="col">{% field_name fake 'field' %}</th>
-            <th scope="col">{% field_name fake 'value' %}</th>
-            <th scope="col">{% field_name fake 'date_begin' %}</th>
-            <th scope="col">{% field_name fake 'date_end' %}</th>
-            <th scope="col">{% field_name fake 'user' %}</th>
+            <th scope="col">args</th>
+            <th scope="col">created</th>
+            <th scope="col">exc_info</th>
+            <th scope="col">filename</th>
+            <th scope="col">funcName</th>
+            <th scope="col">levelno</th>
+            <th scope="col">lineno</th>
+            <th scope="col">module</th>
+            <th scope="col">msecs</th>
+            <th scope="col">msg</th>
+            <th scope="col">name</th>
+            <th scope="col">pathname</th>
+            <th scope="col">process</th>
+            <th scope="col">processName</th>
+            <th scope="col">relativeCreated</th>
+            <th scope="col">stack_info</th>
+            <th scope="col">thread</th>
         </tr>
         </thead>
         <tbody>
         {% for log in logs %}
         <tr>
-            <th scope="row">{{ log.field }}</th>
-            <td>{{ log.get_value }}</td>
-            <td>{{ log.date_begin }}</td>
-            <td>{{ log.date_end }}</td>
-            <td>{{ log.user }}</td>
+            <td>{{ log.args }}</td>
+            <td>{{ log.created }}</td>
+            <td>{{ log.exc_info }}</td>
+            <td>{{ log.filename }}</td>
+            <td>{{ log.funcName }}</td>
+            <td>{{ log.levelno }}</td>
+            <td>{{ log.lineno }}</td>
+            <td>{{ log.module }}</td>
+            <td>{{ log.msecs }}</td>
+            <td>{{ log.msg }}</td>
+            <td>{{ log.name }}</td>
+            <td>{{ log.pathname }}</td>
+            <td>{{ log.process }}</td>
+            <td>{{ log.processName }}</td>
+            <td>{{ log.relativeCreated }}</td>
+            <td>{{ log.stack_info }}</td>
+            <td>{{ log.thread }}</td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
-{% else %}
-    <p></p>
 {% endif %}
 </div>
 </div>

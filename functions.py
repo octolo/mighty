@@ -5,8 +5,6 @@ from django.core import serializers
 from django.utils.module_loading import import_string
 from mighty.apps import MightyConfig as conf
 from mighty import stdtypes, fields
-
-from Crypto import Cipher, Random
 from pathlib import Path
 import base64, datetime, string, random, unicodedata, re, json, sys
 
@@ -104,27 +102,29 @@ Return comments splitted from the input
 def split_comment(input_str):
     return re.search( "([\w\d'&,\. ]+)?\((.*)\)" , input_str)
 
-"""
-Return encrypted data with a key in base64 encoded
-[key] key used to encrypt raw
-[raw] string to encrypt
-"""
-def encrypt(key, raw):
-    raw = pad(raw)
-    iv = Random.new().read(Cipher.AES.block_size)
-    _cipher = Cipher.AES.new(key, Cipher.AES.MODE_CFB, iv)
-    return base64.b64encode(iv+_cipher.encrypt(raw)) 
 
-"""
-Decrypt data with a key
-[key] key to decrypt
-[enc] string base64 encoded
-"""
-def decrypt(key, enc):
-    enc = base64.b64decode(enc)
-    iv = enc[:16]
-    _cipher = Cipher.AES.new(key, Cipher.AES.MODE_CFB, iv)
-    return unpad(_cipher.decrypt(enc[16:]))
+# from Crypto import Cipher, Random
+# """
+# Return encrypted data with a key in base64 encoded
+# [key] key used to encrypt raw
+# [raw] string to encrypt
+# """
+# def encrypt(key, raw):
+    # raw = pad(raw)
+    # iv = Random.new().read(Cipher.AES.block_size)
+    # _cipher = Cipher.AES.new(key, Cipher.AES.MODE_CFB, iv)
+    # return base64.b64encode(iv+_cipher.encrypt(raw)) 
+
+# """
+# Decrypt data with a key
+# [key] key to decrypt
+# [enc] string base64 encoded
+# """
+# def decrypt(key, enc):
+    # enc = base64.b64decode(enc)
+    # iv = enc[:16]
+    # _cipher = Cipher.AES.new(key, Cipher.AES.MODE_CFB, iv)
+    # return unpad(_cipher.decrypt(enc[16:]))
 
 """
 Return a model from a label and a model name

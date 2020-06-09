@@ -20,10 +20,6 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.models import ProxyUser, Email, Phone, InternetProtocol, UserAgent, UserAddress
     from mighty.applications.user.admin import UserAdmin, EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin
 
-    @admin.register(Email)
-    class EmailAdminTest(admin.ModelAdmin):
-        raw_id_fields = ('user',)
-
     class EmailAdmin(EmailAdmin):
         model = Email
 
@@ -40,6 +36,11 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
         from mighty.applications.address.admin import AddressAdminInline
         class UserAdminInline(AddressAdminInline):
             model = UserAddress
+
+    if 'mighty.applications.logger' in settings.INSTALLED_APPS:
+        from mighty.applications.logger.admin import ModelWithLogAdmin
+        class UserAdmin(UserAdmin, ModelWithLogAdmin):
+            pass
 
     @admin.register(ProxyUser)
     class UserAdmin(UserAdmin):

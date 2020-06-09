@@ -1,4 +1,5 @@
 from django.urls import path
+from django.conf import settings
 from mighty import views
 from mighty.functions import get_logger
 from copy import deepcopy
@@ -27,7 +28,7 @@ class ViewSet(object):
         self.views[name] = {'view': view, 'url': url}
 
     def config_view(self, View, view):
-        logger.info("-- ViewType: %s" % view, app=self.__class__.__name__)
+        logger.info("-- ViewType: %s (%s)" % (self.__class__.__name__, view))
         for attr, default in view_attr.items(): setattr(View, attr, self.Vgetattr(View, view, attr, default))
         if not self.Vgetattr(View, view, 'no_permission', False): View.permission_required = self.Vgetattr(View, view, "permission_required", ())
         return View
@@ -76,34 +77,36 @@ class ModelViewSet(ViewSet):
     def url(self, view, config):
         return config['url']
 
-from mighty.views import api as apiviews
-from mighty.permissions import HasMightyPermission
 
-class ApiModelViewSet(ModelViewSet):
-    permission_classes = [HasMightyPermission]
-    lookup_field = 'id'
-    queryset = None
+if 'rest_framework' in settings.INSTALLED_APPS:
+    from mighty.views import api as apiviews
+    from mighty.permissions import HasMightyPermission
 
-    def config_view(self, View, view):
-        View = super().config_view(View, view)
-        View.permission_classes = self.Vgetattr(View, view, 'permission_classes')
-        View.serializer_class = self.Vgetattr(View, view, 'serializer_class', self.model.objects.all())
-        View.lookup_field = self.Vgetattr(View, view, 'lookup_field')
-        View.queryset = self.queryset
-        return View
+    class ApiModelViewSet(ModelViewSet):
+        permission_classes = [HasMightyPermission]
+        lookup_field = 'id'
+        queryset = None
 
-    def url_name(self, view):
-        return 'api-%s-%s' % (str(self.model.__name__.lower()), view)
+        def config_view(self, View, view):
+            View = super().config_view(View, view)
+            View.permission_classes = self.Vgetattr(View, view, 'permission_classes')
+            View.serializer_class = self.Vgetattr(View, view, 'serializer_class', self.model.objects.all())
+            View.lookup_field = self.Vgetattr(View, view, 'lookup_field')
+            View.queryset = self.queryset
+            return View
 
-    def __init__(self):
-        super().__init__()
-        self.views = {}
-        self.add_view('list', apiviews.ListAPIView, '')
-        self.add_view('add', apiviews.CreateAPIView, 'add/')
-        self.add_view('detail', apiviews.RetrieveAPIView, '%s/detail/' % self.slug)
-        self.add_view('change', apiviews.UpdateAPIView, '%s/change/' % self.slug)
-        self.add_view('delete', apiviews.DestroyAPIView, '%s/delete/' % self.slug)
-        if hasattr(self.model, 'is_disable'):
-            self.add_view('disable', apiviews.EnableApiView, '%s/disable/' % self.slug)
-            self.add_view('enable', apiviews.DisableApiView, '%s/enable/' % self.slug)
-        
+        def url_name(self, view):
+            return 'api-%s-%s' % (str(self.model.__name__.lower()), view)
+
+        def __init__(self):
+            super().__init__()
+            self.views = {}
+            self.add_view('list', apiviews.ListAPIView, '')
+            self.add_view('add', apiviews.CreateAPIView, 'add/')
+            self.add_view('detail', apiviews.RetrieveAPIView, '%s/detail/' % self.slug)
+            self.add_view('change', apiviews.UpdateAPIView, '%s/change/' % self.slug)
+            self.add_view('delete', apiviews.DestroyAPIView, '%s/delete/' % self.slug)
+            if hasattr(self.model, 'is_disable'):
+                self.add_view('disable', apiviews.EnableApiView, '%s/disable/' % self.slug)
+                self.add_view('enable', apiviews.DisableApiView, '%s/enable/' % self.slug)
+            

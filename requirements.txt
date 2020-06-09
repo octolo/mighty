@@ -1,8 +1,3 @@
-requests
 pillow
-pycrypto
 django-jsonfield
 django-json-widget
-django-phonenumber-field
-channels
-channels-redis

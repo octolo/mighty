@@ -1,8 +1,9 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth import get_user_model
 from mighty.applications.logger.apps import LoggerConfig as conf
 from mighty.applications.logger import translates as _
-UserModel = get_user_model()
 
 EMERG = conf.Code.emerg
 ALERT = conf.Code.alert
@@ -22,17 +23,36 @@ LEVEL_CHOICES = (
     (INFO, "INFO"),
     (DEBUG, "DEBUG"))
 class Log(models.Model):
-    date = models.DateTimeField(auto_now_add=True, editable=False)
-    code = models.PositiveSmallIntegerField(choices=LEVEL_CHOICES, default=DEBUG, editable=False)
-    message = models.TextField(editable=False)
-    user = models.CharField(max_length=255)
+    args = models.CharField(_.args, max_length=255, blank=True, null=True)
+    created = models.DateTimeField(_.created, auto_now_add=True, editable=False)
+    exc_info = models.CharField(_.exc_info, max_length=255, blank=True, null=True)
+    filename = models.CharField(_.filename, max_length=255, blank=True, null=True)
+    funcName = models.CharField(_.funcName, max_length=255, blank=True, null=True)
+    levelno = models.PositiveSmallIntegerField(_.levelno, blank=True, null=True)
+    lineno = models.CharField(_.lineno, max_length=255, blank=True, null=True)
+    module = models.CharField(_.module, max_length=255, blank=True, null=True)
+    msecs = models.CharField(_.msecs, max_length=255, blank=True, null=True)
+    msg = models.CharField(_.msg, max_length=255, blank=True, null=True)
+    name = models.CharField(_.name, max_length=255, blank=True, null=True)
+    pathname = models.CharField(_.pathname, max_length=255, blank=True, null=True)
+    process = models.CharField(_.process, max_length=255, blank=True, null=True)
+    processName = models.CharField(_.processName, max_length=255, blank=True, null=True)
+    relativeCreated = models.CharField(_.relativeCreated, max_length=255, blank=True, null=True)
+    stack_info = models.TextField(_.stack_info, max_length=255, blank=True, null=True)
+    thread = models.CharField(_.thread, max_length=255, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
-class LogModel(models.Model):
+    class Meta:
+        abstract = True
+
+class ChangeLog(models.Model):
     model_id = models.ForeignKey('', on_delete=models.CASCADE)
     field = models.CharField(_.field, max_length=255, db_index=True)
     value = models.BinaryField(_.value, )
     fmodel = models.CharField(_.fmodel, max_length=255)
-    date_begin = models.DateTimeField(_.date_begin, )
+    date_begin = models.DateTimeField(_.date_begin, editable=False)
     date_end = models.DateTimeField(_.date_end, auto_now_add=True, editable=False)
     user = models.CharField(max_length=255)
 

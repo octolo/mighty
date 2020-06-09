@@ -9,7 +9,7 @@ class Config:
         log_type = "default"
         log_level = "info"
         format_log = "{} - {} | {}"
-        format_user = "{}.{} - {}"
+        format_user = "{} - {}"
         format_code = "{}_code"
         format_color = "{}_color"
         file_open_method = "a"

@@ -1,86 +1,53 @@
-import json
+from mighty.consumers import Consumer
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+import logging
+logger = logging.getLogger(__name__)
 
-class ChatConsumerAsync(AsyncWebsocketConsumer):
+class ChatConsumer(Consumer):
+    def __init__(self, ws):
+        self.rooms = {}
+        super().__init__(ws)
 
-    
-    async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+    def default(self, cmd, args):
+        cmd = cmd.split('.')
+        if len(cmd) > 1:
+            if cmd[1] == 'support':
+                self.join_support()
+            elif cmd[1] == 'message':
+                self.send_message(cmd[2], args)
 
-        # Join room group
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
+    def join_support(self):
+        room_name = '%s__%s' % (self._ws.uid, 'support')
+        self.join_room(room_name, self._ws.channel_name)
 
-        await self.accept()
+    def join_room(self, room_name, channel_name):
+        if room_name not in self.rooms:
+            async_to_sync(self._ws.channel_layer.group_add)(room_name, channel_name)
+            self.rooms[room_name] = channel_name
+            self._ws.send_event({'status': 'ok', 'event': 'join room'})
+            logger.info('room connection: %s' % room_name, extra={'user': self._ws.user})
 
-    async def disconnect(self, close_code):
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+    def send_message(self, to, args):
+        room_name = '%s__%s' % (self._ws.uid, to)
+        if room_name in self.rooms:
+            if 'msg' in args:
+                async_to_sync(self._ws.channel_layer.group_send)(room_name, {
+                    'type': 'send.event',
+                    'action': 'chat.message.support',
+                    'message': args['msg']
+                })
+                self._ws.send_event({'status': 'ok', 'event': 'send message'})
+            else:
+                self._ws.send_event({'status': 'ko', 'event': 'send message'})
+        else:
+            self._ws.send_event({'status': 'ko', 'event': 'unknown room'})
 
-    # Receive message from WebSocket
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message
-            }
-        )
-
-    # Receive message from room group
-    async def chat_message(self, event):
-        message = event['message']
-
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
-
-class ChatConsumer(WebsocketConsumer):
-    def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
-        self.accept()
+    def leave_room(self, room_name, channel_name):
+        if room_name in self.rooms:
+            async_to_sync(self._ws.channel_layer.group_discard)(room_name, channel_name)
+            del self.rooms[room_name]
+            self._ws.send_event({'status': 'ok', 'event': 'leave room'})
 
     def disconnect(self, close_code):
-        # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
-
-    # Receive message from WebSocket
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        user_id = self.scope['user'].id
-
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-                'user_id': user_id
-            }
-        )
-
-    # Receive message from room group
-    def chat_message(self, event):
-        if self.scope['user'].id == event['user_id']:
-            message = '%s: %s' % ('vous', event['message'])
-        else:
-            message = '%s: %s' % ('lui', event['message'])
-        
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({'message': message}))
+        for room,channel in self.rooms.items():
+            self.leave_room(room, channel)
