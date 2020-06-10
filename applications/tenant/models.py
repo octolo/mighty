@@ -28,7 +28,7 @@ class Tenant(Base):
     roles = models.ManyToManyField(conf.ForeignKey.Role)
 
     objects = models.Manager()
-    objectsB = managers.RolesManager()
+    objectsB = managers.TenantManager()
 
     def __str__(self):
         return '%s , %s' % (str(self.user), str(self.tenant))

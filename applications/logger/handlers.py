@@ -51,6 +51,4 @@ class FileHandler(logging.FileHandler):
         return msg
 
 class DatabaseHander(logging.StreamHandler):
-    def emit(self, record):
-        dblog = Log(level=record.levelno, message=record.msg, user=getattr(record, 'user', None))
-        dblog.save()
+    pass

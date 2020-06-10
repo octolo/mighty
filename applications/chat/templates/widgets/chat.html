@@ -1,0 +1,9 @@
+<div id="chat-{{ id }}" class="chat">
+    <div id="chat-{{ id }}-tasks" class="tasks">
+        <span class="close" onclick="this.parentElement.parentElement.style.display='none';">&times;</span> 
+    </div>
+    <div id="chat-{{ id }}-history" class="history"></div>
+    <form>
+        <input class="input" onkeypress="send_message(event, this, '{{ id }}')" type="text" placeholder="message..."><br>
+    </form>
+</div>

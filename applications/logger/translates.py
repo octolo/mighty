@@ -3,7 +3,6 @@ from django.utils.translation import gettext_lazy as _
 v_log = _('log')
 vp_log = _('logs')
 
-
 args = _("The tuple of arguments merged into msg to produce message, or a dict whose values are used for the merge (when there is only one argument, and it is a dictionary).")
 asctime = _("Human-readable time when the LogRecord was created. By default this is of the form '2003-07-08 16:49:45,896' (the numbers after the comma are millisecond portion of the time).")
 created = _("Time when the LogRecord was created (as returned by time.time()).")
@@ -25,7 +24,6 @@ relativeCreated = _("Time in milliseconds when the LogRecord was created, relati
 stack_info = _("Stack frame information (where available) from the bottom of the stack in the current thread, up to and including the stack frame of the logging call which resulted in the creation of this record.")
 thread = _("Thread ID (if available).")
 threadNa = _("Thread name (if available).")
-
 
 model_id = _('associated model')
 field = _('field')
