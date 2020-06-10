@@ -5,9 +5,9 @@ from django.core.exceptions import MultipleObjectsReturned
 from mighty import functions
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger.apps import LoggerConfig
-import datetime, sys
+import datetime, sys, logging
+logger = logging.getLogger(__name__)
 
-logger = functions.get_logger()
 class Error:
     def __init__(self):
         self.count = 0
@@ -54,13 +54,9 @@ class BaseCommand(BaseCommand):
         self.logfile = options.get('logfile')
         self.progressbar = options.get('progressbar')
         self.verbosity = options.get('verbosity', 0)
-        if self.verbosity == 0: logger.level('critical')
-        elif self.verbosity == 1: logger.level('warning')
-        elif self.verbosity == 2: logger.level('info')
-        elif self.verbosity == 3: logger.level('debug')
         logger.debug('start')
         self.do()
-        logger.warning('end')
+        logger.debug('end')
 
     def do(self):
         raise NotImplementedError("Command should implement method do(self)")

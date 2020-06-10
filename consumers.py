@@ -11,12 +11,12 @@ class MightyConsumer(WebsocketConsumer):
     consumers = {}
 
     def __init__(self, scope):
-        print(self.consumers)
         self.actives = {}
         super().__init__(scope)
 
     @property
-    def uid(self):
+    def uid(self, user=None):
+        if user: return user.uid if hasattr(self.user, 'uid') else user['hashnonymous']
         return self.user.uid if hasattr(self.user, 'uid') else self.user['hashnonymous']
 
     def uniqid(self, scope):
@@ -50,5 +50,5 @@ class MightyConsumer(WebsocketConsumer):
         self.send_event({'message': 'room_name'})
 
     def send_event(self, event):
-        print(event)
+        logger.info('event: %s' % event, extra={'user': self.user})
         self.send(text_data=json.dumps(event))

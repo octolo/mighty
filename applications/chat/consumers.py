@@ -33,7 +33,7 @@ class ChatConsumer(Consumer):
             if 'msg' in args:
                 async_to_sync(self._ws.channel_layer.group_send)(room_name, {
                     'type': 'send.event',
-                    'action': 'chat.message.support',
+                    'action': 'chat.message.support:chat',
                     'message': args['msg']
                 })
                 self._ws.send_event({'status': 'ok', 'event': 'send message'})

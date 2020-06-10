@@ -10,6 +10,7 @@ class Nationality(Base, Image):
     alpha2 = models.CharField(_.alpha2, max_length=2)
     alpha3 = models.CharField(_.alpha3, max_length=3, blank=True, null=True)
     numeric = models.CharField(_.numeric, max_length=3, blank=True, null=True)
+    numbering = models.PositiveSmallIntegerField(_.numbering, blank=True, null=True)
 
     class Meta(Base.Meta):
         abstract = True

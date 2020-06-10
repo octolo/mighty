@@ -1,4 +1,4 @@
 from django.apps import AppConfig
 
 class ChatConfig(AppConfig):
-    name = 'chat'
+    name = 'mighty.applications.chat'

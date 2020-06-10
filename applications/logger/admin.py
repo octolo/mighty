@@ -4,7 +4,6 @@ from django.contrib.admin.utils import unquote
 from django.http import HttpResponse
 from django.contrib.contenttypes.models import ContentType
 from mighty.admin.models import BaseAdmin
-from mighty.applications.logger import views
 from functools import update_wrapper
 from mighty.models import Log
 

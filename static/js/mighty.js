@@ -73,22 +73,29 @@ function Mconfig(options) {
 var Mwebsocket = function(options) {
     Mconfig.call(this, options);
     this.url = 'ws://'+this.location+'/mighty.ws'
-    
-    this.ws = function() {
-        if (this._ws === undefined) {
-            this._ws = new WebSocket(this.url);
-            var self = this;
-            this._ws.onmessage = function(e) { self.receive(e); }
-            this._ws.onclose = function(e) { self.disconnect(e); }
-        }
-        return this._ws;
+    this.subs = {}
+    if (this._ws === undefined) {
+        this._ws = new WebSocket(this.url);
+        var self = this;
+        this._ws.onmessage = function(e) { self.receive(e); }
+        this._ws.onclose = function(e) { self.disconnect(e); }
+    }
+
+    this.hasSubCommand = function(cmd) {
+        cmd = cmd.split(':')
+        return (cmd.length == 1 ? [cmd[0], undefined] : cmd);
     }
 
     this.send = function(cmd, args) {
         args = args === undefined ? {} : args;
         if (cmd !== undefined) {
+            cmd = this.hasSubCommand(cmd);
             if (this._ws.readyState === 1) {
-                this._ws.send(JSON.stringify({'cmd': cmd, 'args': args}));
+                if (cmd[1] !== undefined && this.subs.hasOwnProperty(cmd[1])) {
+                    this.subs[cmd[1]].send(cmd[0], args);
+                } else {
+                    this._ws.send(JSON.stringify({'cmd': cmd[0], 'args': args}));
+                }
             } else {
                 var self = this;
                 setTimeout(function () { self.send(cmd, args); }, 100);
@@ -102,10 +109,15 @@ var Mwebsocket = function(options) {
             this.log('debug', data.event+':'+data.status);
         }
         if (data.action !== undefined) {
-            switch(data.action) {
-                case 'chat.message.support':
-                    document.getElementById('chat-support-history').innerHTML += '<p>' + data.message + '</p>';
-                break;
+            action = this.hasSubCommand(data.action);
+            if (action[1] !== undefined && this.subs.hasOwnProperty(action[1])) {
+                this.subs[action[1]].receive(action[0], data);
+            } else {
+                switch(action[0]) {
+                    case 'message':
+                        document.getElementById('chat-support-history').innerHTML += '<p>' + data.message + '</p>';
+                    break;
+                }
             }
         }
     }
@@ -113,15 +125,5 @@ var Mwebsocket = function(options) {
     this.disconnect = function(e) {
         delete this._ws;
         this._ws = this.ws();
-    }
-
-    this.chat_support = function(id) {
-        get_widget('chat', 'support', function(widget){
-            if(widget) {
-                document.getElementById(id).innerHTML += widget;
-            }else{
-                document.getElementById('chat-support').style.display = 'block';
-            }
-        });
     }
 }
