@@ -105,18 +105,15 @@ var Mwebsocket = function(options) {
 
     this.receive = function(e) {
         const data = JSON.parse(e.data)
-        if (data.status !== undefined) {
-            this.log('debug', data.event+':'+data.status);
-        }
-        if (data.action !== undefined) {
-            action = this.hasSubCommand(data.action);
-            if (action[1] !== undefined && this.subs.hasOwnProperty(action[1])) {
-                this.subs[action[1]].receive(action[0], data);
+        if (data.event !== undefined) {
+            event = this.hasSubCommand(data.event);
+            if (event[1] !== undefined && this.subs.hasOwnProperty(event[1])) {
+                this.subs[event[1]].receive(event[0], data);
             } else {
-                switch(action[0]) {
-                    case 'message':
-                        document.getElementById('chat-support-history').innerHTML += '<p>' + data.message + '</p>';
-                    break;
+                switch(event[0]) {
+                    default:
+                        this.log('debug', data.event+':'+data.status);
+                        break;
                 }
             }
         }

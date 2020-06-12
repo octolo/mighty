@@ -1,14 +1,32 @@
 var Mchat = function(ws) {
     this.ws = ws;
+    this.rooms = {}
 
     this.send = function(cmd, args){
         this.ws.send(JSON.stringify({'cmd': cmd, 'args': args}));
     }
 
-    this.receive = function(action, data){
-        switch(action) {
+    this.receive = function(event, data){
+        switch(event) {
             case 'chat.message.support':
-                document.getElementById('chat-support-history').innerHTML += '<p>' + data.message + '</p>';
+                var history = document.getElementById('chat-history-support');
+                if (this.rooms['support'] != data.self) {
+                    var div = document.createElement('div');
+                    div.className = 'chat-history';
+                    history.insertBefore(div, history.firstChild);
+                }
+                history = history.firstChild;
+                var p = document.createElement('p');
+                var who = data.self ? 'vous' : data.who;
+                p.textContent = who + ': ' + data.message;
+                history.appendChild(p, history.firstChild);
+                this.rooms['support'] = data.self;
+                break;
+            case 'chat.message.support':
+                this.rooms['support'] = undefined;
+                break;
+            default:
+                this.log('debug', data.event+':'+data.status);
                 break;
         }
     }

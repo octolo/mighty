@@ -11,21 +11,35 @@ class ChatConsumer(Consumer):
     def default(self, cmd, args):
         cmd = cmd.split('.')
         if len(cmd) > 1:
-            if cmd[1] == 'support':
-                self.join_support()
+            if cmd[1] == 'join':
+                self.join(cmd[2], args)
             elif cmd[1] == 'message':
                 self.send_message(cmd[2], args)
+            elif cmd[1] == 'leave':
+                self.leave(cmd[2], args)
 
-    def join_support(self):
-        room_name = '%s__%s' % (self._ws.uid, 'support')
+    def join(self, to, args):
+        room_name = '%s__%s' % (self._ws.uid, to)
         self.join_room(room_name, self._ws.channel_name)
 
     def join_room(self, room_name, channel_name):
         if room_name not in self.rooms:
             async_to_sync(self._ws.channel_layer.group_add)(room_name, channel_name)
             self.rooms[room_name] = channel_name
-            self._ws.send_event({'status': 'ok', 'event': 'join room'})
+            self._ws.send_event({'status': True, 'event': 'chat.connected.support'})
             logger.info('room connection: %s' % room_name, extra={'user': self._ws.user})
+
+    def leave(self, to, args):
+        room_name = '%s__%s' % (self._ws.uid, to)
+        self.leave_room(room_name, self._ws.channel_name)
+
+
+    def leave_room(self, room_name, channel_name):
+        if room_name in self.rooms:
+            async_to_sync(self._ws.channel_layer.group_discard)(room_name, channel_name)
+            del self.rooms[room_name]
+            self._ws.send_event({'status': True, 'event': 'chat.leave.room'})
+
 
     def send_message(self, to, args):
         room_name = '%s__%s' % (self._ws.uid, to)
@@ -33,20 +47,15 @@ class ChatConsumer(Consumer):
             if 'msg' in args:
                 async_to_sync(self._ws.channel_layer.group_send)(room_name, {
                     'type': 'send.event',
-                    'action': 'chat.message.support:chat',
-                    'message': args['msg']
+                    'event': 'chat.message.support:chat',
+                    'message': args['msg'],
+                    'uid': str(self._ws.uid)
                 })
-                self._ws.send_event({'status': 'ok', 'event': 'send message'})
+                self._ws.send_event({'status': True, 'event': 'chat.message.send'})
             else:
-                self._ws.send_event({'status': 'ko', 'event': 'send message'})
+                self._ws.send_event({'status': False, 'event': 'chat.message.send'})
         else:
-            self._ws.send_event({'status': 'ko', 'event': 'unknown room'})
-
-    def leave_room(self, room_name, channel_name):
-        if room_name in self.rooms:
-            async_to_sync(self._ws.channel_layer.group_discard)(room_name, channel_name)
-            del self.rooms[room_name]
-            self._ws.send_event({'status': 'ok', 'event': 'leave room'})
+            self._ws.send_event({'status': False, 'event': 'chat.connected.room'})
 
     def disconnect(self, close_code):
         for room,channel in self.rooms.items():

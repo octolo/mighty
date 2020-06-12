@@ -47,8 +47,10 @@ class MightyConsumer(WebsocketConsumer):
                 self.actives[cmd] = self.consumers[cmd](self)
             logger.info('cmd: %s, args: %s' % (text_data.get('cmd'), args), extra={'user': self.user})
             self.actives[cmd].default(text_data.get('cmd'), args)
-        self.send_event({'message': 'room_name'})
+        else:
+            self.send_event({'status': False, 'event': 'command.unknown'})
 
     def send_event(self, event):
+        event['self'] ='uid' in event and str(self.uid) == event['uid']
         logger.info('event: %s' % event, extra={'user': self.user})
         self.send(text_data=json.dumps(event))
