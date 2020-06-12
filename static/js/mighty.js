@@ -121,6 +121,5 @@ var Mwebsocket = function(options) {
 
     this.disconnect = function(e) {
         delete this._ws;
-        this._ws = this.ws();
     }
 }

@@ -1,3 +1,5 @@
 pillow
 django-jsonfield
 django-json-widget
+channels
+channels-redis

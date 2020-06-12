@@ -30,6 +30,7 @@ class MightyConsumer(WebsocketConsumer):
         obj.save()
 
     def connect(self):
+        print(self.channel_name)
         typ, user = self.uniqid(self.scope)
         self.save_channel(typ, user)
         self.accept()

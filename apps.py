@@ -10,6 +10,7 @@ class Config:
     paginate_by = 100
     exclude_content_type = {"id__gt": 9}
     exclude = exclude
+    supervision = True
     
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))
@@ -31,6 +32,12 @@ class Config:
         unique = []
         uncomment = []
         keepcomment = []
+
+    class Service:
+        services = ['server',]
+        uptime = "ps -u %s -o etimes,cmd | awk '{print $1}' | tail -n1  | tr -d '\n'"
+        cpu = 'ps -u %s -o %%cpu --no-headers'
+        memory = 'ps -u %s -o %%mem --no-headers'
 
     class Crypto:
         BS = 16

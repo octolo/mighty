@@ -1,4 +1,5 @@
-var Mchat = function(ws) {
+var Mchat = function(ws, options) {
+    Mconfig.call(this, options);
     this.ws = ws;
     this.rooms = {}
 
@@ -22,8 +23,11 @@ var Mchat = function(ws) {
                 history.appendChild(p, history.firstChild);
                 this.rooms['support'] = data.self;
                 break;
-            case 'chat.message.support':
+            case 'chat.connected.support':
                 this.rooms['support'] = undefined;
+                break;
+            case 'chat.leave.support':
+                delete this.rooms['support'];
                 break;
             default:
                 this.log('debug', data.event+':'+data.status);

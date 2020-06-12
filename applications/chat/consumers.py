@@ -4,6 +4,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ChatConsumer(Consumer):
+    delimiter = '__'
+
     def __init__(self, ws):
         self.rooms = {}
         super().__init__(ws)
@@ -19,14 +21,14 @@ class ChatConsumer(Consumer):
                 self.leave(cmd[2], args)
 
     def join(self, to, args):
-        room_name = '%s__%s' % (self._ws.uid, to)
+        room_name = '%s%s%s' % (self._ws.uid, self.delimiter, to)
         self.join_room(room_name, self._ws.channel_name)
 
     def join_room(self, room_name, channel_name):
         if room_name not in self.rooms:
             async_to_sync(self._ws.channel_layer.group_add)(room_name, channel_name)
             self.rooms[room_name] = channel_name
-            self._ws.send_event({'status': True, 'event': 'chat.connected.support'})
+            self._ws.send_event({'status': True, 'event': 'chat.connected.%s:chat' % room_name.split(self.delimiter)[1]})
             logger.info('room connection: %s' % room_name, extra={'user': self._ws.user})
 
     def leave(self, to, args):
@@ -36,9 +38,10 @@ class ChatConsumer(Consumer):
 
     def leave_room(self, room_name, channel_name):
         if room_name in self.rooms:
-            async_to_sync(self._ws.channel_layer.group_discard)(room_name, channel_name)
+            print(room_name)
+            self._ws.channel_layer.group_discard(room_name, channel_name)
             del self.rooms[room_name]
-            self._ws.send_event({'status': True, 'event': 'chat.leave.room'})
+            self._ws.send_event({'status': True, 'event': 'chat.leave.%s:chat' % room_name.split(self.delimiter)[1]})
 
 
     def send_message(self, to, args):
@@ -51,11 +54,11 @@ class ChatConsumer(Consumer):
                     'message': args['msg'],
                     'uid': str(self._ws.uid)
                 })
-                self._ws.send_event({'status': True, 'event': 'chat.message.send'})
+                self._ws.send_event({'status': True, 'event': 'chat.message.send:chat'})
             else:
-                self._ws.send_event({'status': False, 'event': 'chat.message.send'})
+                self._ws.send_event({'status': False, 'event': 'chat.message.send:chat'})
         else:
-            self._ws.send_event({'status': False, 'event': 'chat.connected.room'})
+            self._ws.send_event({'status': False, 'event': 'chat.connected.room:chat'})
 
     def disconnect(self, close_code):
         for room,channel in self.rooms.items():

@@ -4,6 +4,10 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from mighty.admin.site import AdminSite
 
+mysite = AdminSite()
+admin.site = mysite
+admin.sites.site = mysite
+
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
     list_filter = ('content_type',)
@@ -68,11 +72,6 @@ if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     @admin.register(Nationality)
     class NationalityAdmin(NationalityAdmin):
         pass
-
-#mysite = AdminSite()
-#admin.site = mysite
-#admin.sites.site = mysite
-
 
 #if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
 #    from mighty.admin.applications import grapher

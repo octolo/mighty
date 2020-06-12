@@ -6,7 +6,7 @@ from django.utils.module_loading import import_string
 from mighty.apps import MightyConfig as conf
 from mighty import stdtypes, fields
 from pathlib import Path
-import base64, datetime, string, random, unicodedata, re, json, sys
+import base64, datetime, string, random, unicodedata, re, json, sys, subprocess
 
 BS = conf.Crypto.BS
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -101,6 +101,35 @@ Return comments splitted from the input
 """
 def split_comment(input_str):
     return re.search( "([\w\d'&,\. ]+)?\((.*)\)" , input_str)
+
+def command(cmd):
+    out, err = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()
+    out = out.decode('utf-8')
+    err = err.decode('utf-8')
+    return err, out
+
+def service_uptime(service, cmd=None):
+    err, out = command(cmd if cmd else conf.Service.uptime % service)
+    try:
+        out = float(out.strip())
+    except Exception:
+        out = 0
+    return err, out
+
+def service_cpumem(cmd):
+    err, out = command(cmd)
+    if not err:
+        out = out.strip().split('\n')
+        load = round(sum([float(i) for i in out if len(i)]), 2)
+        nb = len(out)
+        return err, load, nb
+    return err, out
+
+def service_cpu(service, cmd):
+    return service_cpumem(cmd if cmd else conf.Service.cpu % service)
+
+def service_memory(service, cmd=None):
+    return service_cpumem(cmd if cmd else conf.Service.memory % service)
 
 
 # from Crypto import Cipher, Random
