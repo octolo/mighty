@@ -20,7 +20,7 @@ table { width: 100%; }
 {% block breadcrumbs %}
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
-&rsaquo; <a href="{% url 'admin:mighty_supervision' %}">{{ supervision|title }}</a>
+&rsaquo; <a href="{% url 'admin:supervision' %}">{{ supervision|title }}</a>
 &rsaquo; Chat
 </div>
 {% endblock %}
@@ -46,7 +46,7 @@ table { width: 100%; }
                     <h2>Groups</h2>
                     <table>
                         {% for chan,ttl in groups.items %}
-                        <tr><td>{{ chan }}</td><td>{{ ttl }}</td></tr>
+                        <tr><td>{{ chan }}</td><td>{{ ttl }}</td><td><a href="{% url 'admin:supervision_chatjoin' chan %}">Join</a></td></tr>
                         {% endfor %}
                     </table>
                 </article>

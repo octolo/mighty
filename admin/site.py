@@ -26,7 +26,7 @@ import aioredis
 async def channels_group(pattern):
     redis = await aioredis.create_redis_pool('redis://localhost')
     keys = await redis.keys(pattern, encoding='utf-8')
-    channels = {key: await redis.ttl(key) for key in keys}
+    channels = {key.replace(pattern[:-1], ''): await redis.ttl(key) for key in keys}
     redis.close()
     await redis.wait_closed()
     return channels
@@ -59,17 +59,26 @@ class AdminSite(admin.AdminSite):
         if fdb: asyncio.run(flushdb())
         context = {**self.each_context(request),
             'supervision': _.supervision,
-            'groups': asyncio.run(channels_group('asgi::group*')),
+            'groups': asyncio.run(channels_group('asgi::group:*')),
             'users': asyncio.run(channels_group('specific.*')),
         }
         return TemplateResponse(request, 'admin/chat.html', context)
+
+    def supervision_chatjoin_view(self, request, extra_context=None, **kwargs):
+        room = kwargs.get('room')
+        context = {**self.each_context(request),
+            'supervision': _.supervision,
+            'room': room
+        }
+        return TemplateResponse(request, 'admin/chatjoin.html', context)
 
     def get_urls(self):
         urls = super(AdminSite, self).get_urls()
         from django.urls import path
         my_urls = []
         if conf.supervision:
-            my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='mighty_supervision'))
+            my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
         if 'mighty.applications.chat' in settings.INSTALLED_APPS:
-            my_urls.append(path('supervision/chat/', self.admin_view(self.supervision_chat_view), name='mighty_supervision_chat'))
+            my_urls.append(path('supervision/chat/', self.admin_view(self.supervision_chat_view), name='supervision_chat'))
+            my_urls.append(path('supervision/chat/join/<str:room>/', self.admin_view(self.supervision_chatjoin_view), name='supervision_chatjoin'))
         return my_urls + urls

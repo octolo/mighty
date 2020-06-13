@@ -37,8 +37,10 @@ def log_in_db(record, msg):
 
 class ConsoleHandler(logging.StreamHandler):
     def format(self, record):
-        msg = conf.Log.format_user.format(record.user.logname, record.msg) if hasattr(record, 'user') and hasattr(record.user, 'logname') else record.msg
-        msg = conf.Log.format_log.format(f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S.%f}", str(record.levelname), msg)
+        msg = super().format(record)
+        if hasattr(record, 'user'):
+            msg = conf.Log.format_user.format(record.user.logname, msg) if hasattr(record, 'user') and hasattr(record.user, 'logname') else msg
+        #msg = conf.Log.format_log.format(f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S.%f}", str(record.levelname), msg)
         if getattr(record, 'log_in_db', False): log_in_db(record, msg)
         msg = "%s%s%s" % (getattr(conf.Color, record.levelname.lower()), msg, conf.Color.default)
         return msg

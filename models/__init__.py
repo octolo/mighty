@@ -2,6 +2,29 @@ from django.conf import settings
 from django.db import  models
 from mighty.applications.user.models import User, Email, Phone, InternetProtocol, UserAgent
 
+if hasattr(settings, 'CHANNEL_LAYERS'):
+    from django.contrib.contenttypes.fields import GenericForeignKey
+    from django.contrib.contenttypes.models import ContentType
+    from mighty.models.base import Base
+
+    GROUP = 1
+    USER = 0
+    CHOICES_TYPE = (
+        (GROUP, 'Group'),
+        (USER, 'User')
+    )
+    class Channel(Base):
+        channel_type = models.PositiveSmallIntegerField(choices=CHOICES_TYPE, default=USER)
+        channel_name = models.CharField(max_length=255, null=True, blank=True)
+        from_channel_name = models.CharField(max_length=255)
+        from_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='chat_from_content_type')
+        from_object_id = models.CharField(max_length=40)
+        from_obj = GenericForeignKey('from_content_type', 'from_object_id')
+        to_channel_name = models.CharField(max_length=255, null=True, blank=True)
+        to_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True, related_name='chat_to_content_type')
+        to_object_id = models.CharField(max_length=40, null=True, blank=True)
+        to_obj = GenericForeignKey('to_content_type', 'to_object_id')
+
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     from mighty.applications.logger.models import Log
     class Log(Log):

@@ -1,6 +1,9 @@
 import json, logging
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+
+from mighty.apps import MightyConfig as conf
+from mighty.models import Channel
 logger = logging.getLogger(__name__)
 
 class Consumer:
@@ -9,9 +12,11 @@ class Consumer:
 
 class MightyConsumer(WebsocketConsumer):
     consumers = {}
+    delimiter = conf.Channel.delimiter
 
     def __init__(self, scope):
         self.actives = {}
+        self.rooms = {}
         super().__init__(scope)
 
     @property
@@ -29,15 +34,28 @@ class MightyConsumer(WebsocketConsumer):
         else: obj['channel'] = self.channel_name
         obj.save()
 
+    def join_room(self, room_name):
+        if room_name not in self.rooms:
+            async_to_sync(self.channel_layer.group_add)(room_name, self.channel_name)
+            self.rooms[room_name] = self.channel_name
+            self.send_event({'status': True, 'event': 'chat.connected.%s:chat' % room_name.split(self.delimiter)[1]})
+
+    def leave_room(self, room_name):
+        if room_name in self.rooms:
+            asyn_to_sync(self.channel_layer.group_discard)(room_name, self.channel_name)
+            del self.rooms[room_name]
+            self.send_event({'status': True, 'event': 'chat.leave.%s:chat' % room_name.split(self.delimiter)[1]})
+
+    def send_to_room(self, room_name, event, datas={}, uid=True):
+        datas['type'] = 'send.event'
+        if uid: datas['uid'] = str(self.uid)
+        async_to_sync(self.channel_layer.group_send)(room_name, datas)
+        self.send_event({'status': True, 'event': 'chat.connected.room:chat'})
+
     def connect(self):
-        print(self.channel_name)
         typ, user = self.uniqid(self.scope)
         self.save_channel(typ, user)
         self.accept()
-
-    def disconnect(self, close_code):
-        for name,consumer in self.actives.items():
-            consumer.disconnect(close_code)
 
     def receive(self, text_data):
         text_data = json.loads(text_data)

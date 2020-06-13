@@ -1,1 +1,1 @@
-default_app_config = 'mighty.applications.chat.apps.ChatConfig'
+default_app_config = 'mighty.applications.chat.apps.ChatConfig'   

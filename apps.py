@@ -39,6 +39,9 @@ class Config:
         cpu = 'ps -u %s -o %%cpu --no-headers'
         memory = 'ps -u %s -o %%mem --no-headers'
 
+    class Channel:
+        delimiter = '__'
+
     class Crypto:
         BS = 16
 

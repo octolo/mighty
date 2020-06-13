@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
+from django.contrib.sessions.models import Session
 from mighty.admin.site import AdminSite
 
 mysite = AdminSite()
@@ -12,7 +13,6 @@ admin.sites.site = mysite
 class PermissionAdmin(admin.ModelAdmin):
     list_filter = ('content_type',)
 
-from django.contrib.sessions.models import Session
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
     def _session_data(self, obj):
@@ -71,6 +71,14 @@ if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality.admin import NationalityAdmin
     @admin.register(Nationality)
     class NationalityAdmin(NationalityAdmin):
+        pass
+
+if hasattr(settings, 'CHANNEL_LAYERS'):
+    from mighty.models import Channel
+    from mighty.admin.models import BaseAdmin
+
+    @admin.register(Channel)
+    class ChannelAdmin(BaseAdmin):
         pass
 
 #if 'mighty.applications.grapher' in settings.INSTALLED_APPS:

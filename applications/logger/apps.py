@@ -20,7 +20,7 @@ class Config:
         emerg = "\033[1;93;5;101m"
         alert = "\033[1;30;5;105m"
         crit = "\033[1;97;5;101m"
-        error = "\033[1;91;5;107m"
+        error = "\033[0;31m"
         warning = "\033[0;91m"
         notice = "\033[0;97m"
         info = "\033[0;94m"
