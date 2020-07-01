@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load mighty admin_urls %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+#result_list { width: 100%; }
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">{{ object|truncatewords:"18" }}</a>
+&rsaquo; {% verbose_name_plural fake %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+<div class="module">
+{% if anticipates %}
+    <table id="change-history">
+        <thead>
+        <tr>
+            <th scope="col">{% field_name fake 'field' %}</th>
+            <th scope="col">{% field_name fake 'value' %}</th>
+            <th scope="col">{% field_name fake 'date_begin' %}</th>
+            <th scope="col">{% field_name fake 'date_end' %}</th>
+            <th scope="col">{% field_name fake 'user' %}</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for anticipate in anticipates %}
+            <tr>
+                <th scope="row">{{ anticipate.field }}</th>
+                <td>{{ anticipate.get_value }}</td>
+                <td>{{ anticipate.date_begin }}</td>
+                <td>{{ anticipate.date_end }}</td>
+                <td>{{ anticipate.user }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p></p>
+{% endif %}
+</div>
+</div>
+{% endblock %}

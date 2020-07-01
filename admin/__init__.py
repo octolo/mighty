@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.sessions.models import Session
 from mighty.admin.site import AdminSite
+from mighty import fields
 
 mysite = AdminSite()
 admin.site = mysite
@@ -79,7 +80,10 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 
     @admin.register(Channel)
     class ChannelAdmin(BaseAdmin):
-        pass
+        list_display = ('channel_name', 'channel_type', 'date_update')
+        fieldsets = ((None, {'classes': ('wide',), 'fields': fields.channels}),)
+        search_fields = ('channel_name', 'channel_type',)
+        view_on_site = False
 
 #if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
 #    from mighty.admin.applications import grapher

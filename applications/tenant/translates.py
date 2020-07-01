@@ -8,6 +8,8 @@ vp_role = _('roles')
 v_tenant = _('tenant')
 vp_tenant = _('tenants')
 
+perm_chat_tenantusers = _('Can chat with tenant users')
+
 # Invitation
 v_invitation = _('invitation')
 vp_invitation = _('invitations')

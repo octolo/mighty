@@ -3,6 +3,8 @@ from django.db.models import F, Func
 from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
+from django import forms
+
 from mighty.apps import MightyConfig as conf
 from mighty import stdtypes, fields
 from pathlib import Path
@@ -106,24 +108,24 @@ def command(cmd):
     out, err = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()
     out = out.decode('utf-8')
     err = err.decode('utf-8')
-    return err, out
+    return err, out, cmd
 
 def service_uptime(service, cmd=None):
-    err, out = command(cmd if cmd else conf.Service.uptime % service)
+    err, out, cmd = command(cmd if cmd else conf.Service.uptime % service)
     try:
         out = float(out.strip())
     except Exception:
         out = 0
-    return err, out
+    return err, out, cmd
 
 def service_cpumem(cmd):
-    err, out = command(cmd)
+    err, out, cmd = command(cmd)
     if not err:
         out = out.strip().split('\n')
         load = round(sum([float(i) for i in out if len(i)]), 2)
         nb = len(out)
-        return err, load, nb
-    return err, out
+        return err, load, nb, cmd
+    return err, out, 0, cmd
 
 def service_cpu(service, cmd):
     return service_cpumem(cmd if cmd else conf.Service.cpu % service)
@@ -387,3 +389,22 @@ def get_logger():
 """
 def to_binary(data):
     return ' '.join(format(x, 'b') for x in bytearray(data, 'utf-8'))
+
+"""
+"""
+def get_form(**kwargs):
+    form_class = kwargs.get('form_class', forms.Form)
+    form_fields = kwargs.get('form_fields', [])
+    class DynForm(form_class):
+        class Meta:
+            fields = fields
+    return DynForm
+
+def get_form_model(model_class, **kwargs):
+    form_class = kwargs.get('form_class', forms.ModelForm)
+    form_fields = kwargs.get('form_fields', [])
+    class DynForm(form_class):
+        class Meta:
+            model = model_class
+            fields = form_fields
+    return DynForm

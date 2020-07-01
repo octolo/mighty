@@ -4,6 +4,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from mighty.applications.logger.apps import LoggerConfig as conf
 from mighty.applications.logger import translates as _
+from mighty import translates as _m
+from datetime import datetime
 
 EMERG = conf.Code.emerg
 ALERT = conf.Code.alert
@@ -46,14 +48,17 @@ class Log(models.Model):
 
     class Meta:
         abstract = True
+        verbose_name = _.v_log
+        verbose_name_plural = _.vp_log
+        ordering = ['-created']
 
 class ChangeLog(models.Model):
-    model_id = models.ForeignKey('', on_delete=models.CASCADE)
-    field = models.CharField(_.field, max_length=255, db_index=True)
-    value = models.BinaryField(_.value, )
-    fmodel = models.CharField(_.fmodel, max_length=255)
-    date_begin = models.DateTimeField(_.date_begin, editable=False)
-    date_end = models.DateTimeField(_.date_end, auto_now_add=True, editable=False)
+    object_id = models.ForeignKey('', on_delete=models.CASCADE)
+    field = models.CharField(_m.field, max_length=255, db_index=True)
+    value = models.BinaryField(_m.value, )
+    fmodel = models.CharField(_m.fmodel, max_length=255)
+    date_begin = models.DateTimeField(_m.date_begin, editable=False)
+    date_end = models.DateTimeField(_m.date_end, editable=False, auto_now_add=True)
     user = models.CharField(max_length=255)
 
     def get_value(self):
@@ -61,6 +66,9 @@ class ChangeLog(models.Model):
 
     class Meta:
         abstract = True
-        verbose_name = _.v_log
-        verbose_name_plural = _.vp_log
+        verbose_name = _.v_changelog
+        verbose_name_plural = _.vp_changelog
         ordering = ['-date_end']
+
+    def save(self, *args, **kwargs):
+        super(User, self).save(*args, **kwargs)

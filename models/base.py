@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.html import format_html
+from django.db.models.options import Options
 
 from mighty.fields import JSONField
 from mighty.functions import make_searchable
@@ -10,37 +11,34 @@ from uuid import uuid4
 def default_logfield_dict():
     return {"emerg": {}, "alert": {}, "critical": {}, "error": {}, "warning": {}, "notice": {}, "info": {}, "debug": {}}
 
-ADD = 'add'
-DETAIL = 'detail'
 LIST = 'list'
-CHANGE = 'change'
-DELETE = 'delete'
 EXPORT = 'export'
 IMPORT = 'import'
 DISABLE = 'disable'
 ENABLE = 'enable'
-FILTERLVL0 = 'filter_lvl0'
-FILTERLVL1 = 'filter_lvl1'
-FILTERLVL2 = 'filter_lvl2'
-CHOICES_PERMISSIONS = {
-    ADD: _.ADD,
+ANTICIPATE = 'anticipate'
+SOURCE = 'source'
+FILTERLVL0 = 'filterlvl0'
+FILTERLVL1 = 'filterlvl1'
+FILTERLVL2 = 'filterlvl2'
+actions = {
     LIST: _.LIST,
-    DETAIL: _.DETAIL,
-    CHANGE: _.CHANGE,
-    DELETE: _.DELETE,
     DISABLE: _.DISABLE,
     ENABLE: _.ENABLE,
     EXPORT: _.EXPORT,
     IMPORT: _.IMPORT,
+    ANTICIPATE: _.ANTICIPATE,
+    SOURCE: _.SOURCE,
     FILTERLVL0: _.FILTERLVL0,
     FILTERLVL1: _.FILTERLVL1,
     FILTERLVL2: _.FILTERLVL2,
 }
-PERMISSIONS = sorted(list(CHOICES_PERMISSIONS), key=lambda x: x[0])
+default_permissions = Options(None).default_permissions
+permissions = tuple(sorted(list(actions), key=lambda x: x[0]))
 class Base(models.Model):
     search_fields = []
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
-    logfields = JSONField(blank=True, null=True, default=default_logfield_dict)
+    logfields = JSONField(blank=True, null=True, default=dict)
     is_disable = models.BooleanField(_.is_disable, default=False, editable=False)
     search = models.TextField(db_index=True, blank=True, null=True)
     date_create = models.DateTimeField(_.date_create, auto_now_add=True, editable=False)
@@ -49,13 +47,13 @@ class Base(models.Model):
     update_by = models.CharField(_.update_by, blank=True, editable=False, max_length=254, null=True)
 
     class mighty:
-        perm_title = CHOICES_PERMISSIONS
+        perm_title = actions
         fields_str = ('__str__',)
         url_field = 'uid'
 
     class Meta:
         abstract = True
-        default_permissions = PERMISSIONS
+        default_permissions = default_permissions + permissions
         
     """
     Properties
@@ -149,6 +147,9 @@ class Base(models.Model):
 
     def add_logfield(self, lvl, field, msg):
         self.logfields[lvl][field] = msg
+
+    def del_logfield(self, lvl, field):
+        del self.logfields[lvl][field]
 
     def is_in_logfield(self, lvl):
         return True if len(self.logfields[lvl]) else False

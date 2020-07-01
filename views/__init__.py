@@ -32,7 +32,7 @@ class AddView(ModelView, CreateView):
         return self.object.detail_url
 
 # DetailView overrided
-class DetailView(ModelView, DetailView):
+class ViewView(ModelView, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({"title": self.object})
@@ -97,7 +97,7 @@ class FileDownloadView(BaseView, RedirectView):
         return fil.file_url
 
 # FilePDFView open a pdf file in a viewer
-class FilePDFView(DetailView):
+class FilePDFView(ViewView):
     pass
 
 # Buffer for ExportView

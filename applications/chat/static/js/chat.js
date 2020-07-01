@@ -3,35 +3,52 @@ var Mchat = function(ws, options) {
     this.ws = ws;
     this.rooms = {}
 
-    this.send = function(cmd, args){
-        this.ws.send(JSON.stringify({'cmd': cmd, 'args': args}));
-    }
-
-    this.receive = function(event, data){
-        switch(event) {
-            case 'chat.message.support':
-                var history = document.getElementById('chat-history-support');
-                if (this.rooms['support'] != data.self) {
-                    var div = document.createElement('div');
-                    div.className = 'chat-history';
-                    history.insertBefore(div, history.firstChild);
-                }
-                history = history.firstChild;
-                var p = document.createElement('p');
-                var who = data.self ? 'vous' : data.who;
-                p.textContent = who + ': ' + data.message;
-                history.appendChild(p, history.firstChild);
-                this.rooms['support'] = data.self;
+    this.dispatch = function(cmd, args){
+        switch(cmd[1]) {
+            case 'join':
+                cmd[2] == 'init' ? this.join_init(args.to) : this.join_accept(args.to);
                 break;
-            case 'chat.connected.support':
-                this.rooms['support'] = undefined;
+            case 'leave':
+                cmd[2] == 'init' ? this.leave_init(args.to) : this.leave_accept(args.to);
                 break;
-            case 'chat.leave.support':
-                delete this.rooms['support'];
-                break;
-            default:
-                this.log('debug', data.event+':'+data.status);
+            case 'message':
+                cmd[2] == 'send' ? this.message_send(args) : this.message_receive(args);
                 break;
         }
+    }
+
+    this.join_init = function(to) {
+        this.ws.send('chat.join.init', {'to': to});
+    }
+
+    this.join_accept = function(to) {
+        this.ws.send('chat.join.accept', {'to': to});
+    }
+
+    this.leave_init = function(to) {
+        this.ws.send('chat.leave.init', {'to': to});
+    }
+
+    this.leave_accept = function(to) {
+        this.ws.send('chat.leave.accept', {'to': to});
+    }
+
+    this.message_send = function(args) {
+        if (args['msg'] && args['to']) { this.ws.send('chat.message.send', {'to': args['to'], 'msg': args['msg']}); }
+    }
+
+    this.message_receive = function(args) {
+        var history = document.getElementById('chat-history-' + args.chat);
+        if (this.rooms[args.chat] != args.self) {
+            var div = document.createElement('div');
+            div.className = 'chat-history';
+            history.insertBefore(div, history.firstChild);
+        }
+        history = history.firstChild;
+        var p = document.createElement('p');
+        var who = args.self ? 'vous' : args.from;
+        p.textContent = who + ': ' + args.msg;
+        history.appendChild(p, history.firstChild);
+        this.rooms[args.chat] = args.self;
     }
 }

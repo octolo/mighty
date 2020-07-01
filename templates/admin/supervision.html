@@ -10,6 +10,7 @@ article * { vertical-align: middle;}
 .warning { white-space: pre; }
 .progress { width: 100%; background-color: #ddd; }
 .state { height: 30px; background-color: #4CAF50; text-align: center; line-height: 30px; color: white; }
+.command { color: steelblue; }
 @media (max-width: 768px) {
     article { width: 100%; padding: 0px; }
 }
@@ -33,7 +34,7 @@ article * { vertical-align: middle;}
     <article>
         <h2>Services</h2>
         <ul>
-        {% if chat %}<li><a href="{% url 'admin:supervision_chat' %}">Chat</a></li>{% endif %}
+            <li><a href="{% url 'admin:supervision_channel_list' %}">Channels</a></li>
         </ul>
     </article>
 </section>
@@ -44,6 +45,7 @@ article * { vertical-align: middle;}
     <div class="d-f md-d-bl">
         <article>
             <h2>Uptime&nbsp;<img class="h-px20" src="{% static 'img/date.svg' %}"></h2>
+            <small class="command">{{ commands.uptime.2 }}</small><br>
             {% if commands.uptime.0 %}
             <ul class="messagelist">
                 <li class="warning">{{ commands.uptime.0 }}</li>
@@ -62,6 +64,7 @@ article * { vertical-align: middle;}
 
         <article>
             <h2>CPU&nbsp;<img class="h-px20" src="{% static 'img/cpu.png' %}"></h2>
+            <small class="command">{{ commands.cpu.3 }}</small><br>
             {% if commands.cpu.0 %}
             <ul class="messagelist">
                 <li class="warning">{{ commands.cpu.0 }}</li>
@@ -75,6 +78,7 @@ article * { vertical-align: middle;}
 
         <article>
             <h2>MEMORY&nbsp;<img class="h-px20" src="{% static 'img/memory.png' %}"></h2>
+            <small class="command">{{ commands.memory.3 }}</small><br>
             {% if commands.memory.0 %}
             <ul class="messagelist">
                 <li class="warning">{{ commands.memory.0 }}</li>

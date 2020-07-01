@@ -1,4 +1,4 @@
-{% extends "admin/delete_confirmation.html" %}
+{% extends "admin/base_site.html" %}
 {% load mighty admin_urls %}
 
 {% block extrastyle %}
@@ -10,7 +10,7 @@
 </style>
 {% endblock %}
 
-{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} changes-logs{% endblock %}
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
@@ -22,11 +22,9 @@
 </div>
 {% endblock %}
 
-
 {% block content %}
 <div id="content-main">
 <div class="module">
-
 {% if logs %}
     <table id="change-history">
         <thead>
@@ -39,15 +37,15 @@
         </tr>
         </thead>
         <tbody>
-        {% for log in logs %}
-        <tr>
-            <th scope="row">{{ log.field }}</th>
-            <td>{{ log.get_value }}</td>
-            <td>{{ log.date_begin }}</td>
-            <td>{{ log.date_end }}</td>
-            <td>{{ log.user }}</td>
-        </tr>
-        {% endfor %}
+            {% for log in logs %}
+            <tr>
+                <th scope="row">{{ log.field }}</th>
+                <td>{{ log.get_value }}</td>
+                <td>{{ log.date_begin }}</td>
+                <td>{{ log.date_end }}</td>
+                <td>{{ log.user }}</td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 {% else %}

@@ -92,3 +92,12 @@ def convert_date(date, origin, convert):
 def has_m2m(m2mfield, m2m, field='id'):
     m2m_id = int(getattr(m2m, field))
     return m2mfield.filter(**{field: m2m_id}).count()
+
+from django.contrib.contenttypes.models import ContentType
+
+@register.filter(name='contenttype_id')
+def contenttype_id(model):
+    try:
+        return ContentType.objects.get(app_label=model._meta.app_label, model=model._meta.model_name).id
+    except ContentType.DoesNotExist:
+        return

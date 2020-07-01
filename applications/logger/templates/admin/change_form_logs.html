@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+{% load admin_urls mighty %}
+
+{% block object-tools-items %}
+{% url opts|admin_urlname:'logs' original.pk|admin_urlquote as log_url %}
+<li><a href="{{ log_url }}">Logs</a></li>
+{% if original.changelog_model %}
+{% url opts|admin_urlname:'changeslogs' original.pk|admin_urlquote as changelog_url %}
+<li><a href="{{ changelog_url }}">{% verbose_name_plural original.changelog_model %}</a></li>
+{% endif %}
+{{ block.super }}
+{% endblock %}

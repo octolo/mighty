@@ -25,9 +25,6 @@ stack_info = _("Stack frame information (where available) from the bottom of the
 thread = _("Thread ID (if available).")
 threadNa = _("Thread name (if available).")
 
-model_id = _('associated model')
-field = _('field')
-value = _('value')
-fmodel = _('field type')
-date_begin = _('Begin')
-date_end = _('End')
+
+v_changelog = _('change log')
+vp_changelog = _('changes logs')

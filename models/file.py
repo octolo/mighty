@@ -18,7 +18,7 @@ from mighty.functions import file_directory_path
 import os, mimetypes
 
 class File(models.Model):
-    file = models.FileField(upload_to=file_directory_path)
+    file = models.FileField(upload_to=file_directory_path, blank=True, null=True)
     filename = models.CharField(max_length=255, blank=True, null=True)
     filemimetype = models.CharField(max_length=255, blank=True, null=True)
     

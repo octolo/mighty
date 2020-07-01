@@ -1,4 +1,4 @@
-{% extends "admin/delete_confirmation.html" %}
+{% extends "admin/base_site.html" %}
 {% load mighty admin_urls %}
 
 {% block extrastyle %}
@@ -8,7 +8,7 @@
 </style>
 {% endblock %}
 
-{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} logs{% endblock %}
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
@@ -23,8 +23,6 @@
 {% block content %}
 <div id="content-main">
 <div class="module">
-
-{% if logs %}
     <div>
         <small><b>args:</b> {% field_name fake 'args' %}</small><br>
         <small><b>created:</b> {% field_name fake 'created' %}</small><br>
@@ -44,13 +42,11 @@
         <small><b>stack_info:</b> {% field_name fake 'stack_info' %}</small><br>
         <small><b>thread:</b> {% field_name fake 'thread' %}</small><br>
     </div><br>
-
+{% if logs %}
     <table id="change-history">
         <thead>
         <tr>
-            <th scope="col">args</th>
             <th scope="col">created</th>
-            <th scope="col">exc_info</th>
             <th scope="col">filename</th>
             <th scope="col">funcName</th>
             <th scope="col">levelno</th>
@@ -58,21 +54,14 @@
             <th scope="col">module</th>
             <th scope="col">msecs</th>
             <th scope="col">msg</th>
-            <th scope="col">name</th>
-            <th scope="col">pathname</th>
             <th scope="col">process</th>
-            <th scope="col">processName</th>
-            <th scope="col">relativeCreated</th>
-            <th scope="col">stack_info</th>
             <th scope="col">thread</th>
         </tr>
         </thead>
         <tbody>
         {% for log in logs %}
         <tr>
-            <td>{{ log.args }}</td>
             <td>{{ log.created }}</td>
-            <td>{{ log.exc_info }}</td>
             <td>{{ log.filename }}</td>
             <td>{{ log.funcName }}</td>
             <td>{{ log.levelno }}</td>
@@ -80,12 +69,7 @@
             <td>{{ log.module }}</td>
             <td>{{ log.msecs }}</td>
             <td>{{ log.msg }}</td>
-            <td>{{ log.name }}</td>
-            <td>{{ log.pathname }}</td>
             <td>{{ log.process }}</td>
-            <td>{{ log.processName }}</td>
-            <td>{{ log.relativeCreated }}</td>
-            <td>{{ log.stack_info }}</td>
             <td>{{ log.thread }}</td>
         </tr>
         {% endfor %}

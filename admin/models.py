@@ -8,12 +8,16 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django_json_widget.widgets import JSONEditorWidget
+from django.shortcuts import redirect
 
 from mighty import fields
+from mighty.forms import AnticipateForm
 from mighty.fields import JSONField
 from mighty import translates as _
 from mighty.admin.actions import disable_selected, enable_selected
 from mighty.admin.filters import InAlertListFilter, InErrorListFilter
+from mighty.functions import get_form_model
+from mighty.models.source import CHOICES_TYPE
 
 from functools import update_wrapper
 
@@ -129,26 +133,139 @@ class BaseAdmin(admin.ModelAdmin):
             action_flag=DELETION,
         )
 
-    def logs_view(self, request, object_id, extra_context=None):
-        opts = self.model._meta
-        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        context = {
-            **self.admin_site.each_context(request),
-            #'title': object_name,
-            'object_name': str(opts.verbose_name),
-            'object': self.get_object(request, unquote(object_id), to_field),
-            'opts': opts,
-            'app_label': opts.app_label,
-            'media': self.media
-        }
-        request.current_app = self.admin_site.name
-        return TemplateResponse(request, 'admin/logs.html', context)
+    def get_queryset_by_contenttype(self, model, request):
+        qs = model._default_manager.get_queryset()
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
+
+    def get_object_by_contenttype(self, request, contenttype_id, object_id, from_field=None):
+        from django.contrib.contenttypes.models import ContentType
+        from django.core.exceptions import ValidationError
+        model = ContentType.objects.get(id=contenttype_id).model_class()
+        queryset = self.get_queryset_by_contenttype(model, request)
+        field = model._meta.pk if from_field is None else model._meta.get_field(from_field)
+        try:
+            object_id = field.to_python(object_id)
+            return queryset.get(**{field.name: object_id})
+        except (model.DoesNotExist, ValidationError, ValueError):
+            return None
 
     def wrap(self, view):
         def wrapper(*args, **kwargs):
             return self.admin_site.admin_view(view)(*args, **kwargs)
         wrapper.model_admin = self
         return update_wrapper(wrapper, view)
+
+    ##########################
+    # Anticipate Admin
+    ##########################
+    def anticipate_view(self, request, contenttype_id, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'fake': obj.anticipate_model(),
+            'anticipates': obj.anticipate_model.objects.filter(model_id=object_id),
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        return TemplateResponse(request, 'admin/anticipate.html', context)
+
+    def anticipate_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
+        info = self.model._meta.app_label, self.model._meta.model_name
+        form_conf = {"form_class": AnticipateForm, "form_fields": ['date_begin', 'date_end']}
+        form = get_form_model(self.model.anticipate_model, **form_conf)
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        if request.POST:
+            form = form(obj, fieldname, request.user, request.POST)
+            if form.is_valid():
+                return redirect('admin:%s_%s_anticipate' % info, object_id=object_id)
+        else:
+            form = form(obj, fieldname, request.user)
+        context = {
+            **self.admin_site.each_context(request),
+            'form': form,
+            'fieldname': fieldname,
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'fake': obj.anticipate_model(),
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        return TemplateResponse(request, 'admin/anticipate_addfield.html', context)
+
+    ##########################
+    # Source Admin
+    ##########################
+    def source_view(self, request, contenttype_id, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'fake': obj.anticipate_model(),
+            'anticipates': obj.anticipate_model.objects.filter(model_id=object_id),
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        return TemplateResponse(request, 'admin/anticipate_list.html', context)
+
+    def source_choice_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
+        info = self.model._meta.app_label, self.model._meta.model_name
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        context = {
+            **self.admin_site.each_context(request),
+            'choices': CHOICES_TYPE,
+            'fieldname': fieldname,
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'fake': obj.source_model(),
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        return TemplateResponse(request, 'admin/source_choice.html', context)
+
+    def source_addfield_view(self, request, contenttype_id, object_id, fieldname, sourcetype, extra_context=None):
+        info = self.model._meta.app_label, self.model._meta.model_name
+        form_conf = {"form_class": AnticipateForm, "form_fields": ['date_begin', 'date_end']}
+        form = get_form_model(self.model.anticipate_model, **form_conf)
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        if request.POST:
+            form = form(obj, fieldname, request.user, request.POST)
+            if form.is_valid():
+                return redirect('admin:%s_%s_anticipate' % info, object_id=object_id)
+        else:
+            form = form(obj, fieldname, request.user)
+        context = {
+            **self.admin_site.each_context(request),
+            'sourcetype': sourcetype,
+            'form': form,
+            'fieldname': fieldname,
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'fake': obj.source_model(),
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        return TemplateResponse(request, 'admin/source_addfield.html', context)
 
     def get_urls(self):
         from django.urls import path
@@ -158,6 +275,17 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/disable/', self.wrap(self.disable_view), name='%s_%s_disable' % info),
             path('<path:object_id>/enable/', self.wrap(self.enable_view), name='%s_%s_enable' % info),
         ]
+        if hasattr(self.model, 'anticipate_model'):
+            my_urls += [
+                path('ct-<int:contenttype_id>/<path:object_id>/anticipate/', self.wrap(self.anticipate_view), name='%s_%s_anticipate' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/anticipate/<str:fieldname>/', self.wrap(self.anticipate_addfield_view), name='%s_%s_anticipate_addfield' % info),
+            ]
+        if hasattr(self.model, 'source_model'):
+            my_urls += [
+                path('ct-<int:contenttype_id>/<path:object_id>/source/', self.wrap(self.source_view), name='%s_%s_source' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/', self.wrap(self.source_choice_view), name='%s_%s_source_choice' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/<str:sourcetype>/', self.wrap(self.source_addfield_view), name='%s_%s_source_addfield' % info),
+            ]
         return my_urls + urls
 
     @csrf_protect_m
@@ -187,8 +315,7 @@ class BaseAdmin(admin.ModelAdmin):
         disabled_objects, model_count, perms_needed, protected = self.get_deleted_objects([obj], request)
 
         if request.POST and not protected:  # The user has confirmed the deletion.
-            if perms_needed:
-                raise PermissionDenied
+            if perms_needed: raise PermissionDenied
             obj_display = str(obj)
             attr = str(to_field) if to_field else opts.pk.attname
             obj_id = obj.serializable_value(attr)

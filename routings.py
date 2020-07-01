@@ -5,7 +5,7 @@ from mighty.consumers import MightyConsumer
 from mighty.applications.chat.consumers import ChatConsumer
 
 consumers = {'chat': ChatConsumer}
-MightyConsumer.consumers = consumers
+MightyConsumer.consumers.update(consumers)
 
 application = ProtocolTypeRouter({
     'websocket': AuthMiddlewareStack(

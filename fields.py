@@ -38,3 +38,5 @@ admin_change_url = ('admin_change_url'),
 admin_delete_url = ('admin_delete_url'),
 admin_disable_url = ('admin_disable_url'),
 admin_enable_url = ('admin_enable_url'),
+
+channels = ('channel_name', 'channel_type', 'from_id', 'objs', 'history')

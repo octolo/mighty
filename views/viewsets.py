@@ -55,7 +55,7 @@ class ModelViewSet(ViewSet):
         self.views = {}
         self.add_view('list', views.ListView, '')
         self.add_view('add', views.AddView, 'add/')
-        self.add_view('detail', views.DetailView, '%s/detail/' % self.slug)
+        self.add_view('view', views.ViewView, '%s/detail/' % self.slug)
         self.add_view('change', views.ChangeView, '%s/change/' % self.slug)
         self.add_view('delete', views.DeleteView, '%s/delete/' % self.slug)
         self.add_view('export', views.ExportView, 'export/')
@@ -103,7 +103,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
             self.views = {}
             self.add_view('list', apiviews.ListAPIView, '')
             self.add_view('add', apiviews.CreateAPIView, 'add/')
-            self.add_view('detail', apiviews.RetrieveAPIView, '%s/detail/' % self.slug)
+            self.add_view('view', apiviews.RetrieveAPIView, '%s/detail/' % self.slug)
             self.add_view('change', apiviews.UpdateAPIView, '%s/change/' % self.slug)
             self.add_view('delete', apiviews.DestroyAPIView, '%s/delete/' % self.slug)
             if hasattr(self.model, 'is_disable'):

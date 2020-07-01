@@ -1,29 +1,40 @@
 from django.conf import settings
 from django.db import  models
+from mighty.fields import JSONField
 from mighty.applications.user.models import User, Email, Phone, InternetProtocol, UserAgent
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     from django.contrib.contenttypes.fields import GenericForeignKey
-    from django.contrib.contenttypes.models import ContentType
     from mighty.models.base import Base
 
-    GROUP = 1
-    USER = 0
-    CHOICES_TYPE = (
-        (GROUP, 'Group'),
-        (USER, 'User')
-    )
     class Channel(Base):
-        channel_type = models.PositiveSmallIntegerField(choices=CHOICES_TYPE, default=USER)
         channel_name = models.CharField(max_length=255, null=True, blank=True)
-        from_channel_name = models.CharField(max_length=255)
-        from_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='chat_from_content_type')
-        from_object_id = models.CharField(max_length=40)
-        from_obj = GenericForeignKey('from_content_type', 'from_object_id')
-        to_channel_name = models.CharField(max_length=255, null=True, blank=True)
-        to_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True, related_name='chat_to_content_type')
-        to_object_id = models.CharField(max_length=40, null=True, blank=True)
-        to_obj = GenericForeignKey('to_content_type', 'to_object_id')
+        channel_type = models.CharField(max_length=255)
+        from_id = models.CharField(max_length=40)
+        objs = JSONField(default=dict)
+        history = JSONField(default=dict)
+
+        def connect_user(self, channel_name, obj, _id):
+            self.objs[_id] = {
+                'model': obj._meta.model_name,
+                'label': obj._meta.app_label,
+                'channel_name': channel_name,
+                'state': 'connected'
+            }
+            self.save()
+
+        def disconnect_user(self, _id, close_code='disconnected'):
+            self.objs[_id]['state'] = close_code
+            self.save()
+
+        def historize(self, _id, event, datas):
+            if _id not in self.history: self.history[_id] = []
+            self.history[_id].append({event: datas})
+            self.save()
+
+        def save(self, *args, **kwargs):
+            if not self.from_id: self.from_id = next(iter(self.objs))
+            super(Channel, self).save(*args, **kwargs)
 
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     from mighty.applications.logger.models import Log
@@ -57,6 +68,13 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
         class UserAddress(Address):
             user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_address')
 
+    from mighty.applications.logger import EnableChangeLog
+    from mighty.applications.logger.models import ChangeLog
+
+    class UserLogModel(ChangeLog):
+        object_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    @EnableChangeLog(UserLogModel, ('logentry', 'password'))
     class ProxyUser(User):
         app_label = 'mighty'
         model_name = 'user'
@@ -72,6 +90,12 @@ if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     class Twofactor(Twofactor):
         class Meta:
             app_label = 'auth'
+
+if 'mighty.applications.extend' in settings.INSTALLED_APPS:
+    from mighty.applications.extend.models import Key, Extend
+    class Key(Key):
+        pass
+        
 
 if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
     from mighty.models.applications import grapher

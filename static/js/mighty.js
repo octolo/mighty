@@ -71,52 +71,46 @@ function Mconfig(options) {
 }
 
 var Mwebsocket = function(options) {
+    this.time_reconnect = 500;
     Mconfig.call(this, options);
     this.url = 'ws://'+this.location+'/mighty.ws'
-    this.subs = {}
-    if (this._ws === undefined) {
-        this._ws = new WebSocket(this.url);
-        var self = this;
-        this._ws.onmessage = function(e) { self.receive(e); }
-        this._ws.onclose = function(e) { self.disconnect(e); }
-    }
+    this.cs = {}
 
-    this.hasSubCommand = function(cmd) {
-        cmd = cmd.split(':')
-        return (cmd.length == 1 ? [cmd[0], undefined] : cmd);
+    this.cx = function(){
+        if (this._ws === undefined) {
+            var self = this;
+            this._ws = new WebSocket(this.url);
+            this._ws.onmessage = function(e) { self.receive(e); }
+            this._ws.onclose = function(e) { self.disconnect(e); }
+        }
+        return this._ws;
+    }
+    
+    this.dispatch = function(cmd, args) {
+        args = args === undefined ? {} : args; 
+        if (cmd !== undefined) {
+            cmd = cmd.split('.');
+            if (this.cs.hasOwnProperty(cmd[0])) {
+                return this.cs[cmd[0]].dispatch(cmd, args);
+            }
+            this.log('debug', 'cmd', [cmd, args]);
+        }else{
+            this.log('debug', cmd+': '+args);
+        }
     }
 
     this.send = function(cmd, args) {
-        args = args === undefined ? {} : args;
-        if (cmd !== undefined) {
-            cmd = this.hasSubCommand(cmd);
-            if (this._ws.readyState === 1) {
-                if (cmd[1] !== undefined && this.subs.hasOwnProperty(cmd[1])) {
-                    this.subs[cmd[1]].send(cmd[0], args);
-                } else {
-                    this._ws.send(JSON.stringify({'cmd': cmd[0], 'args': args}));
-                }
-            } else {
-                var self = this;
-                setTimeout(function () { self.send(cmd, args); }, 100);
-            }
+        if (this.cx().readyState === 1) {
+            this.cx().send(JSON.stringify({'cmd': cmd, 'args': args}));
+        } else {
+            var self = this;
+            setTimeout(function () { self.send(cmd, args); }, this.time_reconnect);
         }
     }
 
     this.receive = function(e) {
-        const data = JSON.parse(e.data)
-        if (data.event !== undefined) {
-            event = this.hasSubCommand(data.event);
-            if (event[1] !== undefined && this.subs.hasOwnProperty(event[1])) {
-                this.subs[event[1]].receive(event[0], data);
-            } else {
-                switch(event[0]) {
-                    default:
-                        this.log('debug', data.event+':'+data.status);
-                        break;
-                }
-            }
-        }
+        var data = JSON.parse(e.data);
+        this.dispatch(data.dispatch, data);
     }
 
     this.disconnect = function(e) {
