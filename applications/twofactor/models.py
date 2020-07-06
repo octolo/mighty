@@ -23,6 +23,7 @@ class Twofactor(Base):
     code = models.PositiveIntegerField(default=generate_code, db_index=True)
     is_consumed = models.BooleanField(default=False)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='code_user')
+    email_or_phone = models.CharField(max_length=255)
     mode = models.CharField(choices=CHOICES_MODE, max_length=255)
     status = models.CharField(choices=CHOICES_STATUS, default=STATUS_PREPARE, max_length=100, editable=False, help_text='<a href="check"></a>')
     backend = models.CharField(max_length=255, editable=False)

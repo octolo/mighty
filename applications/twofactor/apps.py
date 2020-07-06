@@ -3,8 +3,6 @@ from django.conf import settings
 from mighty import over_config
 
 class Config:
-    methods = ['email', 'sms', 'basic']
-    methods_ws = ['email', 'sms']
     site = None
     sender_name = None
     sender_email = None

@@ -23,4 +23,6 @@ class Nationality(Base, Image):
 
     @property
     def image_html(self):
-        return format_html('<img src="%s" title="%s" style="max-height: 20px">' % (self.image.url, str(self)))
+        if self.image:
+            return format_html('<img src="%s" title="%s" style="max-height: 20px">' % (self.image.url, str(self)))
+        return 

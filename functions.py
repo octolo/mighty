@@ -54,6 +54,12 @@ def test(input_str=None, search=conf.Test.search, *args, **kwargs):
     if "positive" in kwargs and input_str in kwargs["positive"]: return True
     return True if str(input_str).strip().lower().replace(" ", "") not in search else False
 
+def masking_email(email):
+    return re.sub(r'(?<=.)[^@](?=[^@]*?[^@]@)|(?:(?<=@.)|(?!^)(?=[^@]*$)).(?=.*[^@]\.)', "*", email, 0)
+
+def masking_phone(phone):
+    return re.sub(r'(?<=.....)(?=\d*)\d', '*', phone[:-1], 0)+phone[-1:]
+
 """
 Return a data or none
 """

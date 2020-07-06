@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.views import LoginView
+from django.http import HttpResponseRedirect
 from django.urls import reverse, resolve
 from django.views.decorators.cache import never_cache
 from django.template.response import TemplateResponse
@@ -42,6 +42,102 @@ class AdminSite(admin.AdminSite):
     site_header = conf.site_header
     index_title = conf.index_title
 
+    @never_cache
+    def stepsearch(self, request, extra_context=None):
+        current_url = resolve(request.path_info).url_name
+
+        if request.method == 'GET' and self.has_permission(request):
+            index_path = reverse('admin:index', current_app=self.name)
+            return HttpResponseRedirect(index_path)
+
+        context = dict(
+            self.each_context(request),
+            title=_.login,
+            app_path=request.get_full_path(),
+            username=request.user.get_username(),
+            current_url=current_url,
+            next_url=request.GET.get('next', '')
+        )
+        if (REDIRECT_FIELD_NAME not in request.GET and REDIRECT_FIELD_NAME not in request.POST):
+            context[REDIRECT_FIELD_NAME] = reverse('admin:twofactor_choices', current_app=self.name)
+        context.update(extra_context or {})
+
+        from mighty.applications.twofactor.forms import TwoFactorSearchForm
+        defaults = {
+            'extra_context': context,
+            'authentication_form': TwoFactorSearchForm,
+            'success_url': reverse('admin:twofactor_choices'),
+            'template_name': self.login_template or 'admin/search.html',
+        }
+        request.current_app = self.name
+        from mighty.applications.twofactor.views import LoginStepSearch
+        return LoginStepSearch.as_view(**defaults)(request)
+
+    @never_cache
+    def stepchoices(self, request, extra_context=None):
+        current_url = resolve(request.path_info).url_name
+
+        if request.method == 'GET' and self.has_permission(request):
+            index_path = reverse('admin:index', current_app=self.name)
+            return HttpResponseRedirect(index_path)
+
+        context = dict(
+            self.each_context(request),
+            title=_.login,
+            app_path=request.get_full_path(),
+            username=request.user.get_username(),
+            current_url=current_url,
+            next_url=request.GET.get('next', '')
+        )
+        if (REDIRECT_FIELD_NAME not in request.GET and REDIRECT_FIELD_NAME not in request.POST):
+            context[REDIRECT_FIELD_NAME] = reverse('admin:twofactor_code', current_app=self.name)
+        context.update(extra_context or {})
+
+        from mighty.applications.twofactor.forms import TwoFactorChoicesForm
+        defaults = {
+            'extra_context': context,
+            'authentication_form': TwoFactorChoicesForm,
+            'success_url': reverse('admin:twofactor_code'),
+            'template_name': self.login_template or 'admin/choices.html',
+        }
+        request.current_app = self.name
+        from mighty.applications.twofactor.views import LoginStepChoices
+        return LoginStepChoices.as_view(**defaults)(request)
+
+    @never_cache
+    def stepcode(self, request, extra_context=None):
+        current_url = resolve(request.path_info).url_name
+
+        if request.method == 'GET' and self.has_permission(request):
+            index_path = reverse('admin:index', current_app=self.name)
+            return HttpResponseRedirect(index_path)
+
+        context = dict(
+            self.each_context(request),
+            title=_.login,
+            app_path=request.get_full_path(),
+            username=request.user.get_username(),
+            current_url=current_url,
+            next_url=request.GET.get('next', '')
+        )
+        if (REDIRECT_FIELD_NAME not in request.GET and REDIRECT_FIELD_NAME not in request.POST):
+            context[REDIRECT_FIELD_NAME] = reverse('admin:index', current_app=self.name)
+        context.update(extra_context or {})
+
+        from mighty.applications.twofactor.forms import TwoFactorCodeForm
+        defaults = {
+            'extra_context': context,
+            'authentication_form': TwoFactorCodeForm,
+            'success_url': reverse('admin:index'),
+            'template_name': self.login_template or 'admin/code.html',
+        }
+        request.current_app = self.name
+        from mighty.applications.twofactor.views import LoginStepCode
+        return LoginStepCode.as_view(**defaults)(request)
+
+    ##########################
+    # Supervision
+    ##########################
     def supervision_view(self, request, extra_context=None):
         services = {}
         for service, commands in supervision.items():
@@ -79,9 +175,12 @@ class AdminSite(admin.AdminSite):
         urls = super(AdminSite, self).get_urls()
         from django.urls import path
         my_urls = []
+        if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
+            my_urls.append(path('login/', self.stepsearch, name='twofactor_search'))
+            my_urls.append(path('login/choices/', self.stepchoices, name='twofactor_choices'))
+            my_urls.append(path('login/code/', self.stepcode, name='twofactor_code'))
         if conf.supervision:
             my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
-        if 'mighty.applications.chat' in settings.INSTALLED_APPS:
             my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
             my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
             my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))

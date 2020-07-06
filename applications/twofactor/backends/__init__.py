@@ -2,16 +2,15 @@ from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
-from mighty.functions import get_logger
 from mighty.models import Twofactor
 from mighty.applications.twofactor import translates as _
 from mighty.applications.twofactor.models import (
     STATUS_PREPARE, STATUS_SENT, STATUS_RECEIVED, STATUS_ERROR,
     MODE_EMAIL, MODE_SMS)
 
-import datetime
+import datetime, logging
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 UserModel = get_user_model()
 
 class TwoFactorBackend(ModelBackend):
@@ -36,12 +35,19 @@ class TwoFactorBackend(ModelBackend):
                 except Exception as e:
                     UserModel().set_password(password)
 
-    def send_sms(self, user, backend_path):
+    def send_sms(self, user, phone, backend_path):
         now = datetime.datetime.now()
         earlier = now - datetime.timedelta(minutes=1)
-        twofactor, created = Twofactor.objects.get_or_create(user=user, is_consumed=False, mode=MODE_SMS, backend=backend_path, date_create__range=(earlier,now))
+        twofactor, created = Twofactor.objects.get_or_create(
+            user=user,
+            email_or_phone=phone,
+            is_consumed=False,
+            mode=MODE_SMS,
+            backend=backend_path,
+            date_create__range=(earlier,now)
+        )
         sms = _.tpl_txt %(settings.TWOFACTOR['site'], twofactor.code)
-        logger.info("send sms: %s" % twofactor.code, user, app="twofactor")
+        logger.info("send sms: %s" % twofactor.code, extra={'user': user, 'app': 'twofactor'})
         twofactor.txt = sms
         twofactor.backend = backend_path
         twofactor.save()
@@ -51,14 +57,21 @@ class TwoFactorBackend(ModelBackend):
         response = sms.response
         return response
 
-    def send_email(self, user, backend_path):
+    def send_email(self, user, email, backend_path):
         now = datetime.datetime.now()
         earlier = now - datetime.timedelta(minutes=1)
-        twofactor, created = Twofactor.objects.get_or_create(user=user, is_consumed=False, mode=MODE_EMAIL, backend=backend_path, date_create__range=(earlier,now))
+        twofactor, created = Twofactor.objects.get_or_create(
+            user=user,
+            email_or_phone=email,
+            is_consumed=False,
+            mode=MODE_EMAIL,
+            backend=backend_path,
+            date_create__range=(earlier,now)
+        )
         subject = _.tpl_subject % settings.TWOFACTOR['site']
         html = _.tpl_html % (settings.TWOFACTOR['site'], str(twofactor.code))
         txt = _.tpl_txt %(settings.TWOFACTOR['site'], str(twofactor.code))
-        logger.info("send email: %s" % str(twofactor.code), user, app="twofactor")
+        logger.info("send email: %s" % twofactor.code, extra={'user': user, 'app': 'twofactor'})
         twofactor.subject=subject
         twofactor.html=html
         twofactor.txt=txt

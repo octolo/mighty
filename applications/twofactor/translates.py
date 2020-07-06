@@ -12,7 +12,6 @@ STATUS_ERROR = _('error')
 
 search = _("""phone number, email or username""")
 invalid_search = _("please enter a correct email, phone or username. Note that both fields may be case-sensitive.")
-invalid_method = _("method invalid")
 invalid_login = _("please enter a correct %s and password. Note that both fields may be case-sensitive.")
 inactive = _("this account is inactive.")
 cant_send = _("unable to send message")
