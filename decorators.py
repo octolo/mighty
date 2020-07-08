@@ -1,9 +1,9 @@
 from mighty.fields import base
 
-def EnableAnticipateModel(model, excludes=()):
+def EnableHistoryModel(model, excludes=()):
     def deco(cls):
-        setattr(cls, "anticipate_model", model)
-        setattr(cls, "anticipate_exclude", excludes+base+(str(model.__name__).lower(),))
+        setattr(cls, "history_model", model)
+        setattr(cls, "history_exclude", excludes+base+(str(model.__name__).lower(),))
         return cls
     return deco
 

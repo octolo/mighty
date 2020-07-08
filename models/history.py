@@ -2,7 +2,7 @@ from django.db import models
 from mighty.models.base import Base
 from mighty import translates as _
 
-class AnticipateModel(Base):
+class HistoryModel(Base):
     object_id = models.ForeignKey('', on_delete=models.CASCADE)
     field = models.CharField(_.field, max_length=255, db_index=True)
     value = models.BinaryField(_.value)
@@ -13,8 +13,8 @@ class AnticipateModel(Base):
 
     class Meta:
         abstract = True
-        verbose_name = _.v_anticipate
-        verbose_name_plural = _.vp_anticipate
+        verbose_name = _.v_history
+        verbose_name_plural = _.vp_history
         ordering = ['-date_begin']
 
     @property

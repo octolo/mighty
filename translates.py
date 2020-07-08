@@ -65,10 +65,10 @@ supervision = _('supervision')
 can = _('test')
 
 # Anticipate model
-v_anticipate = _("anticipate")
-vp_anticipate = _("anticipates")
+v_history = _("history")
+vp_history = _("histories")
 
-anticipate_desc = _("anticipate a change")
+history_desc = _("history a change")
 model_id = _('associated model')
 field = _('field')
 value = _('value')

@@ -4,8 +4,8 @@ from django.db import connection
 if connection.vendor == 'mysql': from django_mysql.models import JSONField
 elif connection.vendor == 'postgresql': from django.contrib.postgres.fields import JSONField
 else: from jsonfield import JSONField
-if 'ckeditor' in settings.INSTALLED_APPS: from ckeditor.fields import RichTextField
-elif 'tinymce' in settings.INSTALLED_APPS: from tinymce.models import HTMLField as RichTextField
+#if 'ckeditor' in settings.INSTALLED_APPS: from ckeditor.fields import RichTextField
+#elif 'tinymce' in settings.INSTALLED_APPS: from tinymce.models import HTMLField as RichTextField
 
 # Fields mighty
 base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search')

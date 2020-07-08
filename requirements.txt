@@ -3,3 +3,4 @@ django-jsonfield
 django-json-widget
 channels
 channels-redis
+django-phonenumber-field

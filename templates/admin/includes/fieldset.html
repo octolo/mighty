@@ -20,18 +20,18 @@
                             {{ field.field }}
                         {% endif %}
                     {% endif %}
-                    {% if field.field.help_text %}
-                        <div class="help">{{ field.field.help_text|safe }}</div>
+                    {% if original.history_model and field.field.name not in original.history_exclude %}
+                        {% url opts|admin_urlname:'history_addfield'  original|contenttype_id original.pk|admin_urlquote field.field.name as history_url %}
+                        <a class="button historylink" href="{{ history_url }}">
+                            <img src="{% static 'admin/img/icon-addlink.svg' %}">&nbsp;{% verbose_name original.history_model %}</a>
                     {% endif %}
-                    {% if original.anticipate_model and field.field.name not in original.anticipate_exclude %}
-                        {% url opts|admin_urlname:'anticipate_addfield'  original|contenttype_id original.pk|admin_urlquote field.field.name as anticipate_url %}
-                        <a class="button anticipatelink" href="{{ anticipate_url }}">
-                            <img src="{% static 'admin/img/icon-addlink.svg' %}">&nbsp;{% verbose_name original.anticipate_model %}</a>
-                    {% endif %}
-                    {% if original.anticipate_model and field.field.name not in original.source_exclude %}
+                    {% if original.source_model and field.field.name not in original.source_exclude %}
                         {% url opts|admin_urlname:'source_choice' original|contenttype_id original.pk|admin_urlquote field.field.name as source_url %}
                         <a class="button sourcelink" href="{{ source_url }}">
                             <img src="{% static 'admin/img/icon-addlink.svg' %}">&nbsp;{% verbose_name original.source_model %}</a>
+                    {% endif %}
+                    {% if field.field.help_text %}
+                        <div class="help">{{ field.field.help_text|safe }}</div>
                     {% endif %}
                 </div>
             {% endfor %}

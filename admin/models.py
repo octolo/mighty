@@ -11,7 +11,7 @@ from django_json_widget.widgets import JSONEditorWidget
 from django.shortcuts import redirect
 
 from mighty import fields
-from mighty.forms import AnticipateForm
+from mighty.forms import HistoryForm
 from mighty.fields import JSONField
 from mighty import translates as _
 from mighty.admin.actions import disable_selected, enable_selected
@@ -28,6 +28,9 @@ class BaseAdmin(admin.ModelAdmin):
     enable_confirmation_template = None
     save_on_top = True
     formfield_overrides = {JSONField: {'widget': JSONEditorWidget},}
+
+    def has_permission(self, request):
+        return request.user.is_active and request.user.is_staff
 
     def view_on_site(self, obj):
         return obj.detail_url
@@ -159,9 +162,9 @@ class BaseAdmin(admin.ModelAdmin):
         return update_wrapper(wrapper, view)
 
     ##########################
-    # Anticipate Admin
+    # history Admin
     ##########################
-    def anticipate_view(self, request, contenttype_id, object_id, extra_context=None):
+    def history_view(self, request, contenttype_id, object_id, extra_context=None):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
@@ -169,25 +172,25 @@ class BaseAdmin(admin.ModelAdmin):
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
             'object': obj,
-            'fake': obj.anticipate_model(),
-            'anticipates': obj.anticipate_model.objects.filter(model_id=object_id),
+            'fake': obj.history_model(),
+            'histories': obj.history_model.objects.filter(model_id=object_id),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
         }
-        return TemplateResponse(request, 'admin/anticipate.html', context)
+        return TemplateResponse(request, 'admin/history.html', context)
 
-    def anticipate_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
+    def history_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
-        form_conf = {"form_class": AnticipateForm, "form_fields": ['date_begin', 'date_end']}
-        form = get_form_model(self.model.anticipate_model, **form_conf)
+        form_conf = {"form_class": HistoryForm, "form_fields": ['date_begin', 'date_end']}
+        form = get_form_model(self.model.history_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:%s_%s_anticipate' % info, object_id=object_id)
+                return redirect('admin:%s_%s_history' % info, object_id=object_id)
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -196,12 +199,12 @@ class BaseAdmin(admin.ModelAdmin):
             'fieldname': fieldname,
             'object_name': str(opts.verbose_name),
             'object': obj,
-            'fake': obj.anticipate_model(),
+            'fake': obj.history_model(),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
         }
-        return TemplateResponse(request, 'admin/anticipate_addfield.html', context)
+        return TemplateResponse(request, 'admin/history_addfield.html', context)
 
     ##########################
     # Source Admin
@@ -214,13 +217,13 @@ class BaseAdmin(admin.ModelAdmin):
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
             'object': obj,
-            'fake': obj.anticipate_model(),
-            'anticipates': obj.anticipate_model.objects.filter(model_id=object_id),
+            'fake': obj.history_model(),
+            'histories': obj.history_model.objects.filter(model_id=object_id),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
         }
-        return TemplateResponse(request, 'admin/anticipate_list.html', context)
+        return TemplateResponse(request, 'admin/history_list.html', context)
 
     def source_choice_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
@@ -242,15 +245,15 @@ class BaseAdmin(admin.ModelAdmin):
 
     def source_addfield_view(self, request, contenttype_id, object_id, fieldname, sourcetype, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
-        form_conf = {"form_class": AnticipateForm, "form_fields": ['date_begin', 'date_end']}
-        form = get_form_model(self.model.anticipate_model, **form_conf)
+        form_conf = {"form_class": HistoryForm, "form_fields": ['date_begin', 'date_end']}
+        form = get_form_model(self.model.history_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:%s_%s_anticipate' % info, object_id=object_id)
+                return redirect('admin:%s_%s_history' % info, object_id=object_id)
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -275,10 +278,10 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/disable/', self.wrap(self.disable_view), name='%s_%s_disable' % info),
             path('<path:object_id>/enable/', self.wrap(self.enable_view), name='%s_%s_enable' % info),
         ]
-        if hasattr(self.model, 'anticipate_model'):
+        if hasattr(self.model, 'history_model'):
             my_urls += [
-                path('ct-<int:contenttype_id>/<path:object_id>/anticipate/', self.wrap(self.anticipate_view), name='%s_%s_anticipate' % info),
-                path('ct-<int:contenttype_id>/<path:object_id>/anticipate/<str:fieldname>/', self.wrap(self.anticipate_addfield_view), name='%s_%s_anticipate_addfield' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/history/', self.wrap(self.history_view), name='%s_%s_history' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/history/<str:fieldname>/', self.wrap(self.history_addfield_view), name='%s_%s_history_addfield' % info),
             ]
         if hasattr(self.model, 'source_model'):
             my_urls += [
