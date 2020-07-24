@@ -58,6 +58,10 @@ class User(AbstractUser, Base, Image):
     objects = UserManager()
 
     @property
+    def user(self):
+        return self
+
+    @property
     def admin_list_url(self):
         return reverse('admin:auth_proxyuser_changelist')
 
@@ -188,6 +192,9 @@ class UserOrInvitation(Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='userorinvitation_user', blank=True, null=True)
     status = models.CharField(max_length=8, choices=choices.STATUS, default=choices.STATUS_PENDING)
 
+    if 'mighty.applications.messenger':
+        missives = GenericRelation(conf.ForeignKey.missive, content_type_field='user_or_invitation')
+
     class Meta(Base.Meta):
         db_table = 'auth_userorinvitation'
         abstract = True
@@ -195,15 +202,11 @@ class UserOrInvitation(Base):
         verbose_name_plural = _.vp_userorinvitation
         ordering = ['last_name', 'first_name', 'email']
 
-    if 'mighty.applications.messenger':
-        missives = GenericRelation(conf.ForeignKey.missive, content_type_field='user_or_invitation')
-
     @classmethod
     def from_db(self, db, field_names, values):
         instance = super().from_db(db, field_names, values)
         if instance.user:
             instance.user.status = instance.status
-            instance.user.user = instance.user
             instance = instance.user
         return instance
 

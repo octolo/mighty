@@ -4,11 +4,9 @@ from django.contrib.auth import get_user_model
 
 from mighty.models import Missive
 from mighty.applications.messenger import choices
-from mighty.functions import get_user_or_invitation_model
 import datetime, logging
 
 logger = logging.getLogger(__name__)
-UserModel = get_user_or_invitation_model()
 
 class MissiveBackend:
     def __init__(self, missive, *args, **kwargs):

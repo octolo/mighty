@@ -1,7 +1,7 @@
 from django.db import models
 #from tenant import queries as q
 
-Selected_related = ('user', 'tenant')
+Selected_related = ('tenant_userorinvitation', 'tenant')
 Prefetch_related = ('roles',)
 class TenantManager(models.Manager.from_queryset(models.QuerySet)):
     def get_queryset(self):

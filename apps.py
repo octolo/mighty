@@ -12,7 +12,7 @@ class Config:
     exclude_content_type = {"id__gt": 9}
     exclude = exclude
     supervision = True
-    user_or_invitation = 'mighty.UserOrInvitation'
+    user_or_invitation = 'auth.UserOrInvitation'
     
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))
