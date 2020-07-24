@@ -65,8 +65,8 @@ class BaseAdmin(admin.ModelAdmin):
         if hasattr(model, 'errors'): self.list_filter += (InErrorListFilter,)
 
     def save_model(self, request, obj, form, change):
-        if not change or not obj.create_by:
-            if hasattr(obj, 'update_by'): obj.create_by = getattr(request.user, 'logname', 'username')
+        if not obj.create_by:
+            if hasattr(obj, 'create_by'): obj.create_by = getattr(request.user, 'logname', 'username')
         if hasattr(obj, 'update_by'): obj.update_by = getattr(request.user, 'logname', 'username')
         super().save_model(request, obj, form, change)
 
@@ -162,9 +162,9 @@ class BaseAdmin(admin.ModelAdmin):
         return update_wrapper(wrapper, view)
 
     ##########################
-    # history Admin
+    # timeline Admin
     ##########################
-    def history_view(self, request, contenttype_id, object_id, extra_context=None):
+    def timeline_view(self, request, contenttype_id, object_id, extra_context=None):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
@@ -172,25 +172,25 @@ class BaseAdmin(admin.ModelAdmin):
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
             'object': obj,
-            'fake': obj.history_model(),
-            'histories': obj.history_model.objects.filter(model_id=object_id),
+            'fake': obj.timeline_model(),
+            'timeline': obj.timeline_model.objects.filter(object_id=object_id),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
         }
-        return TemplateResponse(request, 'admin/history.html', context)
+        return TemplateResponse(request, 'admin/timeline_list.html', context)
 
-    def history_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
+    def timeline_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
         form_conf = {"form_class": HistoryForm, "form_fields": ['date_begin', 'date_end']}
-        form = get_form_model(self.model.history_model, **form_conf)
+        form = get_form_model(self.model.timeline_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:%s_%s_history' % info, object_id=object_id)
+                return redirect('admin:%s_%s_timeline' % info, object_id=object_id)
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -199,12 +199,12 @@ class BaseAdmin(admin.ModelAdmin):
             'fieldname': fieldname,
             'object_name': str(opts.verbose_name),
             'object': obj,
-            'fake': obj.history_model(),
+            'fake': obj.timeline_model(),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
         }
-        return TemplateResponse(request, 'admin/history_addfield.html', context)
+        return TemplateResponse(request, 'admin/timeline_addfield.html', context)
 
     ##########################
     # Source Admin
@@ -217,13 +217,13 @@ class BaseAdmin(admin.ModelAdmin):
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
             'object': obj,
-            'fake': obj.history_model(),
-            'histories': obj.history_model.objects.filter(model_id=object_id),
+            'fake': obj.timeline_model(),
+            'histories': obj.timeline_model.objects.filter(model_id=object_id),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
         }
-        return TemplateResponse(request, 'admin/history_list.html', context)
+        return TemplateResponse(request, 'admin/timeline_list.html', context)
 
     def source_choice_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
@@ -246,14 +246,14 @@ class BaseAdmin(admin.ModelAdmin):
     def source_addfield_view(self, request, contenttype_id, object_id, fieldname, sourcetype, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
         form_conf = {"form_class": HistoryForm, "form_fields": ['date_begin', 'date_end']}
-        form = get_form_model(self.model.history_model, **form_conf)
+        form = get_form_model(self.model.timeline_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:%s_%s_history' % info, object_id=object_id)
+                return redirect('admin:%s_%s_timeline' % info, object_id=object_id)
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -278,10 +278,10 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/disable/', self.wrap(self.disable_view), name='%s_%s_disable' % info),
             path('<path:object_id>/enable/', self.wrap(self.enable_view), name='%s_%s_enable' % info),
         ]
-        if hasattr(self.model, 'history_model'):
+        if hasattr(self.model, 'timeline_model'):
             my_urls += [
-                path('ct-<int:contenttype_id>/<path:object_id>/history/', self.wrap(self.history_view), name='%s_%s_history' % info),
-                path('ct-<int:contenttype_id>/<path:object_id>/history/<str:fieldname>/', self.wrap(self.history_addfield_view), name='%s_%s_history_addfield' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/timeline/', self.wrap(self.timeline_view), name='%s_%s_timeline' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/timeline/<str:fieldname>/', self.wrap(self.timeline_addfield_view), name='%s_%s_timeline_addfield' % info),
             ]
         if hasattr(self.model, 'source_model'):
             my_urls += [

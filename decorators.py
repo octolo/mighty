@@ -1,9 +1,10 @@
 from mighty.fields import base
+from django.db import models
 
-def EnableHistoryModel(model, excludes=()):
+def EnableTimelineModel(model, excludes=()):
     def deco(cls):
-        setattr(cls, "history_model", model)
-        setattr(cls, "history_exclude", excludes+base+(str(model.__name__).lower(),))
+        setattr(cls, "timeline_model", model)
+        setattr(cls, "timeline_exclude", excludes+base+(str(model.__name__).lower(),))
         return cls
     return deco
 

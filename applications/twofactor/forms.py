@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.urls import reverse, NoReverseMatch
 
 from mighty.functions import masking_email, masking_phone
-from mighty.applications.twofactor import send_sms, send_email, translates as _
+from mighty.applications.twofactor import use_twofactor, translates as _
 from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.user.apps import UserConfig
 from mighty.applications.user.forms import UserCreationForm
@@ -60,6 +60,10 @@ class TwoFactorChoicesForm(forms.Form):
         if self.phone_authorized: self.get_phones()
 
     @property
+    def smss(self):
+        return self.phones
+
+    @property
     def email_authorized(self):
         return TwofactorConfig.method.email
 
@@ -86,21 +90,20 @@ class TwoFactorChoicesForm(forms.Form):
         return TwofactorConfig.method.basic
 
     def clean(self):
-        receiver = self.cleaned_data.get('receiver')
+        receiver, status = self.cleaned_data.get('receiver'), False
         if receiver:
-            status = False
+            dev, pos = receiver.split('_') if '_' in receiver else (receiver, -1)
             try:
-                if 'password' in receiver:
+                if 'password' in dev:
                     status = TwofactorConfig.method.basic
                 else:
-                    dev, pos = receiver.split('_')
                     receiver = getattr(self, '%ss' % dev)[int(pos)]
-                    if dev == 'email': status = send_email(self.user_cache, receiver)
-                    elif dev == 'phone': status = send_sms(self.user_cache, receiver)
-                if not status: raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send',)
+                    status = use_twofactor(dev, self.user_cache, receiver)
+                if not status:
+                    raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send')
             except Exception as e:
                 print(e)
-                raise forms.ValidationError(self.error_messages['method_not_allowed'], code='method_not_allowed',)
+                raise forms.ValidationError(self.error_messages['method_not_allowed'], code='method_not_allowed')
         return self.cleaned_data
 
 class TwoFactorCodeForm(AuthenticationForm):

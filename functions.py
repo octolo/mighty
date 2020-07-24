@@ -110,12 +110,31 @@ Return comments splitted from the input
 def split_comment(input_str):
     return re.search( "([\w\d'&,\. ]+)?\((.*)\)" , input_str)
 
+"""
+Return a tuple of backends
+"""
+def get_backends(backends_list, return_tuples=False, path_extend='', *args, **kwargs):
+    backends = []
+    for backend_path in backends_list:
+        backend_path = backend_path + path_extend
+        backend = import_string(backend_path)(*args, **kwargs)
+        backends.append((backend, backend_path) if return_tuples else backend)
+    if not backends:
+        raise ImproperlyConfigured('No backends have been defined.')
+    return backends
+
+"""
+Do a system command
+"""
 def command(cmd):
     out, err = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()
     out = out.decode('utf-8')
     err = err.decode('utf-8')
     return err, out, cmd
 
+"""
+Return a service uptime by command system
+"""
 def service_uptime(service, cmd=None):
     err, out, cmd = command(cmd if cmd else conf.Service.uptime % service)
     try:
@@ -124,6 +143,10 @@ def service_uptime(service, cmd=None):
         out = 0
     return err, out, cmd
 
+
+"""
+Return a service cpu or memory usage by commande system
+"""
 def service_cpumem(cmd):
     err, out, cmd = command(cmd)
     if not err:
@@ -133,9 +156,15 @@ def service_cpumem(cmd):
         return err, load, nb, cmd
     return err, out, 0, cmd
 
+"""
+Return a service cpu usage
+"""
 def service_cpu(service, cmd):
     return service_cpumem(cmd if cmd else conf.Service.cpu % service)
 
+"""
+Return a service memory usage
+"""
 def service_memory(service, cmd=None):
     return service_cpumem(cmd if cmd else conf.Service.memory % service)
 
@@ -293,7 +322,6 @@ cloudstorage/contenttype/year/month/{uid,id}/file
 def cloud_directory_path(instance, filename):
     file_directory_path(instance, filename, conf.Directory.cloud)
 
-
 """
 Return a score of similarity out of 100 between two strings
 """
@@ -392,11 +420,13 @@ def get_logger():
         return logger
 
 """
+Return data in binary format
 """
 def to_binary(data):
     return ' '.join(format(x, 'b') for x in bytearray(data, 'utf-8'))
 
 """
+Return a form dynamically created
 """
 def get_form(**kwargs):
     form_class = kwargs.get('form_class', forms.Form)
@@ -406,6 +436,9 @@ def get_form(**kwargs):
             fields = fields
     return DynForm
 
+"""
+Return a form model dynamically created
+"""
 def get_form_model(model_class, **kwargs):
     form_class = kwargs.get('form_class', forms.ModelForm)
     form_fields = kwargs.get('form_fields', [])
@@ -414,3 +447,8 @@ def get_form_model(model_class, **kwargs):
             model = model_class
             fields = form_fields
     return DynForm
+
+from django.apps import apps as django_apps
+def get_user_or_invitation_model():
+    app_label, model = conf.user_or_invitation.split('.')
+    return django_apps.get_model(app_label, model.lower())

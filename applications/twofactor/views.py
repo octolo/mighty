@@ -10,8 +10,10 @@ from mighty.views import DetailView, FormView, BaseView
 from mighty.models import Twofactor
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.twofactor.forms import TwoFactorSearchForm, TwoFactorChoicesForm, TwoFactorCodeForm, SignUpForm
-from mighty.applications.twofactor.apps import TwofactorConfig
-from mighty.applications.twofactor import translates as _, send_sms, send_email
+from mighty.applications.twofactor.apps import TwofactorConfig as conf
+from mighty.applications.twofactor import translates as _
+from mighty.applications.messenger import choices
+
 from urllib.parse import quote_plus, unquote_plus, urlencode
 
 class LoginStepSearch(LoginView):
@@ -29,15 +31,17 @@ class LoginStepSearch(LoginView):
         context = super().get_context_data(**kwargs)
         context.update({
             'title': _.login,
-            "help": _.help_login,
-            'enable_email': TwofactorConfig.method.email,
-            'enable_sms': TwofactorConfig.method.sms,
-            'enable_basic': TwofactorConfig.method.basic,
+            'help': _.help_login,
+            'enable_email': conf.method.email,
+            'enable_sms': conf.method.sms,
+            'enable_basic': conf.method.basic,
             'send_method': _.send_method,
             'send_basic': _.send_basic,
             'method_email': _.method_email,
             'method_sms': _.method_sms,
             'method_basic': _.method_basic,
+            'mode_sms': choices.MODE_SMS,
+            'mode_email': choices.MODE_EMAIL,
         })
         return context
 
@@ -103,11 +107,11 @@ class Register(LoginStepSearch):
                 user.groups.add(group)
         self.set_session_with_uid(str(user.uid))
         if user.phone:
-            status = send_sms(user)
+            #status = send_sms(user)
             self.set_url_by_method('sms')
             self.success_url += "?sms=%s" % user.phone
         else:
-            status = send_email(user)
+            #status = send_email(user)
             self.set_url_by_method(user, 'email')
             self.success_url += "?email=%s" % user.email
         return super(FormView, self).form_valid(form)

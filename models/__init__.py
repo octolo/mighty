@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.db import  models
 from mighty.fields import JSONField
-from mighty.applications.user.models import User, Email, Phone, InternetProtocol, UserAgent
+
+###########################
+# Models in mighty
+###########################
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
-    from django.contrib.contenttypes.fields import GenericForeignKey
     from mighty.models.base import Base
 
     class Channel(Base):
@@ -36,43 +38,37 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
             if not self.from_id: self.from_id = next(iter(self.objs))
             super(Channel, self).save(*args, **kwargs)
 
+###########################
+# Models apps mighty
+###########################
+
+# Logger
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-    from mighty.applications.logger.models import Log
-    class Log(Log):
-        pass
+    from mighty.applications.logger import models as models_logger
+    class Log(models_logger.Log): pass
 
+# Nationality
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-    from mighty.applications.nationality.models import Nationality
-    class Nationality(Nationality):
-        pass
+    from mighty.applications.nationality import models as models_nationality
+    class Nationality(models_nationality.Nationality): pass
 
+# Messenger
+if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
+    from mighty.applications.messenger import models as models_messenger
+    class Missive(models_messenger.Missive): pass
+
+# User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
-    if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-        class User(User):
-            nationalities = models.ManyToManyField(Nationality, blank=True)
-
-    class Email(Email):
-        user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_email')
-
-    class Phone(Phone):
-        user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_phone')
-
-    class InternetProtocol(InternetProtocol):
-        user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_ip')
-
-    class UserAgent(UserAgent):
-        user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_useragent')
-
-    if 'mighty.applications.address' in settings.INSTALLED_APPS:
-        from mighty.applications.address.models import Address
-        class UserAddress(Address):
-            user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_address')
-
+    from mighty.applications.user import models as models_user
     from mighty.applications.logger import EnableChangeLog
-    from mighty.applications.logger.models import ChangeLog
 
-    class UserLogModel(ChangeLog):
-        object_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    class User(models_user.User): pass
+    class Email(models_user.Email): pass
+    class Phone(models_user.Phone): pass
+    class InternetProtocol(models_user.InternetProtocol): pass
+    class UserAgent(models_user.UserAgent): pass
+    class UserAddress(models_user.UserAddress): pass
+    class UserLogModel(models_user.UserLogModel): pass
 
     @EnableChangeLog(UserLogModel, ('logentry', 'password'))
     class ProxyUser(User):
@@ -85,17 +81,21 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
             verbose_name = User.Meta.verbose_name
             verbose_name_plural = User.Meta.verbose_name_plural
 
+    class UserOrInvitation(models_user.UserOrInvitation):
+        app_label = 'mighty'
+        model_name = 'userorinvitation'
+
+        class Meta:
+            app_label = 'auth'
+
+# Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     from mighty.applications.twofactor.models import Twofactor
     class Twofactor(Twofactor):
         class Meta:
             app_label = 'auth'
 
+# Extend
 if 'mighty.applications.extend' in settings.INSTALLED_APPS:
-    from mighty.applications.extend.models import Key, Extend
-    class Key(Key):
-        pass
-        
-
-if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
-    from mighty.models.applications import grapher
+    from mighty.applications.extend import models as models_extend
+    class Key(models_extend.Key): pass

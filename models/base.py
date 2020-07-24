@@ -64,6 +64,10 @@ class Base(models.Model):
     @property
     def model_name(self): return str(self.__class__.__name__)
     @property
+    def is_enable(self): return True if self.is_disable is False else False
+
+    # Admin URL
+    @property
     def admin_list_url(self): return self.get_url('changelist', 'admin:%s_%s_%s')
     @property
     def admin_add_url(self): return self.get_url('add', 'admin:%s_%s_%s')
@@ -73,42 +77,47 @@ class Base(models.Model):
     def admin_disable_url(self): return self.get_url('disable', 'admin:%s_%s_%s', arguments={"object_id": self.pk})
     @property
     def admin_enable_url(self): return self.get_url('enable', 'admin:%s_%s_%s', arguments={"object_id": self.pk})
+
+    # Front URL
     @property
     def add_url(self): return self.get_url('add')
     @property
     def list_url(self): return self.get_url('list')
     @property
-    def detail_url(self): return self.get_url('detail', arguments=self.arguments())
+    def detail_url(self): return self.get_url('view', arguments=self.arguments())
     @property
     def change_url(self): return self.get_url('change', arguments=self.arguments())
     @property
     def delete_url(self): return self.get_url('delete', arguments=self.arguments())
     @property
+    def disable_url(self): return self.get_url('disable', arguments=self.arguments())
+    @property
+    def enable_url(self): return self.get_url('enable', arguments=self.arguments())
+
+    # HTML URL tag
+    @property
     def add_url_html(self): return self.get_url(self.get_url('add'), self.title['add'])
     @property
     def list_url_html(self): return self.get_url_html(self.get_url('list'), self.title['list'])
     @property
-    def detail_url_html(self): return self.get_url_html(self.get_url('detail', arguments=self.arguments()), self.title['detail'])
+    def detail_url_html(self): return self.get_url_html(self.get_url('view', arguments=self.arguments()), self.title['detail'])
     @property
     def change_url_html(self): return self.get_url_html(self.get_url('change', arguments=self.arguments()), self.title['change'])
     @property
     def delete_url_html(self): return self.get_url_html(self.get_url('delete', arguments=self.arguments()), self.title['delete'])
     @property
-    def question_delete(self): return _d.are_you_sure_delete % self
-    @property
     def disable_url_html(self): return self.get_url_html('disable', self.title['disable'])
+    @property
+    def enable_url_html(self): return self.get_url_html('enable', self.title['enable'])
+    
+    # Question for disable, enable, delete
+    @property
+    def question_delete(self): return _d.are_you_sure_delete % self
     @property
     def question_disable(self): return _d.are_you_sure_disable % self
     @property
-    def disable_url(self): return self.get_url('disable', arguments=self.arguments())
-    @property
-    def is_enable(self): return True if self.is_disable is False else False
-    @property
-    def enable_url_html(self): return self.get_url_html('enable', self.title['enable'])
-    @property
     def question_enable(self): return _d.are_you_sure_enable % self
-    @property
-    def enable_url(self): return self.get_url('enable', arguments=self.arguments())
+
 
     """
     Functions
@@ -118,6 +127,12 @@ class Base(models.Model):
 
     def fields(self, excludes=[]):
         return {field.name: field.__class__.__name__ for field in self._meta.get_fields() if field.__class__.__name__ not in excludes}
+
+    def concrete_fields(self, excludes=[]):
+        return {field.name: field.__class__.__name__ for field in self._meta.concrete_fields if field.__class__.__name__ not in excludes}
+
+    def related_fields(self, excludes=[]):
+        return {field.name: field.__class__.__name__ for field in self._meta.related_objects if field.__class__.__name__ not in excludes}
 
     def get_url_html(self, url, title):
         return format_html('<a href="%s">%s</a>' % (url, title))
@@ -136,11 +151,11 @@ class Base(models.Model):
         self.is_disable = False
         self.save()
 
-    def get_search(self):
-        return make_searchable(str(' '.join([str(getattr(self, field)) for field in self.search_fields])))
+    def get_search_list(self):
+        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields]).split()
 
     def set_search(self):
-        self.search = self.get_search()
+        self.search = ' '.join(list(dict.fromkeys(self.get_search_list())))
 
     def get_logfield(self, lvl, field):
         return self.logfields[lvl][field]

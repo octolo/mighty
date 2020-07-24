@@ -2,11 +2,11 @@ from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
-from mighty.models import Twofactor
+from mighty.apps import MightyConfig
+from mighty.models import Twofactor, Missive
 from mighty.applications.twofactor import translates as _
-from mighty.applications.twofactor.models import (
-    STATUS_PREPARE, STATUS_SENT, STATUS_RECEIVED, STATUS_ERROR,
-    MODE_EMAIL, MODE_SMS)
+from mighty.applications.twofactor.apps import TwofactorConfig as conf
+from mighty.applications.messenger import choices
 
 import datetime, logging
 
@@ -24,9 +24,8 @@ class TwoFactorBackend(ModelBackend):
         else:
             if self.user_can_authenticate(user):
                 try:
-                    now = datetime.datetime.now()
-                    earlier = now - datetime.timedelta(minutes=1)
-                    code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now))
+                    earlier, now = self.earlier
+                    code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now), is_consumed=False)
                     code.is_consumed = True
                     code.save()
                     user.get_client_ip(request)
@@ -34,51 +33,53 @@ class TwoFactorBackend(ModelBackend):
                     return user
                 except Exception as e:
                     UserModel().set_password(password)
-
-    def send_sms(self, user, phone, backend_path):
+    
+    @property
+    def earlier(self):
         now = datetime.datetime.now()
-        earlier = now - datetime.timedelta(minutes=1)
-        twofactor, created = Twofactor.objects.get_or_create(
-            user=user,
-            email_or_phone=phone,
-            is_consumed=False,
-            mode=MODE_SMS,
-            backend=backend_path,
-            date_create__range=(earlier,now)
-        )
-        sms = _.tpl_txt %(settings.TWOFACTOR['site'], twofactor.code)
-        logger.info("send sms: %s" % twofactor.code, extra={'user': user, 'app': 'twofactor'})
-        twofactor.txt = sms
-        twofactor.backend = backend_path
-        twofactor.save()
-        return twofactor
+        earlier = now - datetime.timedelta(minutes=conf.minutes_allowed)
+        return earlier, now
 
-    def check_sms(self, email):
-        response = sms.response
-        return response
+    def get_object(self, user, target, mode, backend, **kwargs):
+        earlier, now = self.earlier
+        prepare = {
+            "mode": mode,
+            "email_or_phone": target,
+            "user": user,
+            "backend": backend,
+            "date_create__range": (earlier,now),
+            "is_consumed": False,
+        }
+        prepare.update(**kwargs)
+        return Twofactor.objects.get_or_create(**prepare)
 
-    def send_email(self, user, email, backend_path):
-        now = datetime.datetime.now()
-        earlier = now - datetime.timedelta(minutes=1)
-        twofactor, created = Twofactor.objects.get_or_create(
-            user=user,
-            email_or_phone=email,
-            is_consumed=False,
-            mode=MODE_EMAIL,
-            backend=backend_path,
-            date_create__range=(earlier,now)
-        )
-        subject = _.tpl_subject % settings.TWOFACTOR['site']
-        html = _.tpl_html % (settings.TWOFACTOR['site'], str(twofactor.code))
-        txt = _.tpl_txt %(settings.TWOFACTOR['site'], str(twofactor.code))
-        logger.info("send email: %s" % twofactor.code, extra={'user': user, 'app': 'twofactor'})
-        twofactor.subject=subject
-        twofactor.html=html
-        twofactor.txt=txt
-        twofactor.backend = backend_path
-        twofactor.save()
-        return twofactor
+    def by(self, mode, user, target, backend_path):
+        if hasattr(self, 'send_%s' % mode):
+            twofactor, created = self.get_object(user, target, getattr(choices, 'MODE_%s' % mode.upper()), backend_path)
+            logger.info("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
+            return getattr(self, 'send_%s' % mode)(twofactor, user, target)
+        return False
+        
+    def send_sms(self, obj, user, target):
+        missive = Missive(**{
+            "user_or_invitation": user.missives.content_type,
+            "object_id": user.id,
+            "target": target,
+            "mode": choices.MODE_SMS,
+            "subject": 'subject: Code',
+            "txt": _.tpl_txt %(MightyConfig.site, str(obj.code)),
+        })
+        missive.save()
+        return missive.status
 
-    def check_email(self, user, backend_path):
-        response = email.response
-        return response
+    def send_email(self, obj, user, target):
+        missive = Missive(**{
+            "user_or_invitation": user.missives.content_type,
+            "object_id": user.id,
+            "target": target,
+            "subject": 'subject: Code',
+            "html": _.tpl_html % (MightyConfig.site, str(obj.code)),
+            "txt": _.tpl_txt % (MightyConfig.site, str(obj.code)),
+        })
+        missive.save()
+        return missive.status

@@ -1,6 +1,7 @@
 from django import template
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
+from django.urls import reverse
 import datetime
 
 register = template.Library()
@@ -9,6 +10,10 @@ guardian = False
 if 'guardian' in settings.INSTALLED_APPS:
     from guardian.core import ObjectPermissionChecker
     guardian = True
+
+"""
+Simple tag
+"""
 
 @register.simple_tag(name='has_perm')
 def has_perm(obj, user, perm):
@@ -52,29 +57,9 @@ def field_value(obj, field):
 def add_attr(field, attr, value):
     return field.as_widget(attrs={attr: value})
 
-@register.filter(name='add_attrs')
-def add_attrs(field, css):
-    attrs = {}
-    definition = css.split(',')
-    for d in definition:
-        if ':' not in d:
-            attrs['class'] = d
-        else:
-            key, val = d.split(':')
-            attrs[key] = val
-    return field.as_widget(attrs=attrs)
-
 @register.simple_tag(name='number_hread')
 def number_hread(number, separator=None):
     return '{:,}'.format(int(number)).replace(",", separator) if separator else '{:,}'.format(int(number))
-
-@register.filter
-def index(indexable, i):
-    return indexable[i]
-
-@register.filter(name='split')
-def split(value, key):
-  return value.split(key)
 
 @register.simple_tag(name='is_type')
 def is_type(data):
@@ -87,6 +72,30 @@ def define(val=None):
 @register.simple_tag(name='convert_date')
 def convert_date(date, origin, convert):
     return datetime.datetime.strptime(date, origin).strftime(convert)
+
+"""
+Filter based templatetag
+"""
+
+@register.filter(name='add_attrs')
+def add_attrs(field, css):
+    attrs = {}
+    definition = css.split(',')
+    for d in definition:
+        if ':' not in d:
+            attrs['class'] = d
+        else:
+            key, val = d.split(':')
+            attrs[key] = val
+    return field.as_widget(attrs=attrs)
+
+@register.filter
+def index(indexable, i):
+    return indexable[i]
+
+@register.filter(name='split')
+def split(value, key):
+  return value.split(key)
 
 @register.filter(name='has_m2m')
 def has_m2m(m2mfield, m2m, field='id'):

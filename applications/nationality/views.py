@@ -5,11 +5,10 @@ from mighty.models import Nationality
 from mighty.applications.nationality import filters
 
 class NationalityViewSet(ModelViewSet):
-    list_is_ajax = True
     model = Nationality
-    slug = '<int:pk>'
-    slug_field = "pk"
-    slug_url_kwarg = "pk"
+    slug = '<uuid:uid>'
+    slug_field = "uid"
+    slug_url_kwarg = "uid"
 
 if 'rest_framework' in settings.INSTALLED_APPS:
     from mighty.views.viewsets import ApiModelViewSet

@@ -1,0 +1,14 @@
+{% load mighty %}
+<table>
+    <th colspan="2">Concrete</th>
+    {% for field in object.concrete_fields %}
+    <tr><th>{% field_name object field %}</th><td>{% field_value object field %}</td></tr>
+    {% endfor %}
+</table>
+
+<table>
+    <th colspan="2">Related</th>
+    {% for field in object.related_fields %}
+    <tr><th>{{ field }}</th><td></td></tr>
+    {% endfor %}
+</table>

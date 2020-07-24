@@ -39,13 +39,13 @@
 {% endblock %}
 
 {% block object-tools-items %}
-{% if original.anticipate_model %}
-{% url opts|admin_urlname:'anticipate' original.pk|admin_urlquote as anticipate_url %}
-<li><a href="{{ anticipate_url }}">{% verbose_name_plural original.anticipate_model %}</a></li>
+{% if original.timeline_model %}
+{% url opts|admin_urlname:'timeline' original|contenttype_id original.pk|admin_urlquote as timeline_url %}
+<li><a href="{{ timeline_url }}">{% verbose_name_plural original.timeline_model %}</a></li>
 {% endif %}
 {% if original.source_model %}
-{% url opts|admin_urlname:'anticipate' original.pk|admin_urlquote as anticipate_url %}
-<li><a href="">{% verbose_name_plural original.source_model %}</a></li>
+{% url opts|admin_urlname:'source' original.pk|admin_urlquote as source_url %}
+<li><a href="{{ source_url }}">{% verbose_name_plural original.source_model %}</a></li>
 {% endif %}
 {{ block.super }}
 {% endblock %}

@@ -35,13 +35,13 @@
         </tr>
         </thead>
         <tbody>
-            {% for anticipate in anticipates %}
+            {% for field in timeline %}
             <tr>
-                <th scope="row">{{ anticipate.field }}</th>
-                <td>{{ anticipate.get_value }}</td>
-                <td>{{ anticipate.date_begin }}</td>
-                <td>{{ anticipate.date_end }}</td>
-                <td>{{ anticipate.user }}</td>
+                <th scope="row">{{ field.field }}</th>
+                <td>{{ field.get_value }}</td>
+                <td>{{ field.date_begin }}</td>
+                <td>{{ field.date_end }}</td>
+                <td>{{ field.user }}</td>
             </tr>
             {% endfor %}
         </tbody>

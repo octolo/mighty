@@ -35,6 +35,5 @@ def AfterDeleteAPhone(sender, instance, created, **kwargs):
 post_delete.connect(AfterDeleteAPhone, Phone)
 
 from mighty.applications.logger import signals
-UserModel = get_user_model()
 pre_save.connect(signals.pre_change_log, ProxyUser)
 post_save.connect(signals.post_change_log, ProxyUser)

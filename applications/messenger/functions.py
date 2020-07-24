@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.models import Session
-from mighty.applications.chat.apps import ChatConfig as conf
+from mighty.applications.messenger.apps import MessengerConfig as conf
 User = get_user_model()
 
 def explain_room(room_name):

@@ -73,7 +73,7 @@
 
     {% if form.phones_masking %}
     {% for phone in form.phones_masking %}
-    <button class="receiver" type="submit" name="receiver" value="phone_{{ forloop.counter0 }}">
+    <button class="receiver" type="submit" name="receiver" value="{{ mode_sms|lower }}_{{ forloop.counter0 }}">
       <i class="fa fa-mobile" aria-hidden="true"></i>{{ phone }}</button>
     {% endfor %}
     {% endif %}

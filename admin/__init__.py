@@ -4,11 +4,15 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.sessions.models import Session
 from mighty.admin.site import AdminSite
-from mighty import fields
+from mighty import fields, models as all_models
 
 mysite = AdminSite()
 admin.site = mysite
 admin.sites.site = mysite
+
+###########################
+# Models django
+###########################
 
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
@@ -20,59 +24,9 @@ class SessionAdmin(admin.ModelAdmin):
         return obj.get_decoded()
     list_display = ['session_key', '_session_data', 'expire_date']
 
-if 'mighty.applications.user' in settings.INSTALLED_APPS:
-    from django.contrib.auth.admin import UserAdmin
-    from mighty.models import ProxyUser, Email, Phone, InternetProtocol, UserAgent, UserAddress
-    from mighty.applications.user.admin import UserAdmin, EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin
-
-    class EmailAdmin(EmailAdmin):
-        model = Email
-
-    class PhoneAdmin(PhoneAdmin):
-        model = Phone
-
-    class InternetProtocolAdmin(InternetProtocolAdmin):
-        model = InternetProtocol
-
-    class UserAgentAdmin(UserAgentAdmin):
-        model = UserAgent
-
-    if 'mighty.applications.address' in settings.INSTALLED_APPS:
-        from mighty.applications.address.admin import AddressAdminInline
-        class UserAdminInline(AddressAdminInline):
-            model = UserAddress
-
-    if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-        from mighty.applications.logger.admin import ModelWithLogAdmin
-        class UserAdmin(UserAdmin, ModelWithLogAdmin):
-            pass
-
-    @admin.register(ProxyUser)
-    class UserAdmin(UserAdmin):
-        view_on_site = False
-        def add_view(self, *args, **kwargs):
-            self.inlines = []
-            return super(UserAdmin, self).add_view(*args, **kwargs)
-
-        def change_view(self, *args, **kwargs):
-            self.inlines = [EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin]
-            if 'mighty.applications.address' in settings.INSTALLED_APPS:
-                self.inlines.append(UserAdminInline)
-            return super(UserAdmin, self).change_view(*args, **kwargs)
-
-if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
-    from mighty.models import Twofactor
-    from mighty.applications.twofactor.admin import TwofactorAdmin
-    @admin.register(Twofactor)
-    class TwofactorAdmin(TwofactorAdmin):
-        pass
-
-if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-    from mighty.models import Nationality
-    from mighty.applications.nationality.admin import NationalityAdmin
-    @admin.register(Nationality)
-    class NationalityAdmin(NationalityAdmin):
-        pass
+###########################
+# Models in mighty
+###########################
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     from mighty.models import Channel
@@ -84,6 +38,59 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
         fieldsets = ((None, {'classes': ('wide',), 'fields': fields.channels}),)
         search_fields = ('channel_name', 'channel_type',)
         view_on_site = False
+
+###########################
+# Models apps mighty
+###########################
+
+# Nationality
+if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
+    from mighty.applications.nationality import admin as admin_nationality
+    @admin.register(all_models.Nationality)
+    class NationalityAdmin(admin_nationality.NationalityAdmin): pass
+
+# Messenger
+if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
+    from mighty.applications.messenger import admin as admin_messenger
+    @admin.register(all_models.Missive)
+    class NationalityAdmin(admin_messenger.MissiveAdmin): pass
+
+# User
+if 'mighty.applications.user' in settings.INSTALLED_APPS:
+    from mighty.applications.user import admin as admin_user
+
+    class EmailAdmin(admin_user.EmailAdmin): model = all_models.Email
+    class PhoneAdmin(admin_user.PhoneAdmin): model = all_models.Phone
+    class InternetProtocolAdmin(admin_user.InternetProtocolAdmin): model = all_models.InternetProtocol
+    class UserAgentAdmin(admin_user.UserAgentAdmin): model = all_models.UserAgent
+    class UserAddressAdmin(admin_user.UserAddressAdminInline): model = all_models.UserAddress
+    class UserAdmin(admin_user.UserAdmin): pass
+
+    if 'mighty.applications.logger' in settings.INSTALLED_APPS:
+        from mighty.applications.logger.admin import ModelWithLogAdmin
+        class UserAdmin(UserAdmin, ModelWithLogAdmin): pass
+
+    @admin.register(all_models.ProxyUser)
+    class UserAdmin(UserAdmin):
+        view_on_site = False
+
+        def add_view(self, *args, **kwargs):
+            self.inlines = []
+            return super(admin_user.UserAdmin, self).add_view(*args, **kwargs)
+
+        def change_view(self, *args, **kwargs):
+            self.inlines = [EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin, UserAddressAdmin]
+            return super(admin_user.UserAdmin, self).change_view(*args, **kwargs)
+    
+    @admin.register(all_models.UserOrInvitation)
+    class UserOrInvitationAdmin(admin_user.UserOrInvitationAdmin): pass
+
+# Twofactor
+if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
+    from mighty.applications.twofactor import admin as admin_twofactor
+    @admin.register(all_models.Twofactor)
+    class TwofactorAdmin(admin_twofactor.TwofactorAdmin): pass
+
 
 #if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
 #    from mighty.admin.applications import grapher

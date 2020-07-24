@@ -3,12 +3,9 @@ from django.conf import settings
 from mighty import over_config
 
 class Config:
-    site = None
-    sender_name = None
-    sender_email = None
-    reply_name = None
-    reply_email = None
     groups_onsave = []
+    minutes_allowed = 5
+    code_size = 6
 
     class method:
         email = True

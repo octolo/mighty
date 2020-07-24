@@ -5,12 +5,14 @@ from mighty import over_config
 import os, logging
 
 class Config:
+    site = None
     site_header = "Back office"
     index_title = "Home"
     paginate_by = 100
     exclude_content_type = {"id__gt": 9}
     exclude = exclude
     supervision = True
+    user_or_invitation = 'mighty.UserOrInvitation'
     
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))

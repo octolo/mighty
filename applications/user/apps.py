@@ -3,6 +3,11 @@ from django.conf import settings
 from mighty import over_config
 
 class Config:
+    class ForeignKey:
+        missive = 'mighty.Missive'
+        user = settings.AUTH_USER_MODEL
+        nationalities = 'mighty.Nationality'
+
     class Field:
         username = 'email'
         required = ()
