@@ -7,6 +7,13 @@ def EnableChangeLog(model, excludes=()):
         return cls
     return deco
 
+def EnableAccessLog(model, excludes=()):
+    def deco(cls):
+        setattr(cls, "accesslog_model", model)
+        setattr(cls, "accesslog_exclude", excludes+(str(model.__name__).lower(),))
+        return cls
+    return deco
+
 def createorupdate_changeslog(instance, newvalues, oldvalues, *args, **kwargs):
     fk_column = kwargs.get("fk_column", "object_id")
     fk_field = kwargs.get("fk_field", "id")

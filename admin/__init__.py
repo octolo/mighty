@@ -70,7 +70,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
         from mighty.applications.logger.admin import ModelWithLogAdmin
         class UserAdmin(UserAdmin, ModelWithLogAdmin): pass
 
-    @admin.register(all_models.ProxyUser)
+    @admin.register(all_models.User)
     class UserAdmin(UserAdmin):
         view_on_site = False
 

@@ -1,14 +1,15 @@
 from django.conf import settings
 from django.db import  models
+
 from mighty.fields import JSONField
+from mighty.models.base import Base
+from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 
 ###########################
 # Models in mighty
 ###########################
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
-    from mighty.models.base import Base
-
     class Channel(Base):
         channel_name = models.CharField(max_length=255, null=True, blank=True)
         channel_type = models.CharField(max_length=255)
@@ -44,7 +45,6 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 
 # Logger
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-    from mighty.applications.logger import models as models_logger
     class Log(models_logger.Log): pass
 
 # Nationality
@@ -60,40 +60,23 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import models as models_user
-    from mighty.applications.logger import EnableChangeLog
 
+    class UserAccessLogModel(models_user.UserAccessLogModel): pass
+    class UserChangeLogModel(models_user.UserChangeLogModel): pass
+    @EnableAccessLog(UserAccessLogModel)
+    @EnableChangeLog(UserChangeLogModel, ('logentry', 'password'))
     class User(models_user.User): pass
     class Email(models_user.Email): pass
     class Phone(models_user.Phone): pass
     class InternetProtocol(models_user.InternetProtocol): pass
     class UserAgent(models_user.UserAgent): pass
     class UserAddress(models_user.UserAddress): pass
-    class UserLogModel(models_user.UserLogModel): pass
-
-    @EnableChangeLog(UserLogModel, ('logentry', 'password'))
-    class ProxyUser(User):
-        app_label = 'mighty'
-        model_name = 'user'
-
-        class Meta:
-            app_label = 'auth'
-            proxy = True
-            verbose_name = User.Meta.verbose_name
-            verbose_name_plural = User.Meta.verbose_name_plural
-
-    class UserOrInvitation(models_user.UserOrInvitation):
-        app_label = 'mighty'
-        model_name = 'userorinvitation'
-
-        class Meta:
-            app_label = 'auth'
+    class UserOrInvitation(models_user.UserOrInvitation): pass
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     from mighty.applications.twofactor.models import Twofactor
-    class Twofactor(Twofactor):
-        class Meta:
-            app_label = 'auth'
+    class Twofactor(Twofactor): pass
 
 # Extend
 if 'mighty.applications.extend' in settings.INSTALLED_APPS:

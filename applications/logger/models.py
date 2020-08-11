@@ -70,5 +70,13 @@ class ChangeLog(models.Model):
         verbose_name_plural = _.vp_changelog
         ordering = ['-date_end']
 
-    def save(self, *args, **kwargs):
-        super(User, self).save(*args, **kwargs)
+class AccessLog(models.Model):
+    object_id = models.ForeignKey('', on_delete=models.CASCADE)
+    date_access = models.DateTimeField(_.date_access, editable=False)
+    user = models.CharField(max_length=255)
+
+    class Meta:
+        abstract = True
+        verbose_name = _.v_accesslog
+        verbose_name_plural = _.vp_accesslog
+        ordering = ['-date_access']

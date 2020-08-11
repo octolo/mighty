@@ -310,7 +310,7 @@ def file_directory_path(instance, filename, directory=None):
     ext = filename.split(".")[-1:]
     if hasattr(instance, "parent"):
         return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, instance.parent.uid if hasattr(instance.parent, "uid") else intance.parent.id, filename)
-    elif hasattr(instance, instance.fieldparent):
+    elif hasattr(instance, 'fieldparent') and hasattr(instance, instance.fieldparent):
         parent = getattr(instance, instance.fieldparent)
         return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, parent.uid if hasattr(parent, "uid") else parent.id, filename)
     return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, instance.uid if hasattr(instance, "uid") else intance.id, filename)
