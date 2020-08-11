@@ -19,12 +19,14 @@ from phonenumber_field.modelfields import PhoneNumberField
 import uuid, logging
 logger = logging.getLogger(__name__)
 
-# Guardian using
-guardian = True if 'guardian' in settings.INSTALLED_APPS else False
-if guardian: from guardian.core import ObjectPermissionChecker
+class UserAccessLogModel(ChangeLog):
+    object_id = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_accesslog')
 
-class UserLogModel(ChangeLog):
-    object_id = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE)
+    class Meta:
+        abstract = True
+
+class UserChangeLogModel(ChangeLog):
+    object_id = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_changelog')
 
     class Meta:
         abstract = True
@@ -101,7 +103,7 @@ class User(AbstractUser, Base, Image):
         return getattr(self, self.USERNAME_FIELD)
 
     def has_perm(self, perm, obj=None):
-        return ObjectPermissionChecker(user).has_perm(perm, obj) if guardian else super().has_perm(perm, obj=None)
+        return super().has_perm(perm, obj=None)
 
     def get_client_ip(self, request):
         ip = request.META.get('HTTP_X_FORWARDED_FOR').split(',')[0] if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR')
