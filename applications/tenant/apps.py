@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 class Config:
     class ForeignKey:
         Tenant = 'auth.Group'
-        User = 'mighty.User'
         Role = 'Role'
 
 if hasattr(settings, 'TENANT'): over_config(Config, settings.TENANT)

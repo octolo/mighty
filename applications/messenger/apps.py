@@ -10,7 +10,6 @@ class Config:
     user_or_invitation = 'mighty.UserOrInvitation'
     missive = 'mighty.Missive'
     delimiter = '__'
-    limit_choices_to = {'app_label': 'mighty', 'model__in': ['user', 'userorinvitation']}
     missive_backends = settings.MISSIVE_BACKENDS if hasattr(settings, 'MISSIVE_BACKENDS') else ['mighty.applications.messenger.backend']
 
 if hasattr(settings, 'MESSENGER'): over_config(Config, getattr(settings, 'MESSENGER'))

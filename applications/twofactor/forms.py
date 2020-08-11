@@ -93,17 +93,13 @@ class TwoFactorChoicesForm(forms.Form):
         receiver, status = self.cleaned_data.get('receiver'), False
         if receiver:
             dev, pos = receiver.split('_') if '_' in receiver else (receiver, -1)
-            try:
-                if 'password' in dev:
-                    status = TwofactorConfig.method.basic
-                else:
-                    receiver = getattr(self, '%ss' % dev)[int(pos)]
-                    status = use_twofactor(dev, self.user_cache, receiver)
-                if not status:
-                    raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send')
-            except Exception as e:
-                print(e)
-                raise forms.ValidationError(self.error_messages['method_not_allowed'], code='method_not_allowed')
+            if 'password' in dev:
+                status = TwofactorConfig.method.basic
+            else:
+                receiver = getattr(self, '%ss' % dev)[int(pos)]
+                status = use_twofactor(dev, self.user_cache, receiver)
+            if not status:
+                raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send')
         return self.cleaned_data
 
 class TwoFactorCodeForm(AuthenticationForm):

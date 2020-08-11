@@ -179,7 +179,7 @@ def service_memory(service, cmd=None):
     # raw = pad(raw)
     # iv = Random.new().read(Cipher.AES.block_size)
     # _cipher = Cipher.AES.new(key, Cipher.AES.MODE_CFB, iv)
-    # return base64.b64encode(iv+_cipher.encrypt(raw)) 
+    # return base64.b64encode(iv+_cipher.encrypt(raw))
 
 # """
 # Decrypt data with a key

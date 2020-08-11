@@ -4,9 +4,10 @@ from rest_framework import status
 
 # ListApiView that allow to use a filter_model
 class ListAPIView(ListAPIView):
-    def get_queryset(self):
-        if self.filter_model is None: return super().get_queryset()
-        else: return self.filter_model(self.request)
+    pass
+    # def get_queryset(self):
+    #     if self.filter_model is None: return super().get_queryset()
+    #     else: return self.filter_model(self.request)
 
 # DisableApiView add a view for disable an object (set is_disable to true)
 class DisableApiView(DestroyAPIView):

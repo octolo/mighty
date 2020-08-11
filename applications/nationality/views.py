@@ -20,4 +20,5 @@ if 'rest_framework' in settings.INSTALLED_APPS:
         slug_url_kwarg = "pk"
         lookup_field = "pk"
         serializer_class = serializers.NationalitySerializer
-        filter_model = filters.NationalityFilter
+        # filter_model = filters.NationalityFilter
+        queryset = Nationality.objects.all()
