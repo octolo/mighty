@@ -21,14 +21,15 @@ class File(models.Model):
     file = models.FileField(upload_to=file_directory_path, blank=True, null=True)
     filename = models.CharField(max_length=255, blank=True, null=True)
     filemimetype = models.CharField(max_length=255, blank=True, null=True)
-    
+    size = models.BigIntegerField(default=0)
+
     class Meta:
         abstract = True
 
     @property
     def file_url(self): return self.file.url
     @property
-    def get_mime_type(self): return mimetypes.guess_type()[1]
+    def get_mime_type(self): return mimetypes.guess_type(self.file.name)[0]
     @property
     def image_html(self): return format_html('<a href="%s" title="%s">' % (self.file.url, self.file_name))
     @property
@@ -36,10 +37,10 @@ class File(models.Model):
     @property
     def valid_file_name(self): return get_valid_filename(self.file_name)
     @property
-    def file_extension(self): return os.path.splitext(self.file_name)[1]
+    def file_extension(self): return os.path.splitext(self.file_name)[-1]
 
     @property
-    def download_url(self): 
+    def download_url(self):
         if hastattr(self, 'uid'):
             return self.get_url('download', arguments={'uid': self.uid})
         return self.get_url('download', arguments={'pk': self.pk})
@@ -47,9 +48,15 @@ class File(models.Model):
     @property
     def pdf_url(self):
         if hastattr(self, 'uid'):
-            return self.get_url('pdf', arguments={'uid': self.uid})  
+            return self.get_url('pdf', arguments={'uid': self.uid})
         return self.get_url('pdf', arguments={'pk': self.pk})
 
+    @property
+    def retrieve_size(self):
+        if self.file and hasattr(self.file, 'size'):
+            return self.file.size
+
     def save(self, *args, **kwargs):
-        if self.filename is None: self.filename = self.valid_file_name
+        if not self.filename : self.filename = self.valid_file_name
+        self.size = self.retrieve_size
         super().save(*args, **kwargs)
