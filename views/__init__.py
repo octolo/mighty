@@ -124,7 +124,7 @@ class ExportView(ListView):
         return response
 
 class HomePageView(TemplateView):
-    template_name = 'home.html'
+    template_name = 'index.html' #For new VueJS instance
 
 class Widget(TemplateView):
     def get_context_data(self, **kwargs):

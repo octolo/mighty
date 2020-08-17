@@ -59,4 +59,5 @@ class File(models.Model):
     def save(self, *args, **kwargs):
         if not self.filename : self.filename = self.valid_file_name
         self.size = self.retrieve_size
+        self.filemimetype = self.get_mime_type
         super().save(*args, **kwargs)

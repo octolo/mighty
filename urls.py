@@ -1,12 +1,11 @@
 from django.conf import settings
-from django.urls import path
+from django.urls import path, re_path
 
 app_name = "mighty"
 urlpatterns = []
 
 from mighty.views import HomePageView, Widget
 urlpatterns += [
-    path('', HomePageView.as_view()),
     path('widgets/<str:widget>/<str:id>/', Widget.as_view())
 ]
 
