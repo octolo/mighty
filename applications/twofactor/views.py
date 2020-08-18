@@ -5,7 +5,6 @@ from django.contrib.auth.models import Group
 from django.urls import reverse, NoReverseMatch
 from django.http import HttpResponseRedirect
 
-from mighty.views.viewsets import ModelViewSet
 from mighty.views import DetailView, FormView, BaseView
 from mighty.models import Twofactor
 from mighty.applications.user.forms import UserCreationForm
@@ -116,14 +115,14 @@ class Register(LoginStepSearch):
             self.success_url += "?email=%s" % user.email
         return super(FormView, self).form_valid(form)
 
-class TwofactorViewSet(ModelViewSet):
-    model = Twofactor
-    slug = '<str:uid>'
-
-    def __init__(self):
-        super().__init__()
-        self.add_view('register', Register, 'register/')
-        self.add_view('search', LoginStepSearch, 'login/')
-        self.add_view('choices', LoginStepChoices, 'login/choices/')
-        self.add_view('code', LoginStepCode, 'login/code/')
-        self.add_view('logout', Logout, 'logout/')
+#class TwofactorViewSet(ModelViewSet):
+#    model = Twofactor
+#    slug = '<str:uid>'
+#
+#    def __init__(self):
+#        super().__init__()
+#        self.add_view('register', Register, 'register/')
+#        self.add_view('search', LoginStepSearch, 'login/')
+#        self.add_view('choices', LoginStepChoices, 'login/choices/')
+#        self.add_view('code', LoginStepCode, 'login/code/')
+#        self.add_view('logout', Logout, 'logout/')

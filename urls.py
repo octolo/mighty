@@ -4,7 +4,7 @@ from django.urls import path, re_path
 app_name = "mighty"
 urlpatterns = []
 
-from mighty.views import HomePageView, Widget
+from mighty.views import Widget
 urlpatterns += [
     path('widgets/<str:widget>/<str:id>/', Widget.as_view())
 ]
