@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
+from django.templatetags.static import static
 from django.urls import reverse
 
 from mighty.fields import JSONField
@@ -58,6 +59,9 @@ class User(AbstractUser, Base, Image):
     USERNAME_FIELD = conf.Field.username
     REQUIRED_FIELDS = conf.Field.required
     objects = UserManager()
+
+    @property
+    def image_url(self): return self.image.url if self.image else static("img/avatar.svg")
 
     @property
     def user(self):
