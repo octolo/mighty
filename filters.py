@@ -15,7 +15,6 @@ class Filter(Verify):
         self.fields = kwargs.get('fields')
         self.value = kwargs.get('value')
         self.dependencies = {}
-        self.verify()
 
     #################
     # Verify
@@ -23,6 +22,9 @@ class Filter(Verify):
     def verify_fields(self):
         if not self.fields:
             return "fields can't be empty!"
+
+    def used(self):
+        return True
 
     #################
     # Dependency
@@ -49,25 +51,29 @@ class Filter(Verify):
     # Sql
     ##############
     def sql(self):
-        value, sql = self.get_value(), False
-        if value:
+        self.verify()
+        if self.used():
             dep = self.get_dependencies()
             sql = reduce(
                 self.operator,
-                (Q(field+self.mask, self.get_value(field)) for field in self.fields)
-            ) if type(self.fields) == list else Q(self.fields+self.mask, self.get_value(self.fields))
-            sql = dep.add(sql, Q.AND) if dep and sql else sql
-        return sql
+                (Q(**{field+self.mask: self.get_value(field)}) for field in self.fields)
+            ) if type(self.fields) == list else Q(**{self.fields+self.mask: self.get_value(self.fields)})
+            return dep.add(sql, Q.AND) if dep and sql else sql
+        return Q()
+
 
 class ParamFilter(Filter):
     def __init__(self, request, *args, **kwargs):
-        super().__init__(request, *args, **kargs)
-        self.param = kwargs.get('param'), param, choices, 
+        super().__init__(request, *args, **kwargs)
+        self.param = kwargs.get('param')#, param, choices, 
+
+    def used(self):
+        return True if self.mrequest.get(self.param, False) else False
 
     def verify_param(self):
         if not self.param:
             return "param can't be empty!"
-
+            
     def get_value(self, field):
         return self.mrequest.get(self.param)
 
@@ -98,6 +104,11 @@ class ParamMultiChoicesFilter(ParamFilter):
     def get_value(self):
         values = super().get_value().split(SEPARATOR)
         return [value for value in values if value in self.choices]
+
+class BooleanParamFilter(ParamFilter):
+    def get_value(self, field):
+        value = super().get_value(field)
+        return bool(int(value))
 
 #keywords = ['filter', 'exclude', 'distinct', 'order', 'limit', 'offset']
 ## filter=(~,f(1,'tata'),f(3),(f(2),f(4)),f(5,'trublion,trashconnector'))&extra=f(12,'2018')
