@@ -51,6 +51,8 @@ if 'mighty.applications.logger' in settings.INSTALLED_APPS:
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality import models as models_nationality
     class Nationality(models_nationality.Nationality): pass
+    class Translator(models_nationality.Translator): pass
+    class TranslateDict(models_nationality.TranslateDict): pass
 
 # Messenger
 if 'mighty.applications.messenger' in settings.INSTALLED_APPS:

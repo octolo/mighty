@@ -1,13 +1,10 @@
 from django.conf import settings
 from django.urls import path, re_path
+from mighty.views import Widget
 
 app_name = "mighty"
-urlpatterns = []
-
-from mighty.views import Widget
-urlpatterns += [
-    path('widgets/<str:widget>/<str:id>/', Widget.as_view())
-]
+urlpatterns = [path('widgets/<str:widget>/<str:id>/', Widget.as_view())]
+api_urlpatterns = []
 
 # Enable app nationality
 if "mighty.applications.nationality" in settings.INSTALLED_APPS:
@@ -16,8 +13,10 @@ if "mighty.applications.nationality" in settings.INSTALLED_APPS:
 
 # Enable app user
 if "mighty.applications.user" in settings.INSTALLED_APPS:
-    from mighty.applications.user.urls import urlpatterns as urls_user
-    urlpatterns += urls_user
+    from mighty.applications.user import urls as urls_user
+    urlpatterns += urls_user.urlpatterns
+    if hasattr(urls_user, 'api_urlpatterns'):
+        api_urlpatterns += urls_user.api_urlpatterns
 
 # Enable app twofactor
 if "mighty.applications.twofactor" in settings.INSTALLED_APPS:

@@ -1,7 +1,19 @@
 
-from django.conf import settings
-from mighty.models import Nationality
-from mighty.applications.nationality import filters
+from django.core import serializers
+from django.http import JsonResponse
+from mighty.views import DetailView
+from mighty.models import TranslateDict
+
+class DictDetailView(DetailView):
+    model = TranslateDict
+
+    def get_object(self, queryset=None):
+        return TranslateDict.objects.get(translator__name=self.kwargs.get('name'), language__alpha2__iexact=self.kwargs.get('language'))
+
+    def render_to_response(self, context):
+        trans = context['object'].translates
+        key = self.request.GET.get('key', False)
+        return JsonResponse({key: trans[key]} if key in trans else trans)
 
 #class NationalityViewSet(ModelViewSet):
 #    model = Nationality
