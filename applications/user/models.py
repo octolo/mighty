@@ -190,7 +190,7 @@ class UserAgent(models.Model):
     class Meta(Base.Meta):
         abstract = True
 
-class UserOrInvitation(Base):
+class Invitation(Base):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField(_.email, unique=True)
@@ -204,8 +204,8 @@ class UserOrInvitation(Base):
     class Meta(Base.Meta):
         db_table = 'auth_userorinvitation'
         abstract = True
-        verbose_name = _.v_userorinvitation
-        verbose_name_plural = _.vp_userorinvitation
+        verbose_name = _.v_invitation
+        verbose_name_plural = _.vp_invitation
         ordering = ['last_name', 'first_name', 'email']
 
     @classmethod

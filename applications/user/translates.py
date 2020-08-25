@@ -23,5 +23,5 @@ method = _('Creation method')
 gender = _('Genre')
 profil = _('Profil')
 
-v_userorinvitation = _('User or Invitation')
-vp_userorinvitation = _('Users or Invitations')
+v_invitation = _('Invitation')
+vp_invitation = _('Invitations')

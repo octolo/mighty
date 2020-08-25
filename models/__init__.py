@@ -73,7 +73,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     class InternetProtocol(models_user.InternetProtocol): pass
     class UserAgent(models_user.UserAgent): pass
     class UserAddress(models_user.UserAddress): pass
-    class UserOrInvitation(models_user.UserOrInvitation): pass
+    class Invitation(models_user.Invitation): pass
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:

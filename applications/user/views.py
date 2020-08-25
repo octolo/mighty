@@ -26,12 +26,11 @@ class UserStyle(DetailView):
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
 
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from mighty.applications.user.serializers import UserSerializer
-class APIMyDetail(APIView):
-
-    def get(self, request, format=None):
-        serializer = UserSerializer(UserModel.objects.all().first())
-        return Response(serializer.data)
+if 'rest_framework' in settings.INSTALLED_APPS:
+    from rest_framework.views import APIView
+    from rest_framework.response import Response
+    from mighty.applications.user.serializers import UserSerializer
+    class APIMyDetail(APIView):
+        def get(self, request, format=None):
+            serializer = UserSerializer(UserModel.objects.all().first())
+            return Response(serializer.data)
