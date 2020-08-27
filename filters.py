@@ -1,31 +1,33 @@
 from django.db.models import Q
 from mighty import Verify
 from mighty.functions import make_searchable, test, get_logger
+from mighty.apps import MightyConfig
 
 from functools import reduce
-import logging, operator
+import logging, operator, uuid
+
 
 logger = logging.getLogger(__name__)
-SEPARATOR = ','
+SEPARATOR = MightyConfig.Interpreter._split
 
 class Filter(Verify):
-    def __init__(self, id, request=None, *args, **kwargs):
-        self.id = id
-        self.request = request
-        self.param = kwargs.get('param')
-        self.method = kwargs.get('method', 'GET')
+    def __init__(self, id=None, *args, **kwargs):
+        self.id = id if id else str(uuid.uuid4())
         self.operator = kwargs.get('operator', operator.and_)
+        self.dependencies = kwargs.get('dependencies', [])
         self.mask = kwargs.get('mask', '')
-        self.fields = kwargs.get('fields')
+        self.param = kwargs.get('param', self.id)
+        self.field = kwargs.get('field')
         self.value = kwargs.get('value')
-        self.dependencies = {}
 
     #################
     # Verify
     #################
-    def verify_fields(self):
-        if not self.fields:
-            return "fields can't be empty!"
+    def verify_field(self):
+        if not self.field:
+            msg = "field can't be empty!"
+            logger.debug('filter %s: %s' % (self.id, msg))
+            return msg
 
     def used(self):
         return True
@@ -33,48 +35,35 @@ class Filter(Verify):
     #################
     # Dependency
     #################
-    def has_dependency(self):
-        return len([param for param, data in self.dependencies.items() if self.method_request.get(param)])
-
-    def add_dependency(self, param, way, mask=''):
-        self.dependencies.update({param: [way, mask]})
-
     def get_dependencies(self):
-        return reduce(
-            operator.and_, 
-            (Q('%s%s' % (data[0], data[1]), self.request.get(param)) for param,data in self.dependencies.items() if self.request.get(param))
-        ) if self.dependencies and type(self.dependencies) == dict else False
+        return reduce(operator.and_, [dep.sql(self.request) for dep in self.dependencies]) if self.dependencies else False
 
     ################
     # Value
     ################
-    def get_value(self, field):
+    def get_value(self):
         return self.value
 
     ###############
     # Sql
     ##############
-    def multi_field(self):
-        return reduce(self.operator, [Q(**{field+self.mask: self.get_value(field)}) for field in self.fields])
+    def get_Q(self):
+        return Q(**{self.field+self.mask: self.get_value(self.field)})
 
-    def one_field(self):
-        return Q(**{self.fields+self.mask: self.get_value(self.fields)})
-
-    def sql(self, method_request=None):
-        self.method_request = method_request if method_request else getattr(self.request, self.method)
-        self.verify()
-        if self.used():
-            #dep = self.get_dependencies()
-            sql = self.multi_field() if type(self.fields) == list else self.one_field()
-            #return dep.add(sql, Q.AND) if dep and sql else sql
-            return sql
+    def sql(self, request=None, *args, **kwargs):
+        self.request = request
+        self.method = kwargs.get('method', 'GET')
+        self.method_request = kwargs.get('method_request', getattr(self.request, self.method))
+        if self.verify() and self.used():
+            dep = self.get_dependencies()
+            sql = self.get_Q()
+            return dep.add(sql, Q.AND) if dep and sql else sql
         return Q()
-
 
 class ParamFilter(Filter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
-        self.param = kwargs.get('param')#, param, choices, 
+        self.param = kwargs.get('param')
 
     def used(self):
         return True if self.method_request.get(self.param, False) else False
@@ -119,11 +108,13 @@ class MultiParamFilter(ParamFilter):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
 
-    def get_value(self, field):
-        return super().get_value(field).split(SEPARATOR)
+    def get_value(self):
+        return super().get_value().split(SEPARATOR)
 
-    def one_field(self):
-        return reduce(self.operator, [Q(**{self.fields+self.mask: value }) for value in self.get_value(self.fields)])
+    def get_Q(self):
+        fltr = reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
+        logger.debug('filter %s: %s' % (self.id, fltr))
+        return fltr
 
 class BooleanParamFilter(ParamFilter):
     def get_value(self, field):
@@ -144,13 +135,8 @@ class RequestInterpreter:
         _distinct = 'dstc'
         _order = 'ordr'
 
-    class Token:
-        _idorarg = 'IDorARG'
-        _filter = ['f', '(', ')']
-        _family = ['(', ')']
-        _or = '~'
-        _split= ','
-        _all_ = _filter+_family+[_split, _or]
+    class Token(MightyConfig.Interpreter):
+        pass
 
     def __init__(self, queryset, request, *args, **kwargs):
         self.queryset = queryset
@@ -163,6 +149,8 @@ class RequestInterpreter:
         self.idorarg = ''
         self.method = kwargs.get('method', 'GET')
         self.filters = {fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])}
+        logger.debug('filters: %s' % self.filters)
+        self.tokens = self.Token._filter+self.Token._family+[self.Token._split, self.Token._or]
         self.include = self.execute(request.GET.get(self.Param._include, False))
         self.exclude = self.execute(request.GET.get(self.Param._exclude, False))
 
@@ -171,8 +159,13 @@ class RequestInterpreter:
             i = 0
             while i < len(input_str):
                 char = input_str[i]
+                logger.debug('WHILE compiled: %s' % self.compiled)
+                logger.debug('WHILE context: %s' % self.context)
+                logger.debug('WHILE idorarg: %s' % self.idorarg)
+                logger.debug('WHILE filter_idandargs: %s' % self.filter_idandargs)
+                logger.debug('WHILE char: %s' % char)
                 i += 1
-                if char in self.Token._all_:
+                if char in self.tokens:
 
                     # if filter starting
                     if char == self.Token._filter[0]:
@@ -226,7 +219,8 @@ class RequestInterpreter:
                 else:
                     self.concate_idorarg(char)
 
-            self.compiled = reduce(self.operators.pop() if len(self.operators) else operator.and_, self.compiled)
+            if self.compiled:
+                self.compiled = reduce(self.operators.pop() if len(self.operators) else operator.and_, self.compiled)
             logger.info('END compiled: %s' % self.compiled)
             logger.info('END context: %s' % self.context)
             logger.info('END idorarg: %s' % self.idorarg)
@@ -250,14 +244,17 @@ class RequestInterpreter:
         self.idorarg+=char
 
     def add_filter(self, fltr):
-        self.families[-1].append(fltr) if len(self.families) else self.compiled.append(fltr)
+        if fltr:
+            self.families[-1].append(fltr) if len(self.families) else self.compiled.append(fltr)
 
     def get_filter(self):
-        fltr = self.filters[self.filter_idandargs[0]]
-        fltr.request = self.request
-        args = self.filter_idandargs[1] if len(self.filter_idandargs) == 2 else self.Token._split.join(self.filter_idandargs[1:])
-        self.filter_idandargs = []
-        return fltr.sql({fltr.param: args})
+        if len(self.filter_idandargs) and self.filter_idandargs[0] in self.filters:
+            fltr = self.filters[self.filter_idandargs[0]]
+            fltr.request = self.request
+            args = self.filter_idandargs[1] if len(self.filter_idandargs) == 2 else self.Token._split.join(self.filter_idandargs[1:])
+            self.filter_idandargs = []
+            return fltr.sql(self.request, method_request={fltr.param: args})
+        return False
 
     def ready(self):
         if self.include:

@@ -14,6 +14,7 @@ BS = conf.Crypto.BS
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 unpad = lambda s: s[:-ord(s[len(s)-1:])]
 numeric_const_pattern = "[-+]? (?: (?: \d* [\.,] \d+ ) | (?: \d+ [\.,]? ) )(?: [Ee] [+-]? \d+ ) ?"
+drf_enable = 'rest_framework' in settings.INSTALLED_APPS
 
 """
 Round function for sql usage
