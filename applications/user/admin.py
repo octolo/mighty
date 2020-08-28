@@ -14,12 +14,12 @@ from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 
 class EmailAdmin(admin.TabularInline):
-    fields = ('email',)
+    fields = ('email', 'default')
     extra = 0
 
 class PhoneAdmin(admin.TabularInline):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
-    fields = ('phone',)
+    fields = ('phone', 'default')
     extra = 0
 
 class InternetProtocolAdmin(admin.TabularInline):

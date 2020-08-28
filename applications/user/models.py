@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 from django.templatetags.static import static
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 
 from mighty.fields import JSONField
 from mighty.models.base import Base
@@ -19,6 +20,56 @@ from mighty.applications.user import translates as _, fields, choices
 from phonenumber_field.modelfields import PhoneNumberField
 import uuid, logging
 logger = logging.getLogger(__name__)
+
+class Email(Base):
+    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_email')
+    email = models.EmailField(_.email, unique=True)
+    default = models.BooleanField(default=False)
+    search_fields = ('email',)
+
+    class Meta(Base.Meta):
+        abstract = True
+
+    @property
+    def masking(self):
+        return masking_email(self.email)
+
+class Phone(Base):
+    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
+    phone = PhoneNumberField(_.phone, unique=True)
+    default = models.BooleanField(default=False)
+    search_fields = ('phone',)
+
+    class Meta(Base.Meta):
+        abstract = True
+
+    @property
+    def masking(self):
+        return masking_phone(self.phone)
+
+class UserAddress(Address):
+    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_address')
+
+    class Meta(Base.Meta):
+        abstract = True
+
+    @property
+    def masking(self):
+        return "**"
+
+class InternetProtocol(models.Model):
+    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_ip')
+    ip = models.GenericIPAddressField(editable=False)
+
+    class Meta(Base.Meta):
+        abstract = True
+
+class UserAgent(models.Model):
+    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_useragent')
+    useragent = models.CharField(max_length=255, editable=False)
+
+    class Meta(Base.Meta):
+        abstract = True
 
 class UserAccessLogModel(ChangeLog):
     object_id = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_accesslog')
@@ -134,61 +185,29 @@ class User(AbstractUser, Base, Image):
                 exist = False
         return username
 
+    def in_mails(self):
+        if self.email:
+            try:
+                self.user_email.get(email=self.email)
+            except ObjectDoesNotExist:
+                self.user_email.create(email=self.email, default=True)
+            self.user_email.exclude(email=self.email).update(default=False)
+
+    def in_phones(self):
+        if self.phone:
+            try:
+                self.user_phone.get(phone=self.phone)
+            except ObjectDoesNotExist:
+                self.user_phone.create(phone=self.phone, default=True)
+            self.user_phone.exclude(phone=self.phone).update(default=False)
+
     def save(self, *args, **kwargs):
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: self.username = self.username.lower()
         else: self.username = self.gen_username()
+        #self.in_mails()
+        #self.in_phones()
         super(User, self).save(*args, **kwargs)
-
-class Email(Base):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_email')
-    email = models.EmailField(_.email, unique=True)
-    default = models.BooleanField(default=False)
-    search_fields = ('email',)
-
-    class Meta(Base.Meta):
-        abstract = True
-
-    @property
-    def masking(self):
-        return masking_email(self.email)
-
-class Phone(Base):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
-    phone = PhoneNumberField(_.phone, unique=True)
-    default = models.BooleanField(default=False)
-    search_fields = ('phone',)
-
-    class Meta(Base.Meta):
-        abstract = True
-
-    @property
-    def masking(self):
-        return masking_phone(self.phone)
-
-class UserAddress(Address):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_address')
-
-    class Meta(Base.Meta):
-        abstract = True
-
-    @property
-    def masking(self):
-        return "**"
-
-class InternetProtocol(models.Model):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_ip')
-    ip = models.GenericIPAddressField(editable=False)
-
-    class Meta(Base.Meta):
-        abstract = True
-
-class UserAgent(models.Model):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_useragent')
-    useragent = models.CharField(max_length=255, editable=False)
-
-    class Meta(Base.Meta):
-        abstract = True
 
 class Invitation(Base):
     first_name = models.CharField(max_length=255)
@@ -236,6 +255,7 @@ class Invitation(Base):
 
     def save(self, *args, **kwargs):
         self.status = choices.STATUS_ACCEPTED if self.user else self.status
+        self.in_mails()
         super().save(*args, **kwargs)
         #if not self.missives.count():
         #    self.missives.create(**{

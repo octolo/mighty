@@ -85,8 +85,8 @@ class ParamChoicesFilter(ParamFilter):
         if not self.choices or type(self.choices) != list:
             return "choices can't be empty and must be a list of choices"
 
-    def get_value(self, field):
-        value = super().get_value(field)
+    def get_value(self):
+        value = super().get_value()
         return value if value in self.choices else False
 
 class ParamMultiChoicesFilter(ParamFilter):
@@ -100,8 +100,7 @@ class ParamMultiChoicesFilter(ParamFilter):
             return "choices can't be empty and must be a list of choices"
 
     def get_value(self, field):
-        values = super().get_value(field).split(SEPARATOR)
-        return [value for value in values if value in self.choices]
+        return [value for value in super().get_value(field).split(SEPARATOR) if value in self.choices]
 
 class MultiParamFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
@@ -112,9 +111,20 @@ class MultiParamFilter(ParamFilter):
         return super().get_value().split(SEPARATOR)
 
     def get_Q(self):
+        return reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
+
+class SearchFilter(ParamFilter):
+    def __init__(self, id, request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.param = kwargs.get('param', 'search')
+        self.fields = kwargs.get('fields', ['search'])
+    
+    def get_value(self):
+        return super().get_value().split(SEPARATOR)
+
+    def get_Q(self):
         fltr = reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
-        logger.debug('filter %s: %s' % (self.id, fltr))
-        return fltr
+
 
 class BooleanParamFilter(ParamFilter):
     def get_value(self, field):
