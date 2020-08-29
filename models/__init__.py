@@ -51,6 +51,8 @@ if 'mighty.applications.logger' in settings.INSTALLED_APPS:
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality import models as models_nationality
     class Nationality(models_nationality.Nationality): pass
+    class Translator(models_nationality.Translator): pass
+    class TranslateDict(models_nationality.TranslateDict): pass
 
 # Messenger
 if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
@@ -71,7 +73,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     class InternetProtocol(models_user.InternetProtocol): pass
     class UserAgent(models_user.UserAgent): pass
     class UserAddress(models_user.UserAddress): pass
-    class UserOrInvitation(models_user.UserOrInvitation): pass
+    class Invitation(models_user.Invitation): pass
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:

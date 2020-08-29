@@ -8,6 +8,7 @@ class Verify:
             if callable(getattr(self, func)) and func[0:7] == 'verify_':
                 state = getattr(self, func)()
                 if state: raise VerifyException(state)
+        return True
 
 stdtypes = {
     'numeric': [int, float, complex],

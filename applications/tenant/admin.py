@@ -10,7 +10,3 @@ class TenantAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant}),)
     filter_horizontal = ('roles',)
-
-class InvitationAdmin(BaseAdmin):
-    view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.invitation}),)

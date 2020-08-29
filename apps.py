@@ -44,6 +44,13 @@ class Config:
     class Channel:
         delimiter = '__'
 
+    class Interpreter:
+        _idorarg = 'IDorARG'
+        _filter = ['f', '(', ')']
+        _family = ['(', ')']
+        _or = '~'
+        _split= ','
+
     class Crypto:
         BS = 16
 

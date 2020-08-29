@@ -14,12 +14,12 @@ from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 
 class EmailAdmin(admin.TabularInline):
-    fields = ('email',)
+    fields = ('email', 'default')
     extra = 0
 
 class PhoneAdmin(admin.TabularInline):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
-    fields = ('phone',)
+    fields = ('phone', 'default')
     extra = 0
 
 class InternetProtocolAdmin(admin.TabularInline):
@@ -54,10 +54,10 @@ class UserAdmin(UserAdmin, BaseAdmin):
         if not change: obj.method = METHOD_BACKEND
         super().save_model(request, obj, form, change)
 
-class UserOrInvitationAdmin(BaseAdmin):
+class InvitationAdmin(BaseAdmin):
     raw_id_fields = ('user',)
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.user_or_invitation}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.invitation}),)
     list_display = ('__str__', 'status', 'user')
     list_filter = ('status',)
     search_fields = ('last_name', 'first_name',) + tuple('user__%s' % field for field in fields.search)

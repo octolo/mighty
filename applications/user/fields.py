@@ -19,4 +19,4 @@ if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
     params += ('nationalities',)
     serializer += ('nationalities',)
 
-user_or_invitation = ('last_name', 'first_name', 'email', 'phone', 'user')
+invitation = ('last_name', 'first_name', 'email', 'phone', 'user')

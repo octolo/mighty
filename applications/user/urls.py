@@ -8,7 +8,6 @@ urlpatterns = [
     ])),
 ]
 
-
 if 'rest_framework' in setting('INSTALLED_APPS'):
     api_urlpatterns = [
         path('user/', include([

@@ -48,6 +48,10 @@ if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality import admin as admin_nationality
     @admin.register(all_models.Nationality)
     class NationalityAdmin(admin_nationality.NationalityAdmin): pass
+    class TranslateDictAdmin(admin_nationality.TranslateDictAdmin): model = all_models.TranslateDict
+    @admin.register(all_models.Translator)
+    class TranslateDictAdmin(admin_nationality.TranslatorAdmin):
+        inlines = [TranslateDictAdmin]
 
 # Messenger
 if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
@@ -82,8 +86,8 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
             self.inlines = [EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin, UserAddressAdmin]
             return super(admin_user.UserAdmin, self).change_view(*args, **kwargs)
     
-    @admin.register(all_models.UserOrInvitation)
-    class UserOrInvitationAdmin(admin_user.UserOrInvitationAdmin): pass
+    @admin.register(all_models.Invitation)
+    class InvitationAdmin(admin_user.InvitationAdmin): pass
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:

@@ -1,4 +1,4 @@
-Country,Alpha2,Alpha3,Numeric,ISO3166-2,Numbering
+country,alpha2,alpha3,numeric,iso,numbering
 Afghanistan,AF,AFG,004,ISO 3166-2:AF,
 Åland Islands,AX,ALA,248,ISO 3166-2:AX,
 Albania,AL,ALB,008,ISO 3166-2:AL,
