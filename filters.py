@@ -64,10 +64,6 @@ class Filter(Verify):
         return Q()
 
 class ParamFilter(Filter):
-    def __init__(self, id, request=None, *args, **kwargs):
-        super().__init__(id, request, *args, **kwargs)
-        self.param = kwargs.get('param')
-
     def used(self):
         return True if self.method_request.get(self.param, False) else False
 
@@ -183,8 +179,13 @@ class RequestInterpreter:
                     # if filter starting
                     if char == self.Token._filter[0]:
                         # not already in filter
-                        if not len(self.context) or self.context[-1] not in [self.Token._filter[0], self.Token._filter[0]+self.Token._filter[1]]:
+                        if not len(self.context):
+                            print(self.context)
                             self.context.append(self.Token._filter[0])
+                        # elif self.context[-1] == [self.Token._filter[0]]:
+                        #     self.c
+                        # elif self.context[-1] not in [self.Token._filter[0], self.Token._filter[0]+self.Token._filter[1]]:
+                        #     self.concate_idorarg(char)
                         else:
                             # ID or ARG
                             self.concate_idorarg(char)
