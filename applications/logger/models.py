@@ -59,7 +59,7 @@ class ChangeLog(models.Model):
     fmodel = models.CharField(_m.fmodel, max_length=255)
     date_begin = models.DateTimeField(_m.date_begin, editable=False)
     date_end = models.DateTimeField(_m.date_end, editable=False, auto_now_add=True)
-    user = models.CharField(max_length=255)
+    user = models.CharField(max_length=255, blank=True, null=True, default='anonymous~root')
 
     def get_value(self):
         return self.value.decode('utf-8')
@@ -73,7 +73,7 @@ class ChangeLog(models.Model):
 class AccessLog(models.Model):
     object_id = models.ForeignKey('', on_delete=models.CASCADE)
     date_access = models.DateTimeField(_.date_access, editable=False)
-    user = models.CharField(max_length=255)
+    user = models.CharField(max_length=255, default='anonymous~root')
 
     class Meta:
         abstract = True

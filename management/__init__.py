@@ -30,10 +30,14 @@ class BaseCommand(BaseCommand):
 
     def progress_bar(self, bar_length=20):
         percent = self.position / self.get_total()
-        arrow = '-' * int(round(percent * bar_length)-1) + '>'
-        spaces = ' ' * (bar_length - len(arrow))
-        sys.stdout.write("\rPercent: [{0}] {1} ({2}/{3})".format(arrow + spaces, int(round(percent * 100)), self.position, self.get_total()))
-        sys.stdout.flush()
+        if self.progressbar:
+            arrow = '-' * int(round(percent * bar_length)-1) + '>'
+            spaces = ' ' * (bar_length - len(arrow))
+            sys.stdout.write("\rPercent: [{0}] {1}% ({2}/{3})".format(arrow + spaces, int(round(percent * 100)), self.position, self.get_total()))
+            sys.stdout.flush()
+        else:
+            sys.stdout.write("\rPercent: {0}% ({1}/{2})".format(int(round(percent * 100)), self.position, self.get_total()))
+            print()
         if self.position == self.get_total(): print()
 
     def create_parser(self, prog_name, subcommand, **kwargs):
@@ -49,7 +53,6 @@ class BaseCommand(BaseCommand):
 
     def handle(self, *args, **options):
         self.error = Error()
-        self.total = options.get('encoding')
         self.encoding = options.get('encoding')
         self.logfile = options.get('logfile')
         self.progressbar = options.get('progressbar')
@@ -97,7 +100,7 @@ class ModelBaseCommand(BaseCommand):
 
     def each_objects(self):
         qs = self.get_queryset()
-        self.total = qs.count()
+        self.total = len(qs)
         for obj in self.get_queryset():
             self.set_position()
             self.progress_bar()

@@ -15,10 +15,16 @@ UserModel = get_user_model()
 
 class TwoFactorBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
+        field_type = kwargs.get('field_type', None)
+        if username is None:
+            username = kwargs.get(UserModel.USERNAME_FIELD)
         if username is None or password is None:
             return
         try:
-            user = UserModel.objects.get(uid=username)
+            if field_type == 'uid' and hasattr(UserModel, 'uid'):
+                user = UserModel.objects.get(uid=username)
+            else:
+                user = UserModel._default_manager.get_by_natural_key(username)
         except UserModel.DoesNotExist:
             UserModel().set_password(password)
         else:
@@ -28,8 +34,9 @@ class TwoFactorBackend(ModelBackend):
                     code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now), is_consumed=False)
                     code.is_consumed = True
                     code.save()
-                    user.get_client_ip(request)
-                    user.get_user_agent(request)
+                    if hasattr(request, 'META'):
+                        user.get_client_ip(request)
+                        user.get_user_agent(request)
                     return user
                 except Exception as e:
                     UserModel().set_password(password)

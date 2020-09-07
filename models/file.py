@@ -39,6 +39,7 @@ class File(models.Model):
     def file_name(self): return self.filename if self.filename else os.path.basename(self.file.name)
     @property
     def valid_file_name(self):
+        logger.warning('test: %s' % self.file)
         return get_valid_filename(self.file_name)
     @property
     def file_extension(self): return os.path.splitext(self.file_name)[-1]
@@ -61,7 +62,7 @@ class File(models.Model):
             return self.file.size
 
     def save(self, *args, **kwargs):
-
+        
         if not self.filename : self.filename = self.valid_file_name
         self.size = self.retrieve_size
         self.filemimetype = self.get_mime_type

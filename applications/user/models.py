@@ -205,9 +205,9 @@ class User(AbstractUser, Base, Image):
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: self.username = self.username.lower()
         else: self.username = self.gen_username()
-        #self.in_mails()
-        #self.in_phones()
         super(User, self).save(*args, **kwargs)
+        self.in_mails()
+        self.in_phones()
 
 class Invitation(Base):
     first_name = models.CharField(max_length=255)

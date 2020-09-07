@@ -13,6 +13,7 @@ class Config:
     exclude = exclude
     supervision = True
     user_or_invitation = 'auth.UserOrInvitation'
+    jwt_enable = False
     
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))

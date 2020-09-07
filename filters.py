@@ -6,7 +6,6 @@ from mighty.apps import MightyConfig
 from functools import reduce
 import logging, operator, uuid
 
-
 logger = logging.getLogger(__name__)
 SEPARATOR = MightyConfig.Interpreter._split
 
@@ -64,6 +63,10 @@ class Filter(Verify):
         return Q()
 
 class ParamFilter(Filter):
+    def __init__(self, id, request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.param = kwargs.get('param')
+
     def used(self):
         return True if self.method_request.get(self.param, False) else False
 
@@ -76,7 +79,7 @@ class ParamFilter(Filter):
 
 class ParamChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
-        super().__init__(id, request, *args, **kargs)
+        super().__init__(id, request, *args, **kwargs)
         self.choices = kwargs.get('choices')
         self.mask = '__iexact'
 
@@ -84,8 +87,9 @@ class ParamChoicesFilter(ParamFilter):
         if not self.choices or type(self.choices) != list:
             return "choices can't be empty and must be a list of choices"
 
-    def get_value(self):
-        value = super().get_value()
+    def get_value(self, field):
+        print(self.choices)
+        value = super().get_value(field)
         return value if value in self.choices else False
 
 class ParamMultiChoicesFilter(ParamFilter):
@@ -113,24 +117,34 @@ class MultiParamFilter(ParamFilter):
         return reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
 
 class SearchFilter(ParamFilter):
-    def __init__(self, id, request=None, *args, **kwargs):
+    def __init__(self, id='search', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
+        self.mask = kwargs.get('mask', '__icontains')
         self.param = kwargs.get('param', 'search')
-        self.fields = kwargs.get('fields', ['search'])
+        self.field = kwargs.get('field', 'search')
 
-    def get_value(self):
-        return super().get_value().split(SEPARATOR)
+    def get_value(self, field):
+        return super().get_value(field).split(SEPARATOR)
 
     def get_Q(self):
-        fltr = reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
-
+        return reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
 
 class BooleanParamFilter(ParamFilter):
     def get_value(self, field):
         value = super().get_value(field)
         return bool(int(value))
 
-class RequestInterpreter:
+class FiltersManager:
+    def __init__(self, flts=None):
+        self.flts = flts if flts else {}
+    
+    def params(self, request):
+        return [f.sql(request) for f in self.flts]
+
+    def add(self, id_, filter_):
+        self.flts[id_] = filter_
+
+class Foxid:
     filters = None
     include = None
     excludes = None
@@ -138,11 +152,11 @@ class RequestInterpreter:
     order = None
 
     class Param:
-        _filters = 'flts'
-        _include = 'incd'
-        _exclude = 'excd'
-        _distinct = 'dstc'
-        _order = 'ordr'
+        _filters = 'f'
+        _include = 'i'
+        _exclude = 'x'
+        _distinct = 'd'
+        _order = 'o'
 
     class Token(MightyConfig.Interpreter):
         pass
@@ -180,12 +194,10 @@ class RequestInterpreter:
                     if char == self.Token._filter[0]:
                         # not already in filter
                         if not len(self.context):
-                            print(self.context)
                             self.context.append(self.Token._filter[0])
-                        # elif self.context[-1] == [self.Token._filter[0]]:
-                        #     self.c
-                        # elif self.context[-1] not in [self.Token._filter[0], self.Token._filter[0]+self.Token._filter[1]]:
-                        #     self.concate_idorarg(char)
+                        # if filter in family
+                        elif self.context[-1] == self.Token._family[0]:
+                            self.context.append(self.Token._filter[0])
                         else:
                             # ID or ARG
                             self.concate_idorarg(char)
@@ -229,9 +241,12 @@ class RequestInterpreter:
                     elif char == self.Token._or:
                         self.operators.append(operator.or_)
 
-                # ID or ARG
+                # No token
                 else:
-                    self.concate_idorarg(char)
+                    if not self.context:
+                        raise SyntaxError('request interepreter need a starting condition')
+                    else:
+                        self.concate_idorarg(char)
 
             if self.compiled:
                 self.compiled = reduce(self.operators.pop() if len(self.operators) else operator.and_, self.compiled)

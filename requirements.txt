@@ -1,3 +1,4 @@
+babel
 pillow
 channels
 channels-redis

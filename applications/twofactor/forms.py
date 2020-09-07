@@ -116,7 +116,7 @@ class TwoFactorCodeForm(AuthenticationForm):
     def clean(self):
         password = self.cleaned_data.get('password')
         if password:
-            self.user_cache = authenticate(self.request, username=self.uid, password=password)
+            self.user_cache = authenticate(self.request, username=self.uid, password=password, field_type='uid')
             if self.user_cache is None:
                 raise forms.ValidationError(
                     self.error_messages['invalid_login'],
