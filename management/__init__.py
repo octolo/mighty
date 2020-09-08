@@ -21,6 +21,7 @@ class Error:
 class BaseCommand(BaseCommand):
     help = 'Command Base override by Mighty'
     position = 0
+    prefix_bar = 'Percent'
 
     def get_total(self):
         return self.total if self.total else 0
@@ -33,10 +34,21 @@ class BaseCommand(BaseCommand):
         if self.progressbar:
             arrow = '-' * int(round(percent * bar_length)-1) + '>'
             spaces = ' ' * (bar_length - len(arrow))
-            sys.stdout.write("\rPercent: [{0}] {1}% ({2}/{3})".format(arrow + spaces, int(round(percent * 100)), self.position, self.get_total()))
+            sys.stdout.write("\r{0}: [{1}] {2}% ({3}/{4})".format(
+                self.prefix_bar,
+                arrow + spaces,
+                int(round(percent * 100)),
+                self.position,
+                self.get_total())
+            )
             sys.stdout.flush()
         else:
-            sys.stdout.write("\rPercent: {0}% ({1}/{2})".format(int(round(percent * 100)), self.position, self.get_total()))
+            sys.stdout.write("\r{0}: {1}% ({2}/{3})".format(
+                self.prefix_bar,
+                int(round(percent * 100)),
+                self.position,
+                self.get_total())
+            )
             print()
         if self.position == self.get_total(): print()
 

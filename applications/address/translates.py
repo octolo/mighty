@@ -48,9 +48,8 @@ WAYS = (
     ('VLGE', _('Village')),
 )
 
-street_number = _('street number')
-way = _('way')
-route = _('route')
+address = _('address')
+complement = _('complement')
 locality = _('locality')
 postal_code = _('postal code')
 state = _('state')

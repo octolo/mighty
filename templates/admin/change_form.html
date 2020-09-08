@@ -40,7 +40,7 @@
 
 {% block object-tools-items %}
 {% if original.timeline_model %}
-{% url opts|admin_urlname:'timeline' original|contenttype_id original.pk|admin_urlquote as timeline_url %}
+{% url opts|admin_urlname:'timeline' original content_type_id original.pk|admin_urlquote as timeline_url %}
 <li><a href="{{ timeline_url }}">{% verbose_name_plural original.timeline_model %}</a></li>
 {% endif %}
 {% if original.source_model %}

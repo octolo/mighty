@@ -6,9 +6,8 @@ CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
 class Address(Base):
     search_fields = ['route', 'locality', 'postal_code']
     default = models.BooleanField(default=False)
-    street_number = models.PositiveIntegerField(_.street_number, null=True, blank=True)
-    way = models.CharField(_.way, choices=CHOICES_WAYS, max_length=4, null=True, blank=True)
-    route = models.CharField(_.route, max_length=255, null=True, blank=True)
+    address = models.CharField(_.address, max_length=255, null=True, blank=True)
+    complement = models.CharField(_.complement, max_length=255, null=True, blank=True)
     locality = models.CharField(_.locality, max_length=255, null=True, blank=True)
     postal_code = models.CharField(_.postal_code, max_length=255, null=True, blank=True)
     state = models.CharField(_.state, max_length=255, null=True, blank=True)

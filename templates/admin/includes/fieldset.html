@@ -21,12 +21,12 @@
                         {% endif %}
                     {% endif %}
                     {% if original.timeline_model and field.field.name not in original.timeline_exclude %}
-                        {% url opts|admin_urlname:'timeline_addfield' original|contenttype_id original.pk|admin_urlquote field.field.name as timeline_url %}
+                        {% url opts|admin_urlname:'timeline_addfield' content_type_id original.pk|admin_urlquote field.field.name as timeline_url %}
                         <a class="button timelinelink" href="{{ timeline_url }}">
                             <img src="{% static 'admin/img/icon-addlink.svg' %}">&nbsp;{% verbose_name original.timeline_model %}</a>
                     {% endif %}
                     {% if original.source_model and field.field.name not in original.source_exclude %}
-                        {% url opts|admin_urlname:'source_choice' original|contenttype_id original.pk|admin_urlquote field.field.name as source_url %}
+                        {% url opts|admin_urlname:'source_choice' content_type_id original.pk|admin_urlquote field.field.name as source_url %}
                         <a class="button sourcelink" href="{{ source_url }}">
                             <img src="{% static 'admin/img/icon-addlink.svg' %}">&nbsp;{% verbose_name original.source_model %}</a>
                     {% endif %}
