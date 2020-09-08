@@ -2,21 +2,18 @@ from mighty import fields
 from mighty.functions import setting
 
 search = ('username', 'email', 'last_name', 'first_name')
-params = ('uid', 'gender')
-serializer = fields.image_url + (
+serializer = ('uid',) + fields.image_url + (
     'username',
-    'email',
     'last_name',
     'first_name',
     'fullname',
     'representation',
     'style',
-    'last_login',
-    'get_gender_display'
+    'get_gender_display',
+    'is_staff',
 )
 
 if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
-    params += ('nationalities',)
     serializer += ('nationalities',)
 
 invitation = ('last_name', 'first_name', 'email', 'phone', 'user')
