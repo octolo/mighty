@@ -137,9 +137,10 @@ class User(AbstractUser, Base, Image):
     @property
     def admin_enable_url(self):
         return reverse('admin:auth_proxyuser_enable', kwargs={"object_id": self.pk})
+    
     @property
     def fullname(self):
-        return "%s %s" % (self.last_name, self.first_name) if all([self.last_name, self.first_name]) else ''
+        return "%s %s" % (self.first_name, self.last_name) if all([self.last_name, self.first_name]) else ''
 
     @property
     def logname(self):

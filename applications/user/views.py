@@ -32,5 +32,6 @@ if 'rest_framework' in settings.INSTALLED_APPS:
     from mighty.applications.user.serializers import UserSerializer
     class APIMyDetail(APIView):
         def get(self, request, format=None):
-            serializer = UserSerializer(UserModel.objects.all().first())
+            print(self.request.user)
+            serializer = UserSerializer(self.request.user)
             return Response(serializer.data)
