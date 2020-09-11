@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ header.title }}</title>
+        <style>{% include css %}</style>
+    </head>
+    <body>
+    
+    <section id="grapher-section">{% include html %}</section>
+
+    {% for fjs in js %}
+    <script src="{% static fjs %}"></script>
+    {% endfor %}
+
+    <script>
+        (function() {
+            var graph_list = [];
+            {% for template in templates %}
+            {% include directory|add:template.graphtype|add:".js" %}
+            {% endfor %}
+        })();
+    </script>
+    </body>
+</html>

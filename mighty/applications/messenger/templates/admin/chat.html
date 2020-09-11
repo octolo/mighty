@@ -1,0 +1,66 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static mighty admin_urls %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static "css/easy.css" %}">
+<style>
+article { padding: 5px 15px; width: calc(100% / 3); }
+article * { vertical-align: middle;}
+table { width: 100%; }
+.warning { white-space: pre; }
+.progress { width: 100%; background-color: #ddd; }
+.state { height: 30px; background-color: #4CAF50; text-align: center; line-height: 30px; color: white; }
+@media (max-width: 768px) {
+    article { width: 100%; padding: 0px; }
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
+&rsaquo; <a href="{% url 'admin:supervision' %}">{{ supervision|title }}</a>
+&rsaquo; Chat
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section>
+    <h1>Chat&nbsp;<img class="h-px50" src="{% static 'img/heartbeat.svg' %}"></h1>
+    <ul>
+        <li><a href="?flushdb=1">Flush</a></li>
+    </ul>
+</section>
+
+<div id="content-main">
+    <ul class="object-tools">
+        <li></li>
+    </ul>
+    <div class="module">
+        <section>
+            <h1><img class="h-px30" src="{% static 'img/server.png' %}">Channels</h1>
+            <div class="d-f md-d-bl">
+                <article>
+                    <h2>Groups</h2>
+                    <table>
+                        {% for chan,ttl in groups.items %}
+                        <tr><td>{{ chan }}</td><td>{{ ttl }}</td><td><a href="{% url 'admin:supervision_chatjoin' chan %}">Join</a></td></tr>
+                        {% endfor %}
+                    </table>
+                </article>
+
+                <article>
+                    <h2>Users</h2>
+                    <table>
+                        {% for chan,ttl in users.items %}
+                        <tr><td>{{ chan }}</td><td>{{ ttl }}</td></tr>
+                        {% endfor %}
+                    </table>
+                </article>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

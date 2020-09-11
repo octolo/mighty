@@ -1,0 +1,7 @@
+{% if object.container %}
+    {{ object.get_container }}
+{% else %}
+    {% for template in object.templates.all %}
+    <canvas id="chart-{{ template.uid }}" class="chart-container" style="width: 650px; "></canvas>
+    {% endfor %}
+{% endif %}

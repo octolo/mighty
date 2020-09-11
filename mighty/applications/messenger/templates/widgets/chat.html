@@ -1,0 +1,11 @@
+<div id="chat-{{ id }}" class="chat">
+    <div id="chat-tasks-{{ id }}" class="tasks">
+        <span class="close" onclick="close_chat('{{ id }}')">&times;</span> 
+    </div>
+    <div id="chat-history-{{ id }}" class="history"></div>
+    <form>
+        <!--<div class="chat-shortcuts"><a>IMG</a><a>PCJ</a><a>ICN</a></div>-->
+        <input id="chat-input-{{ id }}" class="input" onkeypress="send_message(event, '{{ id }}')" type="text" placeholder="message...">
+        <button onclick="send_message(event, '{{ id }}')">Send</button>
+    </form>
+</div>

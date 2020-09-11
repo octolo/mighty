@@ -1,0 +1,19 @@
+{% extends "mighty/ajax/list.html" %}
+
+{% block template %}
+<script id="template-{{ opts.model_name }}" type="text/x-handlebars-template">
+[[#each datas]]
+<a href="[[detail_url]]" class="links dp-block mg-bt-px5 tx-dc-none c-white va-middle va-middle-rs">
+    <article class="dp-flex pg-px5 va-middle-rs">
+        <div class="mx-ht-px50 mx-wt-px50">
+            <img class="mx-wt-pr100" src="[[image_url]]">
+        </div>
+        <div class="wt-pr100 pgx-px5 pg-lf-px20">
+            <h2>[[country]]</h2>
+            <p>[[alpha2]]&nbsp;-&nbsp;[[alpha3]]&nbsp;-&nbsp;[[numeric]]</p>
+        </div>
+    </article>
+</a>
+[[/each]]
+</script>
+{% endblock %}

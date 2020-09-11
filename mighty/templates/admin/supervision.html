@@ -1,0 +1,121 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static mighty admin_urls %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static "css/easy.css" %}">
+<style>
+article { padding: 5px 15px; width: calc(100% / 3); }
+article * { vertical-align: middle;}
+.warning { white-space: pre; }
+.progress { width: 100%; background-color: #ddd; }
+.state { height: 30px; background-color: #4CAF50; text-align: center; line-height: 30px; color: white; }
+.command { color: steelblue; }
+@media (max-width: 768px) {
+    article { width: 100%; padding: 0px; }
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
+&rsaquo; {{ supervision|title }}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section>
+    <h1>Supervision&nbsp;<img class="h-px50" src="{% static 'img/heartbeat.svg' %}"></h1>
+    <ul class="messagelist">
+        <li class="warning">command lines <i><b>'ps'</b></i> compute reserved memory</li>
+    </ul>
+    <article>
+        <h2>Services</h2>
+        <ul>
+            <li><a href="{% url 'admin:supervision_channel_list' %}">Channels</a></li>
+        </ul>
+    </article>
+</section>
+<hr><br>
+{% for service,commands in services.items %}
+<section>
+    <h1><img class="h-px30" src="{% static 'img/server.png' %}">{{ service }}</h1>
+    <div class="d-f md-d-bl">
+        <article>
+            <h2>Uptime&nbsp;<img class="h-px20" src="{% static 'img/date.svg' %}"></h2>
+            <small class="command">{{ commands.uptime.2 }}</small><br>
+            {% if commands.uptime.0 %}
+            <ul class="messagelist">
+                <li class="warning">{{ commands.uptime.0 }}</li>
+            </ul>
+            {% else %}
+            {% if not commands.uptime.1 %}
+            <img class="h-px20" src="{% static 'img/off.svg' %}">
+            {% elif commands.cpu.1 > 75 or commands.memory.1 > 75 %}
+            <img class="h-px20" src="{% static 'img/warning.svg' %}">
+            {% else %}
+            <img class="h-px20" src="{% static 'img/on.svg' %}">
+            {% endif %}
+            <span id="uptime-{{ service }}"></span>
+            {% endif %}
+        </article>
+
+        <article>
+            <h2>CPU&nbsp;<img class="h-px20" src="{% static 'img/cpu.png' %}"></h2>
+            <small class="command">{{ commands.cpu.3 }}</small><br>
+            {% if commands.cpu.0 %}
+            <ul class="messagelist">
+                <li class="warning">{{ commands.cpu.0 }}</li>
+            </ul>
+            {% else %}
+            <div class="progress">
+                <div class="state" style="width: {{ commands.cpu.1 }}%">{{ commands.cpu.1 }}%</div>
+            </div>
+            {% endif %}
+        </article>
+
+        <article>
+            <h2>MEMORY&nbsp;<img class="h-px20" src="{% static 'img/memory.png' %}"></h2>
+            <small class="command">{{ commands.memory.3 }}</small><br>
+            {% if commands.memory.0 %}
+            <ul class="messagelist">
+                <li class="warning">{{ commands.memory.0 }}</li>
+            </ul>
+            {% else %}
+            <div class="progress">
+                <div class="state" style="width: {{ commands.memory.1 }}%">{{ commands.memory.1 }}%</div>
+            </div>
+            {% endif %}
+        </article>
+    </div>
+</section>
+<hr><br>
+{% endfor %}
+
+
+<script>
+    function getTimePast(service, time) {
+        if (time > 0) {
+            var seconds = Math.round(time);
+            var minutes = Math.floor(seconds/60);
+            var hours = Math.floor(minutes/60);
+            var days = Math.floor(hours/24);
+            hours = hours-(days*24);
+            minutes = minutes-(days*24*60)-(hours*60);
+            seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
+            var timing = days+ " day(s), " + hours + " hour(s), " + minutes + " minute(s), " + seconds + "second(s)."
+            document.getElementById('uptime-' + service).textContent = timing;
+            setTimeout(function() {
+                getTimePast(service, time+1);
+            }, 1000);
+        }
+    }
+    {% for service,commands in services.items %}
+        {% if not commands.uptime.0 %}
+        getTimePast("{{ service }}", Math.round({{ commands.uptime.1 }}));
+        {% endif %}
+    {% endfor %}
+</script>
+{% endblock %}

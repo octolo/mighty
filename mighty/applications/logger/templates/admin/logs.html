@@ -1,0 +1,81 @@
+{% extends "admin/base_site.html" %}
+{% load mighty admin_urls %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+#result_list { width: 100%; }
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} logs{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">{{ object|truncatewords:"18" }}</a>
+&rsaquo; {% verbose_name_plural fake %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+<div class="module">
+    <div>
+        <small><b>args:</b> {% field_name fake 'args' %}</small><br>
+        <small><b>created:</b> {% field_name fake 'created' %}</small><br>
+        <small><b>exc_info:</b> {% field_name fake 'exc_info' %}</small><br>
+        <small><b>filename:</b> {% field_name fake 'filename' %}</small><br>
+        <small><b>funcName:</b> {% field_name fake 'funcName' %}</small><br>
+        <small><b>levelno:</b> {% field_name fake 'levelno' %}</small><br>
+        <small><b>lineno:</b> {% field_name fake 'lineno' %}</small><br>
+        <small><b>module:</b> {% field_name fake 'module' %}</small><br>
+        <small><b>msecs:</b> {% field_name fake 'msecs' %}</small><br>
+        <small><b>msg:</b> {% field_name fake 'msg' %}</small><br>
+        <small><b>name:</b> {% field_name fake 'name' %}</small><br>
+        <small><b>pathname:</b> {% field_name fake 'pathname' %}</small><br>
+        <small><b>process:</b> {% field_name fake 'process' %}</small><br>
+        <small><b>processName:</b> {% field_name fake 'processName' %}</small><br>
+        <small><b>relativeCreated:</b> {% field_name fake 'relativeCreated' %}</small><br>
+        <small><b>stack_info:</b> {% field_name fake 'stack_info' %}</small><br>
+        <small><b>thread:</b> {% field_name fake 'thread' %}</small><br>
+    </div><br>
+{% if logs %}
+    <table id="change-history">
+        <thead>
+        <tr>
+            <th scope="col">created</th>
+            <th scope="col">filename</th>
+            <th scope="col">funcName</th>
+            <th scope="col">levelno</th>
+            <th scope="col">lineno</th>
+            <th scope="col">module</th>
+            <th scope="col">msecs</th>
+            <th scope="col">msg</th>
+            <th scope="col">process</th>
+            <th scope="col">thread</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.created }}</td>
+            <td>{{ log.filename }}</td>
+            <td>{{ log.funcName }}</td>
+            <td>{{ log.levelno }}</td>
+            <td>{{ log.lineno }}</td>
+            <td>{{ log.module }}</td>
+            <td>{{ log.msecs }}</td>
+            <td>{{ log.msg }}</td>
+            <td>{{ log.process }}</td>
+            <td>{{ log.thread }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+#grapher-section { margin: 0 auto; text-align: center; }
+.chart-container {
+    display: inline-block; 
+    position: relative;
+}
+{% if not object.is_responsive %}
+.chart-container {
+    height: {{ object.height }}px; 
+    width: {{ object.width }}px; 
+
+}
+{% endif %}

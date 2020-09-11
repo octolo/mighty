@@ -1,0 +1,5 @@
+{% if address.complement %}<p>{{ address.complement }}</p>{% endif %}
+{% if address.special %}<p>{{ address.special }}</p>{% endif %}
+{% if address.index %}<p>{{ address.index }}</p>{% endif %}
+<p>{% if  address.street_number %}{{ address.street_number }}&nbsp;{% endif %}{% if  address.way %}{{ address.way }}&nbsp;{% endif %}{{ address.route }}</p>
+<p>{{ address.locality }}&nbsp;{{ address.postal_code }}</p>
