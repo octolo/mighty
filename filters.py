@@ -65,7 +65,7 @@ class Filter(Verify):
 class ParamFilter(Filter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
-        self.param = kwargs.get('param')
+        self.param = kwargs.get('param', self.id)
 
     def used(self):
         return True if self.method_request.get(self.param, False) else False
@@ -81,7 +81,8 @@ class ParamChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.choices = kwargs.get('choices')
-        self.mask = '__iexact'
+        self.mask = kwargs.get('mask', '__iexact')
+        
 
     def verify_param(self):
         if not self.choices or type(self.choices) != list:
@@ -96,7 +97,7 @@ class ParamMultiChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.choices = kwargs.get('choices')
-        self.mask = '__in'
+        self.mask = kwargs.get('mask', '__in')
 
     def verify_param(self):
         if not self.choices or type(self.choices) != list:
@@ -120,7 +121,7 @@ class SearchFilter(ParamFilter):
     def __init__(self, id='search', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
-        self.param = kwargs.get('param', 'search')
+        self.param = kwargs.get('param', self.id)
         self.field = kwargs.get('field', 'search')
 
     def get_value(self, field):

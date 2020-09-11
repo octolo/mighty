@@ -48,3 +48,6 @@ class TranslateDict(Base):
 
     class Meta(Base.Meta):
         abstract = True
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)

@@ -1,13 +1,23 @@
 from django.conf import settings
 from django.db import  models
+from django.utils.text import get_valid_filename
 
 from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
+from mighty.functions import make_searchable
 
 ###########################
 # Models in mighty
 ###########################
+class ConfigClient(Base):
+    name = models.CharField(max_length=255, unique=True)
+    url_name = models.CharField(max_length=255, null=True, blank=True, editable=False)
+    config = JSONField()
+
+    def save(self, *args, **kwargs):
+        self.url_name = get_valid_filename(make_searchable(self.name))
+        super(ConfigClient, self).save(*args, **kwargs)
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     class Channel(Base):

@@ -5,6 +5,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.sessions.models import Session
 from mighty.admin.site import AdminSite
 from mighty import fields, models as all_models
+from mighty.admin.models import BaseAdmin
 
 mysite = AdminSite()
 admin.site = mysite
@@ -27,12 +28,15 @@ class SessionAdmin(admin.ModelAdmin):
 ###########################
 # Models in mighty
 ###########################
+@admin.register(all_models.ConfigClient)
+class ConfigClientAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'config')}),)
+    list_display = ('name',)
+    readonly_fields = ('url_name',)
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
-    from mighty.models import Channel
-    from mighty.admin.models import BaseAdmin
-
-    @admin.register(Channel)
+    @admin.register(all_models.Channel)
     class ChannelAdmin(BaseAdmin):
         list_display = ('channel_name', 'channel_type', 'date_update')
         fieldsets = ((None, {'classes': ('wide',), 'fields': fields.channels}),)

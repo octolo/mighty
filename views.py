@@ -5,6 +5,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormVi
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
+from mighty.models import ConfigClient
 from mighty.apps import MightyConfig as conf
 from mighty.functions import tpl, tplx
 from mighty.functions import make_searchable, setting
@@ -212,9 +213,10 @@ class Widget(TemplateView):
         return 'widgets/%s.html' % self.kwargs['widget']
 
 if 'rest_framework' in setting('INSTALLED_APPS'):
-    from rest_framework.generics import DestroyAPIView
+    from rest_framework.generics import DestroyAPIView, RetrieveAPIView
     from rest_framework.response import Response
     from rest_framework import status
+    from rest_framework.serializers import ModelSerializer
 
     # DisableApiView add a view for disable an object (set is_disable to true)
     class DisableApiView(DestroyAPIView):
@@ -241,3 +243,14 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
 
         def perform_enable(self, instance):
             instance.enable()
+
+    class ConfigClientSerializer(ModelSerializer):
+        class Meta:
+            model = ConfigClient
+            fields = ('name', 'config',)
+
+    class ConfigCLientApi(RetrieveAPIView):
+        queryset = ConfigClient.objects.all()
+        serializer_class = ConfigClientSerializer
+        model = ConfigClient
+        lookup_field = 'url_name'

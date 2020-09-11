@@ -18,13 +18,14 @@ import os, mimetypes
 
 IMAGE_DEFAULT = "none.jpg"
 class Image(models.Model):
+    default_image = "img/soon.jpg"
     image = models.ImageField(upload_to=image_directory_path, blank=True, null=True)
 
     class Meta:
         abstract = True
 
     @property
-    def image_url(self): return self.image.url if self.image else static("media/none.jpg")
+    def image_url(self): return self.image.url if self.image else static(self.default_image)
     @property
     def get_mime_type(self): return mimetypes.guess_type()[1]
     @property
