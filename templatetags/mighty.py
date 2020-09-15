@@ -93,6 +93,10 @@ def add_attrs(field, css):
 def index(indexable, i):
     return indexable[i]
 
+@register.filter
+def indexkey(dct, key):
+    return dct.get(key)
+
 @register.filter(name='split')
 def split(value, key):
   return value.split(key)
