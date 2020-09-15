@@ -10,7 +10,7 @@ class Config:
     class method:
         email = True
         sms = True
-        basic = True
+        basic = False
 
 if hasattr(settings, 'TWOFACTOR'): over_config(Config, settings.TWOFACTOR)
 class TwofactorConfig(AppConfig, Config):

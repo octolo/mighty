@@ -11,6 +11,7 @@ class Config:
     quotchar = '"'
     quoting = csv.QUOTE_ALL
     default = 'en'
+    availables = ['en', ]
 
 if hasattr(settings, 'NATIONALITY'): over_config(Config, settings.NATIONALITY)
 class NationalityConfig(AppConfig, Config):

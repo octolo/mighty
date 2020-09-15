@@ -1,1 +1,0 @@
-default_app_config = 'mighty.applications.grapher.apps.GrapherConfig'

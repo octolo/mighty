@@ -13,7 +13,7 @@ from mighty.functions import make_searchable
 class ConfigClient(Base):
     name = models.CharField(max_length=255, unique=True)
     url_name = models.CharField(max_length=255, null=True, blank=True, editable=False)
-    config = JSONField()
+    config = JSONField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.url_name = get_valid_filename(make_searchable(self.name))

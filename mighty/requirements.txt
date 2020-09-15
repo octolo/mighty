@@ -1,8 +1,0 @@
-babel
-pillow
-channels
-channels-redis
-phonenumbers
-django-jsonfield
-django-json-widget
-django-phonenumber-field

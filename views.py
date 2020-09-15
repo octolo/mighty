@@ -212,6 +212,21 @@ class Widget(TemplateView):
     def get_template_names(self):
         return 'widgets/%s.html' % self.kwargs['widget']
 
+from django.http import JsonResponse
+from mighty.applications.twofactor.apps import TwofactorConfig
+from mighty.applications.nationality.apps import NationalityConfig
+class Config(TemplateView):
+    def get_context_data(self, **kwargs):
+        return { 
+            'email': TwofactorConfig.method.email,
+            'sms': TwofactorConfig.method.sms,
+            'basic': TwofactorConfig.method.basic,
+            'languages': NationalityConfig.availables,
+        }
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context, **response_kwargs)
+
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from rest_framework.generics import DestroyAPIView, RetrieveAPIView
     from rest_framework.response import Response
