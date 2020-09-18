@@ -259,12 +259,15 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
         def perform_enable(self, instance):
             instance.enable()
 
+    from rest_framework.permissions import AllowAny
     class ConfigClientSerializer(ModelSerializer):
+
         class Meta:
             model = ConfigClient
             fields = ('name', 'config',)
 
     class ConfigCLientApi(RetrieveAPIView):
+        permission_classes = [AllowAny]
         queryset = ConfigClient.objects.all()
         serializer_class = ConfigClientSerializer
         model = ConfigClient

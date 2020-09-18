@@ -40,7 +40,7 @@ class TranslateDict(Base):
     language = models.ForeignKey('mighty.nationality', on_delete=models.CASCADE)
     translator = models.ForeignKey('mighty.translator', on_delete=models.CASCADE, related_name='translator_dict')
     precision = models.CharField(max_length=5)
-    translates = JSONField()
+    translates = JSONField(blank=True, null=True)
 
     @property
     def split_precision(self):
