@@ -4,8 +4,11 @@ from django.utils.text import get_valid_filename
 
 from mighty.fields import JSONField
 from mighty.models.base import Base
+from mighty.models.keyword import Keyword
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 from mighty.functions import make_searchable
+
+from ckeditor.fields import RichTextField
 
 ###########################
 # Models in mighty
@@ -48,6 +51,19 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
         def save(self, *args, **kwargs):
             if not self.from_id: self.from_id = next(iter(self.objs))
             super(Channel, self).save(*args, **kwargs)
+
+class News(Base, Keyword):
+    keywords_fields = ['title',]
+    title = models.CharField(max_length=255)
+    news = RichTextField(blank=True, null=True)
+    date_news = models.DateField(blank=True, null=True)
+
+    class Meta(Base.Meta):
+        abstract = True
+        ordering = ['date_news',]
+
+    def __str__(self):
+        return "%s - %s" % (str(self.date_news), self.title)
 
 ###########################
 # Models apps mighty

@@ -9,7 +9,6 @@ usefull for some text field search based
 """
 from django.db import models
 from mighty.models import JSONField
-from mighty.translates import choices as _
 from mighty.functions import weight_words, make_searchable
 import re
 
