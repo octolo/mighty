@@ -3,7 +3,7 @@ from django.utils.html import format_html
 
 from mighty.models.base import Base
 from mighty.models.image import Image
-from mighty.applications.nationality import translates as _
+from mighty.applications.nationality import translates as _, managers
 from mighty.fields import JSONField
 
 class Nationality(Base, Image):
@@ -41,6 +41,9 @@ class TranslateDict(Base):
     translator = models.ForeignKey('mighty.translator', on_delete=models.CASCADE, related_name='translator_dict')
     precision = models.CharField(max_length=5)
     translates = JSONField(blank=True, null=True)
+
+    objects = models.Manager()
+    objectsB = managers.TranslateDictManager()
 
     @property
     def split_precision(self):

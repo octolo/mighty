@@ -1,17 +1,17 @@
 from django.conf import settings
 from django.urls import path, include
 from mighty.apps import MightyConfig as conf
-from mighty.views import Widget, ConfigCLientApi, Config
+from mighty.views import Widget, APIConfigCLientDetail, Config, ConfigListView, ConfigDetailView
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
 app_name = "mighty"
 urlpatterns = [path('widgets/<str:widget>/<str:id>/', Widget.as_view())]
 api_urlpatterns = [path('config/', include([
-        path('', Config.as_view()),
-        path('<str:url_name>/', ConfigCLientApi.as_view()),
+        path('base/', Config.as_view()),
+        path('full/', ConfigListView.as_view()),
+        path('<str:name>/', ConfigDetailView.as_view()),
     ])
 )]
-
 
 # Enable app nationality
 if "mighty.applications.nationality" in settings.INSTALLED_APPS:

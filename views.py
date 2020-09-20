@@ -215,20 +215,44 @@ class Widget(TemplateView):
 from django.http import JsonResponse
 from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.nationality.apps import NationalityConfig
+from mighty.models import ConfigClient
+base_config = { 
+    'base': {
+        'email': TwofactorConfig.method.email,
+        'sms': TwofactorConfig.method.sms,
+        'basic': TwofactorConfig.method.basic,
+        'languages': NationalityConfig.availables}}
+
 class Config(TemplateView):
     def get_context_data(self, **kwargs):
-        return { 
-            'email': TwofactorConfig.method.email,
-            'sms': TwofactorConfig.method.sms,
-            'basic': TwofactorConfig.method.basic,
-            'languages': NationalityConfig.availables,
-        }
+        return base_config
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
 
+class ConfigListView(ListView):
+    model = ConfigClient
+    queryset = ConfigClient.objects.all()
+
+    def render_to_response(self, context):
+        cfg = {cfg.url_name: cfg.config for cfg in context['object_list']}
+        cfg.update(base_config)
+        return JsonResponse(cfg)
+
+class ConfigDetailView(DetailView):
+    model = ConfigClient
+
+    def get_object(self, queryset=None):
+        print(self.kwargs.get('name'))
+        return ConfigClient.objects.get(url_name=self.kwargs.get('name'))
+
+    def render_to_response(self, context):
+        cfg = context['object'].config
+        key = self.request.GET.get('key', False)
+        return JsonResponse({key: cfg[key]} if key in cfg else cfg)
+
 if 'rest_framework' in setting('INSTALLED_APPS'):
-    from rest_framework.generics import DestroyAPIView, RetrieveAPIView
+    from rest_framework.generics import DestroyAPIView, RetrieveAPIView, ListAPIView
     from rest_framework.response import Response
     from rest_framework import status
     from rest_framework.serializers import ModelSerializer
@@ -258,17 +282,3 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
 
         def perform_enable(self, instance):
             instance.enable()
-
-    from rest_framework.permissions import AllowAny
-    class ConfigClientSerializer(ModelSerializer):
-
-        class Meta:
-            model = ConfigClient
-            fields = ('name', 'config',)
-
-    class ConfigCLientApi(RetrieveAPIView):
-        permission_classes = [AllowAny]
-        queryset = ConfigClient.objects.all()
-        serializer_class = ConfigClientSerializer
-        model = ConfigClient
-        lookup_field = 'url_name'
