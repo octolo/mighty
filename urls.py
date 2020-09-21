@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path, include
 from mighty.apps import MightyConfig as conf
-from mighty.views import Widget, APIConfigCLientDetail, Config, ConfigListView, ConfigDetailView
+from mighty.views import Widget, Config, ConfigListView, ConfigDetailView
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
 app_name = "mighty"
