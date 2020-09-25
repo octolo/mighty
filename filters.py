@@ -10,13 +10,14 @@ logger = logging.getLogger(__name__)
 SEPARATOR = MightyConfig.Interpreter._split
 
 class Filter(Verify):
-    def __init__(self, id=None, *args, **kwargs):
+    def __init__(self, id, *args, **kwargs):
         self.id = id if id else str(uuid.uuid4())
         self.operator = kwargs.get('operator', operator.and_)
         self.dependencies = kwargs.get('dependencies', [])
         self.mask = kwargs.get('mask', '')
         self.param = kwargs.get('param', self.id)
-        self.field = kwargs.get('field')
+        self.prefix = kwargs.get('prefix', '')
+        self.field = self.prefix + kwargs.get('field', self.id)
         self.value = kwargs.get('value')
 
     #################
@@ -122,13 +123,13 @@ class SearchFilter(ParamFilter):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
         self.param = kwargs.get('param', self.id)
-        self.field = kwargs.get('field', 'search')
+        self.field = self.prefix + kwargs.get('field', 'search')
 
     def get_value(self, field):
         return super().get_value(field).split(SEPARATOR)
 
     def get_Q(self):
-        return reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
+        return reduce(self.operator, [Q(**{self.field+self.mask: '_'+value }) for value in self.get_value(self.field)])
 
 class BooleanParamFilter(ParamFilter):
     def get_value(self, field):

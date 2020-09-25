@@ -152,10 +152,10 @@ class Base(models.Model):
         self.save()
 
     def get_search_list(self):
-        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields]).split()
+        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields if getattr(self, field)]).split()
 
     def set_search(self):
-        self.search = ' '.join(list(dict.fromkeys(self.get_search_list())))
+        self.search = '_'+'_'.join(list(dict.fromkeys(self.get_search_list())))
 
     def get_logfield(self, lvl, field):
         return self.logfields[lvl][field]
