@@ -1,10 +1,13 @@
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 
 from mighty.models import Missive
 from mighty.applications.messenger import choices
+from mighty.applications.messenger.apps import MessengerConfig as conf
 import datetime, logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +33,14 @@ class MissiveBackend:
         return self.missive.status
 
     def send_email(self):
+        send_mail(
+            subject=self.missive.subject,
+            message=self.missive.txt,
+            html_message=self.missive.html,
+            from_email=conf.sender_email,
+            recipient_list=[self.missive.target],
+            fail_silently=False
+        )
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
         logger.info("send email: %s" % self.message, extra=self.extra)

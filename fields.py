@@ -1,13 +1,10 @@
 from django.conf import settings
 from django.db import connection
 
-if connection.vendor == 'mysql': from django_mysql.models import JSONField
-elif connection.vendor == 'postgresql': from django.contrib.postgres.fields import JSONField
-else: 
-    try:
-        from django.db.models import JSONField
-    except Exception:
-        from jsonfield import JSONField
+try:
+    from django.db.models import JSONField
+except Exception:
+    from jsonfield import JSONField
 #if 'ckeditor' in settings.INSTALLED_APPS: from ckeditor.fields import RichTextField
 #elif 'tinymce' in settings.INSTALLED_APPS: from tinymce.models import HTMLField as RichTextField
 
