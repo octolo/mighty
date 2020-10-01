@@ -26,19 +26,25 @@ def maskedSerializer(except_mask=(), full_mask=()):
             mask_enable = False
 
             def mask(cls, field, value):
-                print(cls.full_mask)
-                print(field)
                 return mask(value, 0) if field in cls.full_mask else mask(value) 
+
+            def mask_dict(cls, field, value):
+                if isinstance(value, (bool, type(None))):
+                    return False
+                elif isinstance(value, (list, OrderedDict, dict)):
+                    return cls.mask_field(field, value)
+                return cls.mask(field, value) 
 
             def mask_field(cls, field, value):
                 if field in cls.except_mask:
                     return (field, value)
                 if isinstance(value, (bool, type(None))):
                     return (field, False)
+                elif isinstance(value, dict):
+                    return (field, {f: cls.mask_dict(f, v) for f,v in value.items()})
                 elif isinstance(value, (list, OrderedDict)):
                     return (field, value)
-                else:
-                    return (field, cls.mask(field, value))
+                return (field, cls.mask(field, value))
 
             def to_representation(cls, instance):
                 if hasattr(cls.parent, 'context'):

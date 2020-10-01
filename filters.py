@@ -83,7 +83,6 @@ class ParamChoicesFilter(ParamFilter):
         super().__init__(id, request, *args, **kwargs)
         self.choices = kwargs.get('choices')
         self.mask = kwargs.get('mask', '__iexact')
-        
 
     def verify_param(self):
         if not self.choices or type(self.choices) != list:
@@ -105,6 +104,7 @@ class ParamMultiChoicesFilter(ParamFilter):
             return "choices can't be empty and must be a list of choices"
 
     def get_value(self, field):
+        print([value for value in super().get_value(field).split(SEPARATOR) if value in self.choices])
         return [value for value in super().get_value(field).split(SEPARATOR) if value in self.choices]
 
 class MultiParamFilter(ParamFilter):
@@ -126,10 +126,10 @@ class SearchFilter(ParamFilter):
         self.field = self.prefix + kwargs.get('field', 'search')
 
     def get_value(self, field):
-        return super().get_value(field).split(SEPARATOR)
+        return ['_'+value for value in super().get_value(field).split(SEPARATOR)]
 
     def get_Q(self):
-        return reduce(self.operator, [Q(**{self.field+self.mask: '_'+value }) for value in self.get_value(self.field)])
+        return reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
 
 class BooleanParamFilter(ParamFilter):
     def get_value(self, field):
@@ -174,7 +174,6 @@ class Foxid:
         self.idorarg = ''
         self.method = kwargs.get('method', 'GET')
         self.filters = {fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])}
-        logger.debug('filters: %s' % self.filters)
         self.tokens = self.Token._filter+self.Token._family+[self.Token._split, self.Token._or]
         self.include = self.execute(request.GET.get(self.Param._include, False))
         self.exclude = self.execute(request.GET.get(self.Param._exclude, False))

@@ -53,6 +53,12 @@ def field_value(obj, field):
     attr = attr() if callable(attr) else attr
     return None if attr is None else attr
 
+@register.simple_tag(name='join_or_concat')
+def join_or_concat(delimiter, inputlist, istuple=False):
+    if istuple:
+        inputlist = [ipt[1] for ipt in inputlist]
+    return delimiter.join(filter(None, inputlist))
+
 @register.simple_tag(name='add_attr')
 def add_attr(field, attr, value):
     return field.as_widget(attrs={attr: value})

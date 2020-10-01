@@ -33,14 +33,15 @@ class MissiveBackend:
         return self.missive.status
 
     def send_email(self):
-        send_mail(
-            subject=self.missive.subject,
-            message=self.missive.txt,
-            html_message=self.missive.html,
-            from_email=conf.sender_email,
-            recipient_list=[self.missive.target],
-            fail_silently=False
-        )
+        if conf.enable.email:
+            send_mail(
+                subject=self.missive.subject,
+                message=self.missive.txt,
+                html_message=self.missive.html,
+                from_email=conf.sender_email,
+                recipient_list=[self.missive.target],
+                fail_silently=False
+            )
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
         logger.info("send email: %s" % self.message, extra=self.extra)

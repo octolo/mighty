@@ -11,6 +11,11 @@ class Config:
     missive = 'mighty.Missive'
     delimiter = '__'
     missive_backends = settings.MISSIVE_BACKENDS if hasattr(settings, 'MISSIVE_BACKENDS') else ['mighty.applications.messenger.backend']
+    
+    class enable:
+        email = True
+        sms = False
+        postal = False
 
 if hasattr(settings, 'MESSENGER'): over_config(Config, getattr(settings, 'MESSENGER'))
 class MessengerConfig(AppConfig, Config):
