@@ -292,14 +292,14 @@ class Foxid:
             self.queryset = self.queryset.filter(self.include)
         if self.exclude:
             self.queryset = self.queryset.exclude(self.exclude)
-        if self.distinct:
-            #if self.qdistinct:
-                #queryset = queryset.filter(id__in=queryset.order_by(*self.qdistinct).distinct(*self.qdistinct).values("id"))
-            #if self.fdistinct:
-                #queryset = queryset.order_by(*self.fdistinct).distinct(*self.fdistinct)
-            #if self.distinct:
-            if type(self.distinct) == bool:
-                self.queryset = self.queryset.distinct()
-            elif type(self.distinct) == list:
-                self.queryset = self.queryset.distinct(*self.distinct)
+        #if self.distinct:
+        #    #if self.qdistinct:
+        #        #queryset = queryset.filter(id__in=queryset.order_by(*self.qdistinct).distinct(*self.qdistinct).values("id"))
+        #    #if self.fdistinct:
+        #        #queryset = queryset.order_by(*self.fdistinct).distinct(*self.fdistinct)
+        #    #if self.distinct:
+        #    if type(self.distinct) == bool:
+        #        self.queryset = self.queryset.distinct()
+        #    elif type(self.distinct) == list:
+        #        self.queryset = self.queryset.distinct(*self.distinct)
         return self.queryset
