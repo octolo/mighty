@@ -150,8 +150,8 @@ class Foxid:
     filters = None
     include = None
     excludes = None
-    distinct = None
     order = None
+    distinct = None
 
     class Param:
         _filters = 'f'
@@ -177,6 +177,7 @@ class Foxid:
         self.tokens = self.Token._filter+self.Token._family+[self.Token._split, self.Token._or]
         self.include = self.execute(request.GET.get(self.Param._include, False))
         self.exclude = self.execute(request.GET.get(self.Param._exclude, False))
+        self.order = kwargs.get('order', False)
         self.distinct = kwargs.get('distinct', False)
 
     def execute(self, input_str):
@@ -302,4 +303,6 @@ class Foxid:
         #        self.queryset = self.queryset.distinct()
         #    elif type(self.distinct) == list:
         #        self.queryset = self.queryset.distinct(*self.distinct)
+        if self.order:
+            self.queryset = self.queryset.order_by(*self.order)
         return self.queryset
