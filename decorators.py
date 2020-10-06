@@ -47,7 +47,7 @@ def maskedSerializer(except_mask=(), full_mask=()):
                 return (field, cls.mask(field, value))
 
             def to_representation(cls, instance):
-                if hasattr(cls.parent, 'context'):
+                if hasattr(cls.parent, 'context') and hasattr(cls._context, 'mask_enable'):
                     cls._context['mask_enable'] = cls.parent.context["mask_enable"]
                 ret = super().to_representation(instance)
                 if cls._context.get('mask_enable', False):
