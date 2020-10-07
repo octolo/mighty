@@ -19,6 +19,7 @@ class Filter(Verify):
         self.prefix = kwargs.get('prefix', '')
         self.field = self.prefix + kwargs.get('field', self.id)
         self.value = kwargs.get('value')
+        self.choices = kwargs.get('choices')
 
     #################
     # Verify
@@ -28,9 +29,6 @@ class Filter(Verify):
             msg = "field can't be empty!"
             logger.debug('filter %s: %s' % (self.id, msg))
             return msg
-
-    def used(self):
-        return True
 
     def used(self):
         return True
@@ -64,10 +62,6 @@ class Filter(Verify):
         return Q()
 
 class ParamFilter(Filter):
-    def __init__(self, id, request=None, *args, **kwargs):
-        super().__init__(id, request, *args, **kwargs)
-        self.param = kwargs.get('param', self.id)
-
     def used(self):
         return True if self.method_request.get(self.param, False) else False
 
@@ -81,7 +75,6 @@ class ParamFilter(Filter):
 class ParamChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
-        self.choices = kwargs.get('choices')
         self.mask = kwargs.get('mask', '__iexact')
 
     def verify_param(self):
@@ -89,14 +82,12 @@ class ParamChoicesFilter(ParamFilter):
             return "choices can't be empty and must be a list of choices"
 
     def get_value(self, field):
-        print(self.choices)
         value = super().get_value(field)
         return value if value in self.choices else False
 
 class ParamMultiChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
-        self.choices = kwargs.get('choices')
         self.mask = kwargs.get('mask', '__in')
 
     def verify_param(self):
@@ -104,7 +95,6 @@ class ParamMultiChoicesFilter(ParamFilter):
             return "choices can't be empty and must be a list of choices"
 
     def get_value(self, field):
-        print([value for value in super().get_value(field).split(SEPARATOR) if value in self.choices])
         return [value for value in super().get_value(field).split(SEPARATOR) if value in self.choices]
 
 class MultiParamFilter(ParamFilter):
@@ -122,8 +112,6 @@ class SearchFilter(ParamFilter):
     def __init__(self, id='search', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
-        self.param = kwargs.get('param', self.id)
-        self.field = self.prefix + kwargs.get('field', 'search')
 
     def get_value(self, field):
         return ['_'+value for value in super().get_value(field).split(SEPARATOR)]
