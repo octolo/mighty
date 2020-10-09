@@ -9,6 +9,7 @@ class Config:
         missive = 'mighty.Missive'
         user = settings.AUTH_USER_MODEL
         nationalities = 'mighty.Nationality'
+        optional = False
 
     class Field:
         username = 'email'

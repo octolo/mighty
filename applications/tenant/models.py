@@ -25,7 +25,7 @@ class Role(Base):
 
 CHAT_WITH_TENANTUSERS = "can_chat_with_tenant_users"
 class Tenant(Base):
-    group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="tenant_tenant")
+    group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="tenant_group")
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="tenant_roles", blank=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="tenant_user", null=True, blank=True)
     invitation = models.ForeignKey(conf.ForeignKey.invitation, on_delete=models.CASCADE, related_name="tenant_invitation", null=True, blank=True)

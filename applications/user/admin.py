@@ -9,6 +9,7 @@ from mighty.admin.models import BaseAdmin
 from mighty.applications.user.choices import METHOD_BACKEND
 from mighty.applications.user import fields
 from mighty.applications.address.admin import AddressAdminInline
+from mighty.applications.user.apps import UserConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
@@ -45,6 +46,8 @@ class UserAdmin(UserAdmin, BaseAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.fieldsets[1][1]['fields'] += ('phone', 'style')
+        if UserConfig.ForeignKey.optional:
+            self.fieldsets[1][1]['fields'] += ('optional',)
         self.add_field(_.informations, ('method', 'channel'))
         if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
             self.fieldsets[1][1]['fields'] += ('nationalities',)
