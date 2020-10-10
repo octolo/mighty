@@ -94,6 +94,9 @@ class User(AbstractUser, Base, Image):
     style = models.CharField(max_length=255, default="dark")
     channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
 
+    if conf.ForeignKey.optional:
+        optional = models.ForeignKey(conf.ForeignKey.optional, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional_user')
+
     if 'mighty.applications.messenger':
         missives = GenericRelation(conf.ForeignKey.missive, content_type_field='user_or_invitation')
 
