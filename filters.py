@@ -161,11 +161,12 @@ class Foxid:
         self.operators = []
         self.idorarg = ''
         self.method = kwargs.get('method', 'GET')
+        self.method_request = getattr(self.request, self.method)
         self.filters = {fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])}
         self.tokens = self.Token._filter+self.Token._family+[self.Token._split, self.Token._or]
         self.include = self.execute(request.GET.get(self.Param._include, False))
         self.exclude = self.execute(request.GET.get(self.Param._exclude, False))
-        self.order = kwargs.get('order', False)
+        self.order = self.method_request.get(self.Param._order, kwargs.get('order', False))
         self.distinct = kwargs.get('distinct', False)
 
     def execute(self, input_str):
@@ -281,16 +282,14 @@ class Foxid:
             self.queryset = self.queryset.filter(self.include)
         if self.exclude:
             self.queryset = self.queryset.exclude(self.exclude)
-        #if self.distinct:
-        #    #if self.qdistinct:
-        #        #queryset = queryset.filter(id__in=queryset.order_by(*self.qdistinct).distinct(*self.qdistinct).values("id"))
-        #    #if self.fdistinct:
-        #        #queryset = queryset.order_by(*self.fdistinct).distinct(*self.fdistinct)
-        #    #if self.distinct:
-        #    if type(self.distinct) == bool:
-        #        self.queryset = self.queryset.distinct()
-        #    elif type(self.distinct) == list:
-        #        self.queryset = self.queryset.distinct(*self.distinct)
+        if self.distinct:
+            if type(self.distinct) == str and self.distinct == 'auto':
+                queryset = queryset.filter(id__in=queryset.distinct(*self.qdistinct).values("id"))
+            elif type(self.distinct) == bool:
+                self.queryset = self.queryset.distinct()
+            elif type(self.distinct) == list:
+                self.queryset = self.queryset.distinct(*self.distinct)
         if self.order:
-            self.queryset = self.queryset.order_by(*self.order)
+            self.queryset = self.queryset.order_by(*self.order.replace('.', '__').split(SEPARATOR))
         return self.queryset
+
