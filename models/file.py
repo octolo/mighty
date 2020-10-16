@@ -15,7 +15,8 @@ from django.db import models
 from django.utils.text import get_valid_filename
 from django.utils.html import format_html
 from mighty.functions import file_directory_path
-import os, mimetypes
+from mighty.fields import JSONField
+import os, magic
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,8 +24,10 @@ logger = logging.getLogger(__name__)
 class File(models.Model):
     file = models.FileField(upload_to=file_directory_path, blank=True, null=True)
     filename = models.CharField(max_length=255, blank=True, null=True)
-    filemimetype = models.CharField(max_length=255, blank=True, null=True)
-    size = models.BigIntegerField(default=0)
+    filemimetype = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    charset = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    extracontenttype = JSONField(blank=True, null=True)
+    size = models.BigIntegerField(default=0, editable=False)
 
     class Meta:
         abstract = True
@@ -32,22 +35,14 @@ class File(models.Model):
     @property
     def file_url(self): return self.file.url
 
-    @property
-    def get_mime_type(self):
-        return mimetypes.guess_type(self.file.name)[0]
-
-    @property
-    def image_html(self):
-        return format_html('<a href="%s" title="%s">' % (self.file.url, self.file_name))
-
-    @property
-    def file_name(self):
-        return self.filename if self.filename else os.path.basename(self.file.name)
+    #@property
+    #def file_name(self):
+    #    return self.filename if self.filename else os.path.basename(self.file.name)
 
     @property
     def valid_file_name(self):
         logger.warning('test: %s' % self.file)
-        return get_valid_filename(self.file_name)
+        return get_valid_filename(self.file.name)
 
     @property
     def file_extension(self): return os.path.splitext(self.file_name)[-1]
@@ -64,13 +59,11 @@ class File(models.Model):
             return self.get_url('pdf', arguments={'uid': self.uid})
         return self.get_url('pdf', arguments={'pk': self.pk})
 
-    @property
-    def retrieve_size(self):
-        if self.file and hasattr(self.file, 'size'):
-            return self.file.size
-
     def save(self, *args, **kwargs):
-        if not self.filename : self.filename = self.valid_file_name
-        self.size = self.retrieve_size
-        self.filemimetype = self.get_mime_type
-        super().save(*args, **kwargs)
+        if self.file._file:
+            self.filemimetype = self.file._file.content_type
+            self.size = self.file._file.size
+            self.charset = self.file._file.charset
+            self.extracontenttype = self.file._file.content_type_extra
+        super(File, self).save(*args, **kwargs)
+

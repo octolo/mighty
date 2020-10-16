@@ -313,13 +313,15 @@ Make a directory of file by date and content type
 def file_directory_path(instance, filename, directory=None):
     if not directory: directory = str(instance.__class__.__name__).lower()
     date = datetime.datetime.now()
-    ext = filename.split(".")[-1:]
     if hasattr(instance, "parent"):
-        return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, instance.parent.uid if hasattr(instance.parent, "uid") else intance.parent.id, filename)
+        selfpath = instance.parent.uid if hasattr(instance.parent, 'uid') and instance.parent.uid else instance.parent.id
+        return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, selfpath, filename)
     elif hasattr(instance, 'fieldparent') and hasattr(instance, instance.fieldparent):
         parent = getattr(instance, instance.fieldparent)
-        return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, parent.uid if hasattr(parent, "uid") else parent.id, filename)
-    return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, instance.uid if hasattr(instance, "uid") else intance.id, filename)
+        selfpath = parent.uid if hasattr(parent, 'uid') and parent.uid else parent.id
+        return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, selfpath, filename)
+    selfpath = instance.uid if hasattr(instance, 'uid') and instance.uid else instance.id  
+    return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, selfpath, filename)
 
 """
 same as file_directory_path but start with cloudstorage/
