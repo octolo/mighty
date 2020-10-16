@@ -50,7 +50,8 @@ class Config:
         _filter = ['f', '(', ')']
         _family = ['(', ')']
         _or = '~'
-        _split= ','
+        _split = ','
+        _negative = '-'
 
     class Crypto:
         BS = 16
