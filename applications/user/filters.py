@@ -1,10 +1,12 @@
-from mighty.filters import Filter
-from mighty.models import User
-from mighty.applications.user.fields import search, params
+from mighty.filters import ParamMultiChoicesFilter
 
-def UserFilter(view, request):
-    UserFilter = Filter(request, User)
-    for search in search: UserFilter.add_param("search", search)
-    for search in search: UserFilter.add_param("searchex", search, mask="iexact")
-    for param in params: UserFilter.add_param(param, param)
-    return UserFilter.get()
+
+class SearchByGender(ParamMultiChoicesFilter):
+    def __init__(self, id='gender', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.choices = ['W', 'M']
+
+    #def get_Q(self, exclude=False):
+    #    theq = super().get_Q(exclude)
+    #    print(theq)
+    #    return theq

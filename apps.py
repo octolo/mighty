@@ -14,6 +14,7 @@ class Config:
     supervision = True
     user_or_invitation = 'auth.UserOrInvitation'
     jwt_enable = False
+    days_in_year = 365.25
     
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))
