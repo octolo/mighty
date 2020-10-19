@@ -89,13 +89,12 @@ class ParamChoicesFilter(ParamFilter):
         super().__init__(id, request, *args, **kwargs)
         self.choices_required = kwargs.get('choices_required', False)
         self.mask = kwargs.get('mask', '__iexact')
-        print('not')
+
     def verify_param(self, exclude=False):
         if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
 
     def get_value(self, exclude=False):
-        print('okkkk')
         value = super().get_value(exclude)
         if self.choices_required:
             return value if value in self.choices else True
@@ -200,13 +199,12 @@ class ParamChoicesFilter(ParamFilter):
         super().__init__(id, request, *args, **kwargs)
         self.choices_required = kwargs.get('choices_required', False)
         self.mask = kwargs.get('mask', '__iexact')
-        print('not')
+
     def verify_param(self, exclude=False):
         if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
 
     def get_value(self, exclude=False):
-        print('okkkk')
         value = super().get_value(exclude)
         if self.choices_required:
             return value if value in self.choices else True
@@ -423,7 +421,6 @@ class Foxid:
             self.families[-1].append(fltr) if len(self.families) else self.compiled.append(fltr)
 
     def get_filter_by_idandargs(self):
-        print(self.filter_idandargs)
         if len(self.filter_idandargs) and self.filter_idandargs[0] in self.filters:
             fltr = self.filters[self.filter_idandargs[0]]
             fltr.request = self.request
@@ -650,7 +647,6 @@ class Foxid:
             self.families[-1].append(fltr) if len(self.families) else self.compiled.append(fltr)
 
     def get_filter_by_idandargs(self):
-        print(self.filter_idandargs)
         if len(self.filter_idandargs) and self.filter_idandargs[0] in self.filters:
             fltr = self.filters[self.filter_idandargs[0]]
             fltr.request = self.request
