@@ -24,8 +24,9 @@ label { display: inline-block; width: 100px; }
 <div id="content-main">
     <div class="module">
         <div>
-            <small><b>{% field_name fake 'model_id' %}:</b> {{ object.id }}</small><br>
+            <small><b>{% field_name fake 'object_id' %}:</b> {{ object.id }}</small><br>
             <small><b>{% field_name fake 'field' %}:</b> {{ fieldname }}</small><br>
+            <small><b>value:</b> {% field_value object fieldname %}</small><br>
             <small><b>{% field_name fake 'fmodel' %}:</b> {{ form.prepared_fields.fmodel }}</small><br>
             <small><b>{% field_name fake 'user' %}:</b> {{ request.user }}</small><br>
         </div><br>

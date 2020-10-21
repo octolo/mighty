@@ -45,7 +45,7 @@ class CachingModelChoicesForm(forms.ModelForm):
             if choices is not None and field_name in self.fields:
                 self.fields[field_name].choices = choices
 
-class HistoryForm(forms.ModelForm):
+class TimelineForm(forms.ModelForm):
     value = forms.CharField(required=True)
     date_begin = forms.DateField(required=True, widget=forms.SelectDateWidget())
     date_end = forms.DateField(required=False, widget=forms.SelectDateWidget())
@@ -55,7 +55,7 @@ class HistoryForm(forms.ModelForm):
         self.fieldname = fieldname
         super().__init__(*args, **kwargs)
         self.prepared_fields = {
-            'model_id': _obj,
+            'object_id': _obj,
             'fmodel': _obj._meta.get_field(fieldname).__class__.__name__,
             'field': fieldname,
             'user': user.username,
@@ -63,11 +63,13 @@ class HistoryForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        amodel = self._obj.history_model(**self.prepared_fields)
+        amodel = self._obj.timeline_model(**self.prepared_fields)
         amodel.date_begin = cleaned_data.get("date_begin")
         amodel.date_end = cleaned_data.get("date_end")
         amodel.value = bytes(str(cleaned_data.get("value")), 'utf-8')
         amodel.save()
+        print(amodel)
+        print('ok')
 
 class SourceForm(forms.ModelForm):
     date_begin = forms.DateField(required=True, widget=forms.SelectDateWidget())

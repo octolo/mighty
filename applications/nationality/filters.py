@@ -1,10 +1,16 @@
-#from mighty.filters import Filter
-#from mighty.models import Nationality
-#from mighty.applications.nationality.fields import searchs, params
-#
-#def NationalityFilter(view, request):
-#    NationalityFilter = Filter(request, Nationality)
-#    for search in searchs: NationalityFilter.add_param("search", search)
-#    for search in searchs: NationalityFilter.add_param("searchex", search, mask="iexact")
-#    for param in params: NationalityFilter.add_param(param, param)
-#    return NationalityFilter.get()
+from mighty.filters import ParamMultiChoicesFilter
+
+class Alpha2(ParamMultiChoicesFilter):
+    def __init__(self, id='nat_alpha2', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.field = self.prefix+kwargs.get('field', 'alpha2')
+
+class Alpha3(ParamMultiChoicesFilter):
+    def __init__(self, id='nat_alpha3', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.field = self.prefix+kwargs.get('field', 'alpha3')
+
+class Numeric(ParamMultiChoicesFilter):
+    def __init__(self, id='nat_numeric', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.field = self.prefix+kwargs.get('field', 'numeric')
