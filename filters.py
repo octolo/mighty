@@ -39,7 +39,7 @@ class Filter(Verify):
     #################
     # Dependency
     #################
-    def get_dependencies(self,):
+    def get_dependencies(self, exclude=False):
         return reduce(operator.and_, [dep.sql(self.request) for dep in self.dependencies]) if self.dependencies else False
 
     ################
@@ -66,7 +66,7 @@ class Filter(Verify):
         self.method = kwargs.get('method', 'GET')
         self.method_request = kwargs.get('method_request', getattr(self.request, self.method))
         if self.verify(exclude) and self.used(exclude):
-            dep = self.get_dependencies()
+            dep = self.get_dependencies(exclude)
             sql = self.get_Q(exclude)
             print(sql)
             return dep.add(sql, Q.AND) if dep and sql else sql
