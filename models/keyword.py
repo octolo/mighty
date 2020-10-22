@@ -23,10 +23,12 @@ class Keyword(models.Model):
         words = []
         for field in self.keywords_fields:
             words += weight_words(getattr(self, field))
-        return make_searchable(" ".join(words)) if len(words) else None
+        return make_searchable("_".join(words)) if len(words) else None
 
     def set_keywords(self):
-        self.keywords = self.get_keywords()
+        self.keywords = "_"+self.get_keywords()
+        print('k:')
+        print(self.get_keywords())
 
     def save(self, *args, **kwargs):
         self.set_keywords()

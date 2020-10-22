@@ -68,7 +68,6 @@ class Filter(Verify):
         if self.verify(exclude) and self.used(exclude):
             dep = self.get_dependencies(exclude)
             sql = self.get_Q(exclude)
-            print(sql)
             return dep.add(sql, Q.AND) if dep and sql else sql
         return Q()
 

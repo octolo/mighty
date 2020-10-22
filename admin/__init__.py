@@ -43,6 +43,11 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
         search_fields = ('channel_name', 'channel_type',)
         view_on_site = False
 
+class NewsAdmin(admin.StackedInline):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.news + ('keywords',)}),)
+    extra = 0
+
 ###########################
 # Models apps mighty
 ###########################
