@@ -1,5 +1,5 @@
 missive = (
-    "user_or_invitation",
+    "content_type",
     "object_id",
     "mode",
     "status",

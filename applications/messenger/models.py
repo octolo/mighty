@@ -25,8 +25,9 @@ class Missive(Base):
     txt = models.TextField()
     default = ''
 
-    #object_id = models.PositiveIntegerField()
-    #content_object = GenericForeignKey()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     class Meta(Base.Meta):
         abstract = True
