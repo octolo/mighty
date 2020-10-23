@@ -3,10 +3,10 @@ class VerifyException(Exception):
         self.message = message
 
 class Verify:
-    def verify(self):
+    def verify(self, exclude=False):
         for func in dir(self):
             if callable(getattr(self, func)) and func[0:7] == 'verify_':
-                state = getattr(self, func)()
+                state = getattr(self, func)(exclude)
                 if state: raise VerifyException(state)
         return True
 

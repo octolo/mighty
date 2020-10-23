@@ -17,6 +17,7 @@ source = ('sources',)
 keywords = ('keywords',)
 file = ('file',)
 file_name = ('filename',)
+news = ('title', 'news', 'date_news')
 
 # URL
 file_url = ('file_url',)

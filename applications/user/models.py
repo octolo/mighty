@@ -152,9 +152,8 @@ class User(AbstractUser, Base, Image):
     @property
     def representation(self):
         if self.fullname: return self.fullname
-        if self.username: return self.username
-        if self.email: return self.email
-        return ''
+        elif self.username: return self.username
+        return self.uid
 
     def __str__(self):
         if self.last_name and self.first_name:
@@ -256,6 +255,19 @@ class Invitation(Base):
 
     class Meta(Base.Meta):
         abstract = True
+
+    @property
+    def fullname(self):
+        return "%s %s" % (self.first_name, self.last_name) if all([self.last_name, self.first_name]) else ''
+
+    @property
+    def logname(self):
+        return 'i-%s' % self.id
+
+    @property
+    def representation(self):
+        if self.fullname: return self.fullname
+        return self.uid
 
     def save(self, *args, **kwargs):
         self.status = choices.STATUS_ACCEPTED if self.user else self.status

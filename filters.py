@@ -1,13 +1,16 @@
 from django.db.models import Q
+
 from mighty import Verify
-from mighty.functions import make_searchable, test, get_logger
+from mighty.functions import make_searchable, test, get_logger, make_float
 from mighty.apps import MightyConfig
 
 from functools import reduce
+from datetime import timedelta
 import logging, operator, uuid
 
 logger = logging.getLogger(__name__)
 SEPARATOR = MightyConfig.Interpreter._split
+NEGATIVE = MightyConfig.Interpreter._negative
 
 class Filter(Verify):
     def __init__(self, id, *args, **kwargs):
@@ -24,78 +27,95 @@ class Filter(Verify):
     #################
     # Verify
     #################
-    def verify_field(self):
+    def verify_field(self, exclude=False):
         if not self.field:
             msg = "field can't be empty!"
             logger.debug('filter %s: %s' % (self.id, msg))
             return msg
 
-    def used(self):
+    def used(self, exclude=False):
         return True
 
     #################
     # Dependency
     #################
-    def get_dependencies(self):
+    def get_dependencies(self, exclude=False):
         return reduce(operator.and_, [dep.sql(self.request) for dep in self.dependencies]) if self.dependencies else False
 
     ################
     # Value
     ################
-    def get_value(self):
+    def get_value(self, exclude=False):
         return self.value
+
+    def format_value(self, value):
+        return value
+
+    def get_field(self, value):
+        return self.field+self.mask
 
     ###############
     # Sql
     ##############
-    def get_Q(self):
-        return Q(**{self.field+self.mask: self.get_value(self.field)})
+    def get_Q(self, exclude=False):
+        value = self.get_value(exclude)
+        return Q(**{self.get_field(value): self.format_value(value)})
 
-    def sql(self, request=None, *args, **kwargs):
+    def sql(self, request=None, exclude=False, *args, **kwargs):
         self.request = request
         self.method = kwargs.get('method', 'GET')
         self.method_request = kwargs.get('method_request', getattr(self.request, self.method))
-        if self.verify() and self.used():
-            dep = self.get_dependencies()
-            sql = self.get_Q()
+        if self.verify(exclude) and self.used(exclude):
+            dep = self.get_dependencies(exclude)
+            sql = self.get_Q(exclude)
             return dep.add(sql, Q.AND) if dep and sql else sql
         return Q()
 
 class ParamFilter(Filter):
-    def used(self):
+    def used(self, exclude=False):
+        if exclude:
+            return True if self.method_request.get(NEGATIVE+self.param, False) else False
         return True if self.method_request.get(self.param, False) else False
 
-    def verify_param(self):
+    def verify_param(self, exclude=False):
         if not self.param:
             return "param can't be empty!"
 
-    def get_value(self, field):
-        return self.method_request.get(self.param)
+    def get_value(self, exclude=False):
+        param = NEGATIVE+self.param if exclude else self.param
+        return self.method_request.get(param)
 
 class ParamChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
+        self.choices_required = kwargs.get('choices_required', False)
         self.mask = kwargs.get('mask', '__iexact')
 
-    def verify_param(self):
-        if not self.choices or type(self.choices) != list:
+    def verify_param(self, exclude=False):
+        if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
 
-    def get_value(self, field):
-        value = super().get_value(field)
-        return value if value in self.choices else False
+    def get_value(self, exclude=False):
+        value = super().get_value(exclude)
+        if self.choices_required:
+            return value if value in self.choices else False
+        return value
 
 class ParamMultiChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
+        self.choices_required = kwargs.get('choices_required', False)
         self.mask = kwargs.get('mask', '__in')
 
-    def verify_param(self):
-        if not self.choices or type(self.choices) != list:
+    def verify_param(self, exclude=False):
+        if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
 
-    def get_value(self, field):
-        return [value for value in super().get_value(field).split(SEPARATOR) if value in self.choices]
+    def get_value(self, exclude=False):
+        values = super().get_value(exclude).split(SEPARATOR)
+        if self.choices_required:
+            return [value for value in values if value in self.choices]
+        return [value for value in values]
 
 class MultiParamFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
@@ -105,31 +125,71 @@ class MultiParamFilter(ParamFilter):
     def get_value(self):
         return super().get_value().split(SEPARATOR)
 
-    def get_Q(self):
-        return reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
+    def get_Q(self, exclude=False):
+        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value(exclude)])
 
 class SearchFilter(ParamFilter):
     def __init__(self, id='search', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
 
-    def get_value(self, field):
-        return ['_'+value for value in super().get_value(field).split(SEPARATOR)]
+    def get_value(self, exclude=False):
+        return ['_'+value for value in super().get_value(exclude).split(SEPARATOR)]
 
-    def get_Q(self):
-        return reduce(self.operator, [Q(**{self.field+self.mask: value }) for value in self.get_value(self.field)])
+    def get_Q(self, exclude=False):
+        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value(exclude)])
 
 class BooleanParamFilter(ParamFilter):
-    def get_value(self, field):
-        value = super().get_value(field)
+    def get_value(self, exclude=False):
+        value = super().get_value(exclude)
         return bool(int(value))
+
+class FilterByGTEorLTE(ParamMultiChoicesFilter):
+    def __init__(self, id='gtelte', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.mask = kwargs.get('mask', '')
+        self.operator = operator.or_
+
+    def get_field(self, value):
+        if value[0:3] in ['gte', 'lte']:
+            return self.field+'__gte' if value[0:3] == 'gte' else self.field+'__lte'
+        elif value[0:2] in ['gt', 'lt']:
+            return self.field+'__gt' if value[0:2] == 'gt' else self.field+'__lt'
+        return self.field+self.mask
+
+    def format_value(self, value):
+        return make_float(value)
+
+    def get_Q(self, exclude=False):
+        theQ = []
+        for value in self.get_value(exclude):
+            if '-' in value:
+                value = value.split('-')
+                theQ.append(Q(**{
+                    self.field+'__gte': self.format_value(value[0]), 
+                    self.field+'__lte': self.format_value(value[1]) 
+                }))
+            else:
+                theQ.append(Q(**{self.get_field(value): self.format_value(value) }))
+        return reduce(self.operator, theQ)
+
+class FilterByYearDelta(FilterByGTEorLTE):
+    def __init__(self, id='years', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+
+    def format_value(self, value):
+        return timedelta(days=make_float(value)*MightyConfig.days_in_year)
 
 class FiltersManager:
     def __init__(self, flts=None):
         self.flts = flts if flts else {}
     
-    def params(self, request):
-        return [f.sql(request) for f in self.flts]
+    def params(self, request, exclude=False):
+        return self.get_filters(request, exclude)
+
+    def get_filters(self, request, exclude=False):
+        filters = [f.sql(request, exclude) for f in self.flts if f.sql(request, exclude)]
+        return filters
 
     def add(self, id_, filter_):
         self.flts[id_] = filter_
@@ -215,7 +275,7 @@ class Foxid:
                         if char == self.Token._filter[2] and self.context[-1] == self.Token._filter[0]+self.Token._filter[1]:
                             logger.warning('close filter')
                             self.context.pop()
-                            self.add_filter(self.get_filter())
+                            self.add_filter(self.get_filter_by_idandargs())
 
                         # closing family
                         elif char == self.Token._family[1] and self.context[-1] == self.Token._family[0]:
@@ -268,7 +328,7 @@ class Foxid:
         if fltr:
             self.families[-1].append(fltr) if len(self.families) else self.compiled.append(fltr)
 
-    def get_filter(self):
+    def get_filter_by_idandargs(self):
         if len(self.filter_idandargs) and self.filter_idandargs[0] in self.filters:
             fltr = self.filters[self.filter_idandargs[0]]
             fltr.request = self.request
@@ -292,4 +352,4 @@ class Foxid:
         if self.order:
             self.queryset = self.queryset.order_by(*self.order.replace('.', '__').split(SEPARATOR))
         return self.queryset
-
+        #return [value for value in super().get_value(exclude).split(SEPARATOR)]

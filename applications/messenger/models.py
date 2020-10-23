@@ -9,6 +9,9 @@ from mighty.applications.messenger import choices, translates as _, send_missive
 from mighty.applications.messenger.apps import MessengerConfig as conf
 from mighty.applications.user.apps import UserConfig as conf_user
 from mighty.functions import masking_email, masking_phone
+from mighty.applications.address.models import Address
+
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Missive(Base):
@@ -20,11 +23,10 @@ class Missive(Base):
     subject = models.CharField(max_length=255)
     html = models.TextField()
     txt = models.TextField()
+    default = ''
 
-    # User Or Invitation
-    user_or_invitation = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="missive_userorinvitation", limit_choices_to=conf_user.user_or_inivitation_lct)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('user_or_invitation', 'object_id')
+    #object_id = models.PositiveIntegerField()
+    #content_object = GenericForeignKey()
 
     class Meta(Base.Meta):
         abstract = True
