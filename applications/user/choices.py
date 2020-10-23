@@ -18,11 +18,13 @@ GENDER = (
     (GENDER_WOMAN, _('woman')),
 )
 
+STATUS_NOTSEND = 'NOTSEND'
 STATUS_PENDING = 'PENDING'
 STATUS_REFUSED = 'REFUSED'
 STATUS_ACCEPTED = 'ACCEPTED'
 STATUS_EXPIRED = 'EXPIRED'
 STATUS = (
+    (STATUS_NOTSEND, _('not send')),
     (STATUS_PENDING, _('pending')),
     (STATUS_REFUSED, _('refused')),
     (STATUS_ACCEPTED, _('accepted')),

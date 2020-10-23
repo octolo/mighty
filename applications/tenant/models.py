@@ -41,3 +41,7 @@ class Tenant(Base):
         verbose_name = _.v_tenant
         verbose_name_plural = _.vp_tenant
         permissions = [(CHAT_WITH_TENANTUSERS, _.perm_chat_tenantusers)]
+
+    @property
+    def representation(self):
+        return self.user.representation if self.user else self.invitation.representation
