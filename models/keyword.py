@@ -26,9 +26,9 @@ class Keyword(models.Model):
         return make_searchable("_".join(words)) if len(words) else None
 
     def set_keywords(self):
-        self.keywords = "_"+self.get_keywords()
-        print('k:')
-        print(self.get_keywords())
+        self.keywords = self.get_keywords()
+        if self.keywords:
+            self.keyworkd = "_"+self.keywords
 
     def save(self, *args, **kwargs):
         self.set_keywords()
