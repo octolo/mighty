@@ -36,10 +36,13 @@ class Command(ModelBaseCommand):
             self.fields = self.reverse = {field: field for field in fields}
 
     def do(self):
+        self.total = len(open(self.csvfile).readlines())-1
         with open(self.csvfile, encoding=self.encoding) as csvfile:
             reader = csv.DictReader(csvfile, delimiter=self.delimiter)
             self.prepare_fields(reader.fieldnames)
             for row in reader:
+                self.set_position()
+                self.progress_bar()
                 self.on_row(row)
 
     def on_row(self, row):
