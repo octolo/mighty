@@ -33,6 +33,7 @@ class MissiveBackend:
         return self.missive.status
 
     def send_email(self):
+        print(conf.enable.email)
         if conf.enable.email:
             send_mail(
                 subject=self.missive.subject,
