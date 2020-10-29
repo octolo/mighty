@@ -4,7 +4,7 @@ from mighty.applications.address import translates as _, fields
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
 class Address(Base):
-    search_fields = ['route', 'locality', 'postal_code']
+    search_fields = ['locality', 'postal_code']
     default = models.BooleanField(default=False)
     address = models.CharField(_.address, max_length=255, null=True, blank=True)
     complement = models.CharField(_.complement, max_length=255, null=True, blank=True)

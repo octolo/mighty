@@ -69,7 +69,7 @@ class TwoFactorBackend(ModelBackend):
         
     def send_sms(self, obj, user, target):
         missive = Missive(**{
-            "user_or_invitation": user.missives.content_type,
+            "content_type": user.missives.content_type,
             "object_id": user.id,
             "target": target,
             "mode": choices.MODE_SMS,
@@ -81,7 +81,7 @@ class TwoFactorBackend(ModelBackend):
 
     def send_email(self, obj, user, target):
         missive = Missive(**{
-            "user_or_invitation": user.missives.content_type,
+            "content_type": user.missives.content_type,
             "object_id": user.id,
             "target": target,
             "subject": 'subject: Code',

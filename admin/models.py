@@ -11,7 +11,7 @@ from django_json_widget.widgets import JSONEditorWidget
 from django.shortcuts import redirect
 
 from mighty import fields
-from mighty.forms import HistoryForm
+from mighty.forms import TimelineForm
 from mighty.fields import JSONField
 from mighty import translates as _
 from mighty.admin.actions import disable_selected, enable_selected
@@ -173,16 +173,17 @@ class BaseAdmin(admin.ModelAdmin):
             'object_name': str(opts.verbose_name),
             'object': obj,
             'fake': obj.timeline_model(),
-            'timeline': obj.timeline_model.objects.filter(object_id=object_id),
+            'timeline': obj.timeline_model.objects.filter(object_id=obj),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
         }
+        print(context['timeline'])
         return TemplateResponse(request, 'admin/timeline_list.html', context)
 
     def timeline_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
-        form_conf = {"form_class": HistoryForm, "form_fields": ['date_begin', 'date_end']}
+        form_conf = {"form_class": TimelineForm, "form_fields": ['date_begin', 'date_end']}
         form = get_form_model(self.model.timeline_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
@@ -245,7 +246,7 @@ class BaseAdmin(admin.ModelAdmin):
 
     def source_addfield_view(self, request, contenttype_id, object_id, fieldname, sourcetype, extra_context=None):
         info = self.model._meta.app_label, self.model._meta.model_name
-        form_conf = {"form_class": HistoryForm, "form_fields": ['date_begin', 'date_end']}
+        form_conf = {"form_class": TimelineForm, "form_fields": ['date_begin', 'date_end']}
         form = get_form_model(self.model.timeline_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))

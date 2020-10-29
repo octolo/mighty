@@ -46,11 +46,12 @@ class BaseCommand(BaseCommand):
             )
             sys.stdout.flush()
         else:
-            sys.stdout.write("\r{0}: {1}% ({2}/{3})".format(
+            sys.stdout.write("\r{0}: {1}% ({2}/{3}) {4}".format(
                 self.prefix_bar,
                 int(round(percent * 100)),
                 self.position,
-                self.get_total())
+                self.get_total(),
+                self.current_info)
             )
             print()
         if self.position == self.get_total(): print()
