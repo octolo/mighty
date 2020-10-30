@@ -16,4 +16,4 @@ serializer = ('uid',) + fields.image_url + (
 if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
     serializer += ('nationalities',)
 
-invitation = ('last_name', 'first_name', 'email', 'phone', 'user')
+invitation = ('last_name', 'first_name', 'email', 'phone', 'user', 'invitation', 'token', 'status')

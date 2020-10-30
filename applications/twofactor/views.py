@@ -148,15 +148,3 @@ class APISendCode(TemplateView):
         if 'error' in context:
             return JsonResponse(context, **response_kwargs, status=400)
         return JsonResponse(context, **response_kwargs)
-
-#class TwofactorViewSet(ModelViewSet):
-#    model = Twofactor
-#    slug = '<str:uid>'
-#
-#    def __init__(self):
-#        super().__init__()
-#        self.add_view('register', Register, 'register/')
-#        self.add_view('search', LoginStepSearch, 'login/')
-#        self.add_view('choices', LoginStepChoices, 'login/choices/')
-#        self.add_view('code', LoginStepCode, 'login/code/')
-#        self.add_view('logout', Logout, 'logout/')

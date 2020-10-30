@@ -24,17 +24,19 @@ class Role(Base):
         super().save(*args, **kwargs)
 
 CHAT_WITH_TENANTUSERS = "can_chat_with_tenant_users"
+from mighty.applications.tenant import choices
 class Tenant(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="tenant_group")
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="tenant_roles", blank=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="tenant_user", null=True, blank=True)
     invitation = models.ForeignKey(conf.ForeignKey.invitation, on_delete=models.CASCADE, related_name="tenant_invitation", null=True, blank=True)
+    status = models.CharField(max_length=8, choices=choices.STATUS, default=choices.STATUS_PENDING)
 
     objects = models.Manager()
     objectsB = managers.TenantManager()
 
     def __str__(self):
-        return "%s , %s" % (str(self.user), str(self.group))
+        return "%s , %s" % (str(self.user) if self.user else self.invitation, str(self.group))
 
     class Meta:
         abstract = True

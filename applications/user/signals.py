@@ -1,5 +1,7 @@
 from django.db.models.signals import post_save, pre_save, post_delete
 from django.contrib.auth import get_user_model
+
+from mighty.applications.logger import signals
 from mighty.models import Email, Phone, User
 
 def AfterAddAnEmail(sender, instance, created, **kwargs):
@@ -9,14 +11,12 @@ def AfterAddAnEmail(sender, instance, created, **kwargs):
         instance.user.email = instance.email
         instance.user.save()
     post_save.connect(AfterAddAnEmail, Email)
-post_save.connect(AfterAddAnEmail, Email)
 
 def AfterDeleteAnEmail(sender, instance, created, **kwargs):
     if not Email.objects.filter(user=instance.user, default=True).count():
         email = Email.objects.filter(user=instance.user).first()
         email.default = True
         email.save()
-post_delete.connect(AfterDeleteAnEmail, Email)
 
 def AfterAddAPhone(sender, instance, created, **kwargs):
     post_save.disconnect(AfterAddAPhone, Phone)
@@ -25,15 +25,18 @@ def AfterAddAPhone(sender, instance, created, **kwargs):
         instance.user.phone = instance.phone
         instance.user.save()
     post_save.connect(AfterAddAPhone, Phone)
-post_save.connect(AfterAddAPhone, Phone)
 
 def AfterDeleteAPhone(sender, instance, created, **kwargs):
     if not Phone.objects.filter(user=instance.user, default=True).count():
         phone = Phone.objects.filter(user=instance.user).first()
         phone.default = True
         phone.save()
+
+post_save.connect(AfterAddAnEmail, Email)
+post_save.connect(AfterAddAPhone, Phone)
+
+post_delete.connect(AfterDeleteAnEmail, Email)
 post_delete.connect(AfterDeleteAPhone, Phone)
 
-from mighty.applications.logger import signals
 pre_save.connect(signals.pre_change_log, User)
 post_save.connect(signals.post_change_log, User)

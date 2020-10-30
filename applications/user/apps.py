@@ -4,6 +4,7 @@ from mighty import over_config
 
 class Config:
     user_or_inivitation_lct = {'app_label': 'mighty', 'model__in': ['user', 'userorinvitation']}
+    invitation_days = 7
 
     class ForeignKey:
         missive = 'mighty.Missive'

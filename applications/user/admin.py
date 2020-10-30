@@ -45,7 +45,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.fieldsets[1][1]['fields'] += ('phone', 'style')
+        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender')
         if UserConfig.ForeignKey.optional:
             self.fieldsets[1][1]['fields'] += ('optional',)
         self.add_field(_.informations, ('method', 'channel'))
@@ -63,4 +63,5 @@ class InvitationAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.invitation}),)
     list_display = ('__str__', 'status', 'user')
     list_filter = ('status',)
+    readonly_fields = ('invitation', 'token')
     search_fields = ('last_name', 'first_name',) + tuple('user__%s' % field for field in fields.search)

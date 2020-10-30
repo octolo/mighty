@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
@@ -8,6 +9,7 @@ from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 
 from mighty.fields import JSONField
+from mighty.models import Missive
 from mighty.models.base import Base
 from mighty.models.image import Image
 from mighty.functions import masking_email, masking_phone
@@ -16,8 +18,10 @@ from mighty.applications.address.models import Address
 from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.user.manager import UserManager
 from mighty.applications.user import translates as _, fields, choices
+from mighty.applications.messenger import choices as m_choices
 
 from phonenumber_field.modelfields import PhoneNumberField
+from datetime import datetime
 import uuid, logging
 logger = logging.getLogger(__name__)
 
@@ -98,7 +102,7 @@ class User(AbstractUser, Base, Image):
         optional = models.ForeignKey(conf.ForeignKey.optional, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional_user')
 
     if 'mighty.applications.messenger':
-        missives = GenericRelation(conf.ForeignKey.missive, content_type_field='user_or_invitation')
+        missives = GenericRelation(conf.ForeignKey.missive)
 
     if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
         nationalities = models.ManyToManyField(conf.ForeignKey.nationalities, blank=True)
@@ -217,11 +221,11 @@ class Invitation(Base):
     last_name = models.CharField(max_length=255)
     email = models.EmailField(_.email, unique=True)
     phone = PhoneNumberField(_.phone, blank=True, null=True, unique=True)
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='userorinvitation_user', blank=True, null=True)
-    status = models.CharField(max_length=8, choices=choices.STATUS, default=choices.STATUS_PENDING)
-
-    if 'mighty.applications.messenger':
-        missives = GenericRelation(conf.ForeignKey.missive, content_type_field='user_or_invitation')
+    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_invitation', blank=True, null=True)
+    status = models.CharField(max_length=8, choices=choices.STATUS, default=choices.STATUS_NOTSEND)
+    invitation = models.ForeignKey(conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='invitation', blank=True, null=True)
+    token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    missives = GenericRelation(conf.ForeignKey.missive)
 
     class Meta(Base.Meta):
         db_table = 'auth_userorinvitation'
@@ -230,16 +234,24 @@ class Invitation(Base):
         verbose_name_plural = _.vp_invitation
         ordering = ['last_name', 'first_name', 'email']
 
-    @classmethod
-    def from_db(self, db, field_names, values):
-        instance = super().from_db(db, field_names, values)
-        if instance.user:
-            instance.user.status = instance.status
-            instance = instance.user
-        return instance
+    #@classmethod
+    #def from_db(self, db, field_names, values):
+    #    instance = super().from_db(db, field_names, values)
+    #    if instance.user:
+    #        instance.user.status = instance.status
+    #        instance = instance.user
+    #    return instance
 
     def __str__(self):
         return str(self.user) if self.user else '%s %s (%s)' % (self.first_name, self.last_name, self.masking_email)
+
+    def new_token(self):
+        self.token = uuid.uuid4()
+
+    @property
+    def is_expired(self):
+        delta = datetime.now() - self.date_update
+        return conf.invitation_days <= delta.days
 
     @property
     def logname(self): 
@@ -269,16 +281,37 @@ class Invitation(Base):
         if self.fullname: return self.fullname
         return self.uid
 
+    def accepted(self):
+        self.status = choices.STATUS_ACCEPTED
+        UserModel = get_user_model()
+        self.user, status = UserModel.objects.get_or_create(
+            last_name=self.last_name,
+            first_name=self.first_name,
+            email=self.email,
+            phone=self.phone,
+        )
+        self.user.save()
+        self.save()
+
+    def refused(self):
+        self.status = choices.STATUS_REFUSED
+        self.save()
+
     def save(self, *args, **kwargs):
         self.status = choices.STATUS_ACCEPTED if self.user else self.status
-        self.in_mails()
+        if self.status == choices.STATUS_PENDING:
+            if not self.invitation:
+                self.invitation = Missive(
+                    content_type=self.missives.content_type,
+                    object_id=self.id,
+                    target=self.email,
+                    subject='subject: Invitation',
+                    html="html: Invitation",
+                    txt="txt: Invitation",
+                )
+                self.invitation.save()
+            elif self.is_expired:
+                self.new_token()
+                self.invitation.status = m_choices.STATUS_PREPARE
+                self.invitation.save()
         super().save(*args, **kwargs)
-        #if not self.missives.count():
-        #    self.missives.create(**{
-        #        "user_or_invitation": self.missives.content_type,
-        #        "object_id": self.id,
-        #        "target": self.email,
-        #        "subject": 'subject: Invitation',
-        #        "html": "html: Invitation",
-        #        "txt": "txt: Invitation",
-        #    })
