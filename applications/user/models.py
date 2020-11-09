@@ -192,6 +192,9 @@ class User(AbstractUser, Base, Image):
                 exist = False
         return username
 
+    def get_mails(self):
+        return self.user_email.all().values_list('email', flat=True)
+
     def in_mails(self):
         if self.email:
             try:
@@ -199,6 +202,10 @@ class User(AbstractUser, Base, Image):
             except ObjectDoesNotExist:
                 self.user_email.create(email=self.email, default=True)
             self.user_email.exclude(email=self.email).update(default=False)
+
+
+    def get_phones(self):
+        return self.user_phone.all().values_list('phone', flat=True)
 
     def in_phones(self):
         if self.phone:
@@ -221,9 +228,10 @@ class Invitation(Base):
     last_name = models.CharField(max_length=255)
     email = models.EmailField(_.email, unique=True)
     phone = PhoneNumberField(_.phone, blank=True, null=True, unique=True)
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_invitation', blank=True, null=True)
+    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.SET_NULL, related_name='user_invitation', blank=True, null=True)
+    by = models.ForeignKey(conf.ForeignKey.user, on_delete=models.SET_NULL, related_name='by_invitation_user', blank=True, null=True)
     status = models.CharField(max_length=8, choices=choices.STATUS, default=choices.STATUS_NOTSEND)
-    invitation = models.ForeignKey(conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='invitation', blank=True, null=True)
+    invitation = models.ForeignKey(conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='invitation_user', blank=True, null=True)
     token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     missives = GenericRelation(conf.ForeignKey.missive)
 
@@ -312,6 +320,6 @@ class Invitation(Base):
                 self.invitation.save()
             elif self.is_expired:
                 self.new_token()
-                self.invitation.status = m_choices.STATUS_PREPARE
+                self.invitation.status = choices.STATUS_PENDING
                 self.invitation.save()
         super().save(*args, **kwargs)

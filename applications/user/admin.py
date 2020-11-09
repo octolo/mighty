@@ -58,7 +58,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
         super().save_model(request, obj, form, change)
 
 class InvitationAdmin(BaseAdmin):
-    raw_id_fields = ('user',)
+    raw_id_fields = ('user', 'by')
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.invitation}),)
     list_display = ('__str__', 'status', 'user')

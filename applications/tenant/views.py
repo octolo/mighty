@@ -1,47 +1,36 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
-from mighty.models import Invitation
-from mighty.applications.user.forms import UserCreationForm
-from mighty.applications.user.apps import UserConfig
-from mighty.views import DetailView, FormView, CreateView
+from mighty.views import DetailView, ListView
 from mighty.applications.user.choices import STATUS_PENDING
+from mighty.applications.tenant import get_tenant_model
 
-UserModel = get_user_model()
+Invitation = get_tenant_model(settings.TENANT_INVITATION)
+
 
 @method_decorator(login_required, name='dispatch')
-class UserMe(DetailView):
-    model = UserModel
-
-    def get_object(self, queryset=None):
-        user = self.request.user
-        newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
-        if newstyle != user.style:
-            user.style = newstyle
-            user.save()
-        return user
+class InvitationList(ListView):
+    def get_queryset(self, queryset=None):
+        return Invitation.objects.filter(email__in=self.request.user.get_mails(), status=STATUS_PENDING)
 
     def get_context_data(self, **kwargs):
-        user = self.get_object()
-        return {
-            "image_url": user.image_url,
-            "username": user.username,
-            "last_name": user.last_name,
-            "first_name": user.first_name,
-            "fullname": user.fullname,
-            "representation": user.representation,
-            "style": user.style,
-            "get_gender_display": user.get_gender_display(),
-            "is_staff": user.is_staff,
-        }
+        return [
+        {
+            "uid": invitation.uid,
+            "group": str(invitation.group),
+            "by": invitation.by.representation,
+            "email": invitation.email,
+            "status": invitation.status
+        } for invitation in self.get_queryset()]
+
 
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(context, **response_kwargs)
+        return JsonResponse(context, safe=False, **response_kwargs)
 
+@method_decorator(login_required, name='dispatch')
 class InvitationDetail(DetailView):
     model = Invitation
     queryset = Invitation.objects.all()
@@ -51,8 +40,8 @@ class InvitationDetail(DetailView):
     def get_object(self, queryset=None):
         args = { 
             "uid": self.kwargs.get('uid', None), 
+            "email__in": self.request.user.get_emails(),
             "status": STATUS_PENDING,
-            "token": self.request.GET.get('token', None)
         }
         return get_object_or_404(Invitation, **args)
 
@@ -73,6 +62,8 @@ class InvitationDetail(DetailView):
     def get_context_data(self, **kwargs):
         invitation = self.actions()
         return { 
+            "uid": invitation.uid,
+            "group": str(invitation.group),
             "by": invitation.by.representation,
             "email": invitation.email,
             "status": invitation.status
@@ -82,40 +73,29 @@ class InvitationDetail(DetailView):
         return JsonResponse(context, **response_kwargs)
 
 if 'rest_framework' in settings.INSTALLED_APPS:
-    from rest_framework.generics import RetrieveAPIView
+    from rest_framework.generics import RetrieveAPIView, ListAPIView
     from rest_framework.response import Response
-    from mighty.applications.user.serializers import UserSerializer
-
-    class UserMe(RetrieveAPIView):
-        def get_object(self, queryset=None):
-            user = self.request.user
-            newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
-            if newstyle != user.style:
-                user.style = newstyle
-                user.save()
-            return user
-
+    
+    class InvitationList(ListAPIView):
+        def get_queryset(self, queryset=None):
+            return Invitation.objects.filter(email__in=self.request.user.get_mails(), status=STATUS_PENDING)
+    
         def get(self, request, format=None):
-            user = self.get_object()
-            return Response({
-                "image_url": user.image_url,
-                "username": user.username,
-                "last_name": user.last_name,
-                "first_name": user.first_name,
-                "fullname": user.fullname,
-                "representation": user.representation,
-                "style": user.style,
-                "get_gender_display": user.get_gender_display(),
-                "is_staff": user.is_staff,
-            })
-
+            return Response([
+            {
+                "uid": invitation.uid,
+                "group": str(invitation.group),
+                "by": invitation.by.representation,
+                "email": invitation.email,
+                "status": invitation.status
+            } for invitation in self.get_queryset()])
 
     class InvitationDetail(RetrieveAPIView):
         def get_object(self, queryset=None):
             args = { 
                 "uid": self.kwargs.get('uid', None), 
+                "email__in": self.request.user.get_mails(),
                 "status": STATUS_PENDING,
-                "token": self.request.GET.get('token', None)
             }
             return get_object_or_404(Invitation, **args)
 
@@ -136,6 +116,8 @@ if 'rest_framework' in settings.INSTALLED_APPS:
         def get(self, request, uid, action=None, format=None):
             invitation = self.actions()
             return Response({
+                "uid": invitation.uid,
+                "group": str(invitation.group),
                 "by": invitation.by.representation,
                 "email": invitation.email,
                 "status": invitation.status

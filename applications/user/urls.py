@@ -8,8 +8,10 @@ urlpatterns = [
 
 api_urlpatterns = [
     path('user/', include([
-        path('style/', views.UserStyle.as_view(), name="api-user-style"),
         path('me/', views.UserMe.as_view(), name="api-user-mydetail"),
-        path('invitation/<uuid:uid>/<str:action>/', views.InvitationAction.as_view()),
+        path('invitation/', include([
+            path('<uuid:uid>/', views.InvitationDetail.as_view(), name="api-user-invitation"),
+            path('<uuid:uid>/<str:action>/', views.InvitationDetail.as_view(), name="api-user-invitation-action"),
+        ]))
     ]))
 ]

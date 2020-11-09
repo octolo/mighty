@@ -4,10 +4,12 @@ from mighty import over_config
 from django.contrib.auth import get_user_model
 
 class Config:
+    tenant = 'mighty.Tenant'
+    invitation = 'mighty.Invitation'
+
     class ForeignKey:
         group = 'auth.Group'
         role = 'mighty.Role'
-        invitation = 'mighty.Invitation'
         user = settings.AUTH_USER_MODEL
 
 if hasattr(settings, 'TENANT'): over_config(Config, settings.TENANT)

@@ -15,6 +15,7 @@ UserModel = get_user_model()
 
 class TwoFactorBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
+        print('ok 2')
         field_type = kwargs.get('field_type', None)
         if username is None:
             username = kwargs.get(UserModel.USERNAME_FIELD)
