@@ -111,6 +111,8 @@ if 'rest_framework' in settings.INSTALLED_APPS:
 
 
     class InvitationDetail(RetrieveAPIView):
+        permission_classes = ()
+
         def get_object(self, queryset=None):
             args = { 
                 "uid": self.kwargs.get('uid', None), 
