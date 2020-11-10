@@ -1,0 +1,3 @@
+Vous avez été invité a rejoindre la plateforme {{ website }} par {{ by }}\r\n
+En cliquant sur le lien suivant vous finaliserez votre inscription\r\n
+{{ invitation_link }}

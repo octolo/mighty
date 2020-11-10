@@ -1,0 +1,3 @@
+Vous avez été invité a rejoindre la société {{ company }} par {{ by }}
+Vous pouvez accéder a vos invitations en cliquant sur le lien suivant:
+{{ tenants_link }}
