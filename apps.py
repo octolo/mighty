@@ -5,7 +5,7 @@ from mighty import over_config
 import os, logging
 
 class Config:
-    site = None
+    domain = "localhost:8000"
     site_header = "Back office"
     index_title = "Home"
     paginate_by = 100

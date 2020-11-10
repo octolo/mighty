@@ -1,10 +1,8 @@
 from django.template.response import TemplateResponse
-from django.contrib.admin.options import IS_POPUP_VAR, TO_FIELD_VAR
+from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
-from django.http import HttpResponse
 from django.contrib.contenttypes.models import ContentType
 from mighty.admin.models import BaseAdmin
-from functools import update_wrapper
 from mighty.models import Log
 
 class ModelWithLogAdmin(BaseAdmin):
@@ -67,8 +65,6 @@ class ModelWithLogAdmin(BaseAdmin):
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/change_logs.html', context)
-
-
 
     def get_urls(self):
         from django.urls import path

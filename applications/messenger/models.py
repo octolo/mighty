@@ -12,7 +12,8 @@ from mighty.functions import masking_email, masking_phone
 from mighty.applications.address.models import Address
 
 from phonenumber_field.modelfields import PhoneNumberField
-
+from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 
 class Missive(Base):
     mode = models.CharField(max_length=6, choices=choices.MODE, default=choices.MODE_EMAIL)
@@ -21,7 +22,7 @@ class Missive(Base):
     backend = models.CharField(max_length=255, editable=False)
     response = models.TextField(editable=False)
     subject = models.CharField(max_length=255)
-    html = models.TextField()
+    html = CKEditor5Field()
     txt = models.TextField()
     default = ''
 
@@ -31,6 +32,8 @@ class Missive(Base):
 
     class Meta(Base.Meta):
         abstract = True
+        verbose_name = "missive"
+        verbose_name_plural = "missives"
         permissions = [('can_check', _.permission_check),]
         ordering = ['-date_create',]
 

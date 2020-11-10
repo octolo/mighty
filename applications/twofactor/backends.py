@@ -15,7 +15,6 @@ UserModel = get_user_model()
 
 class TwoFactorBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        print('ok 2')
         field_type = kwargs.get('field_type', None)
         if username is None:
             username = kwargs.get(UserModel.USERNAME_FIELD)
@@ -75,7 +74,7 @@ class TwoFactorBackend(ModelBackend):
             "target": target,
             "mode": choices.MODE_SMS,
             "subject": 'subject: Code',
-            "txt": _.tpl_txt %(MightyConfig.site, str(obj.code)),
+            "txt": _.tpl_txt %(MightyConfig.domain, str(obj.code)),
         })
         missive.save()
         return missive.status
@@ -86,8 +85,8 @@ class TwoFactorBackend(ModelBackend):
             "object_id": user.id,
             "target": target,
             "subject": 'subject: Code',
-            "html": _.tpl_html % (MightyConfig.site, str(obj.code)),
-            "txt": _.tpl_txt % (MightyConfig.site, str(obj.code)),
+            "html": _.tpl_html % (MightyConfig.domain, str(obj.code)),
+            "txt": _.tpl_txt % (MightyConfig.domain, str(obj.code)),
         })
         missive.save()
         return missive.status

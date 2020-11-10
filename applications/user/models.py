@@ -7,7 +7,9 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.templatetags.static import static
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
+from django.template.loader import render_to_string
 
+from mighty.apps import MightyConfig
 from mighty.fields import JSONField
 from mighty.models import Missive
 from mighty.models.base import Base
@@ -314,12 +316,16 @@ class Invitation(Base):
                     object_id=self.id,
                     target=self.email,
                     subject='subject: Invitation',
-                    html="html: Invitation",
-                    txt="txt: Invitation",
                 )
-                self.invitation.save()
             elif self.is_expired:
                 self.new_token()
                 self.invitation.status = choices.STATUS_PENDING
-                self.invitation.save()
+            ctx = {
+                "website": MightyConfig.domain,
+                "by": self.by.representation,
+                "invitation_link": conf.invitation_url % {"domain": MightyConfig.domain,  "uid": self.uid, "token": self.token}
+            }
+            self.invitation.html = render_to_string('user/invitation.html', ctx)
+            self.invitation.txt = render_to_string('user/invitation.txt', ctx)
+            self.invitation.save()
         super().save(*args, **kwargs)

@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 class Config:
     tenant = 'mighty.Tenant'
     invitation = 'mighty.Invitation'
+    invitation_url = 'http://%(domain)s/user/tenants/'
 
     class ForeignKey:
         group = 'auth.Group'

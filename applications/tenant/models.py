@@ -2,7 +2,9 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericRelation
+from django.template.loader import render_to_string
 
+from mighty.apps import MightyConfig
 from mighty.fields import JSONField
 from mighty.models import Missive
 from mighty.models.base import Base
@@ -98,12 +100,16 @@ class TenantInvitation(Base):
                     object_id=self.id,
                     target=self.email,
                     subject='subject: Tenant',
-                    html="html: Tenant",
-                    txt="txt: Tenant",
                 )
-                self.invitation.save()
             elif self.is_expired:
                 self.new_token()
                 self.invitation.status = user_choices.STATUS_PENDING
-                self.invitation.save()
+            ctx = {
+                "company": str(self.group),
+                "by": self.by.representation,
+                "tenants_link": conf.invitation_url % { "domain": MightyConfig.domain }
+            }
+            self.invitation.html = render_to_string('tenant/invitation.html', ctx)
+            self.invitation.txt = render_to_string('tenant/invitation.txt', ctx)
+            self.invitation.save()
         super().save(*args, **kwargs)
