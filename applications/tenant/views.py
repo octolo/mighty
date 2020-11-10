@@ -64,6 +64,7 @@ class InvitationDetail(DetailView):
         return { 
             "uid": invitation.uid,
             "group": str(invitation.group),
+            "tenant": invitation.tenant.uid if invitation.tenant else None,
             "by": invitation.by.representation,
             "email": invitation.email,
             "status": invitation.status
@@ -118,6 +119,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
             return Response({
                 "uid": invitation.uid,
                 "group": str(invitation.group),
+                "tenant": invitation.tenant.uid if invitation.tenant else None,
                 "by": invitation.by.representation,
                 "email": invitation.email,
                 "status": invitation.status

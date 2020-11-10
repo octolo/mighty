@@ -71,6 +71,9 @@ class TenantInvitation(Base):
         abstract = True
         unique_together = ('email', 'group')
 
+    def __str__(self):
+        return "%s, %s" % (str(self.email), str(self.group))
+
     @property
     def is_expired(self):
         delta = datetime.now() - self.date_update
