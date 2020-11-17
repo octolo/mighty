@@ -14,11 +14,9 @@ admin.sites.site = mysite
 ###########################
 # Models django
 ###########################
-
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
     list_filter = ('content_type',)
-
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
     def _session_data(self, obj):
