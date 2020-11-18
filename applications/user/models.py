@@ -231,8 +231,8 @@ class Invitation(Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.SET_NULL, related_name='user_invitation', blank=True, null=True)
     by = models.ForeignKey(conf.ForeignKey.user, on_delete=models.SET_NULL, related_name='by_invitation_user', blank=True, null=True)
     status = models.CharField(max_length=8, choices=choices.STATUS, default=choices.STATUS_NOTSEND)
-    invitation = models.ForeignKey(conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='invitation_user', blank=True, null=True)
     token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    missive = models.ForeignKey(conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='missive_invitation', blank=True, null=True)
     missives = GenericRelation(conf.ForeignKey.missive)
 
     class Meta(Base.Meta):

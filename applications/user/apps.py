@@ -3,15 +3,16 @@ from django.conf import settings
 from mighty import over_config
 
 class Config:
-    user_or_inivitation_lct = {'app_label': 'mighty', 'model__in': ['user', 'userorinvitation']}
+    #user_or_inivitation_lct = {'app_label': 'mighty', 'model__in': ['user', 'userorinvitation']}
     invitation_enable = True
     invitation_days = 7
     invitation_url = 'http://%(domain)s/user/invitation/%(uid)s/?token=%(token)s'
 
     class ForeignKey:
         missive = 'mighty.Missive'
-        user = settings.AUTH_USER_MODEL
+        invitation = 'mighty.Invitation'
         nationalities = 'mighty.Nationality'
+        user = settings.AUTH_USER_MODEL
         optional = False
 
     class Field:

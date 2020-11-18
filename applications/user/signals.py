@@ -1,10 +1,7 @@
 from django.db.models.signals import post_save, pre_save, post_delete
-from django.contrib.auth import get_user_model
 from django.conf import settings
-from django.template.loader import render_to_string
 
 from mighty.applications.logger import signals
-from mighty.applications.user import choices
 from mighty.applications.user.apps import UserConfig
 from mighty.models import Email, Phone, User
 
@@ -47,29 +44,39 @@ def AfterDeleteAPhone(sender, instance, **kwargs):
 post_delete.connect(AfterDeleteAPhone, Phone)
 
 if UserConfig.invitation_enable:
+    from django.template.loader import render_to_string
+    from mighty.apps import MightyConfig
     from mighty.models import Invitation
+    from mighty.applications.user import choices
 
     def OnChangeInvitation(sender, instance, **kwargs):
         instance.status = choices.STATUS_ACCEPTED if instance.user else instance.status
+        save_need = False
         if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
             from mighty.models import Missive
-            if instance.status == choices.STATUS_PENDING:
-                if not instance.invitation:
-                    instance.invitation = Missive(
-                        content_type=self.missives.content_type,
-                        object_id=self.id,
-                        target=self.email,
+            if instance.status in [choices.STATUS_TOSEND, choices.STATUS_PENDING]:
+                if not instance.missive:
+                    save_need = True
+                    instance.missive = Missive(
+                        content_type=instance.missives.content_type,
+                        object_id=instance.id,
+                        target=instance.email,
                         subject='subject: Invitation',
                     )
                 elif instance.is_expired:
                     instance.new_token()
-                    instance.invitation.status = choices.STATUS_PENDING
+                    instance.missive.prepare()
                 ctx = {
                     "website": MightyConfig.domain,
-                    "by": self.by.representation,
-                    "invitation_link": conf.invitation_url % {"domain": MightyConfig.domain,  "uid": self.uid, "token": self.token}
+                    "by": instance.by.representation,
+                    "invitation_link": UserConfig.invitation_url % {"domain": MightyConfig.domain,  "uid": instance.uid, "token": instance.token}
                 }
-                instance.invitation.html = render_to_string('user/invitation.html', ctx)
-                instance.invitation.txt = render_to_string('user/invitation.txt', ctx)
-                instance.invitation.save()
+                instance.status = choices.STATUS_PENDING
+                instance.missive.html = render_to_string('user/invitation.html', ctx)
+                instance.missive.txt = render_to_string('user/invitation.txt', ctx)
+                instance.missive.save()
+        if save_need:
+            post_save.disconnect(OnChangeInvitation, sender=Invitation)
+            instance.save()
+            post_save.connect(OnChangeInvitation, Invitation)
     post_save.connect(OnChangeInvitation, Invitation)

@@ -43,6 +43,9 @@ class Missive(Base):
             send_missive(self)
         super().save(*args, **kwargs)
 
+    def prepare(self):
+        self.status = choices.STATUS_PREPARE
+
     @property
     def masking_email(self):
         return masking_email(self.target)

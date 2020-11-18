@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 from django.template.loader import render_to_string
 
@@ -8,6 +10,7 @@ from mighty.apps import MightyConfig
 from mighty.fields import JSONField
 from mighty.models import Missive
 from mighty.models.base import Base
+from mighty.functions import setting
 from mighty.applications.tenant import managers, translates as _, choices, get_tenant_model
 from mighty.applications.tenant.apps import TenantConfig as conf
 from mighty.applications.user import choices as user_choices
@@ -37,7 +40,7 @@ class Tenant(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_tenant")
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="roles_tenant", blank=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="user_tenant", null=True, blank=True)
-    status = models.CharField(max_length=8, choices=choices.STATUS, default=choices.STATUS_PENDING)
+    company_representative = models.CharField(max_length=255, blank=True, null=True)
     invitation = models.ForeignKey(settings.TENANT_INVITATION, on_delete=models.CASCADE, related_name="invitation_tenant", null=True, blank=True, editable=False)
 
     objects = models.Manager()
@@ -57,14 +60,52 @@ class Tenant(Base):
     def representation(self):
         return self.user.representation if self.user else self.invitation.representation
 
+    @property
+    def status(self):
+        return choices.ALTERNATE_MAIN
+
+class TenantAlternate(Base):
+    tenant = models.ForeignKey(settings.TENANT_MODEL, on_delete=models.CASCADE, related_name="tenant_alternate")
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="user_tenantalternate")
+    status = models.CharField(max_length=10, choices=choices.ALTERNATE, default=choices.ALTERNATE_DEFAULT)
+    position = models.PositiveSmallIntegerField(blank=True, null=True)
+    invitation = models.ForeignKey(settings.TENANT_INVITATION, on_delete=models.CASCADE, related_name="invitation_tenantalternate", null=True, blank=True, editable=False)
+
+    objects = models.Manager()
+    objectsB = managers.TenantAlternateManager()
+
+    class Meta:
+        abstract = True
+        unique_together = ('tenant', 'user')
+
+    def __str__(self):
+        return "%s , %s" % (str(self.user) if self.user else self.invitation, str(self.group))
+
+    @property
+    def group(self):
+        return self.tenant.group
+
+    @property
+    def company_representative(self):
+        return self.tenant.company_representative
+
+    @property
+    def roles(self):
+        return self.tenant.roles
+
 class TenantInvitation(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_tenantinv")
     email = models.EmailField()
     by = models.ForeignKey(user_conf.ForeignKey.user, on_delete=models.SET_NULL, related_name='by_invitation_tenant', blank=True, null=True)
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="roles_tenantinv", blank=True)
-    tenant = models.ForeignKey(settings.TENANT_MODEL, on_delete=models.SET_NULL, related_name="tenant", null=True, blank=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'model__icontains': 'tenant'})
+    object_id = models.PositiveIntegerField(blank=True, null=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+    tenant = models.ForeignKey(settings.TENANT_MODEL, on_delete=models.SET_NULL, related_name="tenant_invitation", blank=True, null=True)
+    
     status = models.CharField(max_length=8, choices=user_choices.STATUS, default=user_choices.STATUS_NOTSEND)
-    invitation = models.ForeignKey(user_conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='invitation_tenant', blank=True, null=True)
+    missive = models.ForeignKey(user_conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='missive_tenantinvitation', blank=True, null=True)
     missives = GenericRelation(user_conf.ForeignKey.missive)
 
     class Meta:
@@ -79,40 +120,14 @@ class TenantInvitation(Base):
         delta = datetime.now() - self.date_update
         return user_conf.invitation_days <= delta.days
 
+    def expired(self):
+        self.status = choices.STATUS_EXPIRED
+        self.save()
+
     def accepted(self):
         self.status = choices.STATUS_ACCEPTED
-        TenantModel = get_tenant_model(settings.TENANT_MODEL)
-        self.tenant, status = TenantModel.objects.get_or_create(
-            group=self.group,
-            user=get_user_model().objects.get(user_email__email=self.email),
-            invitation=self
-        )
-        self.tenant.save()
         self.save()
 
     def refused(self):
         self.status = choices.STATUS_REFUSED
         self.save()
-
-    def save(self, *args, **kwargs):
-        self.status = user_choices.STATUS_ACCEPTED if self.tenant else self.status
-        if self.status == user_choices.STATUS_PENDING:
-            if not self.invitation:
-                self.invitation = Missive(
-                    content_type=self.missives.content_type,
-                    object_id=self.id,
-                    target=self.email,
-                    subject='subject: Tenant',
-                )
-            elif self.is_expired:
-                self.new_token()
-                self.invitation.status = user_choices.STATUS_PENDING
-            ctx = {
-                "company": str(self.group),
-                "by": self.by.representation,
-                "tenants_link": conf.invitation_url % { "domain": MightyConfig.domain }
-            }
-            self.invitation.html = render_to_string('tenant/invitation.html', ctx)
-            self.invitation.txt = render_to_string('tenant/invitation.txt', ctx)
-            self.invitation.save()
-        super().save(*args, **kwargs)

@@ -8,3 +8,11 @@ STATUS = (
     (STATUS_REFUSED, _('refused')),
     (STATUS_ACCEPTED, _('accepted')),
 )
+
+ALTERNATE_MAIN = 'MAIN'
+ALTERNATE_DEFAULT = 'ALTERNATE'
+ALTERNATE_DEPUTY = 'DEPUTY'
+ALTERNATE = (
+    (ALTERNATE_DEFAULT, _('alternate')),
+    (ALTERNATE_DEPUTY, _('deputy')),
+)
