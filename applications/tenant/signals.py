@@ -20,14 +20,14 @@ if TenantConfig.invitation_enable:
                 'invitation': instance,
             }
 
-        if instance.tenant:
-            TenantModel = get_tenant_model(TenantConfig.ForeignKey.alternate)
-            kwargs.update({'tenant': instance.tenant})
-        else:
-            TenantModel = get_tenant_model()
-            kwargs.update({'group': instance.group})
-        instance.content_object, status = TenantModel.objects.get_or_create(**kwargs)
-        instance.save()
+            if instance.tenant:
+                TenantModel = get_tenant_model(TenantConfig.ForeignKey.alternate)
+                kwargs.update({'tenant': instance.tenant})
+            else:
+                TenantModel = get_tenant_model()
+                kwargs.update({'group': instance.group})
+            instance.content_object, status = TenantModel.objects.get_or_create(**kwargs)
+            instance.save()
 
 
         post_save.connect(OnStatusChange, Invitation)
