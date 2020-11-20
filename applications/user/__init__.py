@@ -2,6 +2,7 @@ default_app_config = 'mighty.applications.user.apps.UserConfig'
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from mighty.applications.user.apps import UserConfig as conf
 import uuid
 
 def username_generator(base_username):
@@ -17,3 +18,6 @@ def username_generator(base_username):
         except UserModel.DoesNotExist:
             exist = False
     return username
+
+def get_form_fields():
+    return conf.Field.required + (conf.Field.username,)

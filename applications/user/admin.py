@@ -13,6 +13,7 @@ from mighty.applications.user.apps import UserConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
+from mighty.applications.user import get_form_fields
 
 class EmailAdmin(admin.TabularInline):
     fields = ('email', 'default')
@@ -40,7 +41,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
     add_form = UserCreationForm
     add_fieldsets = ((None, {
         'classes': ('wide',),
-        'fields': (UserConfig.Field.username,) + UserConfig.Field.required + ('password1', 'password2')}),)
+        'fields': get_form_fields()}),)
     readonly_fields = ('method', 'channel')
 
     def __init__(self, model, admin_site):

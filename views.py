@@ -1,9 +1,12 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
+from django.views import View
 from django.views.generic.base import TemplateView, RedirectView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
+from django.http import JsonResponse, HttpResponse
 
 from mighty.models import ConfigClient
 from mighty.apps import MightyConfig as conf
@@ -203,6 +206,17 @@ class ExportView(ListView):
         response['Content-Disposition'] = 'attachment;filename=%s.csv' % get_valid_filename(make_searchable(self.model._meta.verbose_name))
         return response
 
+class AlreadyExist(TemplateView):
+    def get_queryset(self, queryset=None):
+        try:
+            self.model.objects.get(**{self.test_field: self.request.GET.get('exist')})
+        except self.model.DoesNotExist:        
+            return { "found": 0 }
+        return { "found": 1 }
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(self.get_queryset(), safe=False, **response_kwargs)
+
 class Widget(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -216,12 +230,15 @@ from django.http import JsonResponse
 from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.nationality.apps import NationalityConfig
 from mighty.models import ConfigClient
+from mighty.applications.user import get_form_fields
 base_config = { 
     'base': {
         'email': TwofactorConfig.method.email,
         'sms': TwofactorConfig.method.sms,
         'basic': TwofactorConfig.method.basic,
-        'languages': NationalityConfig.availables}}
+        'languages': NationalityConfig.availables,
+        'fields': get_form_fields()
+    }}
 
 class Config(TemplateView):
     def get_context_data(self, **kwargs):
@@ -250,6 +267,11 @@ class ConfigDetailView(DetailView):
         cfg = context['object'].config
         key = self.request.GET.get('key', False)
         return JsonResponse({key: cfg[key]} if key in cfg else cfg)
+
+class GenericSuccess(View):
+    def get(self, request):
+        return HttpResponse('OK')
+
 
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from rest_framework.generics import DestroyAPIView, RetrieveAPIView, ListAPIView

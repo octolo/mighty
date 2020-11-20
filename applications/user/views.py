@@ -1,15 +1,20 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import get_object_or_404, reverse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.core.validators import EmailValidator, ValidationError
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 from mighty.models import Invitation
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.user.apps import UserConfig
-from mighty.views import DetailView, FormView, CreateView
+from mighty.views import DetailView, CreateView, AlreadyExist
 from mighty.applications.user.choices import STATUS_PENDING
+from mighty.applications.user.forms import UserCreationForm
+from mighty.models import Email, Phone
 
 UserModel = get_user_model()
 
@@ -41,6 +46,22 @@ class UserMe(DetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
+
+class EmailAlreadyExist(AlreadyExist):
+    model = Email
+    test_field = 'email'
+
+    def get_queryset(self, queryset=None):
+        validator = EmailValidator()
+        try:
+            validator(self.request.GET.get('exist'))
+            return super().get_queryset(queryset)
+        except ValidationError:
+            return { "found": 2 }    
+
+class PhoneAlreadyExist(AlreadyExist):
+    model = Phone
+    test_field = 'phone'
 
 class InvitationDetail(DetailView):
     model = Invitation
@@ -80,6 +101,15 @@ class InvitationDetail(DetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateUser(CreateView):
+    form_class = UserCreationForm
+    template_name = 'mighty/form.html'
+    model = UserModel
+    
+    def get_success_url(self):
+        return reverse('generic-success')
 
 if 'rest_framework' in settings.INSTALLED_APPS:
     from rest_framework.generics import RetrieveAPIView
