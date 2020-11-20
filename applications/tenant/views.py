@@ -36,7 +36,7 @@ class TenantList(ListView):
 @method_decorator(login_required, name='dispatch')
 class InvitationList(ListView):
     def get_queryset(self, queryset=None):
-        return Invitation.objects.filter(email__in=self.request.user.get_mails(), status=STATUS_PENDING)
+        return Invitation.objects.filter(email__in=self.request.user.get_emails())
 
     def get_context_data(self, **kwargs):
         return [
@@ -61,21 +61,26 @@ class InvitationDetail(DetailView):
     def get_object(self, queryset=None):
         args = { 
             "uid": self.kwargs.get('uid', None), 
-            "email__in": self.request.user.get_emails(),
             "status": STATUS_PENDING,
         }
+        token = self.request.GET.get('token')
+        if token:
+            args['token'] = token
+        else:
+            args["email__in"] = self.request.user.get_emails()
         return get_object_or_404(Invitation, **args)
 
     def actions(self):
         invitation = self.get_object()
-        action = self.kwargs.get('action')
-        if invitation.is_expired:
-            invitation.expired()
-        elif action == 'accepted':
-            invitation.accepted()
-        elif action == 'refused':
-            invitation.refused()
-        return invitation
+        if invitation.status == STATUS_PENDING:
+            action = self.kwargs.get('action')
+            if invitation.is_expired:
+                invitation.expired()
+            elif action == 'accepted':
+                invitation.accepted(user=self.request.user if self.request.user.is_authenticated else None)
+            elif action == 'refused':
+                invitation.refused()
+            return invitation
 
     def get_context_data(self, **kwargs):
         invitation = self.actions()
@@ -116,7 +121,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
 
     class InvitationList(ListAPIView):
         def get_queryset(self, queryset=None):
-            return Invitation.objects.filter(email__in=self.request.user.get_mails(), status=STATUS_PENDING)
+            return Invitation.objects.filter(email__in=self.request.user.get_emails())
     
         def get(self, request, format=None):
             return Response([
@@ -132,20 +137,24 @@ if 'rest_framework' in settings.INSTALLED_APPS:
         def get_object(self, queryset=None):
             args = { 
                 "uid": self.kwargs.get('uid', None), 
-                "email__in": self.request.user.get_mails(),
-                "status": STATUS_PENDING,
             }
+            token = self.request.GET.get('token')
+            if token:
+                args['token'] = token
+            else:
+                args["email__in"] = self.request.user.get_emails()
             return get_object_or_404(Invitation, **args)
 
         def actions(self):
             invitation = self.get_object()
-            action = self.kwargs.get('action')
-            if invitation.is_expired:
-                invitation.expired()
-            elif action == 'accepted':
-                invitation.accepted()
-            elif action == 'refused':
-                invitation.refused()
+            if invitation.status == STATUS_PENDING:
+                action = self.kwargs.get('action')
+                if invitation.is_expired:
+                    invitation.expired()
+                elif action == 'accepted':
+                    invitation.accepted(user=self.request.user if self.request.user.is_authenticated else None)
+                elif action == 'refused':
+                    invitation.refused()
             return invitation
 
         def get(self, request, uid, action=None, format=None):

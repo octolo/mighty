@@ -17,6 +17,8 @@ from mighty.applications.user import choices as user_choices
 from mighty.applications.user.apps import UserConfig as user_conf
 
 from datetime import datetime
+import uuid, logging
+logger = logging.getLogger(__name__)
 
 class Role(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_role")
@@ -105,6 +107,7 @@ class TenantInvitation(Base):
     tenant = models.ForeignKey(settings.TENANT_MODEL, on_delete=models.SET_NULL, related_name="tenant_invitation", blank=True, null=True)
     
     status = models.CharField(max_length=8, choices=user_choices.STATUS, default=user_choices.STATUS_NOTSEND)
+    token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     missive = models.ForeignKey(user_conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='missive_tenantinvitation', blank=True, null=True)
     missives = GenericRelation(user_conf.ForeignKey.missive)
 
@@ -124,8 +127,10 @@ class TenantInvitation(Base):
         self.status = choices.STATUS_EXPIRED
         self.save()
 
-    def accepted(self):
+    def accepted(self, user=None):
         self.status = choices.STATUS_ACCEPTED
+        if user and self.email not in user.get_emails():
+            user.user_email.create(email=self.email)
         self.save()
 
     def refused(self):

@@ -24,7 +24,7 @@ class TenantInvitationAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_invitation + ('missive_link',)}),)
     filter_horizontal = ('roles',)
-    readonly_fields = ('missive_link',)
+    readonly_fields = ('missive_link', 'token')
 
     def missive_link(self, obj):
         from django.urls import reverse

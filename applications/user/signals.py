@@ -1,13 +1,16 @@
 from django.db.models.signals import post_save, pre_save, post_delete
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 from mighty.applications.logger import signals
 from mighty.applications.user.apps import UserConfig
-from mighty.models import Email, Phone, User
+from mighty.models import Email, Phone
+
+UserModel = get_user_model()
 
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-    pre_save.connect(signals.pre_change_log, User)
-    post_save.connect(signals.post_change_log, User)
+    pre_save.connect(signals.pre_change_log, UserModel)
+    post_save.connect(signals.post_change_log, UserModel)
 
 def AfterAddAnEmail(sender, instance, **kwargs):
     post_save.disconnect(AfterAddAnEmail, Email)
@@ -49,7 +52,24 @@ if UserConfig.invitation_enable:
     from mighty.models import Invitation
     from mighty.applications.user import choices
 
-    def OnChangeInvitation(sender, instance, **kwargs):
+    def OnStatusChange(sender, instance, **kwargs):
+        if instance.status == choices.STATUS_ACCEPTED:
+            if instance.user and instance.email not in instance.user.get_emails():
+                instance.user.user_email.create(email=instance.email)
+            elif not instance.user:
+                post_save.disconnect(OnStatusChange, sender=Invitation)
+                instance.user, status = UserModel.objects.get_or_create(
+                    last_name=instance.last_name,
+                    first_name=instance.first_name,
+                    email=instance.email,
+                    phone=instance.phone,
+                )
+                instance.user.save()
+                instance.save()
+                post_save.connect(OnStatusChange, Invitation)
+    post_save.connect(OnStatusChange, Invitation)
+
+    def SendMissiveInvitation(sender, instance, **kwargs):
         instance.status = choices.STATUS_ACCEPTED if instance.user else instance.status
         save_need = False
         if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
@@ -69,14 +89,14 @@ if UserConfig.invitation_enable:
                 ctx = {
                     "website": MightyConfig.domain,
                     "by": instance.by.representation,
-                    "invitation_link": UserConfig.invitation_url % {"domain": MightyConfig.domain,  "uid": instance.uid, "token": instance.token}
+                    "link": UserConfig.invitation_url % {"domain": MightyConfig.domain,  "uid": instance.uid, "token": instance.token}
                 }
                 instance.status = choices.STATUS_PENDING
                 instance.missive.html = render_to_string('user/invitation.html', ctx)
                 instance.missive.txt = render_to_string('user/invitation.txt', ctx)
                 instance.missive.save()
         if save_need:
-            post_save.disconnect(OnChangeInvitation, sender=Invitation)
+            post_save.disconnect(SendMissiveInvitation, sender=Invitation)
             instance.save()
-            post_save.connect(OnChangeInvitation, Invitation)
-    post_save.connect(OnChangeInvitation, Invitation)
+            post_save.connect(SendMissiveInvitation, Invitation)
+    post_save.connect(SendMissiveInvitation, Invitation)

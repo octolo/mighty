@@ -11,16 +11,14 @@ if 'phone' in get_form_fields():
     class UserCreationForm(UserCreationForm):
         phone = PhoneNumberField(widget=PhoneNumberPrefixWidget(initial='FR'))
 
-if 'password' not in get_form_fields():
+if 'password1' not in get_form_fields():
     class UserCreationForm(UserCreationForm):
         password1 = None
         password2 = None
 
-        def clean_password1(self):
-            self.cleaned_data["password2"] = None
-
-        def clean_password2(self):
+        def clean(self):
             self.cleaned_data["password1"] = None
+            super().clean()
 
 class UserCreationForm(UserCreationForm):
     class UsernameField(UsernameField):
@@ -35,13 +33,3 @@ class UserCreationForm(UserCreationForm):
         for field in get_form_fields():
             self.fields[field].required = True
 
-
-    def clean_password1(self):
-        self.cleaned_data["password2"] = None
-
-    def clean_password2(self):
-        self.cleaned_data["password1"] = None
-    
-    def save(self, commit=True):
-        self.cleaned_data["password1"] = None
-        user = super().save(commit=False)

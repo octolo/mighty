@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 class Config:
     invitation_enable = True
     invitation_days = 7
-    invitation_url = 'http://%(domain)s/user/tenants/'
+    invitation_url = 'http://%(domain)s/user/tenant/%(uid)s/?token=%(token)s'
 
     class ForeignKey:
         group = setting('TENANT_GROUP', 'auth.Group')

@@ -1,25 +1,24 @@
-from django.db.models.signals import post_save, pre_save, post_delete
-from django.conf import settings
-from mighty.apps import MightyConfig
-from mighty.applications.logger import signals
 from mighty.applications.tenant.apps import TenantConfig
 
 if TenantConfig.invitation_enable:
+    from django.conf import settings
+    from django.contrib.auth import get_user_model
+    from django.db.models.signals import post_save, pre_save, post_delete
+    from django.template.loader import render_to_string
+    
+    from mighty.apps import MightyConfig
+    from mighty.applications.logger import signals
     from mighty.applications.tenant import get_tenant_model
     from mighty.applications.user import choices
-    from django.template.loader import render_to_string
     Invitation = get_tenant_model(settings.TENANT_INVITATION)
 
     def OnStatusChange(sender, instance, **kwargs):
         post_save.disconnect(OnStatusChange, sender=Invitation)
-
-        from django.contrib.auth import get_user_model
         if instance.status == choices.STATUS_ACCEPTED:
             kwargs = {
                 'user': get_user_model().objects.get(user_email__email=instance.email),
                 'invitation': instance,
             }
-
             if instance.tenant:
                 TenantModel = get_tenant_model(TenantConfig.ForeignKey.alternate)
                 kwargs.update({'tenant': instance.tenant})
@@ -28,8 +27,6 @@ if TenantConfig.invitation_enable:
                 kwargs.update({'group': instance.group})
             instance.content_object, status = TenantModel.objects.get_or_create(**kwargs)
             instance.save()
-
-
         post_save.connect(OnStatusChange, Invitation)
     post_save.connect(OnStatusChange, Invitation)
 
@@ -53,7 +50,7 @@ if TenantConfig.invitation_enable:
                 ctx = {
                     "company": str(instance.group),
                     "by": instance.by.representation,
-                    "tenants_link": TenantConfig.invitation_url % { "domain": MightyConfig.domain }
+                    "link": TenantConfig.invitation_url % { "domain": MightyConfig.domain, "uid": instance.uid, "token": instance.token }
                 }
                 instance.missive.html = render_to_string('tenant/invitation.html', ctx)
                 instance.missive.txt = render_to_string('tenant/invitation.txt', ctx)

@@ -192,10 +192,10 @@ class User(AbstractUser, Base, Image):
                 exist = False
         return username
 
-    def get_mails(self):
+    def get_emails(self):
         return self.user_email.all().values_list('email', flat=True)
 
-    def in_mails(self):
+    def in_emails(self):
         if self.email:
             try:
                 self.user_email.get(email=self.email)
@@ -220,7 +220,7 @@ class User(AbstractUser, Base, Image):
         if self.username is not None: self.username = self.username.lower()
         else: self.username = self.gen_username()
         super(User, self).save(*args, **kwargs)
-        self.in_mails()
+        self.in_emails()
         self.in_phones()
 
 class Invitation(Base):
@@ -289,16 +289,9 @@ class Invitation(Base):
         if self.fullname: return self.fullname
         return self.uid
 
-    def accepted(self):
+    def accepted(self, user=None):
         self.status = choices.STATUS_ACCEPTED
-        UserModel = get_user_model()
-        self.user, status = UserModel.objects.get_or_create(
-            last_name=self.last_name,
-            first_name=self.first_name,
-            email=self.email,
-            phone=self.phone,
-        )
-        self.user.save()
+        if user: self.user = user
         self.save()
 
     def refused(self):

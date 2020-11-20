@@ -84,7 +84,7 @@ class InvitationDetail(DetailView):
             action = 'expired'
             invitation.save()
         elif action == 'accepted':
-            invitation.accepted()
+            invitation.accepted(user=self.request.user if self.request.user.is_authenticated else None)
             invitation.save()
         elif action == 'refused':
             invitation.refused()
@@ -158,7 +158,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
                 action = 'expired'
                 invitation.save()
             elif action == 'accepted':
-                invitation.accepted()
+                invitation.accepted(user=self.request.user if self.request.user.is_authenticated else None)
                 invitation.save()
             elif action == 'refused':
                 invitation.refused()
