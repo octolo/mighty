@@ -24,7 +24,9 @@ class TenantList(ListView):
         {
             "uid": tenant.uid,
             "status": tenant.status,
+            "company_representative": tenant.company_representative,
             "group": {
+                "uid": str(tenant.group.uid),
                 "denomination": str(tenant.group.denomination),
                 "image_url": str(tenant.group.image_url)
             }
@@ -113,6 +115,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
                 "status": tenant.status,
                 "company_representative": tenant.company_representative,
                 "group": {
+                    "uid": str(tenant.group.uid),
                     "denomination": str(tenant.group.denomination),
                     "image_url": str(tenant.group.image_url)
                 }
