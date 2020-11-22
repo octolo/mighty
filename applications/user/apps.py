@@ -12,6 +12,9 @@ class Config:
         missive = 'mighty.Missive'
         invitation = 'mighty.Invitation'
         nationalities = 'mighty.Nationality'
+        email = 'mighty.Email'
+        phone = 'mighty.Phone'
+        address = 'mighty.UserAddress'
         user = settings.AUTH_USER_MODEL
         optional = False
 
