@@ -8,6 +8,8 @@ from django.core.validators import EmailValidator, ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
+from phonenumber_field.validators import validate_international_phonenumber
+
 from mighty.models import Invitation
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.user.apps import UserConfig
@@ -62,6 +64,17 @@ class EmailAlreadyExist(AlreadyExist):
 class PhoneAlreadyExist(AlreadyExist):
     model = Phone
     test_field = 'phone'
+
+    def get_queryset(self, queryset=None):
+        try:
+            phone = "+" + self.request.GET.get('exist')
+            validate_international_phonenumber(phone)
+            self.model.objects.get(**{self.test_field: phone})
+        except self.model.DoesNotExist:        
+            return { "found": 0 }
+        except ValidationError:
+            return { "found": 2 }
+        return { "found": 1 }
 
 class InvitationDetail(DetailView):
     model = Invitation
