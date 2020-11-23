@@ -5,7 +5,6 @@ from mighty.applications.address import translates as _, fields
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
 class Address(Base):
     search_fields = ['locality', 'postal_code']
-    default = models.BooleanField(default=False)
     address = models.CharField(_.address, max_length=255, null=True, blank=True)
     complement = models.CharField(_.complement, max_length=255, null=True, blank=True)
     locality = models.CharField(_.locality, max_length=255, null=True, blank=True)
@@ -17,7 +16,6 @@ class Address(Base):
     cedex = models.CharField(_.cedex, max_length=255, null=True, blank=True)
     cedex_code = models.CharField(_.cedex_code, max_length=255, null=True, blank=True)
     special = models.CharField(max_length=255, null=True, blank=True)
-    complement = models.CharField(max_length=255, null=True, blank=True)
     index = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:

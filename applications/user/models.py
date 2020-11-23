@@ -25,11 +25,19 @@ from datetime import datetime
 import uuid, logging
 logger = logging.getLogger(__name__)
 
-class Email(Base):
+class Data(models.Model):
+    default = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+class Email(Data, Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_email')
     email = models.EmailField(_.email, unique=True)
-    default = models.BooleanField(default=False)
     search_fields = ('email',)
+
+    def __str__(self):
+        return "%s - %s" % (str(self.user), self.email)
 
     class Meta(Base.Meta):
         abstract = True
@@ -38,11 +46,13 @@ class Email(Base):
     def masking(self):
         return masking_email(self.email)
 
-class Phone(Base):
+class Phone(Data, Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
     phone = PhoneNumberField(_.phone, unique=True)
-    default = models.BooleanField(default=False)
     search_fields = ('phone',)
+
+    def __str__(self):
+        return "%s - %s" % (str(self.user), self.phone)
 
     class Meta(Base.Meta):
         abstract = True
@@ -51,8 +61,11 @@ class Phone(Base):
     def masking(self):
         return masking_phone(self.phone)
 
-class UserAddress(Address):
+class UserAddress(Data, Address):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_address')
+
+    def __str__(self):
+        return "%s - %s" % (str(self.user), self.representation)
 
     class Meta(Base.Meta):
         abstract = True
@@ -192,8 +205,10 @@ class User(AbstractUser, Base, Image):
                 exist = False
         return username
 
-    def get_emails(self):
-        return self.user_email.all().values_list('email', flat=True)
+    def get_emails(self, flat=True):
+        if flat:
+            return self.user_email.all().values_list('email', flat=True)
+        return self.user_email.all()
 
     def in_emails(self):
         if self.email:
@@ -204,8 +219,10 @@ class User(AbstractUser, Base, Image):
             self.user_email.exclude(email=self.email).update(default=False)
 
 
-    def get_phones(self):
-        return self.user_phone.all().values_list('phone', flat=True)
+    def get_phones(self, flat=True):
+        if flat:
+            return self.user_phone.all().values_list('phone', flat=True)
+        return self.user_phone.all()
 
     def in_phones(self):
         if self.phone:
@@ -214,6 +231,14 @@ class User(AbstractUser, Base, Image):
             except ObjectDoesNotExist:
                 self.user_phone.create(phone=self.phone, default=True)
             self.user_phone.exclude(phone=self.phone).update(default=False)
+
+    def get_addresses(self, flat=True):
+        if flat:
+            return self.user_address.all().values_list('phone', flat=True)
+        return self.user_address.all()
+
+    def in_address(self):
+        pass
 
     def save(self, *args, **kwargs):
         if self.email is not None: self.email = self.email.lower()
