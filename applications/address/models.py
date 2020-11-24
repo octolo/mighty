@@ -33,4 +33,4 @@ class Address(Base):
         return " ".join([str(ad) for ad in [self.postal_code, self.locality] if ad]).strip()
 
     def representation(self):
-        return "%s%s" % ('*' if self.default else '', " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)]))
+        return " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])

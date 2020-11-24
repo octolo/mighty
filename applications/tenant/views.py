@@ -121,7 +121,6 @@ if 'rest_framework' in settings.INSTALLED_APPS:
                 }
             } for tenant in self.get_queryset()])
 
-
     class InvitationList(ListAPIView):
         def get_queryset(self, queryset=None):
             return Invitation.objects.filter(email__in=self.request.user.get_emails())
