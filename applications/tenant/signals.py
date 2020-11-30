@@ -10,7 +10,8 @@ if TenantConfig.invitation_enable:
     from mighty.applications.logger import signals
     from mighty.applications.tenant import get_tenant_model
     from mighty.applications.user import choices
-    Invitation = get_tenant_model(settings.TENANT_INVITATION)
+    from mighty.applications.tenant.apps import TenantConfig
+    Invitation = get_tenant_model(TenantConfig.ForeignKey.invitation)
 
     def OnStatusChange(sender, instance, **kwargs):
         post_save.disconnect(OnStatusChange, sender=Invitation)

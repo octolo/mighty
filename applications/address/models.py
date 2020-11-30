@@ -24,13 +24,16 @@ class Address(Base):
         verbose_name_plural = _.vp_address
 
     def __str__(self):
-        return "%s%s" % ('*' if self.default else '', " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)]))
+        return self.representation
 
+    @property
     def street(self):
         return  " ".join([str(ad) for ad in [self.street_number, self.way, self.route] if ad]).strip()
 
+    @property
     def city(self):
         return " ".join([str(ad) for ad in [self.postal_code, self.locality] if ad]).strip()
 
+    @property
     def representation(self):
         return " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])

@@ -5,8 +5,6 @@ try:
     from django.db.models import JSONField
 except Exception:
     from jsonfield import JSONField
-#if 'ckeditor' in settings.INSTALLED_APPS: from ckeditor.fields import RichTextField
-#elif 'tinymce' in settings.INSTALLED_APPS: from tinymce.models import HTMLField as RichTextField
 
 # Fields mighty
 base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search')

@@ -12,7 +12,6 @@ from mighty.functions import masking_email, masking_phone
 from mighty.applications.address.models import Address
 
 from phonenumber_field.modelfields import PhoneNumberField
-from ckeditor.fields import RichTextField
 from django_ckeditor_5.fields import CKEditor5Field
 
 class Missive(Base):

@@ -43,7 +43,7 @@ class Tenant(Base):
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="roles_tenant", blank=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="user_tenant", null=True, blank=True)
     company_representative = models.CharField(max_length=255, blank=True, null=True)
-    invitation = models.ForeignKey(settings.TENANT_INVITATION, on_delete=models.CASCADE, related_name="invitation_tenant", null=True, blank=True, editable=False)
+    invitation = models.ForeignKey(conf.ForeignKey.invitation, on_delete=models.CASCADE, related_name="invitation_tenant", null=True, blank=True, editable=False)
 
     objects = models.Manager()
     objectsB = managers.TenantManager()
@@ -67,11 +67,11 @@ class Tenant(Base):
         return choices.ALTERNATE_MAIN
 
 class TenantAlternate(Base):
-    tenant = models.ForeignKey(settings.TENANT_MODEL, on_delete=models.CASCADE, related_name="tenant_alternate")
+    tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="tenant_alternate")
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="user_tenantalternate")
     status = models.CharField(max_length=10, choices=choices.ALTERNATE, default=choices.ALTERNATE_DEFAULT)
     position = models.PositiveSmallIntegerField(blank=True, null=True)
-    invitation = models.ForeignKey(settings.TENANT_INVITATION, on_delete=models.CASCADE, related_name="invitation_tenantalternate", null=True, blank=True, editable=False)
+    invitation = models.ForeignKey(conf.ForeignKey.invitation, on_delete=models.CASCADE, related_name="invitation_tenantalternate", null=True, blank=True, editable=False)
 
     objects = models.Manager()
     objectsB = managers.TenantAlternateManager()
@@ -104,7 +104,7 @@ class TenantInvitation(Base):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'model__icontains': 'tenant'})
     object_id = models.PositiveIntegerField(blank=True, null=True)
     content_object = GenericForeignKey('content_type', 'object_id')
-    tenant = models.ForeignKey(settings.TENANT_MODEL, on_delete=models.SET_NULL, related_name="tenant_invitation", blank=True, null=True)
+    tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.SET_NULL, related_name="tenant_invitation", blank=True, null=True)
     
     status = models.CharField(max_length=8, choices=user_choices.STATUS, default=user_choices.STATUS_NOTSEND)
     token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)

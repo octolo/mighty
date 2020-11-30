@@ -8,7 +8,7 @@ from mighty.models.keyword import Keyword
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 from mighty.functions import make_searchable
 
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 
 ###########################
 # Models in mighty
@@ -55,7 +55,7 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 class News(Base, Keyword):
     keywords_fields = ['title',]
     title = models.CharField(max_length=255)
-    news = RichTextField(blank=True, null=True)
+    news = CKEditor5Field(blank=True, null=True)
     date_news = models.DateField(blank=True, null=True)
 
     class Meta(Base.Meta):
