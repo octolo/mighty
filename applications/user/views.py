@@ -53,11 +53,11 @@ class EmailAlreadyExist(AlreadyExist):
     model = Email
     test_field = 'email'
 
-    def get_queryset(self, queryset=None):
+    def check_exist(self):
         validator = EmailValidator()
         try:
             validator(self.request.GET.get('exist'))
-            return super().get_queryset(queryset)
+            return super().check_exist()
         except ValidationError:
             return { "found": 2 }    
 
@@ -65,11 +65,11 @@ class PhoneAlreadyExist(AlreadyExist):
     model = Phone
     test_field = 'phone'
 
-    def get_queryset(self, queryset=None):
+    def check_exist(self):
         try:
             phone = "+" + self.request.GET.get('exist')
             validate_international_phonenumber(phone)
-            self.model.objects.get(**{self.test_field: phone})
+            return super().check_exist()
         except self.model.DoesNotExist:        
             return { "found": 0 }
         except ValidationError:

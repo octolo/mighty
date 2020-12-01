@@ -21,6 +21,7 @@ import uuid, logging
 logger = logging.getLogger(__name__)
 
 class Role(Base):
+    search_fields = ['name']
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_role")
     name = models.CharField(max_length=255, unique=True)
 
@@ -32,6 +33,9 @@ class Role(Base):
 
     def __str__(self):
         return self.name.title()
+
+    def count(self):
+        return self.sql_count if hasattr(self, 'sql_count') else self.roles_tenant.all().count()
 
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
@@ -48,9 +52,6 @@ class Tenant(Base):
     objects = models.Manager()
     objectsB = managers.TenantManager()
 
-    def __str__(self):
-        return "%s , %s" % (str(self.user) if self.user else self.invitation, str(self.group))
-
     class Meta:
         abstract = True
         verbose_name = _.v_tenant
@@ -58,13 +59,32 @@ class Tenant(Base):
         unique_together = ('user', 'group')
         permissions = [(CHAT_WITH_TENANTUSERS, _.perm_chat_tenantusers)]
 
+    def __str__(self):
+        return self.representation
+
     @property
     def representation(self):
-        return self.user.representation if self.user else self.invitation.representation
+        return "%s , %s" % (str(self.user), str(self.group))
 
     @property
     def status(self):
         return choices.ALTERNATE_MAIN
+
+    @property
+    def fullname(self):
+        return self.user.fullname
+
+    @property
+    def image_url(self):
+        return self.user.image_url
+
+    @property
+    def str_group(self):
+        return str(self.group)
+
+    @property
+    def uid_group(self):
+        return str(self.group.uid)
 
 class TenantAlternate(Base):
     tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="tenant_alternate")
@@ -78,10 +98,15 @@ class TenantAlternate(Base):
 
     class Meta:
         abstract = True
-        unique_together = ('tenant', 'user')
+        unique_together = ('user', 'tenant')
+        permissions = [(CHAT_WITH_TENANTUSERS, _.perm_chat_tenantusers)]
 
     def __str__(self):
-        return "%s , %s" % (str(self.user) if self.user else self.invitation, str(self.group))
+        return self.representation
+
+    @property
+    def representation(self):
+        return "%s , %s" % (str(self.user), str(self.group))
 
     @property
     def group(self):
@@ -92,8 +117,20 @@ class TenantAlternate(Base):
         return self.tenant.company_representative
 
     @property
+    def fullname(self):
+        return self.user.fullname
+
+    @property
     def roles(self):
         return self.tenant.roles
+
+    @property
+    def str_group(self):
+        return str(self.group)
+
+    @property
+    def uid_group(self):
+        return str(self.group.uid)
 
 class TenantInvitation(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_tenantinv")

@@ -1,6 +1,11 @@
 from django.db import models
 #from tenant import queries as q
 
+class RoleManager(models.Manager.from_queryset(models.QuerySet)):
+    def get_queryset(self):
+        return super().get_queryset()\
+            .annotate(sql_count=models.Count('roles_tenant'))
+
 Selected_related = ('group', 'user', 'invitation')
 Prefetch_related = ('roles',)
 class TenantManager(models.Manager.from_queryset(models.QuerySet)):

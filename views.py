@@ -207,15 +207,20 @@ class ExportView(ListView):
         return response
 
 class AlreadyExist(TemplateView):
+    test_field = None
+
     def get_queryset(self, queryset=None):
+        self.model.objects.get(**{self.test_field: self.request.GET.get('exist')})
+
+    def check_exist(self):
         try:
-            self.model.objects.get(**{self.test_field: self.request.GET.get('exist')})
+            self.get_queryset()
         except self.model.DoesNotExist:        
             return { "found": 0 }
         return { "found": 1 }
 
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(self.get_queryset(), safe=False, **response_kwargs)
+        return JsonResponse(self.check_exist(), safe=False, **response_kwargs)
 
 class Widget(TemplateView):
     def get_context_data(self, **kwargs):
