@@ -25,6 +25,9 @@ class Role(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_role")
     name = models.CharField(max_length=255, unique=True)
 
+    objects = models.Manager()
+    objectsB = managers.RoleManager()
+
     class Meta:
         abstract = True
         verbose_name = _.v_role

@@ -27,25 +27,29 @@ class Filter(Verify):
     #################
     # Verify
     #################
-    def verify_field(self, exclude=False):
+    def verify_field(self):
         if not self.field:
             msg = "field can't be empty!"
             logger.debug('filter %s: %s' % (self.id, msg))
             return msg
 
-    def used(self, exclude=False):
+    @property
+    def negative_param(self):
+        return NEGATIVE+self.param
+
+    def used(self):
         return True
 
     #################
     # Dependency
     #################
-    def get_dependencies(self, exclude=False):
+    def get_dependencies(self):
         return reduce(operator.and_, [dep.sql(self.request) for dep in self.dependencies]) if self.dependencies else False
 
     ################
     # Value
     ################
-    def get_value(self, exclude=False):
+    def get_value(self):
         return self.value
 
     def format_value(self, value):
@@ -57,32 +61,37 @@ class Filter(Verify):
     ###############
     # Sql
     ##############
-    def get_Q(self, exclude=False):
-        value = self.get_value(exclude)
+    def get_Q(self):
+        value = self.get_value()
+        if self.is_negative:
+            return ~Q(**{self.get_field(value): self.format_value(value)})
         return Q(**{self.get_field(value): self.format_value(value)})
 
-    def sql(self, request=None, exclude=False, *args, **kwargs):
+    def sql(self, request=None, *args, **kwargs):
         self.request = request
         self.method = kwargs.get('method', 'GET')
         self.method_request = kwargs.get('method_request', getattr(self.request, self.method))
-        if self.verify(exclude) and self.used(exclude):
-            dep = self.get_dependencies(exclude)
-            sql = self.get_Q(exclude)
+        if self.verify() and self.used:
+            dep = self.get_dependencies()
+            sql = self.get_Q()
             return dep.add(sql, Q.AND) if dep and sql else sql
         return Q()
 
 class ParamFilter(Filter):
-    def used(self, exclude=False):
-        if exclude:
-            return True if self.method_request.get(NEGATIVE+self.param, False) else False
-        return True if self.method_request.get(self.param, False) else False
+    @property
+    def is_negative(self):
+        return True if self.method_request.get(NEGATIVE+self.param, False) else False
 
-    def verify_param(self, exclude=False):
+    @property
+    def used(self):
+        return True if self.method_request.get(self.param, False) else self.is_negative
+
+    def verify_param(self):
         if not self.param:
             return "param can't be empty!"
 
-    def get_value(self, exclude=False):
-        param = NEGATIVE+self.param if exclude else self.param
+    def get_value(self):
+        param = self.negative_param if self.is_negative else self.param
         return self.method_request.get(param)
 
 class ParamChoicesFilter(ParamFilter):
@@ -91,12 +100,12 @@ class ParamChoicesFilter(ParamFilter):
         self.choices_required = kwargs.get('choices_required', False)
         self.mask = kwargs.get('mask', '__iexact')
 
-    def verify_param(self, exclude=False):
+    def verify_param(self):
         if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
 
-    def get_value(self, exclude=False):
-        value = super().get_value(exclude)
+    def get_value(self):
+        value = super().get_value()
         if self.choices_required:
             return value if value in self.choices else False
         return value
@@ -107,12 +116,12 @@ class ParamMultiChoicesFilter(ParamFilter):
         self.choices_required = kwargs.get('choices_required', False)
         self.mask = kwargs.get('mask', '__in')
 
-    def verify_param(self, exclude=False):
+    def verify_param(self):
         if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
 
-    def get_value(self, exclude=False):
-        values = super().get_value(exclude).split(SEPARATOR)
+    def get_value(self):
+        values = super().get_value().split(SEPARATOR)
         if self.choices_required:
             return [value for value in values if value in self.choices]
         return [value for value in values]
@@ -125,23 +134,23 @@ class MultiParamFilter(ParamFilter):
     def get_value(self):
         return super().get_value().split(SEPARATOR)
 
-    def get_Q(self, exclude=False):
-        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value(exclude)])
+    def get_Q(self):
+        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value()])
 
 class SearchFilter(ParamFilter):
     def __init__(self, id='search', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
 
-    def get_value(self, exclude=False):
-        return ['_'+value for value in super().get_value(exclude).split(SEPARATOR)]
+    def get_value(self):
+        return ['_'+value for value in super().get_value().split(SEPARATOR)]
 
-    def get_Q(self, exclude=False):
-        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value(exclude)])
+    def get_Q(self):
+        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value()])
 
 class BooleanParamFilter(ParamFilter):
-    def get_value(self, exclude=False):
-        value = super().get_value(exclude)
+    def get_value(self):
+        value = super().get_value()
         return bool(int(value))
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
@@ -160,9 +169,9 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
     def format_value(self, value):
         return make_float(value)
 
-    def get_Q(self, exclude=False):
+    def get_Q(self):
         theQ = []
-        for value in self.get_value(exclude):
+        for value in self.get_value():
             if '-' in value:
                 value = value.split('-')
                 theQ.append(Q(**{
@@ -184,11 +193,11 @@ class FiltersManager:
     def __init__(self, flts=None):
         self.flts = flts if flts else {}
     
-    def params(self, request, exclude=False):
-        return self.get_filters(request, exclude)
+    def params(self, request):
+        return self.get_filters(request, )
 
-    def get_filters(self, request, exclude=False):
-        filters = [f.sql(request, exclude) for f in self.flts if f.sql(request, exclude)]
+    def get_filters(self, request):
+        filters = [f.sql(request, ) for f in self.flts if f.sql(request, )]
         return filters
 
     def add(self, id_, filter_):
@@ -352,4 +361,4 @@ class Foxid:
         if self.order:
             self.queryset = self.queryset.order_by(*self.order.replace('.', '__').split(SEPARATOR))
         return self.queryset
-        #return [value for value in super().get_value(exclude).split(SEPARATOR)]
+        #return [value for value in super().get_value().split(SEPARATOR)]
