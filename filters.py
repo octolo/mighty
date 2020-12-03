@@ -194,7 +194,7 @@ class FiltersManager:
         self.flts = flts if flts else {}
     
     def params(self, request):
-        return self.get_filters(request, )
+        return self.get_filters(request)
 
     def get_filters(self, request):
         filters = [f.sql(request, ) for f in self.flts if f.sql(request, )]
