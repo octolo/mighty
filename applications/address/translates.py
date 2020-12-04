@@ -58,3 +58,5 @@ country = _('country')
 country_code = _('country code')
 cedex = _('cedex')
 cedex_code = _('cedex code')
+
+validate_postal_state_code = '"%s" or "%s" must be filled' % (postal_code, state_code)

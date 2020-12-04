@@ -141,7 +141,8 @@ class TenantInvitation(Base):
     by = models.ForeignKey(user_conf.ForeignKey.user, on_delete=models.SET_NULL, related_name='by_invitation_tenant', blank=True, null=True)
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="roles_tenantinv", blank=True)
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, limit_choices_to={'model__icontains': 'tenant'})
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE,
+        limit_choices_to=models.Q(model__icontains="tenant")&~models.Q(model__icontains="invitation"))
     object_id = models.PositiveIntegerField(blank=True, null=True)
     content_object = GenericForeignKey('content_type', 'object_id')
     tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.SET_NULL, related_name="tenant_invitation", blank=True, null=True)
