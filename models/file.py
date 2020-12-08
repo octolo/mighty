@@ -35,9 +35,9 @@ class File(models.Model):
     @property
     def file_url(self): return self.file.url
 
-    #@property
-    #def file_name(self):
-    #    return self.filename if self.filename else os.path.basename(self.file.name)
+    @property
+    def file_name(self):
+        return self.filename if self.filename else os.path.basename(self.file.name)
 
     @property
     def valid_file_name(self):
