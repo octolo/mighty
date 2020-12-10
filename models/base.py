@@ -45,6 +45,7 @@ class Base(models.Model):
     create_by = models.CharField(_.create_by, blank=True, editable=False, max_length=254, null=True)
     date_update = models.DateTimeField(_.date_update, auto_now=True, editable=False)
     update_by = models.CharField(_.update_by, blank=True, editable=False, max_length=254, null=True)
+    update_count = models.PositiveBigIntegerField(default=0)
 
     class mighty:
         perm_title = actions
@@ -177,4 +178,6 @@ class Base(models.Model):
 
     def save(self, *args, **kwargs):
         self.set_search()
+        if(self.id or self.uid):
+            self.update_count+=1
         super().save(*args, **kwargs)
