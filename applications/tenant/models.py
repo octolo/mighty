@@ -51,6 +51,7 @@ class Tenant(Base):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="user_tenant", null=True, blank=True)
     company_representative = models.CharField(max_length=255, blank=True, null=True)
     invitation = models.ForeignKey(conf.ForeignKey.invitation, on_delete=models.CASCADE, related_name="invitation_tenant", null=True, blank=True, editable=False)
+    sync = models.CharField(max_length=3, choices=_.SYNC, default=_.MY)
 
     objects = models.Manager()
     objectsB = managers.TenantManager()

@@ -20,3 +20,12 @@ STATE = (
     (2, _('cancelled')),
     (3, _('refused')),
 )
+
+MY = "MY"
+ALL = "ALL"
+NO = "NO"
+SYNC = (
+    (MY, _('my direction')),
+    (ALL, _('all directions')),
+    (NO, _('no direction')),
+)

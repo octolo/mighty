@@ -8,4 +8,4 @@ TenantModel = get_tenant_model()
 class TenantSerializer(ModelSerializer):
     class Meta:
         model = TenantModel
-        fields = ('uid', 'fullname', 'str_group', 'uid_group')
+        fields = ('uid', 'fullname', 'str_group', 'uid_group', 'sync')

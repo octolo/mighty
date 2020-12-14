@@ -46,6 +46,7 @@ class Base(models.Model):
     date_update = models.DateTimeField(_.date_update, auto_now=True, editable=False)
     update_by = models.CharField(_.update_by, blank=True, editable=False, max_length=254, null=True)
     update_count = models.PositiveBigIntegerField(default=0)
+    note = models.TextField(blank=True, null=True)
 
     class mighty:
         perm_title = actions
