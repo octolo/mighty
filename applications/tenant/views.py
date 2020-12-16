@@ -3,20 +3,66 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.core.validators import  ValidationError
+from django.db.models import Q
 
-from mighty.views import DetailView, ListView
+from mighty import filters
+from mighty.views import DetailView, ListView, AlreadyExist
 from mighty.applications.user.choices import STATUS_PENDING
-from mighty.applications.tenant import get_tenant_model
+from mighty.applications.tenant.apps import TenantConfig
+from mighty.applications.tenant import get_tenant_model, filters as tenant_filters
 from itertools import chain
 
-Invitation = get_tenant_model(settings.TENANT_INVITATION)
+Role = get_tenant_model(TenantConfig.ForeignKey.role)
+Invitation = get_tenant_model(TenantConfig.ForeignKey.invitation)
+TenantModel = get_tenant_model(TenantConfig.ForeignKey.tenant)
+TenantAlternate = get_tenant_model(TenantConfig.ForeignKey.alternate)
+TenantGroup = get_tenant_model(TenantConfig.ForeignKey.group)
 
+
+
+@method_decorator(login_required, name='dispatch')
+class RoleList(ListView):
+    filters = [
+        filters.SearchFilter(),
+        tenant_filters.SearchByGroupUid(),
+        tenant_filters.SearchByRoleUid(field='uid')
+    ]
+
+    def get_queryset(self, queryset=None):
+        group = Q(group__in=self.request.user.user_tenant.all().values_list('group', flat=True))
+        self.queryset = Role.objectsB.filter(group)
+        return super().get_queryset(queryset)
+
+    def get_context_data(self, **kwargs):
+        return [{
+            'uid': role.uid,
+            'name': role.name,
+            'is_immutable': role.is_immutable,
+            'group': role.group.uid,
+        } for role in self.get_queryset()]
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context, safe=False, **response_kwargs)
+
+@method_decorator(login_required, name='dispatch')
+class RoleAlreadyExist(AlreadyExist):
+    test_field = "name__iexact"
+    model = Role
+
+    def get_queryset(self, queryset=None):
+        try:
+            group = TenantGroup.objects.get(uid=self.request.GET.get('group'))
+            self.model.objects.get(**{self.test_field: self.request.GET.get('exist'), "group": group})
+        except TenantGroup.DoesNotExist:
+            assert ValidationError('group mandatory')
 
 @method_decorator(login_required, name='dispatch')
 class TenantList(ListView):
     def get_queryset(self, queryset=None):
-        qs1 = get_tenant_model(settings.TENANT_MODEL).objectsB.filter(user=self.request.user)
-        qs2 = get_tenant_model(settings.TENANT_ALTERNATE).objectsB.filter(user=self.request.user)
+        print('tatatatata')
+        qs1 = TenantModel.objectsB.filter(user=self.request.user)
+        qs2 = TenantAlternate.objectsB.filter(user=self.request.user)
         return list(chain(qs1, qs2))
         
     def get_context_data(self, **kwargs):
@@ -98,6 +144,7 @@ class InvitationDetail(DetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
+
 
 if 'rest_framework' in settings.INSTALLED_APPS:
     from rest_framework.generics import RetrieveAPIView, ListAPIView

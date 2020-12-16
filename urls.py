@@ -28,6 +28,14 @@ if "mighty.applications.user" in settings.INSTALLED_APPS:
     if hasattr(urls_user, 'api_urlpatterns'):
         api_urlpatterns += urls_user.api_urlpatterns
 
+# Enable app tenant
+if "mighty.applications.tenant" in settings.INSTALLED_APPS:
+    from mighty.applications.tenant import urls as urls_tenant
+    if hasattr(urls_tenant, 'urlpatterns'):
+        urlpatterns += urls_tenant.urlpatterns
+    if hasattr(urls_tenant, 'api_urlpatterns'):
+        api_urlpatterns += urls_tenant.api_urlpatterns
+
 # Enable app twofactor
 if "mighty.applications.twofactor" in settings.INSTALLED_APPS:
     from mighty.applications.twofactor import urls as urls_twofactor

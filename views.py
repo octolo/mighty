@@ -8,6 +8,8 @@ from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.http import JsonResponse, HttpResponse
 
+
+from mighty.filters import FiltersManager, Foxid
 from mighty.models import ConfigClient
 from mighty.apps import MightyConfig as conf
 from mighty.functions import tpl, tplx
@@ -99,6 +101,20 @@ class TemplateView(BaseView, TemplateView):
 
 # ListView overrided
 class ListView(ModelView, ListView):
+    cache_manager = None
+    filters = []
+
+    def foxid(self, queryset):
+        return Foxid(queryset, self.request, f=self.manager.flts).ready()
+
+    @property
+    def manager(self):
+        self.cache_manager = self.cache_manager if self.cache_manager else FiltersManager(flts=self.filters)
+        return self.cache_manager
+
+    def get_queryset(self, queryset=None):
+        return self.foxid(super().get_queryset()).filter(*self.manager.params(self.request))
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({"title": self.model._meta.verbose_name_plural,})

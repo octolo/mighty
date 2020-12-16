@@ -9,6 +9,20 @@ class Config:
     invitation_days = 7
     invitation_url = 'http://%(domain)s/user/tenant/%(uid)s/?token=%(token)s'
 
+    class Default:
+        group = [
+            {
+                'name': 'manager',
+                'is_immutable': True,
+            },
+            {
+                'name': 'comptable',
+            },
+            {
+                'name': 'ressources humaines',
+            },
+        ]
+
     class ForeignKey:
         group = setting('TENANT_GROUP', 'auth.Group')
         role = setting('TENANT_ROLE', 'mighty.Role')

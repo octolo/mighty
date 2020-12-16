@@ -7,7 +7,7 @@ except Exception:
     from jsonfield import JSONField
 
 # Fields mighty
-base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search')
+base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search', 'update_count')
 logfield = ('alerts',)
 image = ('image',)
 image_url = ('image_url',)

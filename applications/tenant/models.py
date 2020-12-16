@@ -24,6 +24,7 @@ class Role(Base):
     search_fields = ['name']
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_role")
     name = models.CharField(max_length=255, unique=True)
+    is_immutable = models.BooleanField(default=False)
 
     objects = models.Manager()
     objectsB = managers.RoleManager()

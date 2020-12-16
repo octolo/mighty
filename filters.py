@@ -67,10 +67,21 @@ class Filter(Verify):
             return ~Q(**{self.get_field(value): self.format_value(value)})
         return Q(**{self.get_field(value): self.format_value(value)})
 
+    def get_data(self, request):
+        data = {}
+        if hasattr(request, 'GET'):
+            data.update(request.GET.dict())
+        if hasattr(request, 'POST'):
+            if request.POST:
+                data.update({key: value for key, value in request.POST.dict().items()})
+            elif hasattr(request, 'data'):
+                data.update(request.data)
+        return data
+
     def sql(self, request=None, *args, **kwargs):
         self.request = request
-        self.method = kwargs.get('method', 'GET')
-        self.method_request = kwargs.get('method_request', getattr(self.request, self.method))
+        self.method = getattr(request, 'method', 'GET')
+        self.method_request = self.get_data(request)
         if self.verify() and self.used:
             dep = self.get_dependencies()
             sql = self.get_Q()
@@ -193,11 +204,22 @@ class FiltersManager:
     def __init__(self, flts=None):
         self.flts = flts if flts else {}
     
+    def get_data(self, request):
+        data = {}
+        if hasattr(request, 'GET'):
+            data.update(request.GET.dict())
+        if hasattr(request, 'POST'):
+            if request.POST:
+                data.update({key: value for key, value in request.POST.dict().items()})
+            elif hasattr(request, 'data'):
+                data.update(request.data)
+        return data
+
     def params(self, request):
         return self.get_filters(request)
 
     def get_filters(self, request):
-        filters = [f.sql(request, ) for f in self.flts if f.sql(request, )]
+        filters = [f.sql(request) for f in self.flts if f.sql(request)]
         return filters
 
     def add(self, id_, filter_):

@@ -4,8 +4,7 @@ from mighty.applications.address import translates as _, fields
 from django.core.exceptions import ValidationError
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
-class Address(Base):
-    search_fields = ['locality', 'postal_code']
+class AddressNoBase(models.Model):
     address = models.CharField(_.address, max_length=255)
     complement = models.CharField(_.complement, max_length=255, null=True, blank=True)
     locality = models.CharField(_.locality, max_length=255)
@@ -27,13 +26,19 @@ class Address(Base):
     def __str__(self):
         return self.representation
 
+    @property
     def check_postal_state_code(self):
         if not self.postal_code and not self.state_code:
-            raise ValidationError(_.validate_postal_state_code)
+            return False
+        return True
     
+    def clean_postal_state_code(self):
+        if not self.check_postal_state_code:
+            raise ValidationError(_.validate_postal_state_code)
+
     def clean(self):
-        self.check_postal_state_code()
-        
+        self.clean_postal_state_code()
+        super().clean()
 
     @property
     def street(self):
@@ -52,5 +57,13 @@ class Address(Base):
         return fields
 
     def save(self, *args, **kwargs):
-        self.check_postal_state_code()
+        self.clean_postal_state_code()
         super().save(*args, **kwargs)
+
+class Address(AddressNoBase, Base):
+    search_fields = ['locality', 'postal_code']
+
+    class Meta:
+        abstract = True
+        verbose_name = _.v_address
+        verbose_name_plural = _.vp_address

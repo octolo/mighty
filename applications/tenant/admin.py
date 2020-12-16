@@ -4,6 +4,8 @@ from mighty.applications.tenant import fields
 
 class RoleAdmin(BaseAdmin):
     view_on_site = False
+    search_fields = ('name', 'group__search')
+    list_display = ('name', 'is_immutable', 'group')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.role}),)
 
 class TenantAdmin(BaseAdmin):
