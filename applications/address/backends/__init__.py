@@ -6,6 +6,26 @@ class SearchBackend:
     def in_error(self, message):
         self.message = message
 
+    def get_dict(self, source):
+        return {
+            'raw': None,
+            'id': None,
+            'address': None,
+            'complement': None,
+            'locality': None,
+            'postal_code': None,
+            'state': None,
+            'state_code': None,
+            'country': None,
+            'country_code': None,
+            'cedex': None,
+            'cedex_code': None,
+            'special': None,
+            'index': None,
+            'latitude': None,
+            'longitude': None,
+            'source': source
+        }
 
     def get_location(self, search):
         raise NotImplementedError("Subclasses should implement get_companies()")

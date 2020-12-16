@@ -43,6 +43,13 @@ if "mighty.applications.twofactor" in settings.INSTALLED_APPS:
     if hasattr(urls_twofactor, 'api_urlpatterns'):
         api_urlpatterns += urls_twofactor.api_urlpatterns
 
+# Enable app address
+if "mighty.applications.address" in settings.INSTALLED_APPS:
+    from mighty.applications.address import urls as urls_address
+    if hasattr(urls_address, 'api_urlpatterns'):
+        api_urlpatterns += urls_address.api_urlpatterns
+
+
 # Enable app grapher
 if "mighty.applications.grapher" in settings.INSTALLED_APPS:
     from mighty.applications.grapher import urls as urls_grapher

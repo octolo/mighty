@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
 class AddressNoBase(models.Model):
+    backend_id = models.CharField(_.address, max_length=255)
     address = models.CharField(_.address, max_length=255)
     complement = models.CharField(_.complement, max_length=255, null=True, blank=True)
     locality = models.CharField(_.locality, max_length=255)
@@ -17,6 +18,9 @@ class AddressNoBase(models.Model):
     cedex_code = models.CharField(_.cedex_code, max_length=255, null=True, blank=True)
     special = models.CharField(max_length=255, null=True, blank=True)
     index = models.CharField(max_length=255, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    source = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         abstract = True
