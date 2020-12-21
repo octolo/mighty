@@ -78,6 +78,19 @@ Return a key
 def key(size=32, generator=string.hexdigits):
     return "".join(random.choice(generator) for x in range(size))
 
+# Generate unique code for model
+def generate_code(obj, *args, **kwargs):
+    number = kwargs.get('number', '')
+    params = kwargs.get('unique', {})
+    size = kwargs.get('size', 6)
+    generator = kwargs.get('generator', string.ascii_uppercase+string.digits)
+    params['code'] = kwargs.get('code', key(size, generator)) + number
+    try:
+        obj.objects.get(**params)
+        return generate_code(model, *args, **kwargs)
+    except ObjectDoesNotExist:
+        return code
+
 """
 Return a code with the length used
 """
@@ -456,7 +469,26 @@ def get_form_model(model_class, **kwargs):
             fields = form_fields
     return DynForm
 
-from django.apps import apps as django_apps
-def get_user_or_invitation_model():
-    app_label, model = conf.user_or_invitation.split('.')
-    return django_apps.get_model(app_label, model.lower())
+def calcul_size(size, unit):
+    return round(float(size/conf.FileSystem.units_mapping[unit][0]), 2)
+
+def human_size(size):
+    for unit, config in conf.FileSystem.units_mapping.items():
+        if size >= config[0]: break
+    return unit, calcul_size(size, unit)
+
+def pretty_size(size, unit=None):
+    if not unit: return human_size(size)
+    return unit, calcul_size(size, unit)
+
+def pretty_long(size, unit):
+    unit = conf.FileSystem.units_mapping[unit][1] if size > 1 else conf.FileSystem.units_mapping[unit][2]
+    return conf.FileSystem.unit % (str(size), unit)
+
+def pretty_size_long(size, unit=None):
+    unit, size = pretty_size(size, unit)
+    return pretty_long(size, unit)
+
+def pretty_size_short(size, unit=None):
+    unit, size = pretty_size(size, unit)
+    return conf.FileSystem.unit % (str(size), unit)

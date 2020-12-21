@@ -66,8 +66,8 @@ class BaseAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not obj.create_by:
-            if hasattr(obj, 'create_by'): obj.create_by = getattr(request.user, 'logname', 'username')
-        if hasattr(obj, 'update_by'): obj.update_by = getattr(request.user, 'logname', 'username')
+            if hasattr(obj, 'create_by'): obj.set_create_by(request.user)
+        if hasattr(obj, 'update_by'):  obj.set_update_by(request.user)
         super().save_model(request, obj, form, change)
 
     def has_enable_permission(self, request, obj=None):

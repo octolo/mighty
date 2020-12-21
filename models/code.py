@@ -8,27 +8,41 @@ generate a unique code from a list of fields
 (set_code) set the code generate
 """
 from django.db import models
-from mighty.functions import make_searchable, split_comment
+from mighty.functions import make_searchable, generate_code
 import re
 
 class Code(models.Model):
-    code_fields = []
     code = models.CharField(max_length=50, blank=True, null=True, editable=False)
 
     class Meta:
         abstract = True
 
-    def get_code(self):
-        code = " ".join([getattr(self, field) for field in self.code_fields if hasattr(self, field)])
-        if code:
-            code = "".join([word[0] for word in code.strip().split() if re.match(re.compile('[a-zA-Z0-9]+'), word)])
-            return make_searchable("%s%s" % (code, int(len(code))+int(self.id))).upper()
+    @property
+    def unique_rule(self):
+        for rule in self._meta.unique_together:
+            if 'code' in rule:
+                return {field: getattr(self, field) for field in rule}
         return None
-    
+
+    def get_code(self):
+        return generate_code(self, rule=self.unique_rule)
+
     def set_code(self):
-        if self.id is not None:
+        if self.id and not self.code:
             self.code = self.get_code()
 
     def save(self, *args, **kwargs):
         self.set_code()
         super().save(*args, **kwargs)
+
+class BasedFields(Code):
+    code_fields = []
+
+    class Meta:
+        abstract = True
+
+    def get_code(self):
+        fields = [getattr(self, field) for field in self.code_fields if hasattr(self, field)]
+        code = "".join([field[0] for field in fields if re.match(re.compile('[a-zA-Z0-9]+'), field)])
+        code = make_searchable(code).upper()
+        return generate_code(self, code=code, rule=self.unique_rule)

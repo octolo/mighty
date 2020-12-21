@@ -22,7 +22,7 @@ class LocationList(TemplateView):
     @property
     def locations(self):
         input_str = self.request.GET.get('location')
-        return address_backend.get_list(input_str) if input_str else []
+        return address_backend.give_list(input_str) if input_str else []
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(self.locations, safe=False, **response_kwargs)
@@ -42,7 +42,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
     class LocationList(ListAPIView):
         def get_queryset(self, queryset=None):
             input_str = self.request.GET.get('location')
-            return address_backend.get_list(input_str) if input_str else []
+            return address_backend.give_list(input_str) if input_str else []
     
         def get(self, request, format=None):
             return Response(self.get_queryset())

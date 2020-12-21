@@ -15,7 +15,7 @@ class Config:
     user_or_invitation = 'auth.UserOrInvitation'
     jwt_enable = False
     days_in_year = 365.25
-    
+
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))
         certificates = "%s/certs" % settings.BASE_DIR
@@ -45,6 +45,19 @@ class Config:
 
     class Channel:
         delimiter = '__'
+
+    class FileSystem:
+        unix = ["permissions", "owner", "group", "size", "modified", "name"]
+        line_template = '%(space)s%(label)s: %(data)s'
+        unit = '%s %s'
+        units_mapping = {
+            'PB': [1<<50, 'petabytes', 'petabyte'],
+            'TB': [1<<40, 'terabytes', 'terabyte'],
+            'GB': [1<<30, 'gigabytes', 'gigabyte'],
+            'MB': [1<<20, 'megabytes', 'megabyte'],
+            'KB': [1<<10, 'kilobytes', 'kilobyte'],
+            'B':  [1<<0,  'bytes',     'byte'],
+        }
 
     class Interpreter:
         _idorarg = 'IDorARG'

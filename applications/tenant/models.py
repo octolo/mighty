@@ -29,7 +29,7 @@ class Role(Base):
     objects = models.Manager()
     objectsB = managers.RoleManager()
 
-    class Meta:
+    class Meta(Base.Meta):
         abstract = True
         verbose_name = _.v_role
         verbose_name_plural = _.vp_role
@@ -57,7 +57,7 @@ class Tenant(Base):
     objects = models.Manager()
     objectsB = managers.TenantManager()
 
-    class Meta:
+    class Meta(Base.Meta):
         abstract = True
         verbose_name = _.v_tenant
         verbose_name_plural = _.vp_tenant
@@ -101,7 +101,7 @@ class TenantAlternate(Base):
     objects = models.Manager()
     objectsB = managers.TenantAlternateManager()
 
-    class Meta:
+    class Meta(Base.Meta):
         abstract = True
         unique_together = ('user', 'tenant')
         permissions = [(CHAT_WITH_TENANTUSERS, _.perm_chat_tenantusers)]
@@ -154,7 +154,7 @@ class TenantInvitation(Base):
     missive = models.ForeignKey(user_conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='missive_tenantinvitation', blank=True, null=True)
     missives = GenericRelation(user_conf.ForeignKey.missive)
 
-    class Meta:
+    class Meta(Base.Meta):
         abstract = True
         unique_together = ('email', 'group')
 

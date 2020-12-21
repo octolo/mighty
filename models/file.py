@@ -14,11 +14,9 @@ Add [file, name, mimetype] field at the model
 from django.db import models
 from django.utils.text import get_valid_filename
 from django.utils.html import format_html
-from mighty.functions import file_directory_path
+from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
 from mighty.fields import JSONField
-import os, magic
-
-import logging
+import os, magic, logging
 logger = logging.getLogger(__name__)
 
 class File(models.Model):
@@ -67,3 +65,8 @@ class File(models.Model):
             self.extracontenttype = self.file._file.content_type_extra
         super(File, self).save(*args, **kwargs)
 
+    def size_long(self, unit=None):
+        return pretty_size_long(self.size, unit) if self.size else None
+
+    def size_short(self, unit=None):
+        return pretty_size_short(self.size, unit) if self.size else None

@@ -42,7 +42,7 @@ class Key(Base):
     key_type = models.CharField(_.key_type, max_length=20, choices=KEY_TYPES, default=CHAR)
     name = models.CharField(max_length=255)
 
-    class Meta:
+    class Meta(Base.Meta):
         abstract = True
         verbose_name = _.v_key
         verbose_name_plural = _.vp_key
@@ -55,7 +55,7 @@ class ExtendGlobal(Base):
     content_object = GenericForeignKey("content_type", "object_id")
     value = models.BinaryField()
 
-    class Meta:
+    class Meta(Base.Meta):
         abstract = True
         verbose_name = _.v_value
         verbose_name_plural = _.vp_value
@@ -66,7 +66,7 @@ class Extend(Base):
     object_id = models.ForeignKey("", on_delete=models.CASCADE, related_name="extend_value")
     value = models.BinaryField()
 
-    class Meta:
+    class Meta(Base.Meta):
         abstract = True
         verbose_name = _.v_value
         verbose_name_plural = _.vp_value
