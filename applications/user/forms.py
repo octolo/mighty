@@ -3,15 +3,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm, UsernameField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 from phonenumber_field.formfields import PhoneNumberField
-
-#from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.user import get_form_fields
 
-if 'phone' in get_form_fields():
-    class UserCreationForm(UserCreationForm):
-        phone = PhoneNumberField(widget=PhoneNumberPrefixWidget(initial='FR'))
+allfields = get_form_fields()
+required = get_form_fields('required')
+optional = get_form_fields('optional')
 
-if 'password1' not in get_form_fields():
+if 'phone' in allfields:
+    class UserCreationForm(UserCreationForm):
+        phone = PhoneNumberField(widget=PhoneNumberPrefixWidget(initial='FR'), required=False)
+
+if 'password1' not in allfields:
     class UserCreationForm(UserCreationForm):
         password1 = None
         password2 = None
@@ -26,10 +28,11 @@ class UserCreationForm(UserCreationForm):
 
     class Meta:
         model = get_user_model()
-        fields = get_form_fields()
+        fields = allfields
 
     def __init__(self, *args, **kwargs):
         super(UserCreationForm, self).__init__(*args, **kwargs)
-        for field in get_form_fields():
-            self.fields[field].required = True
-
+        print(get_form_fields())
+        for field in allfields:
+            if field in required:
+                self.fields[field].required = True

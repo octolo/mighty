@@ -30,7 +30,7 @@ FILETYPE = ['d', '-', '-']
 class FileSystem(models.Model):
     db_size = models.BigIntegerField(blank=True, null=True)
     direction = models.PositiveSmallIntegerField(choices=DIRECTION, default=2)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, blank=True, null=True)
     owner = models.ForeignKey(userModel, on_delete=models.SET_NULL, blank=True, null=True)
 
     class Meta:
@@ -38,19 +38,25 @@ class FileSystem(models.Model):
 
     def calcul_db_size(self, *args, **kwargs):
         excludes = kwargs.get('excludes', [])
+        fltr = kwargs.get('fltr', {})
         size = []
         for key,type_ in self.concrete_fields(excludes).items():
             data = getattr(self, '%s_id' % key) if type_ == 'ForeignKey' else getattr(self, key)
             size.append(getsizeof(data))
         for key,type_ in self.many_fields(excludes).items():
-            size += [getsizeof(key) for key,obj in getattr(self, key).in_bulk().items()]
+            size += [getsizeof(key) for key,obj in getattr(self, key).in_bulk(**fltr).items()]
         return sum(size) if size else None
 
     def save(self, *args, **kwargs):
-        self.db_size = self.calcul_db_size()
-        self.init_ct()
-        self.init_owner()
+        need_post_create = False if not self.pk else True
+        if self.pk: 
+            self.db_size = self.calcul_db_size()
+            self.init_ct()
+            self.init_owner()
         super().save(*args, **kwargs)
+
+    def post_create(self, *args, **kwargs):
+        self.save()
 
     @property
     def file_type(self):
@@ -73,11 +79,11 @@ class FileSystem(models.Model):
         return
 
     def init_ct(self):
-        if self.id and not self.content_type:
+        if not self.content_type:
             self.content_type = ContentType.objects.get_for_model(self)
 
     def init_owner(self):
-        if self.id and not self.owner and (self.create_by or self.update_by):
+        if not self.owner and (self.create_by or self.update_by):
             userid, username = getattr(self, 'create_by', self.update_by).split('.')
             try:
                 self.owner = userModel.objects.get(id=userid)

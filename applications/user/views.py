@@ -8,20 +8,22 @@ from django.core.validators import EmailValidator, ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from phonenumber_field.validators import validate_international_phonenumber
-
 from mighty.models import Invitation
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.user.apps import UserConfig
-from mighty.views import DetailView, CreateView, AlreadyExist
+from mighty.applications.user import fields
+from mighty.views import TemplateView, DetailView, CreateView, CheckData
 from mighty.applications.user.choices import STATUS_PENDING
 from mighty.applications.user.forms import UserCreationForm
-from mighty.models import Email, Phone
+from mighty.models import UserEmail, UserPhone
 
+from phonenumber_field.validators import validate_international_phonenumber
+
+"""
+Base Views
+"""
 UserModel = get_user_model()
-
-@method_decorator(login_required, name='dispatch')
-class UserMe(DetailView):
+class ProfileBase:
     model = UserModel
 
     def get_object(self, queryset=None):
@@ -32,65 +34,26 @@ class UserMe(DetailView):
             user.save()
         return user
 
-    def get_context_data(self, **kwargs):
+    def get_fields(self):
         user = self.get_object()
-        return {
-            "image_url": user.image_url,
-            "username": user.username,
-            "last_name": user.last_name,
-            "first_name": user.first_name,
-            "fullname": user.fullname,
-            "representation": user.representation,
-            "style": user.style,
-            "get_gender_display": user.get_gender_display(),
-            "is_staff": user.is_staff,
-        }
+        user_data = {'uid': str(user.uid)}
+        user_data.update({field: getattr(user, field) for field in fields.profile})
+        return user_data
 
-    def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(context, **response_kwargs)
-
-class EmailAlreadyExist(AlreadyExist):
-    model = Email
-    test_field = 'email'
-
-    def check_exist(self):
-        validator = EmailValidator()
-        try:
-            validator(self.request.GET.get('exist'))
-            return super().check_exist()
-        except ValidationError:
-            return { "found": 2 }    
-
-class PhoneAlreadyExist(AlreadyExist):
-    model = Phone
-    test_field = 'phone'
-
-    def check_exist(self):
-        try:
-            phone = "+" + self.request.GET.get('exist')
-            validate_international_phonenumber(phone)
-            return super().check_exist()
-        except self.model.DoesNotExist:        
-            return { "found": 0 }
-        except ValidationError:
-            return { "found": 2 }
-        return { "found": 1 }
-
-class InvitationDetail(DetailView):
+class InvitationBase:
     model = Invitation
     queryset = Invitation.objects.all()
     slug_field = 'uid'
     slug_url_kwarg = 'uid'
 
     def get_object(self, queryset=None):
-        args = { 
+        args = {
             "uid": self.kwargs.get('uid', None), 
             "status": STATUS_PENDING,
-            "token": self.request.GET.get('token', None)
-        }
+            "token": self.request.GET.get('token', None)}
         return get_object_or_404(Invitation, **args)
 
-    def actions(self):
+    def actions(self, **kwargs):
         invitation = self.get_object()
         action = self.kwargs.get('action')
         if invitation.is_expired:
@@ -102,20 +65,30 @@ class InvitationDetail(DetailView):
         elif action == 'refused':
             invitation.refused()
             invitation.save()
-        return invitation
+        return {field: str(getattr(invitation, field)) for field in fields.invitation[1:]}
 
+"""
+Django Views
+"""
+@method_decorator(login_required, name='dispatch')
+class Profile(ProfileBase, DetailView):
     def get_context_data(self, **kwargs):
-        invitation = self.actions()
-        return { 
-            "by": invitation.by.representation,
-            "email": invitation.email,
-            "status": invitation.status
-        }
+        return self.get_fields()
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
 
-@method_decorator(csrf_exempt, name='dispatch')
+class InvitationDetail(InvitationBase, DetailView):
+    model = Invitation
+    queryset = Invitation.objects.all()
+
+    def get_context_data(self, **kwargs):
+        invitation = self.actions()
+        return self.actions()
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context, **response_kwargs)
+
 class CreateUser(CreateView):
     form_class = UserCreationForm
     template_name = 'mighty/form.html'
@@ -124,64 +97,50 @@ class CreateUser(CreateView):
     def get_success_url(self):
         return reverse('generic-success')
 
+class UserEmailCheck(CheckData):
+    model = UserEmail
+    test_field = 'email'
+
+    def check_data(self):
+        validator = EmailValidator()
+        try:
+            validator(self.request.GET.get('check'))
+            return super().check_exist()
+        except ValidationError as e:
+            return { "code": "002", "error": str(e.message) }
+
+class UserPhoneCheck(CheckData):
+    model = UserPhone
+    test_field = 'phone'
+
+    def check_data(self):
+        try:
+            phone = "+" + self.request.GET.get('check')
+            validate_international_phonenumber(phone)
+            return super().check_exist()
+        except ValidationError as e:
+            return { "code": "002", "error": str(e.message) }    
+
+"""
+DRF Views
+"""
 if 'rest_framework' in settings.INSTALLED_APPS:
-    from rest_framework.generics import RetrieveAPIView
+    from rest_framework.generics import RetrieveAPIView, CreateAPIView
     from rest_framework.response import Response
-    from mighty.applications.user.serializers import UserSerializer
-
-    class UserMe(RetrieveAPIView):
-        def get_object(self, queryset=None):
-            user = self.request.user
-            newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
-            if newstyle != user.style:
-                user.style = newstyle
-                user.save()
-            return user
-
+    from mighty.applications.user.serializers import UserSerializer, CreateUserSerializer
+    from rest_framework.renderers import JSONRenderer
+    from rest_framework.decorators import renderer_classes
+    
+    class Profile(ProfileBase, RetrieveAPIView):
         def get(self, request, format=None):
-            user = self.get_object()
-            return Response({
-                "image_url": user.image_url,
-                "username": user.username,
-                "last_name": user.last_name,
-                "first_name": user.first_name,
-                "fullname": user.fullname,
-                "representation": user.representation,
-                "style": user.style,
-                "get_gender_display": user.get_gender_display(),
-                "is_staff": user.is_staff,
-            })
+            return Response(self.get_fields())
 
-
-    class InvitationDetail(RetrieveAPIView):
+    class InvitationDetail(InvitationBase, RetrieveAPIView):
         permission_classes = ()
 
-        def get_object(self, queryset=None):
-            args = { 
-                "uid": self.kwargs.get('uid', None), 
-                "status": STATUS_PENDING,
-                "token": self.request.GET.get('token', None)
-            }
-            return get_object_or_404(Invitation, **args)
-
-        def actions(self):
-            invitation = self.get_object()
-            action = self.kwargs.get('action')
-            if invitation.is_expired:
-                action = 'expired'
-                invitation.save()
-            elif action == 'accepted':
-                invitation.accepted(user=self.request.user if self.request.user.is_authenticated else None)
-                invitation.save()
-            elif action == 'refused':
-                invitation.refused()
-                invitation.save()
-            return invitation
-
         def get(self, request, uid, action=None, format=None):
-            invitation = self.actions()
-            return Response({
-                "by": invitation.by.representation,
-                "email": invitation.email,
-                "status": invitation.status
-            })
+            return Response(self.actions())
+
+    class CreateUser(CreateAPIView):
+        serializer_class = CreateUserSerializer
+        model = UserModel

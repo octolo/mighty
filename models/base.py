@@ -192,7 +192,11 @@ class Base(models.Model):
         self.save()
 
     def save(self, *args, **kwargs):
+        need_post_create = False if not self.pk else True
         self.set_search()
-        if(self.id or self.uid):
-            self.update_count+=1
+        if self.pk: self.update_count+=1
         super().save(*args, **kwargs)
+        if need_post_create: self.post_create()
+
+    def post_create(self):
+        pass

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class Role(Base):
     search_fields = ['name']
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_role")
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     is_immutable = models.BooleanField(default=False)
 
     objects = models.Manager()
@@ -33,7 +33,8 @@ class Role(Base):
         abstract = True
         verbose_name = _.v_role
         verbose_name_plural = _.vp_role
-        ordering = ["name"]
+        ordering = ["name", "group"]
+        unique_together = ('id', 'group', 'name')
 
     def __str__(self):
         return self.name.title()
@@ -92,18 +93,16 @@ class Tenant(Base):
         return str(self.group.uid)
 
 class TenantAlternate(Base):
-    tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="tenant_alternate")
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="user_tenantalternate")
-    status = models.CharField(max_length=10, choices=choices.ALTERNATE, default=choices.ALTERNATE_DEFAULT)
+    tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="tenant_for_alternate")
+    alternate = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="alternate_tenant")
     position = models.PositiveSmallIntegerField(blank=True, null=True)
-    invitation = models.ForeignKey(conf.ForeignKey.invitation, on_delete=models.CASCADE, related_name="invitation_tenantalternate", null=True, blank=True, editable=False)
 
     objects = models.Manager()
     objectsB = managers.TenantAlternateManager()
 
     class Meta(Base.Meta):
         abstract = True
-        unique_together = ('user', 'tenant')
+        unique_together = ('tenant', 'alternate')
         permissions = [(CHAT_WITH_TENANTUSERS, _.perm_chat_tenantusers)]
 
     def __str__(self):

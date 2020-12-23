@@ -1,4 +1,4 @@
 tenant = ('group', 'user', 'sync', 'invitation', 'roles')
-tenant_alternate = ('user', 'position', 'invitation')
-role = ('group', 'name',)
-tenant_invitation = ('group', 'email', 'by', 'roles', 'content_type', 'object_id', 'tenant', 'status', 'token')
+tenant_alternate = ('tenant', 'alternate', 'position')
+role = ('group', 'name', 'is_immutable')
+tenant_invitation = ('group', 'email', 'by', 'roles', 'tenant', 'status', 'token')

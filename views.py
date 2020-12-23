@@ -8,12 +8,25 @@ from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.http import JsonResponse, HttpResponse
 
-
+from mighty import translates as _
 from mighty.filters import FiltersManager, Foxid
 from mighty.models import ConfigClient
 from mighty.apps import MightyConfig as conf
 from mighty.functions import tpl, tplx
 from mighty.functions import make_searchable, setting
+from mighty.applications.twofactor.apps import TwofactorConfig
+from mighty.applications.nationality.apps import NationalityConfig
+from mighty.applications.user import get_form_fields
+
+base_config = { 
+    'base': {
+        'logo': conf.logo,
+        'email': TwofactorConfig.method.email,
+        'sms': TwofactorConfig.method.sms,
+        'basic': TwofactorConfig.method.basic,
+        'languages': NationalityConfig.availables,
+        'fields': get_form_fields()
+    }}
 
 import logging
 logger = logging.getLogger(__name__)
@@ -222,22 +235,25 @@ class ExportView(ListView):
         response['Content-Disposition'] = 'attachment;filename=%s.csv' % get_valid_filename(make_searchable(self.model._meta.verbose_name))
         return response
 
-class AlreadyExist(TemplateView):
+# Check data side server
+class CheckData(TemplateView):
     test_field = None
 
     def get_queryset(self, queryset=None):
-        self.model.objects.get(**{self.test_field: self.request.GET.get('exist')})
+        self.model.objects.get(**{self.test_field: self.request.GET.get('check')})
 
-    def check_exist(self):
+    def check_data(self):
         try:
             self.get_queryset()
         except self.model.DoesNotExist:        
-            return { "found": 0 }
-        return { "found": 1 }
+            return { "message": _.no_errors }
+        return { "code": "001", "error": _.error_already_exist }
 
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(self.check_exist(), safe=False, **response_kwargs)
+        return JsonResponse(self.check_data(), safe=False, **response_kwargs)
 
+
+# Return an html widget
 class Widget(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -247,27 +263,18 @@ class Widget(TemplateView):
     def get_template_names(self):
         return 'widgets/%s.html' % self.kwargs['widget']
 
-from django.http import JsonResponse
-from mighty.applications.twofactor.apps import TwofactorConfig
-from mighty.applications.nationality.apps import NationalityConfig
-from mighty.models import ConfigClient
-from mighty.applications.user import get_form_fields
-base_config = { 
-    'base': {
-        'email': TwofactorConfig.method.email,
-        'sms': TwofactorConfig.method.sms,
-        'basic': TwofactorConfig.method.basic,
-        'languages': NationalityConfig.availables,
-        'fields': get_form_fields()
-    }}
-
+# Return the base config of mighty
 class Config(TemplateView):
-    def get_context_data(self, **kwargs):
+    def get_config(self):
         return base_config
+
+    def get_context_data(self, **kwargs):
+        return self.get_config()
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
 
+# Return all configs in model ConfigClient
 class ConfigListView(ListView):
     model = ConfigClient
     queryset = ConfigClient.objects.all()
@@ -277,11 +284,11 @@ class ConfigListView(ListView):
         cfg.update(base_config)
         return JsonResponse(cfg)
 
+# Return a named ConfigCLient
 class ConfigDetailView(DetailView):
     model = ConfigClient
 
     def get_object(self, queryset=None):
-        print(self.kwargs.get('name'))
         return ConfigClient.objects.get(url_name=self.kwargs.get('name'))
 
     def render_to_response(self, context):
@@ -289,12 +296,15 @@ class ConfigDetailView(DetailView):
         key = self.request.GET.get('key', False)
         return JsonResponse({key: cfg[key]} if key in cfg else cfg)
 
+# Generic response
 class GenericSuccess(View):
     def get(self, request):
         return HttpResponse('OK')
 
 
 if 'rest_framework' in setting('INSTALLED_APPS'):
+    from rest_framework.decorators import action
+    from rest_framework.viewsets import ModelViewSet
     from rest_framework.generics import DestroyAPIView, RetrieveAPIView, ListAPIView
     from rest_framework.response import Response
     from rest_framework import status
@@ -307,11 +317,13 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
 
         def disable(self, request, *args, **kwargs):
             instance = self.get_object()
-            self.perform_disable(instance)
-            return Response(status=status.HTTP_200_OK)
+            instance = self.perform_disable(instance)
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
 
         def perform_disable(self, instance):
-            instance.disable()
+            instance = instance.disable()
+            return instance
 
     # EnableApiView add a view for enable an object (set is_disable to false)
     class EnableApiView(DestroyAPIView):
@@ -320,8 +332,29 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
 
         def enable(self, request, *args, **kwargs):
             instance = self.get_object()
-            self.perform_enable(instance)
-            return Response(status=status.HTTP_200_OK)
+            instance = self.perform_enable(instance)
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
 
         def perform_enable(self, instance):
+            instance = instance.enable()
+            return instance
+
+    class CheckData(CheckData, RetrieveAPIView):
+        def get(self, request, format=None):
+            return Response(self.check_data())
+
+    class ModelViewSet(ModelViewSet):
+        @action(detail=True, methods=['get'])
+        def enable(self, request, pk=None):
+            instance = self.get_object()
             instance.enable()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+
+        @action(detail=True, methods=['get'])
+        def disable(self, request, pk=None):
+            instance = self.get_object()
+            instance.disable()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)

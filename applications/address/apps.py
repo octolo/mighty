@@ -6,6 +6,10 @@ from mighty.functions import setting
 class Config:
     backend = 'mighty.applications.address.backends.geopy.SearchBackend'
 
+    class Default:
+        country = 'France'
+        country_code = 'FR'
+
     class Key:
         google = setting('GOOGLE_API_ADDRESS')
         mapbox = setting('MAPBOX_ACCESS_TOKEN')

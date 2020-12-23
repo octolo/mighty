@@ -7,7 +7,14 @@ except Exception:
     from jsonfield import JSONField
 
 # Fields mighty
-base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search', 'update_count')
+uid = ('uid',)
+is_disable = ('is_disable',)
+date_create = ('date_create',)
+create_by = ('create_by',)
+date_update = ('date_update',)
+update_by = ('update_by',)
+search = ('search',)
+update_count = ('update_count',)
 logfield = ('alerts',)
 image = ('image',)
 image_url = ('image_url',)
@@ -15,6 +22,7 @@ source = ('sources',)
 keywords = ('keywords',)
 file = ('file',)
 file_name = ('filename',)
+base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search', 'update_count')
 news = ('title', 'news', 'date_news')
 
 # URL

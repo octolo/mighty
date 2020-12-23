@@ -1,7 +1,9 @@
+
+
+
+"""
 from multiprocessing import Process
 from asgiref.sync import sync_to_async
-
-
 import asyncio
 import sys
 
@@ -24,4 +26,4 @@ async def get_date():
 
 def signal_processed(computer, *args):
     asyncio.run(get_date())
-
+"""

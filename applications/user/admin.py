@@ -9,17 +9,18 @@ from mighty.admin.models import BaseAdmin
 from mighty.applications.user.choices import METHOD_BACKEND
 from mighty.applications.user import fields
 from mighty.applications.address.admin import AddressAdminInline
+from mighty.applications.address import fields as fields_address
 from mighty.applications.user.apps import UserConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 from mighty.applications.user import get_form_fields
 
-class EmailAdmin(admin.TabularInline):
+class UserEmailAdmin(admin.TabularInline):
     fields = ('email', 'default')
     extra = 0
 
-class PhoneAdmin(admin.TabularInline):
+class UserPhoneAdmin(admin.TabularInline):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
     fields = ('phone', 'default')
     extra = 0
@@ -46,7 +47,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender')
+        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender') + fields_address
         if UserConfig.ForeignKey.optional:
             self.fieldsets[1][1]['fields'] += ('optional',)
         self.add_field(_.informations, ('method', 'channel'))

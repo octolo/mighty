@@ -12,8 +12,8 @@ class Config:
         missive = 'mighty.Missive'
         invitation = 'mighty.Invitation'
         nationalities = 'mighty.Nationality'
-        email = 'mighty.Email'
-        phone = 'mighty.Phone'
+        email = 'mighty.UserEmail'
+        phone = 'mighty.UserPhone'
         address = 'mighty.UserAddress'
         user = settings.AUTH_USER_MODEL
         optional = False
@@ -21,6 +21,7 @@ class Config:
     class Field:
         username = 'email'
         required = ()
+        optional = ('phone',)
         style = ['dark', 'light']
 
 if hasattr(settings, 'USER'): over_config(Config, settings.USER)

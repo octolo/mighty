@@ -5,6 +5,7 @@ from mighty import over_config
 import os, logging
 
 class Config:
+    logo = "/static/img/logo.png"
     domain = "localhost:8000"
     site_header = "Back office"
     index_title = "Home"

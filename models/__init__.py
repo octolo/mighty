@@ -92,10 +92,10 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     class UserAccessLogModel(models_user.UserAccessLogModel): pass
     class UserChangeLogModel(models_user.UserChangeLogModel): pass
     @EnableAccessLog(UserAccessLogModel)
-    @EnableChangeLog(UserChangeLogModel, ('logentry', 'password'))
+    @EnableChangeLog(UserChangeLogModel, ('logentry', 'password', 'tenant'))
     class User(models_user.User): pass
-    class Email(models_user.Email): pass
-    class Phone(models_user.Phone): pass
+    class UserEmail(models_user.UserEmail): pass
+    class UserPhone(models_user.UserPhone): pass
     class InternetProtocol(models_user.InternetProtocol): pass
     class UserAgent(models_user.UserAgent): pass
     class UserAddress(models_user.UserAddress): pass

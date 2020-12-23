@@ -8,13 +8,18 @@ from django import forms
 from mighty.apps import MightyConfig as conf
 from mighty import stdtypes, fields
 from pathlib import Path
-import base64, datetime, string, random, unicodedata, re, json, sys, subprocess
+import base64, datetime, string, random, unicodedata, re, json, sys, subprocess, threading
 
 BS = conf.Crypto.BS
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 unpad = lambda s: s[:-ord(s[len(s)-1:])]
 numeric_const_pattern = "[-+]? (?: (?: \d* [\.,] \d+ ) | (?: \d+ [\.,]? ) )(?: [Ee] [+-]? \d+ ) ?"
 drf_enable = 'rest_framework' in settings.INSTALLED_APPS
+request_kept = threading.local()
+
+# Request kept
+def get_request_kept():
+    return getattr(request_kept, 'request', None)
 
 """
 Round function for sql usage

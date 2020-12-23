@@ -13,7 +13,7 @@ api_urlpatterns = [
         ])),
         path('role/', include([
             path('', views.RoleList.as_view(), name="api-role-list"),
-            path('exist/',  views.RoleAlreadyExist.as_view(), name="api-role-exist"),
+            path('exist/',  views.RoleCheckData.as_view(), name="api-role-exist"),
         ])),
     ])),
 ]

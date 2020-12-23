@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from mighty.applications.logger import signals
 from mighty.applications.user.apps import UserConfig
-from mighty.models import Email, Phone
+from mighty.models import UserEmail, UserPhone
 
 UserModel = get_user_model()
 
@@ -13,38 +13,38 @@ if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     post_save.connect(signals.post_change_log, UserModel)
 
 def AfterAddAnEmail(sender, instance, **kwargs):
-    post_save.disconnect(AfterAddAnEmail, Email)
+    post_save.disconnect(AfterAddAnEmail, UserEmail)
     if instance.default or instance.user.email is None:
-        Email.objects.filter(user=instance.user).first()
+        UserEmail.objects.filter(user=instance.user).first()
         instance.user.email = instance.email
         instance.user.save()
-    post_save.connect(AfterAddAnEmail, Email)
-post_save.connect(AfterAddAnEmail, Email)
+    post_save.connect(AfterAddAnEmail, UserEmail)
+post_save.connect(AfterAddAnEmail, UserEmail)
 
 def AfterDeleteAnEmail(sender, instance, **kwargs):
-    if not Email.objects.filter(user=instance.user, default=True).count():
-        email = Email.objects.filter(user=instance.user).first()
+    if not UserEmail.objects.filter(user=instance.user, default=True).count():
+        email = UserEmail.objects.filter(user=instance.user).first()
         if email:
             email.default = True
             email.save()
-post_delete.connect(AfterDeleteAnEmail, Email)
+post_delete.connect(AfterDeleteAnEmail, UserEmail)
 
 def AfterAddAPhone(sender, instance, **kwargs):
-    post_save.disconnect(AfterAddAPhone, Phone)
+    post_save.disconnect(AfterAddAPhone, UserPhone)
     if instance.default or instance.user.phone is None:
-        Phone.objects.filter(user=instance.user).exclude(id=instance.id).update(default=False)
+        UserPhone.objects.filter(user=instance.user).exclude(id=instance.id).update(default=False)
         instance.user.phone = instance.phone
         instance.user.save()
-    post_save.connect(AfterAddAPhone, Phone)
-post_save.connect(AfterAddAPhone, Phone)
+    post_save.connect(AfterAddAPhone, UserPhone)
+post_save.connect(AfterAddAPhone, UserPhone)
 
 def AfterDeleteAPhone(sender, instance, **kwargs):
-    if not Phone.objects.filter(user=instance.user, default=True).count():
-        phone = Phone.objects.filter(user=instance.user).first()
+    if not UserPhone.objects.filter(user=instance.user, default=True).count():
+        phone = UserPhone.objects.filter(user=instance.user).first()
         if phone:
             phone.default = True
             phone.save()
-post_delete.connect(AfterDeleteAPhone, Phone)
+post_delete.connect(AfterDeleteAPhone, UserPhone)
 
 if UserConfig.invitation_enable:
     from django.template.loader import render_to_string

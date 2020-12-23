@@ -16,15 +16,15 @@ class TenantAdmin(BaseAdmin):
     readonly_fields = ('invitation',)
 
 class TenantAlternateAdmin(admin.StackedInline):
-    raw_id_fields = ('user',)
+    fk_name = 'tenant'
+    raw_id_fields = ('tenant', 'alternate')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_alternate}),)
-    readonly_fields = ('invitation',)
-    extra = 0
+    extra = 1
 
 class TenantInvitationAdmin(BaseAdmin):
     raw_id_fields = ('group', 'by', 'tenant')
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_invitation + ('missive_link',)}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_invitation + ('content_type', 'object_id', 'missive_link',)}),)
     filter_horizontal = ('roles',)
     readonly_fields = ('missive_link', 'token')
 

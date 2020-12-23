@@ -87,3 +87,6 @@ TYPE_IMAGE = _('image')
 TYPE_FLUX = _('flux')
 TYPE_EVENT = _('event')
 TYPE_OTHER = _('other')
+
+no_errors = _('no errors')
+error_already_exist = _('already exist')

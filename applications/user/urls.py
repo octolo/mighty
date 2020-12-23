@@ -10,11 +10,12 @@ urlpatterns = [
 
 api_urlpatterns = [
     path('user/', include([
-        path('exist/', include([
-            path('email/', views.EmailAlreadyExist.as_view(), name="api-user-emailexist"),
-            path('phone/', views.PhoneAlreadyExist.as_view(), name="api-user-phoneexist"),
+        path('check/', include([
+            path('email/', views.UserEmailCheck.as_view(), name="api-user-check-email"),
+            path('phone/', views.UserPhoneCheck.as_view(), name="api-user-check-phone"),
         ])),
-        path('me/', views.UserMe.as_view(), name="api-user-mydetail"),
+        path('', views.CreateUser.as_view(), name="api-user-profile"),
+        path('profile/', views.Profile.as_view(), name="api-user-profile"),
         path('invitation/', include([
             path('<uuid:uid>/', views.InvitationDetail.as_view(), name="api-user-invitation"),
             path('<uuid:uid>/<str:action>/', views.InvitationDetail.as_view(), name="api-user-invitation-action"),

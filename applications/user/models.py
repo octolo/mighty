@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
@@ -14,11 +13,12 @@ from mighty.models.base import Base
 from mighty.models.image import Image
 from mighty.functions import masking_email, masking_phone
 from mighty.applications.logger.models import ChangeLog
-from mighty.applications.address.models import Address
+from mighty.applications.address.models import Address, AddressNoBase
 from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.user.manager import UserManager
-from mighty.applications.user import translates as _, fields, choices
+from mighty.applications.user import translates as _, fields, choices, validators
 from mighty.applications.messenger import choices as m_choices
+from mighty.applications.nationality.fields import nationality as fields_nationality
 
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import datetime
@@ -31,7 +31,7 @@ class Data(models.Model):
     class Meta:
         abstract = True
 
-class Email(Data, Base):
+class UserEmail(Data, Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_email')
     email = models.EmailField(_.email, unique=True)
     search_fields = ('email',)
@@ -46,7 +46,7 @@ class Email(Data, Base):
     def masking(self):
         return masking_email(self.email)
 
-class Phone(Data, Base):
+class UserPhone(Data, Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
     phone = PhoneNumberField(_.phone, unique=True)
     search_fields = ('phone',)
@@ -100,15 +100,23 @@ class UserChangeLogModel(ChangeLog):
     class Meta:
         abstract = True
 
-class User(AbstractUser, Base, Image):
+validate_email = validators.validate_email
+validate_phone = validators.validate_phone
+class User(AbstractUser, Base, Image, AddressNoBase):
     search_fields = fields.search
     username = models.CharField(_.username, max_length=254, unique=True, blank=True, null=True)
-    email = models.EmailField(_.email, unique=True)
-    phone = PhoneNumberField(_.phone, blank=True, null=True, unique=True)
+    if conf.Field.username == 'email':
+        email = models.EmailField(_.email, unique=True, validators=[validate_email])
+    else:
+        email = models.EmailField(_.email, blank=True, null=True, unique=True, validators=[validate_email])
+    if conf.Field.username == 'phone':
+        phone = PhoneNumberField(_.phone, unique=True, validators=[validate_phone])
+    else:
+        phone = PhoneNumberField(_.phone, blank=True, null=True, db_index=True, validators=[validate_phone])
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
     gender = models.CharField(_.gender, max_length=1, choices=choices.GENDER, blank=True, null=True)
-    style = models.CharField(max_length=255, default="dark")
+    style = models.CharField(max_length=255, default="clear")
     channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
 
     if conf.ForeignKey.optional:
@@ -119,6 +127,12 @@ class User(AbstractUser, Base, Image):
 
     if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
         nationalities = models.ManyToManyField(conf.ForeignKey.nationalities, blank=True)
+
+        @property
+        def all_nationalities(self):
+            return {
+                getattr(nat, fields_nationality[0]): {field: getattr(nat, field) for field in fields_nationality[1:]}
+                for nat in self.nationalities.all()}
 
     class Meta(Base.Meta):
         db_table = 'auth_user'
@@ -280,6 +294,10 @@ class Invitation(Base):
 
     def new_token(self):
         self.token = uuid.uuid4()
+
+    @property
+    def str_token(self):
+        return str(self.token)
 
     @property
     def is_expired(self):

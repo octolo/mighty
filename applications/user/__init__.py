@@ -19,5 +19,8 @@ def username_generator(base_username):
             exist = False
     return username
 
-def get_form_fields():
-    return conf.Field.required + (conf.Field.username,)
+def get_form_fields(fields='*'):
+    if fields == '*':
+        return (conf.Field.username,) + conf.Field.required + conf.Field.optional
+    else:
+        return getattr(conf.Field, fields)

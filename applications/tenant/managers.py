@@ -15,7 +15,6 @@ class TenantManager(models.Manager.from_queryset(models.QuerySet)):
             .prefetch_related(*Prefetch_related)\
             .annotate()
 
-
 Alternate_Selected_related = ('tenant', 'invitation', 'tenant__group')
 Alternate_Prefetch_related = ('tenant__roles',)
 class TenantAlternateManager(models.Manager.from_queryset(models.QuerySet)):

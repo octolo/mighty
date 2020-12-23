@@ -70,8 +70,8 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import admin as admin_user
 
-    class EmailAdmin(admin_user.EmailAdmin): model = all_models.Email
-    class PhoneAdmin(admin_user.PhoneAdmin): model = all_models.Phone
+    class UserEmailAdmin(admin_user.UserEmailAdmin): model = all_models.UserEmail
+    class UserPhoneAdmin(admin_user.UserPhoneAdmin): model = all_models.UserPhone
     class InternetProtocolAdmin(admin_user.InternetProtocolAdmin): model = all_models.InternetProtocol
     class UserAgentAdmin(admin_user.UserAgentAdmin): model = all_models.UserAgent
     class UserAddressAdmin(admin_user.UserAddressAdminInline): model = all_models.UserAddress
@@ -90,7 +90,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
             return super(admin_user.UserAdmin, self).add_view(*args, **kwargs)
 
         def change_view(self, *args, **kwargs):
-            self.inlines = [EmailAdmin, PhoneAdmin, InternetProtocolAdmin, UserAgentAdmin, UserAddressAdmin]
+            self.inlines = [UserEmailAdmin, UserPhoneAdmin, InternetProtocolAdmin, UserAgentAdmin, UserAddressAdmin]
             return super(admin_user.UserAdmin, self).change_view(*args, **kwargs)
     
     @admin.register(all_models.Invitation)
