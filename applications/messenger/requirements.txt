@@ -1,1 +1,2 @@
 django-ckeditor-5
+html2text

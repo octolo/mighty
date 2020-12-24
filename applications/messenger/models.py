@@ -13,6 +13,7 @@ from mighty.applications.address.models import Address
 
 from phonenumber_field.modelfields import PhoneNumberField
 from django_ckeditor_5.fields import CKEditor5Field
+from html2text import html2text
 
 class Missive(Base):
     mode = models.CharField(max_length=6, choices=choices.MODE, default=choices.MODE_EMAIL)
@@ -37,9 +38,9 @@ class Missive(Base):
         ordering = ['-date_create',]
 
     def save(self, *args, **kwargs):
+        if self.html and not self.txt: self.txt = html2text(self.html)
         if self.target is not None: self.email = self.target.lower()
-        if self.status == choices.STATUS_PREPARE:
-            send_missive(self)
+        if self.status == choices.STATUS_PREPARE: send_missive(self)
         super().save(*args, **kwargs)
 
     def prepare(self):

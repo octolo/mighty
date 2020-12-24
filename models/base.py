@@ -48,6 +48,7 @@ class Base(models.Model):
     update_by = models.CharField(_.update_by, blank=True, editable=False, max_length=254, null=True)
     update_count = models.PositiveBigIntegerField(default=0)
     note = models.TextField(blank=True, null=True)
+    cache = JSONField(blank=True, null=True, default=dict)
 
     class mighty:
         perm_title = actions
@@ -165,12 +166,28 @@ class Base(models.Model):
         del self.logfields[lvl][field]
 
     def has_log_lvl(self, lvl):
-        return True if len(self.logfields[lvl]) else False
+        return True if lvl in self.logfields else False
 
     def has_log(self):
         for lvl,errors in self.logs.items():
             if any(errors): return True
         return False
+
+    # Cache facilities
+    def add_cache(self, field, cache):
+        self.cache[field] = cache
+
+    def del_cache(self, field):
+        del self.cache[field]
+        
+    def res_cache(self):
+        self.cache = None
+
+    def has_cache_field(self, field):
+        return True if field in self.cache else False
+
+    def has_cache(self):
+        return True if self.cache and len(self.cache) else False
 
     # Create / Update
     def set_create_by(self, user):

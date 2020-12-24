@@ -18,6 +18,9 @@ class ConfigClient(Base):
     url_name = models.CharField(max_length=255, null=True, blank=True, editable=False)
     config = JSONField(null=True, blank=True)
 
+    class Meta(Base.Meta):
+        ordering = ('date_create', 'name')
+
     def save(self, *args, **kwargs):
         self.url_name = get_valid_filename(make_searchable(self.name))
         super(ConfigClient, self).save(*args, **kwargs)

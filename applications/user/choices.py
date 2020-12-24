@@ -21,6 +21,7 @@ GENDER = (
 STATUS_NOTSEND = 'NOTSEND'
 STATUS_TOSEND = 'TOSEND'
 STATUS_PENDING = 'PENDING'
+STATUS_TOREMIND = 'TOREMIND'
 STATUS_REFUSED = 'REFUSED'
 STATUS_ACCEPTED = 'ACCEPTED'
 STATUS_EXPIRED = 'EXPIRED'
@@ -28,6 +29,7 @@ STATUS = (
     (STATUS_NOTSEND, _('not send')),
     (STATUS_TOSEND, _('to send')),
     (STATUS_PENDING, _('pending')),
+    (STATUS_TOREMIND, _('to remind')),
     (STATUS_REFUSED, _('refused')),
     (STATUS_ACCEPTED, _('accepted')),
     (STATUS_EXPIRED, _('expired')),

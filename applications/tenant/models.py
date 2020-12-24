@@ -103,14 +103,13 @@ class TenantAlternate(Base):
     class Meta(Base.Meta):
         abstract = True
         unique_together = ('tenant', 'alternate')
-        permissions = [(CHAT_WITH_TENANTUSERS, _.perm_chat_tenantusers)]
 
     def __str__(self):
         return self.representation
 
     @property
     def representation(self):
-        return "%s , %s" % (str(self.user), str(self.group))
+        return "%s , %s" % (str(self.alternate.user), str(self.tenant.group))
 
     @property
     def group(self):
@@ -122,7 +121,7 @@ class TenantAlternate(Base):
 
     @property
     def fullname(self):
-        return self.user.fullname
+        return self.alternate.fullname
 
     @property
     def roles(self):
@@ -130,24 +129,18 @@ class TenantAlternate(Base):
 
     @property
     def str_group(self):
-        return str(self.group)
+        return str(self.tenant.group)
 
     @property
     def uid_group(self):
-        return str(self.group.uid)
+        return str(self.tenant.group.uid)
 
 class TenantInvitation(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_tenantinv")
     email = models.EmailField()
     by = models.ForeignKey(user_conf.ForeignKey.user, on_delete=models.SET_NULL, related_name='by_invitation_tenant', blank=True, null=True)
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="roles_tenantinv", blank=True)
-
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE,
-        limit_choices_to=models.Q(model__icontains="tenant")&~models.Q(model__icontains="invitation"))
-    object_id = models.PositiveIntegerField(blank=True, null=True)
-    content_object = GenericForeignKey('content_type', 'object_id')
     tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.SET_NULL, related_name="tenant_invitation", blank=True, null=True)
-    
     status = models.CharField(max_length=8, choices=user_choices.STATUS, default=user_choices.STATUS_NOTSEND)
     token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     missive = models.ForeignKey(user_conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='missive_tenantinvitation', blank=True, null=True)

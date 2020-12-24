@@ -5,7 +5,7 @@ import os.path, json
 
 class Command(ModelBaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--name')
+        parser.add_argument('--name', default=None)
         parser.add_argument('--json')
         super().add_arguments(parser)
 
@@ -16,8 +16,14 @@ class Command(ModelBaseCommand):
             raise CommandError('JSON "%s" does not exist' % self.json)
         super().handle(*args, **options)
 
+    def get_name(self):
+        if not self.name:
+            self.name = os.path.basename(self.json)
+            self.name = os.path.splitext(self.name)[0]
+        return self.name
+
     def do(self):
-        tr, status = Translator.objects.get_or_create(name=self.name)
+        tr, status = Translator.objects.get_or_create(name=self.get_name())
         with open(self.json, encoding=self.encoding) as json_file:
             languages = json.load(json_file)
             for lang, translates in languages.items():

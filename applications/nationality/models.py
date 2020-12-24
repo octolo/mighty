@@ -34,6 +34,7 @@ class Translator(Base):
 
     class Meta(Base.Meta):
         abstract = True
+        ordering = ('date_create', 'name')
 
 class TranslateDict(Base):
     search_fields = ['precision', 'split_precision']
@@ -51,6 +52,7 @@ class TranslateDict(Base):
 
     class Meta(Base.Meta):
         abstract = True
+        ordering = ('date_create', 'language')
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

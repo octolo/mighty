@@ -54,6 +54,10 @@ class AddressNoBase(models.Model):
         return " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])
 
     @property
+    def raw_address(self):
+        return self.representation
+
+    @property
     def fields_used(self):
         return fields
 
