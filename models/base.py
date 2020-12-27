@@ -75,7 +75,7 @@ class Base(models.Model):
 
     # Admin URL
     @property
-    def admin_url_args(self, config): return {"object_id": self.pk}
+    def admin_url_args(self): return {"object_id": self.pk}
     @property
     def app_admin(self, reverse=None): return reverse if reverse else 'admin:%s_%s_%s'
     @property
