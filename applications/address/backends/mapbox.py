@@ -7,10 +7,6 @@ class SearchBackend(SearchBackend):
     url = "https://api.mapbox.com/geocoding/v5/mapbox.places/%s.json?access_token=%s"
 
     def get_address(self, data):
-        print(data)
-        print()
-        print()
-        print()
         address = self.get_dict('mapbox')
         address['id'] = data.get('id')
         address['raw'] = data.get('place_name')
