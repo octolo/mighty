@@ -105,7 +105,7 @@ class UserEmailCheck(CheckData):
         validator = EmailValidator()
         try:
             validator(self.request.GET.get('check'))
-            return super().check_exist()
+            return super().check_data()
         except ValidationError as e:
             return { "code": "002", "error": str(e.message) }
 
@@ -117,7 +117,7 @@ class UserPhoneCheck(CheckData):
         try:
             phone = "+" + self.request.GET.get('check')
             validate_international_phonenumber(phone)
-            return super().check_exist()
+            return super().check_data()
         except ValidationError as e:
             return { "code": "002", "error": str(e.message) }    
 
