@@ -4,5 +4,8 @@
 <ul class="object-tools">
     <li><a href="/admin/supervision/">Supervision</a></li>
 </ul>
-{{ block.super }}
+<div id="content-main">
+  {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+  {% include "admin/multi_app_list.html" with multi_app_list=multi_app_list show_changelinks=True %}
+</div>
 {% endblock %}

@@ -7,6 +7,7 @@ from django.urls import reverse, resolve
 from django.views.decorators.cache import never_cache
 from django.template.response import TemplateResponse
 from django.shortcuts import redirect
+from django.utils.translation import gettext
 
 from mighty import translates as _
 from mighty.apps import MightyConfig as conf
@@ -38,9 +39,246 @@ async def flushdb():
     redis.close()
     await redis.wait_closed()
 
+
+from django.apps import apps
+from django.utils.text import capfirst
 class AdminSite(admin.AdminSite):
     site_header = conf.site_header
     index_title = conf.index_title
+
+    def _build_app_dict(self, request, label=None):
+
+        """
+        Build the app dictionary. The optional `label` parameter filters models
+        of a specific app.
+        """
+        app_dict = {}
+
+        if label:
+            models = {
+                m: m_a for m, m_a in self._registry.items()
+                if m._meta.app_label == label
+            }
+        else:
+            models = self._registry
+
+        for model, model_admin in models.items():
+            app_label = model._meta.app_label
+            app_config = apps.get_app_config(app_label)
+            if not hasattr(app_config, 'multi_apps'):        
+
+                has_module_perms = model_admin.has_module_permission(request)
+                if not has_module_perms:
+                    continue
+
+                perms = model_admin.get_model_perms(request)
+
+                # Check whether user has any perm for this module.
+                # If so, add the module to the model_list.
+                if True not in perms.values():
+                    continue
+
+                info = (app_label, model._meta.model_name)
+
+
+                model_dict = {
+                    'name': capfirst(model._meta.verbose_name_plural),
+                    'object_name': model._meta.object_name,
+                    'perms': perms,
+                    'admin_url': None,
+                    'add_url': None,
+                }
+                if perms.get('change') or perms.get('view'):
+                    model_dict['view_only'] = not perms.get('change')
+                    try:
+                        model_dict['admin_url'] = reverse('admin:%s_%s_changelist' % info, current_app=self.name)
+                    except NoReverseMatch:
+                        pass
+                if perms.get('add'):
+                    try:
+                        model_dict['add_url'] = reverse('admin:%s_%s_add' % info, current_app=self.name)
+                    except NoReverseMatch:
+                        pass
+
+                if app_label in app_dict:
+                    app_dict[app_label]['models'].append(model_dict)
+                else:
+                    app_dict[app_label] = {
+                        'name': apps.get_app_config(app_label).verbose_name,
+                        'app_label': app_label,
+                        'app_url': reverse(
+                            'admin:app_list',
+                            kwargs={'app_label': app_label},
+                            current_app=self.name,
+                        ),
+                        'has_module_perms': has_module_perms,
+                        'models': [model_dict],
+                        'app_config': app_config,
+                    }
+
+        if label:
+            return app_dict.get(label)
+        return app_dict
+
+
+    def _build_multi_app_dict(self, request, label=None):
+
+        """
+        Build the app dictionary. The optional `label` parameter filters models
+        of a specific app.
+        """
+        multi_app_dict = {}
+
+        if label:
+            models = {
+                m: m_a for m, m_a in self._registry.items()
+                if m._meta.app_label == label
+            }
+        else:
+            models = self._registry
+
+        
+        for model, model_admin in models.items():
+            app_label = model._meta.app_label
+            app_config = apps.get_app_config(app_label)
+            if hasattr(app_config, 'multi_apps'):        
+
+                has_module_perms = model_admin.has_module_permission(request)
+                if not has_module_perms:
+                    continue
+
+                perms = model_admin.get_model_perms(request)
+
+                # Check whether user has any perm for this module.
+                # If so, add the module to the model_list.
+                if True not in perms.values():
+                    continue
+
+                info = (app_label, model._meta.model_name)
+                app_parent = self.get_parent_app(app_config, model._meta.object_name)
+
+                model_dict = {
+                    'name': capfirst(model._meta.verbose_name_plural),
+                    'object_name': model._meta.object_name,
+                    'perms': perms,
+                    'admin_url': None,
+                    'add_url': None,
+                }
+                if perms.get('change') or perms.get('view'):
+                    model_dict['view_only'] = not perms.get('change')
+                    try:
+                        model_dict['admin_url'] = reverse('admin:%s_%s_changelist' % info, current_app=self.name)
+                    except NoReverseMatch:
+                        pass
+                if perms.get('add'):
+                    try:
+                        model_dict['add_url'] = reverse('admin:%s_%s_add' % info, current_app=self.name)
+                    except NoReverseMatch:
+                        pass
+
+                if app_label not in multi_app_dict:
+                    multi_app_dict[app_label] = {
+                        'name': apps.get_app_config(app_label).verbose_name,
+                        'app_label': app_label,
+                        'app_url': reverse(
+                            'admin:app_list',
+                            kwargs={'app_label': app_label},
+                            current_app=self.name,
+                        ),
+                        'has_module_perms': has_module_perms,
+                        'apps': {},
+                        'app_config': app_config,
+                    }
+
+                app_parent = capfirst(app_parent)
+                if app_parent in multi_app_dict[app_label]['apps']:
+                     multi_app_dict[app_label]['apps'][app_parent]['models'].append(model_dict)
+                else:
+                    multi_app_dict[app_label]['apps'][app_parent] = {
+                        'name': capfirst(app_parent),
+                        'app_label': app_label,
+                        'app_url': reverse(
+                            'admin:app_list',
+                            kwargs={'app_label': app_label},
+                            current_app=self.name,
+                        ),
+                        'has_module_perms': has_module_perms,
+                        'models': [model_dict],
+                        'app_config': app_config,
+                    }
+        if label:
+            return multi_app_dict.get(label)
+        return multi_app_dict
+
+    def get_parent_app(self, config, name):
+        for app, models in config.multi_apps.items():
+            if name in models:
+                return app
+        return 'others'
+
+    def get_multi_app_list(self, request):
+        """
+        Return a sorted list of all the installed apps that have been
+        registered in this site.
+        """
+        multi_app_dict = self._build_multi_app_dict(request)
+        multi_app_list = sorted(multi_app_dict.values(), key=lambda x: x['name'].lower())
+        for mapp in multi_app_list:
+            for app,value in mapp['apps'].items():
+                mapp['apps'][app]['models'].sort(key=lambda x: x['name'])
+        return multi_app_list
+
+
+    def app_index(self, request, app_label, extra_context=None):
+        app_dict = self._build_app_dict(request, app_label)
+        multi_app_dict = self._build_multi_app_dict(request, app_label)
+        if not app_dict and not multi_app_dict:
+            raise Http404('The requested admin page does not exist.')
+        app_name = apps.get_app_config(app_label).verbose_name
+        context = {
+            **self.each_context(request),
+            'title': gettext('%(app)s administration') % {'app': app_name},
+            'app_label': app_label,
+            'app_name': app_name,
+            **(extra_context or {}),
+        }
+        request.current_app = self.name
+        if app_dict:
+            app_dict['models'].sort(key=lambda x: x['name'])
+            context['app_list'] = [app_dict]
+            return TemplateResponse(request, self.app_index_template or [
+                'admin/%s/app_index.html' % app_label,
+                'admin/app_index.html'
+            ], context)
+        if multi_app_dict:
+            #for app,value in multi_app_dict['apps'].items():
+            #    app['models'].sort(key=lambda x: x['name'])
+            context['multi_app_list'] = [multi_app_dict]
+            return TemplateResponse(request, self.app_index_template or [
+                'admin/%s/multi_app_index.html' % app_label,
+                'admin/multi_app_index.html'
+            ], context)
+
+    @never_cache
+    def index(self, request, extra_context=None):
+        """
+        Display the main admin index page, which lists all of the installed
+        apps that have been registered in this site.
+        """
+        app_list = self.get_app_list(request)
+        multi_app_list = self.get_multi_app_list(request)
+
+        context = {
+            **self.each_context(request),
+            'title': self.index_title,
+            'app_list': app_list,
+            'multi_app_list': multi_app_list,
+            **(extra_context or {}),
+        }
+
+        request.current_app = self.name
+
+        return TemplateResponse(request, self.index_template or 'admin/index.html', context)
 
     @never_cache
     def stepsearch(self, request, extra_context=None):
