@@ -9,8 +9,9 @@ from mighty import translates as _
 from uuid import uuid4
 from sys import getsizeof
 
+lvl_priority = ["alert", "warning", "notify", "info", "debug"]
 def default_logfield_dict():
-    return {"emerg": {}, "alert": {}, "critical": {}, "error": {}, "warning": {}, "notice": {}, "info": {}, "debug": {}}
+    return {lvl: {} for lvl in lvl_priority}
 
 LIST = 'list'
 EXPORT = 'export'
@@ -115,6 +116,15 @@ class Base(models.Model):
     @property
     def question_enable(self): return _d.are_you_sure_enable % self
 
+    @property
+    def log_status(self):
+        if self.has_log():
+            for lvl in lvl_priority:
+                if self.has_log_lvl(lvl):
+                    return lvl
+        return None
+
+
     """
     Functions
     """
@@ -199,6 +209,7 @@ class Base(models.Model):
     """
     Actions
     """
+
 
     def disable(self, *args, **kwargs):
         self.is_disable = True

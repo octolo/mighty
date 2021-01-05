@@ -19,10 +19,12 @@ from mighty.applications.user.manager import UserManager
 from mighty.applications.user import translates as _, fields, choices, validators
 from mighty.applications.messenger import choices as m_choices
 from mighty.applications.nationality.fields import nationality as fields_nationality
+from mighty.applications.tenant.apps import TenantConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import datetime
 import uuid, logging
+
 logger = logging.getLogger(__name__)
 
 class Data(models.Model):
@@ -122,11 +124,14 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     if conf.ForeignKey.optional:
         optional = models.ForeignKey(conf.ForeignKey.optional, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional_user')
 
-    if 'mighty.applications.messenger':
+    if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
         missives = GenericRelation(conf.ForeignKey.missive)
 
     if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
         nationalities = models.ManyToManyField(conf.ForeignKey.nationalities, blank=True)
+
+    if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
+        current_tenant = models.ForeignKey(TenantConfig.ForeignKey.tenant, on_delete=models.SET_NULL, blank=True, null=True, related_name='current_tenant')
 
         @property
         def all_nationalities(self):

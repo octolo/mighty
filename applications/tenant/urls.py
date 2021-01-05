@@ -5,7 +5,8 @@ app_name = 'tenant'
 api_urlpatterns = [
     path('tenant/', include([
         path('', views.TenantList.as_view()),
-        path('', views.TenantList.as_view()),
+        path('<uuid:uid>/', views.TenantDetail.as_view()),
+        path('<uuid:uid>/current/', views.CurrentTenant.as_view()),
         path('invitation/', include([
             path('', views.InvitationList.as_view(), name="api-invitation-exist"),
             path('<uuid:uid>/', views.InvitationDetail.as_view(), name="api-tenant-invitation"),

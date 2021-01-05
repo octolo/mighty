@@ -39,8 +39,20 @@ class RoleBase:
         return {field: str(getattr(role, field)) for field in ('uid',) + tenant_fields.role}
 
 class TenantBase:
+    model = TenantModel
+    queryset = TenantModel.objectsB.all()
+    slug_field = 'uid'
+    slug_url_kwarg = 'uid'
+
+    def get_object(self):
+        args = {
+            "user": self.request.user,
+            "uid": self.kwargs.get('uid', None),
+        }
+        return get_object_or_404(self.model, **args)
+
     def get_queryset(self, queryset=None):
-        return TenantModel.objectsB.filter(user=self.request.user)
+        return self.queryset.filter(user=self.request.user)
 
     def get_fields(self, tenant):
         return {
@@ -65,7 +77,7 @@ class InvitationBase:
     slug_url_kwarg = 'uid'
 
     def get_queryset(self, queryset=None):
-        return Invitation.objects.filter(email__in=self.request.user.get_emails())
+        return self.queryset.filter(email__in=self.request.user.get_emails())
 
     def get_object(self, queryset=None):
         args = { 
@@ -74,7 +86,7 @@ class InvitationBase:
         token = self.request.GET.get('token')
         if token: args['token'] = token
         else: args["email__in"] = self.request.user.get_emails()
-        return get_object_or_404(Invitation, **args)
+        return get_object_or_404(self.model, **args)
 
     def get_fields(self, invitation):
         return {field: str(getattr(invitation, field)) for field in ('uid',) + tenant_fields.tenant_invitation}
@@ -94,6 +106,7 @@ class InvitationBase:
 """
 Django Views
 """
+
 @method_decorator(login_required, name='dispatch')
 class RoleList(RoleBase, ListView):
     def get_context_data(self, **kwargs):
@@ -122,6 +135,25 @@ class TenantList(TenantBase, ListView):
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, safe=False, **response_kwargs)
 
+@method_decorator(login_required, name='dispatch')
+class TenantDetail(TenantBase, DetailView):
+    def get_context_data(self, **kwargs):
+        return self.get_fields(self.get_object())
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context, safe=False, **response_kwargs)
+
+@method_decorator(login_required, name='dispatch')
+class CurrentTenant(TenantBase, DetailView):
+    def get_context_data(self, **kwargs):
+        tenant = self.get_object()
+        if tenant:
+            self.request.user.tenant = tenant
+            self.request.user.save()
+        return self.get_fields(tenant)
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context, safe=False, **response_kwargs)
 
 @method_decorator(login_required, name='dispatch')
 class InvitationList(InvitationBase, ListView):
@@ -145,7 +177,7 @@ DRF Views
 """
 
 if 'rest_framework' in settings.INSTALLED_APPS:
-    from rest_framework.generics import RetrieveAPIView, ListAPIView
+    from rest_framework.generics import RetrieveAPIView, ListAPIView, RetrieveAPIView
     from rest_framework.response import Response
 
     class RoleList(RoleBase, ListAPIView):
@@ -155,6 +187,18 @@ if 'rest_framework' in settings.INSTALLED_APPS:
     class TenantList(TenantBase, ListAPIView):
         def get(self, request, format=None):
             return Response(self.get_tenants())
+
+    class TenantDetail(TenantBase, RetrieveAPIView):
+        def get(self, request, uid, action=None, format=None):
+            tenant = self.get_object()
+            return Response(self.get_fields(tenant))
+
+    class CurrentTenant(TenantBase, RetrieveAPIView):
+        def get(self, request, uid, action=None, format=None):
+            tenant = self.get_object()
+            self.request.user.current_tenant = tenant
+            self.request.user.save()
+            return Response(self.get_fields(tenant))
 
     class InvitationList(InvitationBase, ListAPIView):
         def get(self, request, format=None):

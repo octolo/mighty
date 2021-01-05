@@ -54,6 +54,9 @@ class UserAdmin(UserAdmin, BaseAdmin):
         if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
             self.fieldsets[1][1]['fields'] += ('nationalities',)
             self.filter_horizontal += ('nationalities',)
+        if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
+            self.fieldsets[1][1]['fields'] += ('current_tenant',)
+            self.raw_id_fields += ('current_tenant',)
 
     def save_model(self, request, obj, form, change):
         if not change: obj.method = METHOD_BACKEND
