@@ -3,9 +3,19 @@
 {% block content %}
 <ul class="object-tools">
     <li><a href="/admin/supervision/">Supervision</a></li>
+    <li><a href="/admin">all APP</a></li>
+    <li><a href="?view=simple">Simple APP</a></li>
+    <li><a href="?view=multi">Multi APP</a></li>
 </ul>
 <div id="content-main">
+  {% if request.GET.view == 'simple' or not request.GET.view %}
+  <h2>Simple App</h2>
   {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+  {% endif %}
+
+  {% if request.GET.view == 'multi' or not request.GET.view %}
+  <h2>Multi App</h2>
   {% include "admin/multi_app_list.html" with multi_app_list=multi_app_list show_changelinks=True %}
+  {% endif %}
 </div>
 {% endblock %}
