@@ -108,11 +108,11 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     search_fields = fields.search
     username = models.CharField(_.username, max_length=254, unique=True, blank=True, null=True)
     if conf.Field.username == 'email':
-        email = models.EmailField(_.email, unique=True, validators=[validate_email])
+        email = models.EmailField(_.email, unique=True)
     else:
         email = models.EmailField(_.email, blank=True, null=True, unique=True, validators=[validate_email])
     if conf.Field.username == 'phone':
-        phone = PhoneNumberField(_.phone, unique=True, validators=[validate_phone])
+        phone = PhoneNumberField(_.phone, unique=True)
     else:
         phone = PhoneNumberField(_.phone, blank=True, null=True, db_index=True, validators=[validate_phone])
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)

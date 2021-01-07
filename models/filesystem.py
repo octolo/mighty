@@ -49,10 +49,10 @@ class FileSystem(models.Model):
 
     def save(self, *args, **kwargs):
         need_post_create = False if not self.pk else True
-        if self.pk: 
-            self.db_size = self.calcul_db_size()
-            self.init_ct()
-            self.init_owner()
+        #if self.pk: 
+        #    self.db_size = self.calcul_db_size()
+        #    self.init_ct()
+        #    self.init_owner()
         super().save(*args, **kwargs)
 
     def post_create(self, *args, **kwargs):

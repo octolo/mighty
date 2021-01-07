@@ -15,7 +15,7 @@ def validate_phone(value):
 
 def validate_email(value):
     UserModel = get_user_model()
-    fltr = Q(phone=value)|Q(user_email__email=value)
+    fltr = Q(email=value)|Q(user_email__email=value)
     if value:
         try:
             UserModel.objects.get(fltr)

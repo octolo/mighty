@@ -1,5 +1,5 @@
 from django.utils.deprecation import MiddlewareMixin
-from mighty.functions import requet_kept
+from mighty.functions import request_kept
 import uuid
 
 class AnonymousMiddleware(MiddlewareMixin):
@@ -16,12 +16,12 @@ class RequestKeptMiddleware(object):
         self.get_response = get_response
 
     def __call__(self, request):
-        requet_kept.request = request
+        request_kept.request = request
         return self.get_response(request)
 
     def process_exception(self, request, exception):
-        requet_kept.request = None
+        request_kept.request = None
 
     def process_template_response(self, request, response):
-        requet_kept.request = None
+        request_kept.request = None
         return response
