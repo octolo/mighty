@@ -1,0 +1,22 @@
+[Unit]
+Description=Celery Service
+After=network.target
+
+[Service]
+Type=forking
+User=celery
+Group=celery
+EnvironmentFile=***TO FILL***
+WorkingDirectory=***TO FILL***
+ExecStart=/bin/sh -c '${CELERY_BIN} -A $CELERY_APP multi start $CELERY_NODES \
+    --pidfile=${CELERY_PIDFILE} --logfile=${CELERY_LOGFILE} \
+    --loglevel="${CELERY_LOGLEVEL}"'
+ExecStop=/bin/sh -c '${CELERY_BIN} multi stopwait $CELERY_NODES \
+    --pidfile=${CELERY_PIDFILE} --loglevel="${CELERY_LOGLEVEL}"'
+ExecReload=/bin/sh -c '${CELERY_BIN} -A $CELERY_APP multi restart $CELERY_NODES \
+    --pidfile=${CELERY_PIDFILE} --logfile=${CELERY_LOGFILE} \
+    --loglevel="${CELERY_LOGLEVEL}"'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
