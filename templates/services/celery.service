@@ -1,13 +1,14 @@
 [Unit]
-Description=Celery Service
+Description={% if DESC %}{{DESC}}{% else %}Celery service{% endif %}
 After=network.target
 
 [Service]
+{% if ENVFILE %}EnvironmentFile={{ENVFILE}}{% endif %}
+{% if WORKINGDIRECTORY %}WorkingDirectory={{WORKINGDIRECTORY}}{% endif %}
+{% if PIDFILE %}PIDFile={{PIDFILE}}{% endif %}
+{% if USER %}User={{USER}}{% endif %}
+{% if GROUP %}Group={{GROUP}}{% endif %}
 Type=forking
-User=celery
-Group=celery
-EnvironmentFile=***TO FILL***
-WorkingDirectory=***TO FILL***
 ExecStart=/bin/sh -c '${CELERY_BIN} -A $CELERY_APP multi start $CELERY_NODES \
     --pidfile=${CELERY_PIDFILE} --logfile=${CELERY_LOGFILE} \
     --loglevel="${CELERY_LOGLEVEL}"'

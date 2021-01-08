@@ -1,0 +1,25 @@
+[Unit]
+Description={% if DESC %}{{DESC}}{% else %}Gunicorn service{% endif %}
+After=network.target
+
+[Service]
+{% if ENVFILE %}EnvironmentFile={{ENVFILE}}{% endif %}
+{% if WORKINGDIRECTORY %}WorkingDirectory={{WORKINGDIRECTORY}}{% endif %}
+{% if PIDFILE %}PIDFile={{PIDFILE}}{% endif %}
+{% if USER %}User={{USER}}{% endif %}
+{% if GROUP %}Group={{GROUP}}{% endif %}
+Type=forking
+ExecStart=/bin/sh -c '${GUNICORN_BIN} \
+            --bind ${GUNICORN_SOCK} \
+            --env DJANGO_SETTINGS_MODULE=${GUNICORN_SETTINGS} \
+            --pid="${GUNICORN_PIDFILE}" \
+            --log-file $GUNICORN_LOGFILE \
+            --workers $GUNICORN_WORKERS \
+            --timeout $GUNICORN_TIMEOUT --graceful-timeout $GUNICORN_GFTIMEOUT \
+            --keep-alive 5 $GUNICORN_WSGI --daemon'
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
