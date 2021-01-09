@@ -22,8 +22,17 @@ source = ('sources',)
 keywords = ('keywords',)
 file = ('file',)
 file_name = ('filename',)
-base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search', 'update_count')
+base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search', 'update_count', 'cache')
 news = ('title', 'news', 'date_news')
+
+_file = (
+    'file',
+    'filename',
+    'filemimetype',
+    'charset',
+    'extracontenttype',
+    'size',
+)
 
 # URL
 file_url = ('file_url',)

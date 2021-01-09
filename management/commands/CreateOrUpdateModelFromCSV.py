@@ -3,6 +3,8 @@ from mighty.management import ModelBaseCommand
 import csv, os.path
 
 class Command(ModelBaseCommand):
+    column_for_current = None
+
     def add_arguments(self, parser):
         parser.add_argument('--csv')
         parser.add_argument('--delimiter', default=',')
@@ -42,6 +44,8 @@ class Command(ModelBaseCommand):
             self.prepare_fields(reader.fieldnames)
             for row in reader:
                 self.set_position()
+                if self.column_for_current:
+                    self.current_info = row[self.reverse['extension']]
                 self.progress_bar()
                 self.on_row(row)
 
