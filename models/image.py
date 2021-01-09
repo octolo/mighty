@@ -36,3 +36,5 @@ class Image(models.Model):
     def valid_image_name(self): return get_valid_filename(self.imagename)
     @property
     def image_extension(self): return os.path.splitext(self.imagename)[1]
+    @property
+    def imagex16_html(self): return format_html('<img src="%s" title="%s" style="max-height: 16px">' % (self.image.url, str(self)))
