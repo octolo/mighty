@@ -31,30 +31,31 @@ class BaseCommand(BaseCommand):
         self.position+=pos
 
     def progress_bar(self, bar_length=20):
-        percent = self.position / self.get_total()
-        if self.progressbar:
-            arrow = '-' * int(round(percent * bar_length)-1) + '>'
-            spaces = ' ' * (bar_length - len(arrow))
-            sys.stdout.write("\r{0}: [{1}] {2}% ({3}/{4}) {5}".format(
-                self.prefix_bar,
-                arrow + spaces,
-                int(round(percent * 100)),
-                self.position,
-                self.get_total(),
-                self.current_info,
+        if self.verbosity > 0:
+            percent = self.position / self.get_total()
+            if self.progressbar:
+                arrow = '-' * int(round(percent * bar_length)-1) + '>'
+                spaces = ' ' * (bar_length - len(arrow))
+                sys.stdout.write("\r{0}: [{1}] {2}% ({3}/{4}) {5}".format(
+                    self.prefix_bar,
+                    arrow + spaces,
+                    int(round(percent * 100)),
+                    self.position,
+                    self.get_total(),
+                    self.current_info,
+                    )
                 )
-            )
-            sys.stdout.flush()
-        else:
-            sys.stdout.write("\r{0}: {1}% ({2}/{3}) {4}".format(
-                self.prefix_bar,
-                int(round(percent * 100)),
-                self.position,
-                self.get_total(),
-                self.current_info)
-            )
-            print()
-        if self.position == self.get_total(): print()
+                sys.stdout.flush()
+            else:
+                sys.stdout.write("\r{0}: {1}% ({2}/{3}) {4}".format(
+                    self.prefix_bar,
+                    int(round(percent * 100)),
+                    self.position,
+                    self.get_total(),
+                    self.current_info)
+                )
+                print()
+            if self.position == self.get_total(): print()
 
     def create_parser(self, prog_name, subcommand, **kwargs):
         self.subcommand = subcommand
