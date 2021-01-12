@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 UserModel = get_user_model()
 class AuthBasicBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        print('ok 1')
         field_type = kwargs.get('field_type', None)
         if username is None:
             username = kwargs.get(UserModel.USERNAME_FIELD)
@@ -24,12 +23,3 @@ class AuthBasicBackend(ModelBackend):
                     user.get_client_ip(request)
                     user.get_user_agent(request)
                 return user
-
-
-from django.contrib.auth.backends import ModelBackend
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-
-class JsonTestAuth(JSONWebTokenAuthentication):
-    def authenticate(self, request, **kwargs):
-        print('ok')
-        return super().authenticate(request, **kwargs)
