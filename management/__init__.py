@@ -8,27 +8,21 @@ from mighty.applications.logger.apps import LoggerConfig
 import datetime, sys, logging
 logger = logging.getLogger(__name__)
 
-class Error:
-    def __init__(self):
-        self.count = 0
-        self.errors = {}
-
-    def add(self, key, msg, current_row=False):
-        self.count += 1
-        if key not in self.errors: self.errors[key] = []
-        self.errors[key].append("%s | line: %s" % (msg, current_row)) if current_row else self.errors[key].append(msg)
-
 class BaseCommand(BaseCommand):
     help = 'Command Base override by Mighty'
     position = 0
     prefix_bar = 'Percent'
     current_info = ''
+    errors = []
 
     def get_total(self):
         return self.total if self.total else 0
     
     def set_position(self, pos=1):
         self.position+=pos
+
+    def get_current_info(self):
+        return self.current_info
 
     def progress_bar(self, bar_length=20):
         if self.verbosity > 0:
@@ -42,7 +36,7 @@ class BaseCommand(BaseCommand):
                     int(round(percent * 100)),
                     self.position,
                     self.get_total(),
-                    self.current_info,
+                    self.get_current_info(),
                     )
                 )
                 sys.stdout.flush()
@@ -52,7 +46,7 @@ class BaseCommand(BaseCommand):
                     int(round(percent * 100)),
                     self.position,
                     self.get_total(),
-                    self.current_info)
+                    self.get_current_info())
                 )
                 print()
             if self.position == self.get_total(): print()
@@ -69,14 +63,24 @@ class BaseCommand(BaseCommand):
         parser.add_argument('--progressbar', action="store_true")
 
     def handle(self, *args, **options):
-        self.error = Error()
         self.encoding = options.get('encoding')
         self.logfile = options.get('logfile')
         self.progressbar = options.get('progressbar')
         self.verbosity = options.get('verbosity', 0)
         logger.debug('start')
-        self.do()
+        self.makeJob()
+        self.showErrors()
         logger.debug('end')
+
+    def makeJob(self):
+        try:
+            self.do()
+        except Exception as e:
+            self.errors.add(str(e))
+
+    def showErrors(self):
+        for error in self.errors:
+            logger.error(error)
 
     def do(self):
         raise NotImplementedError("Command should implement method do(self)")
@@ -112,16 +116,21 @@ class ModelBaseCommand(BaseCommand):
         model = functions.get_model(label, model)
         return getattr(model, manager).filter(**dict(x.split(',') for x in self.filter.split(';')) if self.filter else {})
 
-    def do(self):
+    def makeJob(self):
         self.each_objects()
 
     def each_objects(self):
         qs = self.get_queryset()
         self.total = len(qs)
         for obj in self.get_queryset():
+            self.current_object = obj
             self.set_position()
             self.progress_bar()
             self.on_object(obj)
+            #try:
+            #except Exception as e:
+            #    self.errors.append([e, obj])
+            #    print([e, obj])
 
     def on_object(self, object):
         raise NotImplementedError("Command should implement method on_object(self, obj)")

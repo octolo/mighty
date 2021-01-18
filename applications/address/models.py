@@ -28,15 +28,15 @@ class AddressNoBase(models.Model):
         verbose_name = _.v_address
         verbose_name_plural = _.vp_address
 
-    @property
-    def check_postal_state_code(self):
-        if not self.postal_code and not self.state_code:
-            return False
-        return True
-    
-    def clean_postal_state_code(self):
-        if not self.check_postal_state_code:
-            raise ValidationError(_.validate_postal_state_code)
+    #@property
+    #def check_postal_state_code(self):
+    #    if not self.postal_code and not self.state_code:
+    #        return False
+    #    return True
+    #
+    #def clean_postal_state_code(self):
+    #    if not self.check_postal_state_code:
+    #        raise ValidationError(_.validate_postal_state_code)
 
     @property
     def street(self):
@@ -66,10 +66,10 @@ class Address(AddressNoBase, Base):
         verbose_name = _.v_address
         verbose_name_plural = _.vp_address
 
-    def clean(self):
-        self.clean_postal_state_code()
-        super().clean()
+    #def clean(self):
+        #self.clean_postal_state_code()
+        #super().clean()
 
     def save(self, *args, **kwargs):
-        self.clean_postal_state_code()
+        #self.clean_postal_state_code()
         super().save(*args, **kwargs)

@@ -16,6 +16,9 @@ class Command(ModelBaseCommand):
             raise CommandError('JSON "%s" does not exist' % self.json)
         super().handle(*args, **options)
 
+    def makeJob(self):
+        self.do()
+
     def do(self):
         with open(self.json, encoding=self.encoding) as json_file:
             conf, status = ConfigClient.objects.get_or_create(name=self.name)

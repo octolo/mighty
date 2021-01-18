@@ -22,6 +22,9 @@ class Command(ModelBaseCommand):
             self.name = os.path.splitext(self.name)[0]
         return self.name
 
+    def makeJob(self):
+        self.do()
+
     def do(self):
         tr, status = Translator.objects.get_or_create(name=self.get_name())
         with open(self.json, encoding=self.encoding) as json_file:
