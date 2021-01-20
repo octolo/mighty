@@ -116,7 +116,8 @@ class ModelBaseCommand(BaseCommand):
         model = functions.get_model(label, model)
         return getattr(model, manager).filter(**dict(x.split(',') for x in self.filter.split(';')) if self.filter else {})
 
-    def makeJob(self):
+    def do(self):
+        
         self.each_objects()
 
     def each_objects(self):
