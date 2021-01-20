@@ -98,6 +98,7 @@ class CreateUser(CreateView):
         return reverse('generic-success')
 
 class UserEmailCheck(CheckData):
+    permission_classes = ()
     model = UserEmail
     test_field = 'email'
 
@@ -142,5 +143,6 @@ if 'rest_framework' in settings.INSTALLED_APPS:
             return Response(self.actions())
 
     class CreateUser(CreateAPIView):
+        permission_classes = ()
         serializer_class = CreateUserSerializer
         model = UserModel
