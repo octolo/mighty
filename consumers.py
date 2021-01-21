@@ -113,7 +113,6 @@ class MightyConsumer(WebsocketConsumer):
         text_data = json.loads(text_data)
         args = text_data.get('args', {})
         cmd = text_data.get('cmd').split('.')
-        print(cmd)
         if cmd[0] in self.consumers:
             if cmd[0] not in self.actives:
                 self.actives[cmd[0]] = self.consumers[cmd[0]](self)

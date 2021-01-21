@@ -76,11 +76,11 @@ class BaseCommand(BaseCommand):
         try:
             self.do()
         except Exception as e:
-            self.errors.add(str(e))
+            self.errors.append(e)
 
     def showErrors(self):
         for error in self.errors:
-            logger.error(error)
+            print(error)
 
     def do(self):
         raise NotImplementedError("Command should implement method do(self)")

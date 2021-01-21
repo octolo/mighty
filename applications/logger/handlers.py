@@ -48,7 +48,6 @@ class ConsoleHandler(logging.StreamHandler):
 class FileHandler(logging.FileHandler):
     def format(self, record):
         msg = super().format(record)
-        print(msg)
         msg = conf.Log.format_user.format(record.user.logname, msg) if hasattr(record, 'user') and hasattr(record.user, 'logname') else msg
         if getattr(record, 'log_in_db', False):
             log_in_db(record, msg)

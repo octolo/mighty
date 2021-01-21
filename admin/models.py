@@ -178,7 +178,6 @@ class BaseAdmin(admin.ModelAdmin):
             'app_label': opts.app_label,
             'media': self.media
         }
-        print(context['timeline'])
         return TemplateResponse(request, 'admin/timeline_list.html', context)
 
     def timeline_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):

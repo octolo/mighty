@@ -32,7 +32,6 @@ class UserCreationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(UserCreationForm, self).__init__(*args, **kwargs)
-        print(get_form_fields())
         for field in allfields:
             if field in required:
                 self.fields[field].required = True

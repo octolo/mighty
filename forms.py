@@ -68,8 +68,6 @@ class TimelineForm(forms.ModelForm):
         amodel.date_end = cleaned_data.get("date_end")
         amodel.value = bytes(str(cleaned_data.get("value")), 'utf-8')
         amodel.save()
-        print(amodel)
-        print('ok')
 
 class SourceForm(forms.ModelForm):
     date_begin = forms.DateField(required=True, widget=forms.SelectDateWidget())
