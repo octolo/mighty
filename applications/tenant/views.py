@@ -64,7 +64,8 @@ class TenantBase:
                 "uid": str(tenant.group.uid),
                 "denomination": str(tenant.group.denomination),
                 "image_url": str(tenant.group.image_url)
-            }
+            },
+            "roles": [{'uid': role.uid, 'name': role.name} for role in tenant.roles.all()]
         }
 
     def get_tenants(self):
@@ -179,6 +180,7 @@ DRF Views
 if 'rest_framework' in settings.INSTALLED_APPS:
     from rest_framework.generics import RetrieveAPIView, ListAPIView, RetrieveAPIView
     from rest_framework.response import Response
+    from mighty.applications.tenant.serializers import RoleSerializer, TenantSerializer
 
     class RoleList(RoleBase, ListAPIView):
         def get(self, request, format=None):
@@ -194,6 +196,8 @@ if 'rest_framework' in settings.INSTALLED_APPS:
             return Response(self.get_fields(tenant))
 
     class CurrentTenant(TenantBase, RetrieveAPIView):
+        serializer_class = TenantSerializer
+
         def get(self, request, uid, action=None, format=None):
             tenant = self.get_object()
             self.request.user.current_tenant = tenant
