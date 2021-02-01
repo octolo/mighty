@@ -73,10 +73,7 @@ class BaseCommand(BaseCommand):
         logger.debug('end')
 
     def makeJob(self):
-        try:
-            self.do()
-        except Exception as e:
-            self.errors.append(e)
+        self.do()
 
     def showErrors(self):
         for error in self.errors:

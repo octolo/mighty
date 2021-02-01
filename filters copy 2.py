@@ -1,24 +1,18 @@
 from django.db.models import Q
-from django.http import QueryDict
 
 from mighty import Verify
-from mighty.functions import make_searchable, test, get_logger, make_float, make_int
+from mighty.functions import make_searchable, test, get_logger, make_float
 from mighty.apps import MightyConfig
 
 from functools import reduce
 from datetime import timedelta
-import logging, operator, uuid, re
+import logging, operator, uuid
 
 logger = logging.getLogger(__name__)
 SEPARATOR = MightyConfig.Interpreter._split
 NEGATIVE = MightyConfig.Interpreter._negative
 
 class Filter(Verify):
-    is_array = False
-    param_used = None
-    delimiter = None
-    regex_delimiter = None
-
     def __init__(self, id, *args, **kwargs):
         self.id = id if id else str(uuid.uuid4())
         self.operator = kwargs.get('operator', operator.and_)
@@ -26,80 +20,25 @@ class Filter(Verify):
         self.mask = kwargs.get('mask', '')
         self.param = kwargs.get('param', self.id)
         self.prefix = kwargs.get('prefix', '')
-        self.field = kwargs.get('field', self.id)
+        self.field = self.prefix + kwargs.get('field', self.id)
         self.value = kwargs.get('value')
         self.choices = kwargs.get('choices')
-        self.params_choices = [
-            self.param,
-            self.negative_param,
-            self.positive_array_param,
-            self.negative_array_param,
-        ]
 
     #################
     # Verify
     #################
-    def verify_param(self):
-        if not self.param:
-            return "param can't be empty!"
-
     def verify_field(self):
         if not self.field:
             msg = "field can't be empty!"
             logger.debug('filter %s: %s' % (self.id, msg))
             return msg
 
-    def get_mask(self):
-        return self.mask+'__in' if self.is_array else self.mask
-
-    #################
-    # Param
-    #################
     @property
-    def negative_param(self, array=False):
+    def negative_param(self):
         return NEGATIVE+self.param
 
-    @property
-    def positive_array_param(self):
-        return self.param+'[]'
-
-    @property
-    def negative_array_param(self):
-        return NEGATIVE+self.param+'[]'
-
-    @property
-    def is_positive(self):
-        return self.param if self.request.get(self.param, False) else False
-
-    @property
-    def is_negative(self):
-        return self.negative_param if self.request.get(self.negative_param, False) else False
-
-    @property
-    def is_array_positive(self):
-        return self.positive_array_param if self.request.get(self.positive_array_param, False) else False
-    
-    @property
-    def is_array_negative(self):
-        return self.negative_array_param if self.request.get(self.negative_array_param, False) else False
-
-    @property
     def used(self):
-        if self.is_positive:
-            self.param_used = self.is_positive
-            return True
-        elif self.is_negative:
-            self.param_used = self.is_negative
-            return True
-        elif self.is_array_positive:
-            self.param_used = self.is_array_positive
-            self.is_array = True
-            return True
-        elif self.is_array_negative:
-            self.param_used = self.is_array_negative
-            self.is_array = True
-            return True
-        return False
+        return True
 
     #################
     # Dependency
@@ -111,44 +50,60 @@ class Filter(Verify):
     # Value
     ################
     def get_value(self):
-        if self.delimiter:
-            values = []
-            for value in self.request.get(self.param_used):
-                values += self.request.get(self.param_used).split(self.delimiter)
-            return values
-        elif self.regex_delimiter:
-            values = []
-            for value in self.request.get(self.param_used):
-                values += re.split(self.regex_delimiter, value)
-            return values
-        elif self.is_array:
-            return self.request.get(self.param_used)
-        return self.request.get(self.param_used)[0]
+        return self.value
 
-    def format_value(self):
-        return self.get_value()
+    def format_value(self, value):
+        return value
 
-    def get_field(self):
-        return self.prefix+self.field+self.get_mask()
+    def get_field(self, value):
+        return self.field+self.mask
 
     ###############
     # Sql
     ##############
     def get_Q(self):
-        theQ = Q(**{self.get_field(): self.format_value()})
-        return ~theQ if self.is_negative or self.is_array_negative else theQ
+        value = self.get_value()
+        if self.is_negative:
+            return ~Q(**{self.get_field(value): self.format_value(value)})
+        return Q(**{self.get_field(value): self.format_value(value)})
+
+    def get_data(self, request):
+        data = {}
+        if hasattr(request, 'GET'):
+            data.update(request.GET.dict())
+        if hasattr(request, 'POST'):
+            if request.POST:
+                data.update({key: value for key, value in request.POST.dict().items()})
+            elif hasattr(request, 'data'):
+                data.update(request.data)
+        return data
 
     def sql(self, request=None, *args, **kwargs):
         self.request = request
+        self.method = getattr(request, 'method', 'GET')
+        self.method_request = self.get_data(request)
         if self.verify() and self.used:
-            sql = self.get_Q()
             dep = self.get_dependencies()
-            logger.warning('sql: %s, dep: %s' % (sql, dep))
+            sql = self.get_Q()
             return dep.add(sql, Q.AND) if dep and sql else sql
         return Q()
 
 class ParamFilter(Filter):
-    pass
+    @property
+    def is_negative(self):
+        return True if self.method_request.get(NEGATIVE+self.param, False) else False
+
+    @property
+    def used(self):
+        return True if self.method_request.get(self.param, False) else self.is_negative
+
+    def verify_param(self):
+        if not self.param:
+            return "param can't be empty!"
+
+    def get_value(self):
+        param = self.negative_param if self.is_negative else self.param
+        return self.method_request.get(param)
 
 class ParamChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
@@ -170,17 +125,16 @@ class ParamMultiChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.choices_required = kwargs.get('choices_required', False)
+        self.mask = kwargs.get('mask', '__in')
 
     def verify_param(self):
         if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
 
     def get_value(self):
-        values = super().get_value()
+        values = super().get_value().split(SEPARATOR)
         if self.choices_required:
-            if self.is_array:
-                return [value for value in values if value in self.choices]
-            return values if values in self.choices else None
+            return [value for value in values if value in self.choices]
         return [value for value in values]
 
 class MultiParamFilter(ParamFilter):
@@ -192,53 +146,38 @@ class MultiParamFilter(ParamFilter):
         return super().get_value().split(SEPARATOR)
 
     def get_Q(self):
-        if self.is_negative or self.is_array_negative:
-            return reduce(self.operator, [~Q(**{self.get_field(): value }) for value in self.get_value()])
-        return reduce(self.operator, [Q(**{self.get_field(): value }) for value in self.get_value()])
+        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value()])
 
 class SearchFilter(ParamFilter):
-    regex_delimiter = r'[;,\s]\s*'
-
     def __init__(self, id='search', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
 
-    def get_mask(self):
-        return self.mask
-
     def get_value(self):
-        return ['_'+value for value in super().get_value()]
+        return ['_'+value for value in super().get_value().split(SEPARATOR)]
 
     def get_Q(self):
-        if self.is_negative or self.is_array_negative:
-            return reduce(self.operator, [~Q(**{self.get_field(): value }) for value in self.get_value()])
-        return reduce(self.operator, [Q(**{self.get_field(): value }) for value in self.get_value()])
+        return reduce(self.operator, [Q(**{self.get_field(value): value }) for value in self.get_value()])
 
 class BooleanParamFilter(ParamFilter):
-    def get_mask(self):
-        return self.mask
-
     def get_value(self):
-        value = super().get_value()[0]
+        value = super().get_value()
         return bool(int(value))
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
     def __init__(self, id='gtelte', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '')
-        self.is_int = kwargs.get('is_int', False)
         self.operator = operator.or_
 
     def get_field(self, value):
         if value[0:3] in ['gte', 'lte']:
-            return self.prefix+self.field+'__gte' if value[0:3] == 'gte' else self.prefix+self.field+'__lte'
+            return self.field+'__gte' if value[0:3] == 'gte' else self.field+'__lte'
         elif value[0:2] in ['gt', 'lt']:
-            return self.prefix+self.field+'__gt' if value[0:2] == 'gt' else self.prefix+self.field+'__lt'
-        return self.prefix+self.field+self.mask
+            return self.field+'__gt' if value[0:2] == 'gt' else self.field+'__lt'
+        return self.field+self.mask
 
     def format_value(self, value):
-        if self.is_int:
-            return make_int(value)
         return make_float(value)
 
     def get_Q(self):
@@ -247,13 +186,11 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
             if '-' in value:
                 value = value.split('-')
                 theQ.append(Q(**{
-                    self.prefix+self.field+'__gte': self.format_value(value[0]), 
-                    self.prefix+self.field+'__lte': self.format_value(value[1]) 
+                    self.field+'__gte': self.format_value(value[0]), 
+                    self.field+'__lte': self.format_value(value[1]) 
                 }))
             else:
                 theQ.append(Q(**{self.get_field(value): self.format_value(value) }))
-        if self.is_negative or self.is_array_negative:
-            return ~reduce(self.operator, theQ)
         return reduce(self.operator, theQ)
 
 class FilterByYearDelta(FilterByGTEorLTE):
@@ -264,18 +201,16 @@ class FilterByYearDelta(FilterByGTEorLTE):
         return timedelta(days=make_float(value)*MightyConfig.days_in_year)
 
 class FiltersManager:
-    cache_filters = None
-
-    def __init__(self, flts):
-        self.flts = flts
+    def __init__(self, flts=None):
+        self.flts = flts if flts else {}
     
     def get_data(self, request):
-        data = QueryDict('', mutable=True)
+        data = {}
         if hasattr(request, 'GET'):
-            data.update(request.GET)
+            data.update(request.GET.dict())
         if hasattr(request, 'POST'):
             if request.POST:
-                data.update(request.POST)
+                data.update({key: value for key, value in request.POST.dict().items()})
             elif hasattr(request, 'data'):
                 data.update(request.data)
         return data
@@ -283,22 +218,9 @@ class FiltersManager:
     def params(self, request):
         return self.get_filters(request)
 
-    def get_filter(self, param, value):
-        try:
-            flt = next(x for x in self.flts if param in x.params_choices)
-            return flt.sql({param: value})
-        except StopIteration:
-            return None
-
     def get_filters(self, request):
-        if not self.cache_filters: 
-            self.cache_filters = []
-            for param, value in self.get_data(request).lists():
-                flt = self.get_filter(param, value)
-                if flt: self.cache_filters.append(flt)
-                logger.warning('param: %s, value: %s' % (param, value))
-        #self.cache_filters = [f.sql(request) for f in self.flts if f.sql(request)]
-        return self.cache_filters
+        filters = [f.sql(request) for f in self.flts if f.sql(request)]
+        return filters
 
     def add(self, id_, filter_):
         self.flts[id_] = filter_
