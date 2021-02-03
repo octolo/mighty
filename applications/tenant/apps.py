@@ -21,6 +21,15 @@ class Config:
             {
                 'name': 'ressources humaines',
             },
+            {
+                'name': 'avocat',
+            },
+            {
+                'name': 'juriste',
+            },
+            {
+                'name': 'salarié',
+            },
         ]
 
     class ForeignKey:
