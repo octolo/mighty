@@ -123,6 +123,14 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     if conf.ForeignKey.optional:
         optional = models.ForeignKey(conf.ForeignKey.optional, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional_user')
+    if conf.ForeignKey.optional2:
+        optional = models.ForeignKey(conf.ForeignKey.optional2, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional2_user')
+    if conf.ForeignKey.optional3:
+        optional = models.ForeignKey(conf.ForeignKey.optional3, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional3_user')
+    if conf.ForeignKey.optional4:
+        optional = models.ForeignKey(conf.ForeignKey.optional4, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional4_user')
+    if conf.ForeignKey.optional5:
+        optional = models.ForeignKey(conf.ForeignKey.optional5, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional5_user')
 
     if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
         missives = GenericRelation(conf.ForeignKey.missive)
