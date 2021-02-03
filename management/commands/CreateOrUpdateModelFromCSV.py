@@ -37,6 +37,9 @@ class Command(ModelBaseCommand):
         else:
             self.fields = self.reverse = {field: field for field in fields}
 
+    def makeJob(self):
+        self.do()
+
     def do(self):
         self.total = len(open(self.csvfile).readlines())-1
         with open(self.csvfile, encoding=self.encoding) as csvfile:
