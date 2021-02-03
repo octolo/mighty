@@ -17,6 +17,10 @@ class Config:
         address = 'mighty.UserAddress'
         user = settings.AUTH_USER_MODEL
         optional = False
+        optional2 = False
+        optional3 = False
+        optional4 = False
+        optional5 = False
 
     class Field:
         username = 'email'
