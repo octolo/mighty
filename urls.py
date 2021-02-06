@@ -2,7 +2,6 @@ from django.conf import settings
 from django.urls import path, include
 from mighty.apps import MightyConfig as conf
 from mighty.views import Widget, Config, ConfigListView, ConfigDetailView, GenericSuccess
-from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
 app_name = "mighty"
 urlpatterns = [
@@ -56,6 +55,8 @@ if "mighty.applications.grapher" in settings.INSTALLED_APPS:
     urlpatterns += urls_grapher.urlpatterns
 
 if conf.jwt_enable:
+    from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token, obtain_jwt_token
+
     api_urlpatterns.append(
         path('token/', include([
             path('verify/', verify_jwt_token),

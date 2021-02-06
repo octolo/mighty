@@ -35,7 +35,7 @@ class TwoFactorSearchForm(forms.Form):
         search = self.cleaned_data.get('username')
         if search:
             try:
-                self.user_cache = UserModel.objects.get(Q(username=search) | Q(email=search) | Q(phone=search))
+                self.user_cache = UserModel.objects.get(Q(username=search) | Q(user_email__email=search) | Q(user_phone__phone=search))
                 self.confirm_login_allowed(self.user_cache)
             except UserModel.DoesNotExist:
                 raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search',)
@@ -97,7 +97,7 @@ class TwoFactorChoicesForm(forms.Form):
                 status = TwofactorConfig.method.basic
             else:
                 receiver = getattr(self, '%ss' % dev)[int(pos)]
-                status = use_twofactor(dev, self.user_cache, receiver)
+                status = use_twofactor(receiver)
             if not status:
                 raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send')
         return self.cleaned_data

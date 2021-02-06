@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.urls import reverse, NoReverseMatch
 from django.http import HttpResponseRedirect, JsonResponse
+from django.db.models import Q
 
 from mighty.views import DetailView, FormView, BaseView, TemplateView
 from mighty.models import Twofactor
@@ -123,20 +124,19 @@ class Register(LoginStepSearch):
         return super(FormView, self).form_valid(form)
 
 class APISendCode(TemplateView):
+    device = None
+    user = None
+    masking = None
+
+    def get_identity(self, request):
+        return request.POST.get('identity', request.GET.get('identity'))
+
     def send_code(self, request):
-        phone = request.POST.get('sms', request.GET.get('sms'))
-        email = request.POST.get('email', request.GET.get('email'))
-        try:
-            if phone:
-                user, dev, receiver = UserModel.objects.get(user_phone__phone=phone), 'sms', phone
-                masking = masking_phone(phone)
-            elif email:
-                user, dev, receiver = UserModel.objects.get(user_email__email=email), 'email', email
-                masking = masking_email(email)
-            use_twofactor(dev, user, receiver)
-            return {'msg': 'code send to %s' % masking}
-        except UserModel.DoesNotExist:
-            logger.info('user not found: %s' % [phone, email])
+        missive = use_twofactor(self.get_identity(request))
+        if missive:
+            device = missive.mode
+            target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
+            return {'mode': device, 'target': target}
         return {'error': 'not enable to send a code'}
 
     def get_context_data(self, **kwargs):

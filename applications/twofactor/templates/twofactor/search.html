@@ -15,7 +15,7 @@
         {% for error in form.search.errors %}
         {% include "message.html" with message=error level="alert" %}
         {% endfor %}
-        <input type="text" placeholder="{{ form.username.label }}" name="{{ form.username.name }}" />
+        <input type="text" placeholder="{{ form.identity.label }}" name="{{ form.identity.name }}" />
         <div class="send">
             <button class="" type="submit">
                 <i class="fas fa-keyboard">&nbsp;</i>{{ method_basic|title }}

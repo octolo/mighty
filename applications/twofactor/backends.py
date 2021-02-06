@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 from mighty.apps import MightyConfig
 from mighty.models import Twofactor, Missive
@@ -13,6 +14,9 @@ import datetime, logging
 logger = logging.getLogger(__name__)
 UserModel = get_user_model()
 
+
+from django.core.validators import EmailValidator, ValidationError
+from phonenumber_field.validators import validate_international_phonenumber
 class TwoFactorBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         field_type = kwargs.get('field_type', None)
@@ -24,7 +28,8 @@ class TwoFactorBackend(ModelBackend):
             if field_type == 'uid' and hasattr(UserModel, 'uid'):
                 user = UserModel.objects.get(uid=username)
             else:
-                user = UserModel._default_manager.get_by_natural_key(username)
+                user = UserModel.objects.get(Q(user_email__email=username)|Q(user_phone__phone=username)|Q(username=username))
+                #user = UserModel._default_manager.get_by_natural_key(username)
         except UserModel.DoesNotExist:
             UserModel().set_password(password)
         else:
@@ -41,6 +46,9 @@ class TwoFactorBackend(ModelBackend):
                 except Exception as e:
                     UserModel().set_password(password)
     
+    def get_user(self, target):
+        return UserModel.objects.get(Q(user_email__email=target)|Q(user_phone__phone=target)|Q(username=target))
+
     @property
     def earlier(self):
         now = datetime.datetime.now()
@@ -60,11 +68,28 @@ class TwoFactorBackend(ModelBackend):
         prepare.update(**kwargs)
         return Twofactor.objects.get_or_create(**prepare)
 
-    def by(self, mode, user, target, backend_path):
-        if hasattr(self, 'send_%s' % mode):
-            twofactor, created = self.get_object(user, target, getattr(choices, 'MODE_%s' % mode.upper()), backend_path)
+    def by(self, target, backend_path):
+        try:
+            validator = EmailValidator()
+            user = self.get_user(target)
+
+            try:
+                validator(target)
+                mode = choices.MODE_EMAIL
+            except ValidationError:
+                validate_international_phonenumber(target)
+                mode = choices.MODE_SMS
+
+            twofactor, created = self.get_object(user, target, mode, backend_path)
             logger.info("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
-            return getattr(self, 'send_%s' % mode)(twofactor, user, target)
+            if mode == choices.MODE_EMAIL:
+                return self.send_email(twofactor, user, target)
+            elif mode == choices.MODE_SMS:
+                return self.send_sms(twofactor, user, target)
+        except UserModel.DoesNotExist:
+            pass
+        except ValidationError:
+            pass
         return False
         
     def send_sms(self, obj, user, target):
@@ -77,7 +102,7 @@ class TwoFactorBackend(ModelBackend):
             "txt": _.tpl_txt %(MightyConfig.domain, str(obj.code)),
         })
         missive.save()
-        return missive.status
+        return missive
 
     def send_email(self, obj, user, target):
         missive = Missive(**{
@@ -89,4 +114,4 @@ class TwoFactorBackend(ModelBackend):
             "txt": _.tpl_txt % (MightyConfig.domain, str(obj.code)),
         })
         missive.save()
-        return missive.status
+        return missive
