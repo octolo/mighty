@@ -18,6 +18,7 @@ class Filter(Verify):
     param_used = None
     delimiter = None
     regex_delimiter = None
+    user = None
 
     def __init__(self, id, *args, **kwargs):
         self.id = id if id else str(uuid.uuid4())
@@ -140,6 +141,8 @@ class Filter(Verify):
 
     def sql(self, request=None, *args, **kwargs):
         self.request = request
+        self.user = kwargs.get('user')
+        logger.warning(self.request)
         if self.verify() and self.used:
             sql = self.get_Q()
             dep = self.get_dependencies()
@@ -265,12 +268,14 @@ class FilterByYearDelta(FilterByGTEorLTE):
 
 class FiltersManager:
     cache_filters = None
+    request = None
 
     def __init__(self, flts):
         self.flts = flts
     
     def get_data(self, request):
         data = QueryDict('', mutable=True)
+        self.request = request
         if hasattr(request, 'GET'):
             data.update(request.GET)
         if hasattr(request, 'POST'):
@@ -286,6 +291,8 @@ class FiltersManager:
     def get_filter(self, param, value):
         try:
             flt = next(x for x in self.flts if param in x.params_choices)
+            if self.request.user.is_authenticated:
+                return flt.sql({param: value}, user=self.request.user)
             return flt.sql({param: value})
         except StopIteration:
             return None
