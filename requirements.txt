@@ -5,6 +5,7 @@ channels
 channels-redis
 django-jsonfield
 django-json-widget
-geopy
+python-magic
+-r applications/address/requirements.txt
 -r applications/user/requirements.txt
 -r applications/messenger/requirements.txt

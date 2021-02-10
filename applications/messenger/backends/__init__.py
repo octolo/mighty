@@ -3,6 +3,7 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 
+from mighty.functions import setting
 from mighty.models import Missive
 from mighty.applications.messenger import choices
 from mighty.applications.messenger.apps import MessengerConfig as conf
@@ -27,14 +28,15 @@ class MissiveBackend:
         return getattr(self, 'send_%s' % self.missive.mode.lower())()
 
     def send_sms(self):
+        if setting('MISSIVE_SERVICE', False):
+            pass
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
         logger.info("send sms: %s" % self.message, extra=self.extra)
         return self.missive.status
 
     def send_email(self):
-        print(conf.enable.email)
-        if conf.enable.email:
+        if setting('MISSIVE_SERVICE', False):
             send_mail(
                 subject=self.missive.subject,
                 message=self.missive.txt,
@@ -49,6 +51,8 @@ class MissiveBackend:
         return self.missive.status
 
     def send_postal(self):
+        if setting('MISSIVE_SERVICE', False):
+            pass
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
         logger.info("send postal: %s" % self.message, extra=self.extra)

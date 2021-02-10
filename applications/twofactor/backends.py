@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
+from django.core.validators import EmailValidator, ValidationError
 from django.db.models import Q
 
 from mighty.apps import MightyConfig
@@ -9,14 +10,13 @@ from mighty.applications.twofactor import translates as _
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.messenger import choices
 
+
+from phonenumber_field.validators import validate_international_phonenumber
 import datetime, logging
 
 logger = logging.getLogger(__name__)
 UserModel = get_user_model()
 
-
-from django.core.validators import EmailValidator, ValidationError
-from phonenumber_field.validators import validate_international_phonenumber
 class TwoFactorBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         field_type = kwargs.get('field_type', None)
@@ -69,6 +69,7 @@ class TwoFactorBackend(ModelBackend):
         return Twofactor.objects.get_or_create(**prepare)
 
     def by(self, target, backend_path):
+        print('by')
         try:
             validator = EmailValidator()
             user = self.get_user(target)
@@ -93,6 +94,7 @@ class TwoFactorBackend(ModelBackend):
         return False
         
     def send_sms(self, obj, user, target):
+
         missive = Missive(**{
             "content_type": user.missives.content_type,
             "object_id": user.id,
@@ -105,6 +107,7 @@ class TwoFactorBackend(ModelBackend):
         return missive
 
     def send_email(self, obj, user, target):
+        print('ouiii')
         missive = Missive(**{
             "content_type": user.missives.content_type,
             "object_id": user.id,

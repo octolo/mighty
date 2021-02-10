@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.apps import AppConfig
-from mighty import exclude
-from mighty import over_config
+from . import exclude
+from . import over_config
 import os, logging
 
 class Config:
