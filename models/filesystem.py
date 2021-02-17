@@ -1,23 +1,12 @@
-"""
-Model class
-Add [file, name, mimetype] field at the model
-
-(file_url) return the url file static/media
-(download_url) return the download url
-(pdf_url) get the pdf in a viewer
-(get_mime_type) return the mime type
-(image_html) return the html tag <img>
-(file_name) return the file name
-(valid_file_name) get a valid name for filesystem
-(file_extension) return the extension
-"""
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 from django.utils.text import get_valid_filename
 
 from mighty.apps import MightyConfig as conf
-from mighty.functions import pretty_size_long, pretty_size_short
+from mighty.models.base import Base
+from mighty.models.image import Image
+from mighty.functions import pretty_size_long, pretty_size_short, file_directory_path
 
 from sys import getsizeof
 import logging, json
@@ -26,6 +15,47 @@ logger = logging.getLogger(__name__)
 userModel = get_user_model()
 DIRECTION = ((0, 'DIRECTORY'),(1, 'DOCUMENT'),(2, 'FILE'))
 FILETYPE = ['d', '-', '-']
+
+
+class MimeType(Base, Image):
+    mime = models.CharField(max_length=255)
+    extension = models.CharField(max_length=255)
+    image24 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
+    image48 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
+    image64 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
+    image128 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
+    is_vector = models.BooleanField(default=False)
+
+    @property
+    def file16(self):
+        return self.file
+
+    def get_file(self, size):
+        return getattr(self, 'image%s' % size, self.x16)
+
+    @property
+    def x16(self):
+        return self.image
+
+    @property
+    def x24(self):
+        return self.image if self.is_vector else self.get_file('24')
+
+    @property
+    def x48(self):
+        return self.image if self.is_vector else self.get_file('48')
+
+    @property
+    def x64(self):
+        return self.image if self.is_vector else self.get_file('64')
+
+    @property
+    def x128(self):
+        return self.image if self.is_vector else self.get_file('128')
+
+    class Meta:
+        abstract = True
+        unique_together = ('mime', 'extension')
 
 class FileSystem(models.Model):
     db_size = models.BigIntegerField(blank=True, null=True)

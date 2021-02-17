@@ -113,3 +113,6 @@ if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
 if 'mighty.applications.extend' in settings.INSTALLED_APPS:
     from mighty.applications.extend import models as models_extend
     class Key(models_extend.Key): pass
+
+from mighty.models.filesystem import MimeType
+class MimeType(MimeType): pass

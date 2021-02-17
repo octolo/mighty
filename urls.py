@@ -55,13 +55,13 @@ if "mighty.applications.grapher" in settings.INSTALLED_APPS:
     urlpatterns += urls_grapher.urlpatterns
 
 if conf.jwt_enable:
-    from rest_framework_jwt.views import refresh_jwt_token, verify_jwt_token, obtain_jwt_token
+    from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
     api_urlpatterns.append(
         path('token/', include([
-            path('verify/', verify_jwt_token),
-            path('obtain/', obtain_jwt_token),
-            path('refresh/', refresh_jwt_token),
+            path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+            path('obtain/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+            path('verify/', TokenVerifyView.as_view(), name='token_verify'),
         ]))
     )
 

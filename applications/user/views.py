@@ -28,6 +28,7 @@ class ProfileBase:
 
     def get_object(self, queryset=None):
         user = self.request.user
+        print(user)
         newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
         if newstyle != user.style:
             user.style = newstyle
@@ -126,6 +127,7 @@ class UserPhoneCheck(CheckData):
 DRF Views
 """
 if 'rest_framework' in settings.INSTALLED_APPS:
+    print('ok')
     from rest_framework.generics import RetrieveAPIView, CreateAPIView
     from rest_framework.response import Response
     from mighty.applications.user.serializers import UserSerializer, CreateUserSerializer
