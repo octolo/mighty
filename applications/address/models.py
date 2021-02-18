@@ -40,11 +40,12 @@ class AddressNoBase(models.Model):
     #        raise ValidationError(_.validate_postal_state_code)
 
     def save(self, *args, **kwargs):
-        formatting = 'format_%s' % self.country_code.lower()
-        if hasattr(self, formatting):
-            self.raw = getattr(self, formatting)()
-        else:
-            self.raw = " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])
+        if not self.raw:
+            formatting = 'format_%s' % self.country_code.lower()
+            if hasattr(self, formatting):
+                self.raw = getattr(self, formatting)()
+            else:
+                self.raw = " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])
         super().save(*args, **kwargs)
 
     @property
