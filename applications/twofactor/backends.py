@@ -69,7 +69,6 @@ class TwoFactorBackend(ModelBackend):
         return Twofactor.objects.get_or_create(**prepare)
 
     def by(self, target, backend_path):
-        print('by')
         try:
             validator = EmailValidator()
             user = self.get_user(target)

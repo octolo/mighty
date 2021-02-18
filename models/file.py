@@ -26,6 +26,7 @@ class File(models.Model):
     charset = models.CharField(max_length=255, blank=True, null=True, editable=False)
     extracontenttype = JSONField(blank=True, null=True)
     size = models.BigIntegerField(default=0, editable=False)
+    client_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True
@@ -63,6 +64,7 @@ class File(models.Model):
             self.size = self.file._file.size
             self.charset = self.file._file.charset
             self.extracontenttype = self.file._file.content_type_extra
+            #self.client_date = 
         super(File, self).save(*args, **kwargs)
 
     def size_long(self, unit=None):

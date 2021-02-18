@@ -210,7 +210,6 @@ class Base(models.Model):
     Actions
     """
 
-
     def disable(self, *args, **kwargs):
         self.is_disable = True
         self.save()
@@ -220,11 +219,18 @@ class Base(models.Model):
         self.save()
 
     def save(self, *args, **kwargs):
-        need_post_create = False if self.pk else True
         self.set_search()
-        if self.pk: self.update_count+=1
+        exist = self.pk
+        if exist:
+            self.update_count+=1
+        else:
+            self.pre_create()
         super().save(*args, **kwargs)
-        if need_post_create: self.post_create()
+        if not exist: 
+            self.post_create()
+
+    def pre_create(self):
+        pass
 
     def post_create(self):
         pass

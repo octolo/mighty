@@ -127,7 +127,6 @@ class UserPhoneCheck(CheckData):
 DRF Views
 """
 if 'rest_framework' in settings.INSTALLED_APPS:
-    print('ok')
     from rest_framework.generics import RetrieveAPIView, CreateAPIView
     from rest_framework.response import Response
     from mighty.applications.user.serializers import UserSerializer, CreateUserSerializer
