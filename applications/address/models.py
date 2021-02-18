@@ -39,6 +39,14 @@ class AddressNoBase(models.Model):
     #    if not self.check_postal_state_code:
     #        raise ValidationError(_.validate_postal_state_code)
 
+    def save(self, *args, **kwargs):
+        formatting = 'format_%s' % self.country_code.lower()
+        if hasattr(self, formatting):
+            self.raw = getattr(self, formatting)()
+        else:
+            self.raw = " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])
+        super().save(*args, **kwargs)
+
     @property
     def street(self):
         return  " ".join([str(ad) for ad in [self.street_number, self.way, self.route] if ad]).strip()
@@ -49,7 +57,7 @@ class AddressNoBase(models.Model):
 
     @property
     def representation(self):
-        return " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])
+        return self.raw
 
     @property
     def raw_address(self):
@@ -58,6 +66,9 @@ class AddressNoBase(models.Model):
     @property
     def fields_used(self):
         return fields
+
+    def format_fr(self):
+        return "%(address)s, %(postal_code)s %(locality)s" % ({field: getattr(self, field) for field in self.fields_used})
 
 class Address(AddressNoBase, Base):
     search_fields = ['locality', 'postal_code']
