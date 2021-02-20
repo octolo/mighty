@@ -69,7 +69,9 @@ class AddressNoBase(models.Model):
         return fields
 
     def format_fr(self):
-        return "%(address)s, %(postal_code)s %(locality)s" % ({field: getattr(self, field) for field in self.fields_used})
+        if self.address and self.postal_code and self.locality:
+            return "%(address)s, %(postal_code)s %(locality)s" % ({field: getattr(self, field) for field in self.fields_used})
+        return None
 
 class Address(AddressNoBase, Base):
     search_fields = ['locality', 'postal_code']
