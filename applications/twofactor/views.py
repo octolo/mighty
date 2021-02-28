@@ -129,14 +129,16 @@ class APISendCode(TemplateView):
     masking = None
 
     def get_identity(self, request):
-        return request.POST.get('identity', request.GET.get('identity'))
+        return request.POST.get('identity', request.GET.get('identity', False))
 
     def send_code(self, request):
-        missive = use_twofactor(self.get_identity(request))
-        if missive:
-            device = missive.mode
-            target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
-            return {'mode': device, 'target': target}
+        identity = self.get_identity(request)
+        if identity:
+            missive = use_twofactor(identity)
+            if missive:
+                device = missive.mode
+                target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
+                return {'mode': device, 'target': target}
         return {'error': 'not enable to send a code'}
 
     def get_context_data(self, **kwargs):
