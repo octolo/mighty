@@ -190,7 +190,7 @@ class BaseAdmin(admin.ModelAdmin):
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:%s_%s_timeline' % info, object_id=object_id)
+                return redirect('admin:%s_%s_timeline' % info, object_id=object_id, contenttype_id=contenttype_id)
         else:
             form = form(obj, fieldname, request.user)
         context = {

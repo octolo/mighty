@@ -1,6 +1,7 @@
 from django.db import models
 from mighty.models.base import Base
 from mighty import translates as _
+from datetime import datetime
 
 class TimelineModel(Base):
     object_id = models.ForeignKey('', on_delete=models.CASCADE)
@@ -10,7 +11,7 @@ class TimelineModel(Base):
     date_begin = models.DateField(_.date_begin)
     date_end = models.DateField(_.date_end, null=True, blank=True)
     user = models.CharField(max_length=255)
-    init = True
+    to_init = False
 
     class Meta:
         abstract = True
@@ -21,11 +22,19 @@ class TimelineModel(Base):
 
     @property
     def get_value(self):
-        return self.value.decode('utf-8')
+        return bytes(self.value).decode('utf-8')
+
+    @property
+    def is_init(self):
+        return type(self).objects.filter(object_id=self.object_id, field=self.field).first()
+
+    def replace_value(self):
+        setattr(self.object_id, self.field, self.get_value)
+        self.object_id.save()
 
     def save(self, *args, **kwargs):
-        last = type(self).objects.filter(object_id=self.object_id, field=self.field)
-        if not len(last) and self.init:
+        first = self.is_init
+        if not first and not self.to_init:
             init = type(self)(
                 object_id=self.object_id,
                 field=self.field,
@@ -33,9 +42,9 @@ class TimelineModel(Base):
                 date_begin=self.object_id.date_create,
                 date_end=self.date_begin
             )
-            init.init = False
+            init.to_init = True
             init.save()
-        else:
-            last.filter(date_end__isnull=True)
-            last.update(date_end=self.date_begin)
+        last = type(self).objects.filter(object_id=self.object_id, field=self.field, date_end__isnull=True)
+        last.update(date_end=self.date_begin)
+        self.replace_value()
         super().save(*args, **kwargs)

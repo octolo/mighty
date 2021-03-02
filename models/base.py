@@ -160,9 +160,18 @@ class Base(models.Model):
 
     # Search facilities
     def get_search_fields(self):
-        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields if getattr(self, field)]).split()
+        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields if getattr(self, field)]+self.timeline_search()).split()
+
+    def timeline_relate(self):
+        return str(self.__class__.__name__).lower() + 'timeline_set'
+
+    def timeline_search(self):
+        if hasattr(self, self.timeline_relate()):
+            return [make_searchable(field.get_value) for field in getattr(self, self.timeline_relate()).filter(field__in=self.search_fields)]
+        return []
 
     def set_search(self):
+        print(self.timeline_search())
         self.search = '_'+'_'.join(list(dict.fromkeys(self.get_search_fields())))
 
     # Log facilities
