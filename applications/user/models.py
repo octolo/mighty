@@ -141,7 +141,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
         @property
         def language_pref(self):
-            return self.language.alpha2.lower()
+            return self.language.alpha2.lower() if self.language else None
 
     if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
         current_tenant = models.ForeignKey(TenantConfig.ForeignKey.tenant, on_delete=models.SET_NULL, blank=True, null=True, related_name='current_tenant')

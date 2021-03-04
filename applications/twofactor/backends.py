@@ -46,7 +46,7 @@ class TwoFactorBackend(ModelBackend):
                 except Exception as e:
                     UserModel().set_password(password)
     
-    def get_user(self, target):
+    def get_user_target(self, target):
         return UserModel.objects.get(Q(user_email__email=target)|Q(user_phone__phone=target)|Q(username=target))
 
     @property
@@ -71,7 +71,7 @@ class TwoFactorBackend(ModelBackend):
     def by(self, target, backend_path):
         try:
             validator = EmailValidator()
-            user = self.get_user(target)
+            user = self.get_user_target(target)
 
             try:
                 validator(target)
@@ -106,7 +106,6 @@ class TwoFactorBackend(ModelBackend):
         return missive
 
     def send_email(self, obj, user, target):
-        print('ouiii')
         missive = Missive(**{
             "content_type": user.missives.content_type,
             "object_id": user.id,

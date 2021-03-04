@@ -171,7 +171,6 @@ class Base(models.Model):
         return []
 
     def set_search(self):
-        print(self.timeline_search())
         self.search = '_'+'_'.join(list(dict.fromkeys(self.get_search_fields())))
 
     # Log facilities
