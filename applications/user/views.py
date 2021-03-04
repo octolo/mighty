@@ -28,11 +28,19 @@ class ProfileBase:
 
     def get_object(self, queryset=None):
         user = self.request.user
-        print(user)
         newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
         if newstyle != user.style:
             user.style = newstyle
             user.save()
+        newlang = self.request.GET.get('lang')
+        if newlang != user.language_pref:
+            try:
+                from mighty.models import Nationality
+                newlang = Nationality.objects.get(alpha2__icontains=newlang)
+                user.language = newlang
+                user.save()
+            except Exception:
+                pass
         return user
 
     def get_fields(self):

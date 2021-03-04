@@ -10,8 +10,8 @@ class Config:
     delimiter = ','
     quotchar = '"'
     quoting = csv.QUOTE_ALL
-    default = 'en'
-    availables = ['en', ]
+    default = 'fr'
+    availables = ['us', 'fr']
 
 if hasattr(settings, 'NATIONALITY'): over_config(Config, settings.NATIONALITY)
 class NationalityConfig(AppConfig, Config):

@@ -52,7 +52,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
             self.fieldsets[1][1]['fields'] += ('optional',)
         self.add_field(_.informations, ('method', 'channel'))
         if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-            self.fieldsets[1][1]['fields'] += ('nationalities',)
+            self.fieldsets[1][1]['fields'] += ('nationalities', 'language')
             self.filter_horizontal += ('nationalities',)
         if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
             self.fieldsets[1][1]['fields'] += ('current_tenant',)

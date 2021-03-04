@@ -22,6 +22,7 @@ profile = fields.image_url + (
     'style',
     'gender',
     'is_staff',
+    'language_pref',
 )
 
 if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
