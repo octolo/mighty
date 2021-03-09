@@ -316,6 +316,7 @@ class Foxid:
     excludes = None
     order = None
     distinct = None
+    order_enable = True
 
     class Param:
         _filters = 'f'
@@ -465,7 +466,7 @@ class Foxid:
                 self.queryset = self.queryset.distinct()
             elif type(self.distinct) == list:
                 self.queryset = self.queryset.distinct(*self.distinct)
-        if self.order:
+        if self.order and self.order_enable:
             self.queryset = self.queryset.order_by(*self.order.replace('.', '__').split(SEPARATOR))
         return self.queryset
         #return [value for value in super().get_value().split(SEPARATOR)]
