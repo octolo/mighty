@@ -81,7 +81,7 @@ class TwoFactorBackend(ModelBackend):
                 mode = choices.MODE_SMS
 
             twofactor, created = self.get_object(user, target, mode, backend_path)
-            logger.info("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
+            logger.warning("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
             if mode == choices.MODE_EMAIL:
                 return self.send_email(twofactor, user, target)
             elif mode == choices.MODE_SMS:
@@ -93,7 +93,6 @@ class TwoFactorBackend(ModelBackend):
         return False
         
     def send_sms(self, obj, user, target):
-
         missive = Missive(**{
             "content_type": user.missives.content_type,
             "object_id": user.id,
