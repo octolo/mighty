@@ -13,9 +13,11 @@ METHOD = (
 
 GENDER_MAN = 'M'
 GENDER_WOMAN = 'W'
+GENDER_COMPANY = 'C'
 GENDER = (
     (GENDER_MAN, _('man')),
     (GENDER_WOMAN, _('woman')),
+    (GENDER_COMPANY, _('company')),
 )
 
 STATUS_NOTSEND = 'NOTSEND'
