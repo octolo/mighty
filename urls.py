@@ -65,7 +65,7 @@ if conf.jwt_enable:
         ]))
     )
 
-## Enable app chat
+#Enable app chat
 #if "mighty.applications.chat" in settings.INSTALLED_APPS:
 #    from mighty.applications.chat.urls import urlpatterns as urls_chat
 #    urlpatterns += urls_chat

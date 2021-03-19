@@ -16,6 +16,8 @@ class Config:
     user_or_invitation = 'auth.UserOrInvitation'
     jwt_enable = False
     days_in_year = 365.25
+    consumers = {'chat': 'mighty.applications.messenger.consumers.ChatConsumer'}
+    auth_consumer = 'channels.auth.AuthMiddlewareStack'
 
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))
