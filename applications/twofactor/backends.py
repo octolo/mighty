@@ -81,7 +81,7 @@ class TwoFactorBackend(ModelBackend):
                 mode = choices.MODE_SMS
 
             twofactor, created = self.get_object(user, target, mode, backend_path)
-            logger.warning("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
+            logger.info("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
             if mode == choices.MODE_EMAIL:
                 return self.send_email(twofactor, user, target)
             elif mode == choices.MODE_SMS:
@@ -98,8 +98,8 @@ class TwoFactorBackend(ModelBackend):
             "object_id": user.id,
             "target": target,
             "mode": choices.MODE_SMS,
-            "subject": 'subject: Code',
-            "txt": _.tpl_txt %(MightyConfig.domain, str(obj.code)),
+            "subject": _.tpl_subject % {'domain': MightyConfig.domain.upper()},
+            "txt": _.tpl_txt % {'domain': MightyConfig.domain, 'code': str(obj.code)},
         })
         missive.save()
         return missive
@@ -109,9 +109,9 @@ class TwoFactorBackend(ModelBackend):
             "content_type": user.missives.content_type,
             "object_id": user.id,
             "target": target,
-            "subject": 'subject: Code',
-            "html": _.tpl_html % (MightyConfig.domain, str(obj.code)),
-            "txt": _.tpl_txt % (MightyConfig.domain, str(obj.code)),
+            "subject": _.tpl_subject % {'domain': MightyConfig.domain.upper()},
+            "html": _.tpl_html % {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)},
+            "txt": _.tpl_txt % {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)},
         })
         missive.save()
         return missive

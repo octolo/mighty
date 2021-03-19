@@ -17,9 +17,9 @@ inactive = _("this account is inactive.")
 cant_send = _("unable to send message")
 method_not_allowed = _("This authentication method is not allowed")
 
-tpl_subject = _("%s - Connection code")
-tpl_html = _("here is your personal verification code to connect to the site %s: %s")
-tpl_txt = _("here is your personal verification code to connect to the site %s: %s")
+tpl_subject = _("%(domain)s - Connection code")
+tpl_html = _("%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s")
+tpl_txt = _("%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s")
 
 
 help_login = _("Don't have an account? Register")
