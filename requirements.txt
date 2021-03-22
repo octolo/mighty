@@ -9,3 +9,4 @@ python-magic
 -r applications/address/requirements.txt
 -r applications/user/requirements.txt
 -r applications/messenger/requirements.txt
+-r applications/shop/requirements.txt

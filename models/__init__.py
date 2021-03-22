@@ -114,5 +114,14 @@ if 'mighty.applications.extend' in settings.INSTALLED_APPS:
     from mighty.applications.extend import models as models_extend
     class Key(models_extend.Key): pass
 
+# Extend
+if 'mighty.applications.shop' in settings.INSTALLED_APPS:
+    from mighty.applications.shop import models as models_shop
+    class Subscription(models_shop.Subscription): pass
+    class Discount(models_shop.Discount): pass
+    class Bill(models_shop.Bill): pass
+    class PaymentMethod(models_shop.PaymentMethod): pass
+
+
 from mighty.models.filesystem import MimeType
 class MimeType(MimeType): pass
