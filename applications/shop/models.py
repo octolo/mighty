@@ -28,8 +28,9 @@ class SubscriptionGroup(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, *args, **kwargs):
-        self.valid_method = len(filter(True, [pm.is_valid() for pm in self.payment_method.all()]))
+    #def save(self, *args, **kwargs):
+    #    if self.pk:
+    #        self.valid_method = len(list(filter(True, [pm.is_valid() for pm in self.payment_method.all()])))
 
 class Bill(Base):
     group = models.ForeignKey(ShopConfig.group, on_delete=models.SET_NULL, blank=True, null=True)

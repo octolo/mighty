@@ -8,14 +8,27 @@ class Command(BaseCommand):
         super().add_arguments(parser)
         parser.add_argument('--email')
         parser.add_argument('--password')
+        parser.add_argument('--username')
+        parser.add_argument('--lastname')
+        parser.add_argument('--firstname')
 
     def handle(self, *args, **options):
         self.email = options.get('email')
         self.password = options.get('password')
+        self.username = options.get('username')
+        self.lastname = options.get('lastname')
+        self.firstname = options.get('firstname')
         super().handle(*args, **options)
 
     def do(self):
-        user = UserModel.objects.create_user('root', email=self.email, password=self.password)
+        data = {"email": self.email, "password": self.password }
+        if self.firstname: data['first_name'] = self.firstname
+        if self.lastname: data['last_name'] = self.lastname
+        fake = UserModel(email=self.email)
+        if self.username: 
+            user = UserModel.objects.create_user(self.username, **data)
+        else:
+            user = UserModel.objects.create_user(fake.gen_username(), **data)
         user.is_superuser=True
         user.is_staff=True
         user.save()
