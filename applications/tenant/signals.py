@@ -31,20 +31,16 @@ if TenantConfig.invitation_enable:
             kwargs = {
                 'user': get_user_model().objects.get(user_email__email=instance.email),
                 'invitation': instance,
+                'group': instance.group
             }
-            if instance.tenant:
-                TenantModel = get_tenant_model(TenantConfig.ForeignKey.alternate)
-                kwargs.update({'tenant': instance.tenant})
-            else:
-                TenantModel = get_tenant_model()
-                kwargs.update({'group': instance.group})
+            TenantModel = get_tenant_model()
             instance.content_object, status = TenantModel.objects.get_or_create(**kwargs)
             instance.save()
         post_save.connect(OnStatusChange, Invitation)
     post_save.connect(OnStatusChange, Invitation)
 
     def SendMissiveInvitation(sender, instance, **kwargs):
-        instance.status = choices.STATUS_ACCEPTED if instance.object_id else instance.status
+        instance.status = choices.STATUS_ACCEPTED if instance.tenant else instance.status
         save_need = False
         if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
             from mighty.models import Missive

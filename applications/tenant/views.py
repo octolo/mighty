@@ -96,9 +96,9 @@ class InvitationBase:
         invitation = self.get_object()
         if invitation.status == STATUS_PENDING:
             action = self.kwargs.get('action')
-            if invitation.is_expired:
-                invitation.expired()
-            elif action == 'accepted':
+            #if invitation.is_expired:
+            #    invitation.expired()
+            if action == 'accepted':
                 invitation.accepted(user=self.request.user if self.request.user.is_authenticated else None)
             elif action == 'refused':
                 invitation.refused()
@@ -184,7 +184,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
 
     class RoleList(RoleBase, ListAPIView):
         def get(self, request, format=None):
-            return [self.get_fields(role) for role in self.get_queryset()]
+            return Response([self.get_fields(role) for role in self.get_queryset()])
 
     class TenantList(TenantBase, ListAPIView):
         def get(self, request, format=None):
@@ -206,7 +206,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
 
     class InvitationList(InvitationBase, ListAPIView):
         def get(self, request, format=None):
-            return [self.get_fields(invitation) for invitation in self.get_queryset()]
+            return Response([self.get_fields(invitation) for invitation in self.get_queryset()])
 
     class InvitationDetail(InvitationBase, RetrieveAPIView):
         def get(self, request, uid, action=None, format=None):

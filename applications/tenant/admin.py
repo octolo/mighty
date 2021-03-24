@@ -24,7 +24,7 @@ class TenantAlternateAdmin(admin.StackedInline):
 class TenantInvitationAdmin(BaseAdmin):
     raw_id_fields = ('group', 'by', 'tenant')
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_invitation + ('content_type', 'object_id', 'missive_link',)}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_invitation + ('missive_link',)}),)
     filter_horizontal = ('roles',)
     readonly_fields = ('missive_link', 'token')
 
