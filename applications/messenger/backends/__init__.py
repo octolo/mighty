@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 
 from mighty.functions import setting
 from mighty.models import Missive
@@ -37,14 +37,18 @@ class MissiveBackend:
 
     def send_email(self):
         if setting('MISSIVE_SERVICE', False):
-            send_mail(
+            email = EmailMessage(
                 subject=self.missive.subject,
-                message=self.missive.txt,
-                html_message=self.missive.html,
+                body=self.missive.txt,
+                #html_message=self.missive.html,
                 from_email=conf.sender_email,
-                recipient_list=[self.missive.target],
-                fail_silently=False
+                to=[self.missive.target]
             )
+            if self.missive.attachments:
+                for attach in self.missive.attachments:
+                    document = attach.document.document_file.first()
+                    email.attach(document.file.name, document.file.read())
+            email.send()
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
         logger.info("send email: %s" % self.message, extra=self.extra)

@@ -25,6 +25,7 @@ class Missive(Base):
     html = CKEditor5Field()
     txt = models.TextField()
     default = ''
+    attachments = None
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
