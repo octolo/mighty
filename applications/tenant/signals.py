@@ -51,7 +51,7 @@ if TenantConfig.invitation_enable:
                         content_type=instance.missives.content_type,
                         object_id=instance.id,
                         target=instance.email,
-                        subject='subject: Tenant',
+                        subject='Invitation a rejoindre la plateforme Octolo',
                     )
                     instance.status = choices.STATUS_PENDING
                 else:

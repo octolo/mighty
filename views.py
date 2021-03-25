@@ -301,6 +301,122 @@ class GenericSuccess(View):
     def get(self, request):
         return HttpResponse('OK')
 
+from io import BytesIO
+from django.core.files import File
+from django.template.loader import get_template
+from django.template import Context, Template
+import pdfkit, os
+import tempfile
+class PDFView(DetailView):
+    header_html = None
+    footer_html = None
+    cache_object = None
+    pdf_name = 'file.pdf'
+    options = {
+            'encoding': 'UTF-8',
+            'page-size':'A4',
+            'margin-top': '0.75in',
+            'margin-right': '0.75in',
+            'margin-bottom': '0.75in',
+            'margin-left': '0.75in',
+            'custom-header' : [
+                ('Accept-Encoding', 'gzip')
+            ]
+        }
+
+    header_footer = doctype = """<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+    function subst() {
+        var vars = {};
+        var query_strings_from_url = document.location.search.substring(1).split('&');
+        for (var query_string in query_strings_from_url) {
+            if (query_strings_from_url.hasOwnProperty(query_string)) {
+                var temp_var = query_strings_from_url[query_string].split('=', 2);
+                vars[temp_var[0]] = decodeURI(temp_var[1]);
+            }
+        }
+        var css_selector_classes = ['page', 'frompage', 'topage', 'webpage', 'section', 'subsection', 'date', 'isodate', 'time', 'title', 'doctitle', 'sitepage', 'sitepages'];
+        for (var css_class in css_selector_classes) {
+            if (css_selector_classes.hasOwnProperty(css_class)) {
+                var element = document.getElementsByClassName(css_selector_classes[css_class]);
+                for (var j = 0; j < element.length; ++j) {
+                    element[j].textContent = vars[css_selector_classes[css_class]];
+                }
+            }
+        }
+    }
+    </script>
+  </head>
+  <body onload="subst()">%s</body>
+</html>"""
+
+    content_html = content = """<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  </head>
+  <body>%s</body>
+</html>"""
+
+    def get_object(self):
+        if not self.cache_object:
+            self.cache_object = super().get_object()
+        return self.cache_object
+
+    def build_header_html(self):
+        with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as header_html:
+            header = self.header_footer % self.get_object().group.build_document_header
+            header_html.write(Template(header).render(self.get_context_data()).encode("utf-8"))
+        self.header_html = header_html
+        return self.header_html
+
+    def build_footer_html(self):
+        with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as footer_html:
+            footer = self.header_footer % self.get_object().group.build_document_footer
+            footer_html.write(Template(footer).render(self.get_context_data()).encode("utf-8"))
+        self.footer_html = footer_html
+        return self.footer_html
+
+    def get_css_print(self):
+        return os.path.join(settings.STATIC_ROOT, 'css', 'print.css')
+
+    def get_context_data(self, **kwargs):
+        return Context({ "obj": self.get_object() })
+
+    def get_options(self):
+        return self.options.update({
+            'header-html': self.build_header_html().name,
+            'footer-html': self.build_footer_html().name,
+        })
+
+    def get_pdf_name(self):
+        return self.pdf_name
+
+    def tmp_pdf(self, context):
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
+            template = Template(content % text_pdf).render(context)
+            pdf = pdfkit.from_string(self.get_template(), tmp_pdf.name, options=self.get_options())
+            if os.path.isfile(pdf):
+                f = open(pdf, "rb")
+                return File(f)
+
+    def save_pdf(self, context):
+        tmp_pdf = self.tmp_pdf(context)
+
+    def get_template(self, context):
+        template_name = self.get_template_names()
+        template = get_template(template_name)
+        return self.content_html % template.render(context)
+
+    def render_to_response(self, context, **response_kwargs):
+        pdf = pdfkit.from_string(self.get_template(context), False, options=self.get_options())
+        if self.request.GET.get('save', False): self.save_pdf(context)
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % self.get_pdf_name()
+        return response
 
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from rest_framework.decorators import action
