@@ -9,7 +9,6 @@ from mighty.applications.messenger import choices
 from mighty.applications.messenger.apps import MessengerConfig as conf
 import datetime, logging
 
-
 logger = logging.getLogger(__name__)
 
 class MissiveBackend:
@@ -37,10 +36,9 @@ class MissiveBackend:
 
     def send_email(self):
         if setting('MISSIVE_SERVICE', False):
-            subject, from_email, to = self.missive.subject, conf.sender_email, self.missive.target
-            text_content = self.missive.txt,
-            html_content = self.missive.html,
-            email = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            text_content = str(self.missive.txt)
+            html_content = self.missive.html
+            email = EmailMultiAlternatives(self.missive.subject, text_content, conf.sender_email, [self.missive.target])
             email.attach_alternative(html_content, "text/html")
             if self.missive.attachments:
                 import os
