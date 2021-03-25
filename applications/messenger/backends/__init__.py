@@ -39,8 +39,7 @@ class MissiveBackend:
             text_content = str(self.missive.txt)
             html_content = self.missive.html
             email = EmailMultiAlternatives(self.missive.subject, html_content, conf.sender_email, [self.missive.target])
-            email.content_subtype = "html"
-            #email.attach_alternative(html_content, "text/html")
+            email.attach_alternative(html_content, "text/html")
             if self.missive.attachments:
                 import os
                 for attach in self.missive.attachments:
