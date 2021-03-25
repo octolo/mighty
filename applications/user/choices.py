@@ -26,6 +26,7 @@ STATUS_PENDING = 'PENDING'
 STATUS_TOREMIND = 'TOREMIND'
 STATUS_REFUSED = 'REFUSED'
 STATUS_ACCEPTED = 'ACCEPTED'
+STATUS_READY = 'READY'
 STATUS_EXPIRED = 'EXPIRED'
 STATUS = (
     (STATUS_NOTSEND, _('not send')),
@@ -34,5 +35,6 @@ STATUS = (
     (STATUS_TOREMIND, _('to remind')),
     (STATUS_REFUSED, _('refused')),
     (STATUS_ACCEPTED, _('accepted')),
+    (STATUS_READY, _('ready')),
     (STATUS_EXPIRED, _('expired')),
 )

@@ -34,7 +34,8 @@ if TenantConfig.invitation_enable:
                 'group': instance.group
             }
             TenantModel = get_tenant_model()
-            instance.content_object, status = TenantModel.objects.get_or_create(**kwargs)
+            instance.tenant, status = TenantModel.objects.get_or_create(**kwargs)
+            instance.status = choices.STATUS_READY
             instance.save()
         post_save.connect(OnStatusChange, Invitation)
     post_save.connect(OnStatusChange, Invitation)
