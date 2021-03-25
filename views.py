@@ -307,10 +307,12 @@ from django.template.loader import get_template
 from django.template import Context, Template
 import pdfkit, os
 import tempfile
+from django.http import FileResponse
 class PDFView(DetailView):
     header_html = None
     footer_html = None
     cache_object = None
+    in_browser = False
     pdf_name = 'file.pdf'
     options = {
             'encoding': 'UTF-8',
@@ -409,9 +411,12 @@ class PDFView(DetailView):
         return self.content_html % template.render(context)
 
     def render_to_response(self, context, **response_kwargs):
-        print(self.get_options())
-        pdf = pdfkit.from_string(self.get_template(context), False, options=self.get_options())
         if self.request.GET.get('save', False): self.save_pdf(context)
+        if self.in_browser:
+            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
+                pdf = pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.get_options())
+                return FileResponse(open(tmp_pdf.name, 'rb'), filename=self.get_pdf_name())
+        pdf = pdfkit.from_string(self.get_template(context), False, options=self.get_options())
         response = HttpResponse(pdf, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="%s"' % self.get_pdf_name()
         return response
