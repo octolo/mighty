@@ -387,21 +387,18 @@ class PDFView(DetailView):
         return Context({ "obj": self.get_object() })
 
     def get_options(self):
-        return self.options.update({
-            'header-html': self.build_header_html().name,
-            'footer-html': self.build_footer_html().name,
+        self.options.update({
+            '--header-html': self.build_header_html().name,
+            '--footer-html': self.build_footer_html().name,
         })
+        return self.options
 
     def get_pdf_name(self):
         return self.pdf_name
 
     def tmp_pdf(self, context):
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
-            template = Template(content % text_pdf).render(context)
-            pdf = pdfkit.from_string(self.get_template(), tmp_pdf.name, options=self.get_options())
-            if os.path.isfile(pdf):
-                f = open(pdf, "rb")
-                return File(f)
+            return pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.get_options())
 
     def save_pdf(self, context):
         tmp_pdf = self.tmp_pdf(context)
@@ -412,6 +409,7 @@ class PDFView(DetailView):
         return self.content_html % template.render(context)
 
     def render_to_response(self, context, **response_kwargs):
+        print(self.get_options())
         pdf = pdfkit.from_string(self.get_template(context), False, options=self.get_options())
         if self.request.GET.get('save', False): self.save_pdf(context)
         response = HttpResponse(pdf, content_type='application/pdf')
