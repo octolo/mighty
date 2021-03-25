@@ -7,7 +7,7 @@ TenantGroup = apps.get_model(*TenantConfig.ForeignKey.group.split('.'))
 TenantRole = get_tenant_model(TenantConfig.ForeignKey.role)
 
 def Roles(sender, instance, **kwargs):
-    for role in TenantConfig.Default.group:
+    for role in TenantConfig.roles:
         role['group'] = instance
         role, status = TenantRole.objects.get_or_create(**role)
 post_save.connect(Roles, TenantGroup    )
