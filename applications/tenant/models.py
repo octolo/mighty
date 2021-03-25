@@ -37,7 +37,7 @@ class Role(Base):
         unique_together = ('id', 'group', 'name')
 
     def __str__(self):
-        return self.name.title()
+        return "%s (%s)" % (self.name.title(), str(self.group))
 
     def count(self):
         return self.sql_count if hasattr(self, 'sql_count') else self.roles_tenant.all().count()
