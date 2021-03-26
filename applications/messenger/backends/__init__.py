@@ -43,7 +43,7 @@ class MissiveBackend:
             if self.missive.attachments:
                 import os
                 for attach in self.missive.attachments:
-                    document = attach.document.document_file.last()
+                    document = attach.document.document_file.order_by('-date_create').first()
                     email.attach(os.path.basename(document.file.name), document.file.read(), 'application/pdf')
             email.send()
         self.missive.status = choices.STATUS_SENT
