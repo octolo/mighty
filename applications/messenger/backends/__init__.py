@@ -42,9 +42,8 @@ class MissiveBackend:
             email.attach_alternative(html_content, "text/html")
             if self.missive.attachments:
                 import os
-                for attach in self.missive.attachments:
-                    document = attach.document.document_file.order_by('-date_create').first()
-                    email.attach(os.path.basename(document.file.name), document.file.read(), 'application/pdf')
+                for document in self.missive.attachments:
+                    email.attach(os.path.basename(document.name), document.read(), 'application/pdf')
             email.send()
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
