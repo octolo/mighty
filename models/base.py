@@ -175,16 +175,16 @@ class Base(models.Model):
 
     # Log facilities
     def get_log(self, lvl, field=None):
-        return self.logfields[lvl][field]
+        return self.logs[lvl][field]
 
     def add_log(self, lvl, msg, field=None):
-        self.logfields[lvl][field] = msg
+        self.logs[lvl][field] = msg
         
     def del_log(self, lvl, field=None):
-        del self.logfields[lvl][field]
+        del self.logs[lvl][field]
 
     def has_log_lvl(self, lvl):
-        return True if lvl in self.logfields else False
+        return True if lvl in self.logs else False
 
     def has_log(self):
         for lvl,errors in self.logs.items():

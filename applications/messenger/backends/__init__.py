@@ -41,13 +41,15 @@ class MissiveBackend:
             email = EmailMultiAlternatives(self.missive.subject, html_content, conf.sender_email, [self.missive.target])
             email.attach_alternative(html_content, "text/html")
             if self.missive.attachments:
+                logs = []
                 import os
                 for document in self.missive.attachments:
                     email.attach(os.path.basename(document.name), document.read(), 'application/pdf')
+                    logs.append(os.path.basename(document.name))
+                self.missive.logs = logs
             email.send()
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
-        logger.info("send email: %s" % self.message, extra=self.extra)
         return self.missive.status
 
     def send_postal(self):
@@ -55,7 +57,6 @@ class MissiveBackend:
             pass
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
-        logger.info("send postal: %s" % self.message, extra=self.extra)
         return self.missive.status
 
     def check(self, missive):

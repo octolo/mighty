@@ -22,7 +22,7 @@ source = ('sources',)
 keywords = ('keywords',)
 file = ('file',)
 file_name = ('filename',)
-base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search', 'update_count', 'cache')
+base = ('uid', 'is_disable', 'date_create', 'create_by', 'date_update', 'update_by', 'search', 'update_count', 'cache', 'logs')
 news = ('title', 'news', 'date_news')
 
 _file = (
