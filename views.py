@@ -6,7 +6,11 @@ from django.views.generic.base import TemplateView, RedirectView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
+
+from django.core.files import File
+from django.template.loader import get_template
+from django.template import Context, Template
 
 from mighty import translates as _
 from mighty.filters import FiltersManager, Foxid
@@ -17,6 +21,9 @@ from mighty.functions import make_searchable, setting
 from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.nationality.apps import NationalityConfig
 from mighty.applications.user import get_form_fields
+
+import pdfkit, os
+import tempfile
 
 base_config = { 
     'base': {
@@ -301,83 +308,41 @@ class GenericSuccess(View):
     def get(self, request):
         return HttpResponse('OK')
 
-from io import BytesIO
-from django.core.files import File
-from django.template.loader import get_template
-from django.template import Context, Template
-import pdfkit, os
-import tempfile
-from django.http import FileResponse
 class PDFView(DetailView):
     header_html = None
     footer_html = None
     cache_object = None
     in_browser = False
     pdf_name = 'file.pdf'
-    options = {
-            'encoding': 'UTF-8',
-            'page-size':'A4',
-            'margin-top': '0.75in',
-            'margin-right': '0.75in',
-            'margin-bottom': '0.75in',
-            'margin-left': '0.75in',
-            'custom-header' : [
-                ('Accept-Encoding', 'gzip')
-            ]
-        }
-
-    header_footer = doctype = """<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <script>
-    function subst() {
-        var vars = {};
-        var query_strings_from_url = document.location.search.substring(1).split('&');
-        for (var query_string in query_strings_from_url) {
-            if (query_strings_from_url.hasOwnProperty(query_string)) {
-                var temp_var = query_strings_from_url[query_string].split('=', 2);
-                vars[temp_var[0]] = decodeURI(temp_var[1]);
-            }
-        }
-        var css_selector_classes = ['page', 'frompage', 'topage', 'webpage', 'section', 'subsection', 'date', 'isodate', 'time', 'title', 'doctitle', 'sitepage', 'sitepages'];
-        for (var css_class in css_selector_classes) {
-            if (css_selector_classes.hasOwnProperty(css_class)) {
-                var element = document.getElementsByClassName(css_selector_classes[css_class]);
-                for (var j = 0; j < element.length; ++j) {
-                    element[j].textContent = vars[css_selector_classes[css_class]];
-                }
-            }
-        }
-    }
-    </script>
-  </head>
-  <body onload="subst()">%s</body>
-</html>"""
-
-    content_html = content = """<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  </head>
-  <body>%s</body>
-</html>"""
+    options = conf.pdf_options
+    header_footer = conf.pdf_header_footer
+    content_html = conf.pdf_content
 
     def get_object(self):
         if not self.cache_object:
             self.cache_object = super().get_object()
         return self.cache_object
 
+    def build_footer_html(self):
+        with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as footer_html:
+            footer = self.header_footer % self.get_object().group.build_document_footer
+
+    def get_header(self):
+        return ""
+
     def build_header_html(self):
         with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as header_html:
-            header = self.header_footer % self.get_object().group.build_document_header
+            header = self.get_header()
             header_html.write(Template(header).render(self.get_context_data()).encode("utf-8"))
         self.header_html = header_html
         return self.header_html
 
+    def get_footer(self):
+        return ""
+
     def build_footer_html(self):
         with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as footer_html:
-            footer = self.header_footer % self.get_object().group.build_document_footer
+            footer = self.get_footer()
             footer_html.write(Template(footer).render(self.get_context_data()).encode("utf-8"))
         self.footer_html = footer_html
         return self.footer_html
