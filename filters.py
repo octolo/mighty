@@ -51,7 +51,7 @@ class Filter(Verify):
             return msg
 
     def get_mask(self):
-        return self.mask
+        return '__in' if self.is_array and not self.mask else self.mask
 
     #################
     # Param
