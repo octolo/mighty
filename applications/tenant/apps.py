@@ -33,6 +33,10 @@ class Config:
             'name': 'salarié',
         },
     ]
+    group_api = {
+        "uid": "group.uid",
+        "image_url": "group.image_url",
+    }
 
     class ForeignKey:
         group = setting('TENANT_GROUP', 'auth.Group')

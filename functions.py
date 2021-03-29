@@ -21,6 +21,12 @@ request_kept = threading.local()
 def get_request_kept():
     return getattr(request_kept, 'request', None)
 
+def get_descendant_value(path, obj):
+    path = path.split('.')
+    for p in path:
+        obj = getattr(obj, p) if hasattr(obj, p) else False
+    return obj
+
 """
 Round function for sql usage
 """

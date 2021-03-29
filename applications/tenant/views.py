@@ -7,6 +7,7 @@ from django.core.validators import  ValidationError
 from django.db.models import Q
 
 from mighty import filters
+from mighty.functions import get_descendant_value
 from mighty.views import DetailView, ListView, CheckData
 from mighty.applications.user.choices import STATUS_PENDING
 from mighty.applications.tenant.apps import TenantConfig
@@ -60,11 +61,7 @@ class TenantBase:
             "status": tenant.status,
             "company_representative": tenant.company_representative,
             "sync": tenant.sync,
-            "group": {
-                "uid": str(tenant.group.uid),
-                "denomination": str(tenant.group.denomination),
-                "image_url": str(tenant.group.image_url)
-            },
+            "group": {key: str(get_descendant_value(path, tenant)) for key,path in TenantConfig.group_api.items() if get_descendant_value(path, tenant)},
             "roles": [{'uid': role.uid, 'name': role.name} for role in tenant.roles.all()]
         }
 
