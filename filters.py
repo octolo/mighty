@@ -51,7 +51,7 @@ class Filter(Verify):
             return msg
 
     def get_mask(self):
-        return self.mask+'__in' if self.is_array else self.mask
+        return '__in' if self.is_array and not self.mask else self.mask
 
     #################
     # Param
@@ -172,6 +172,7 @@ class ParamChoicesFilter(ParamFilter):
 class ParamMultiChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
+        self.mask = kwargs.get('mask', '__in')
         self.choices_required = kwargs.get('choices_required', False)
 
     def verify_param(self):
@@ -232,32 +233,35 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
         self.is_int = kwargs.get('is_int', False)
         self.operator = operator.or_
 
-    def get_field(self, value):
+    def get_field(self, value, field):
         if value[0:3] in ['gte', 'lte']:
-            return self.prefix+self.field+'__gte' if value[0:3] == 'gte' else self.prefix+self.field+'__lte'
+            return self.prefix+field+'__gte' if value[0:3] == 'gte' else self.prefix+field+'__lte'
         elif value[0:2] in ['gt', 'lt']:
-            return self.prefix+self.field+'__gt' if value[0:2] == 'gt' else self.prefix+self.field+'__lt'
-        return self.prefix+self.field+self.mask
+            return self.prefix+field+'__gt' if value[0:2] == 'gt' else self.prefix+field+'__lt'
+        return self.prefix+field+self.mask
 
     def format_value(self, value):
         if self.is_int:
             return make_int(value)
         return make_float(value)
 
-    def get_Q(self):
+    def get_LTEGTE(self, field):
         theQ = []
         for value in self.get_value():
             if '-' in value:
                 value = value.split('-')
                 theQ.append(Q(**{
-                    self.prefix+self.field+'__gte': self.format_value(value[0]), 
-                    self.prefix+self.field+'__lte': self.format_value(value[1]) 
+                    self.prefix+field+'__gte': self.format_value(value[0]), 
+                    self.prefix+field+'__lte': self.format_value(value[1]) 
                 }))
             else:
-                theQ.append(Q(**{self.get_field(value): self.format_value(value) }))
+                theQ.append(Q(**{self.get_field(value, field): self.format_value(value) }))
         if self.is_negative or self.is_array_negative:
             return ~reduce(self.operator, theQ)
         return reduce(self.operator, theQ)
+
+    def get_Q(self):
+        return self.get_LTEGTE(self.field)
 
 class FilterByYearDelta(FilterByGTEorLTE):
     def __init__(self, id='years', request=None, *args, **kwargs):

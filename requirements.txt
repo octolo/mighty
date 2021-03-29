@@ -6,6 +6,7 @@ channels-redis
 django-jsonfield
 django-json-widget
 python-magic
+pdfkit
 -r applications/address/requirements.txt
 -r applications/user/requirements.txt
 -r applications/messenger/requirements.txt
