@@ -73,6 +73,7 @@ class InvitationBase:
     queryset = Invitation.objects.all()
     slug_field = 'uid'
     slug_url_kwarg = 'uid'
+    by_token = False
 
     def get_queryset(self, queryset=None):
         return self.queryset.filter(email__in=self.request.user.get_emails())
@@ -82,12 +83,14 @@ class InvitationBase:
             "uid": self.kwargs.get('uid', None), 
             "status": STATUS_PENDING }
         token = self.request.GET.get('token')
-        if token: args['token'] = token
-        else: args["email__in"] = self.request.user.get_emails()
+        if token:
+            args['token'] = token
+        else:
+            args["email__in"] = self.request.user.get_emails()
         return get_object_or_404(self.model, **args)
 
     def get_fields(self, invitation):
-        return {field: str(getattr(invitation, field)) for field in ('uid',) + tenant_fields.tenant_invitation}
+        return {field: str(getattr(invitation, field)) for field in ('uid', 'tenant_uid') + tenant_fields.tenant_invitation}
 
     def actions(self):
         invitation = self.get_object()
@@ -96,9 +99,9 @@ class InvitationBase:
             #if invitation.is_expired:
             #    invitation.expired()
             if action == 'accepted':
-                invitation.accepted(user=self.request.user if self.request.user.is_authenticated else None)
+                invitation.accepted(self.request.user)
             elif action == 'refused':
-                invitation.refused()
+                invitation.refused(self.request.user)
             return invitation
 
 """

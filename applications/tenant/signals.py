@@ -1,5 +1,9 @@
 from django.apps import apps
+from django.conf import settings
 from django.db.models.signals import post_save, pre_save, post_delete
+
+from mighty.apps import MightyConfig
+from mighty.functions import get_request_kept
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.tenant import get_tenant_model
 
@@ -13,26 +17,15 @@ def Roles(sender, instance, **kwargs):
 post_save.connect(Roles, TenantGroup    )
 
 if TenantConfig.invitation_enable:
-    from django.conf import settings
     from django.contrib.auth import get_user_model
-
     from django.template.loader import render_to_string
-    
-    from mighty.apps import MightyConfig
-    from mighty.applications.logger import signals
-    from mighty.applications.tenant import get_tenant_model
     from mighty.applications.user import choices
-    from mighty.applications.tenant.apps import TenantConfig
     Invitation = get_tenant_model(TenantConfig.ForeignKey.invitation)
 
     def OnStatusChange(sender, instance, **kwargs):
         post_save.disconnect(OnStatusChange, sender=Invitation)
         if instance.status == choices.STATUS_ACCEPTED:
-            kwargs = {
-                'user': get_user_model().objects.get(user_email__email=instance.email),
-                'invitation': instance,
-                'group': instance.group
-            }
+            kwargs = { 'invitation': instance, 'group': instance.group, 'user': instance.user }
             TenantModel = get_tenant_model()
             instance.tenant, status = TenantModel.objects.get_or_create(**kwargs)
             instance.status = choices.STATUS_READY

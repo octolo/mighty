@@ -135,6 +135,11 @@ class TenantAlternate(Base):
     def uid_group(self):
         return str(self.tenant.group.uid)
 
+by_method = (
+    ('USER', 'user'),
+    ('TOKEN', 'token'),
+    ('EMAIL', 'email')
+)
 class TenantInvitation(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_tenantinv")
     email = models.EmailField()
@@ -145,6 +150,7 @@ class TenantInvitation(Base):
     token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     missive = models.ForeignKey(user_conf.ForeignKey.missive, on_delete=models.SET_NULL, related_name='missive_tenantinvitation', blank=True, null=True)
     missives = GenericRelation(user_conf.ForeignKey.missive)
+    user = models.ForeignKey(user_conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_tenantinvitation', blank=True, null=True)
 
     class Meta(Base.Meta):
         abstract = True
@@ -158,16 +164,21 @@ class TenantInvitation(Base):
         delta = datetime.now() - self.date_update
         return user_conf.invitation_days <= delta.days
 
+    @property
+    def tenant_uid(self):
+        return self.tenant.uid if self.tenant else None
+
     def expired(self):
         self.status = choices.STATUS_EXPIRED
         self.save()
 
-    def accepted(self, user=None):
+    def accepted(self, user):
         self.status = choices.STATUS_ACCEPTED
-        if user and self.email not in user.get_emails():
-            user.user_email.create(email=self.email)
+        self.user = user
+        user.user_email.get_or_create(email=self.email)
         self.save()
 
-    def refused(self):
+    def refused(self, user):
         self.status = choices.STATUS_REFUSED
+        self.user = user
         self.save()

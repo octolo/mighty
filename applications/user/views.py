@@ -120,6 +120,7 @@ class UserEmailCheck(CheckData):
             return { "code": "002", "error": str(e.message) }
 
 class UserPhoneCheck(CheckData):
+    permission_classes = ()
     model = UserPhone
     test_field = 'phone'
 
