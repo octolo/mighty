@@ -10,6 +10,7 @@ class RoleAdmin(BaseAdmin):
 
 class TenantAdmin(BaseAdmin):
     raw_id_fields = ('group', 'user')
+    search_fields = ('email', 'group__search', 'user__search')
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant}),)
     filter_horizontal = ('roles',)
@@ -23,6 +24,7 @@ class TenantAlternateAdmin(admin.StackedInline):
 
 class TenantInvitationAdmin(BaseAdmin):
     raw_id_fields = ('group', 'by', 'tenant')
+    search_fields = ('email', 'group__search', 'user__search')
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_invitation + ('missive_link',)}),)
     filter_horizontal = ('roles',)
