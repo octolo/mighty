@@ -9,7 +9,7 @@ from django.db.models import Q
 
 from mighty.views import DetailView, FormView, BaseView, TemplateView
 from mighty.models import Twofactor
-from mighty.functions import masking_email, masking_phone
+from mighty.functions import masking_email, masking_phone, make_searchable
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.twofactor.forms import TwoFactorSearchForm, TwoFactorChoicesForm, TwoFactorCodeForm, SignUpForm
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
@@ -127,9 +127,9 @@ class APISendCode(TemplateView):
     device = None
     user = None
     masking = None
-
+    
     def get_identity(self, request):
-        return request.POST.get('identity', request.GET.get('identity', False))
+        return make_searchable(request.POST.get('identity', request.GET.get('identity', False)).lower())
 
     def send_code(self, request):
         identity = self.get_identity(request)

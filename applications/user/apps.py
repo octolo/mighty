@@ -7,6 +7,8 @@ class Config:
     invitation_enable = True
     invitation_days = 7
     invitation_url = 'http://%(domain)s/user/invitation/%(uid)s/?token=%(token)s'
+    cgu = True
+    cgv = False
 
     class ForeignKey:
         missive = 'mighty.Missive'
@@ -24,7 +26,7 @@ class Config:
 
     class Field:
         username = 'email'
-        required = ()
+        required = ('cgu',)
         optional = ('phone',)
         style = ['dark', 'light']
 

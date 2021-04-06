@@ -57,6 +57,10 @@ class UserAdmin(UserAdmin, BaseAdmin):
         if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
             self.fieldsets[1][1]['fields'] += ('current_tenant',)
             self.raw_id_fields += ('current_tenant',)
+        if UserConfig.cgu:
+            self.add_field(_.informations, ('cgu',))
+        if UserConfig.cgv:
+            self.add_field(_.informations, ('cgv',))
 
     def save_model(self, request, obj, form, change):
         if not change: obj.method = METHOD_BACKEND

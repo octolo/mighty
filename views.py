@@ -32,8 +32,10 @@ base_config = {
         'sms': TwofactorConfig.method.sms,
         'basic': TwofactorConfig.method.basic,
         'languages': NationalityConfig.availables,
-        'fields': get_form_fields()
+        'fields': get_form_fields(),
     }}
+base_config.update(setting('BASE_CONFIG', {}))
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -246,8 +248,11 @@ class ExportView(ListView):
 class CheckData(TemplateView):
     test_field = None
 
+    def get_data(self):
+        return self.request.GET.get('check')
+
     def get_queryset(self, queryset=None):
-        self.model.objects.get(**{self.test_field: self.request.GET.get('check')})
+        self.model.objects.get(**{self.test_field: self.get_data()})
 
     def check_data(self):
         try:
@@ -348,7 +353,7 @@ class PDFView(DetailView):
         return self.footer_html
 
     def get_css_print(self):
-        return os.path.join(settings.STATIC_ROOT, 'css', 'print.css')
+        return os.path.join(setting('STATIC_ROOT', '/static'), 'css', 'print.css')
 
     def get_context_data(self, **kwargs):
         return Context({ "obj": self.get_object() })

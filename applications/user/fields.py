@@ -1,5 +1,6 @@
 from mighty import fields
 from mighty.functions import setting
+from mighty.applications.user.apps import UserConfig as conf
 
 search = ('username', 'email', 'last_name', 'first_name')
 serializer = ('uid',) + fields.image_url + (
@@ -12,6 +13,13 @@ serializer = ('uid',) + fields.image_url + (
     'gender',
     'is_staff',
 )
+
+if conf.cgu:
+    serializer+('cgu',)
+
+if conf.cgv:
+    serializer+('cgv',)
+
 invitation = ('last_name', 'first_name', 'email', 'phone', 'user', 'by', 'token', 'status')
 profile = fields.image_url + (
     'username',

@@ -1,5 +1,5 @@
 from django.conf import settings
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, ValidationError
 from mighty.models import User, UserEmail, UserPhone, InternetProtocol
 from mighty.applications.user import fields
 from mighty.applications.nationality import serializers as nationality_serializers
@@ -40,3 +40,8 @@ class CreateUserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = allfields
+
+    def validate_cgu(self, value):
+        if not value:
+            raise ValidationError("Validation error")
+        return value

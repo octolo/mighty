@@ -16,6 +16,7 @@ from mighty.views import TemplateView, DetailView, CreateView, CheckData
 from mighty.applications.user.choices import STATUS_PENDING
 from mighty.applications.user.forms import UserCreationForm
 from mighty.models import UserEmail, UserPhone
+from mighty.functions import make_searchable
 
 from phonenumber_field.validators import validate_international_phonenumber
 
@@ -47,6 +48,8 @@ class ProfileBase:
         user = self.get_object()
         user_data = {'uid': str(user.uid)}
         user_data.update({field: getattr(user, field) for field in fields.profile})
+        if hasattr(user, 'current_tenant') and user.current_tenant:
+            user_data.update({'current_tenant': user.current_tenant.uid})
         return user_data
 
 class InvitationBase:
@@ -111,10 +114,13 @@ class UserEmailCheck(CheckData):
     model = UserEmail
     test_field = 'email'
 
+    def get_data(self):
+        return make_searchable(self.request.GET.get('check').lower())
+
     def check_data(self):
         validator = EmailValidator()
         try:
-            validator(self.request.GET.get('check'))
+            validator(self.get_data())
             return super().check_data()
         except ValidationError as e:
             return { "code": "002", "error": str(e.message) }
