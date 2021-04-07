@@ -11,5 +11,6 @@ def pre_change_log(sender, instance, **kwargs):
 
 def post_change_log(sender, instance, created, **kwargs):
     if not created:
-        new, old = models_difference(instance, instance._unmodified, base+instance.changelog_exclude)
+        exclude =  base + tuple(instance.m2o_fields().keys()) + tuple(instance.m2m_fields().keys()) + instance.changelog_exclude
+        new, old = models_difference(instance, instance._unmodified, exclude)
         createorupdate_changeslog(instance, new, old)

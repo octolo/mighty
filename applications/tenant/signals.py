@@ -3,7 +3,6 @@ from django.conf import settings
 from django.db.models.signals import post_save, pre_save, post_delete
 
 from mighty.apps import MightyConfig
-from mighty.functions import get_request_kept
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.tenant import get_tenant_model
 

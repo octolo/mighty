@@ -4,7 +4,8 @@ from django.utils.html import format_html
 from django.db.models.options import Options
 
 from mighty.fields import JSONField
-from mighty.functions import make_searchable
+from mighty.functions import make_searchable, get_request_kept
+
 from mighty import translates as _
 from uuid import uuid4
 from sys import getsizeof
@@ -145,10 +146,10 @@ class Base(models.Model):
     def concrete_fields(self, excludes=[]):
         return {field.name: field.__class__.__name__ for field in self._meta.concrete_fields if field.__class__.__name__ not in excludes}
 
-    def related_fields(self, excludes=[]):
+    def m2o_fields(self, excludes=[]):
         return {field.name: field.__class__.__name__ for field in self._meta.related_objects if field.__class__.__name__ not in excludes}
     
-    def many_fields(self, excludes=[]):
+    def m2m_fields(self, excludes=[]):
         return {field.name: field.__class__.__name__ for field in self._meta.many_to_many if field.__class__.__name__ not in excludes}
 
     # Url facilities
@@ -226,18 +227,26 @@ class Base(models.Model):
         self.is_disable = False
         self.save()
 
-    def save(self, *args, **kwargs):
+    def default_data(self):
+        request = get_request_kept()
         self.set_search()
-        exist = self.pk
-        if exist:
+        self.set_update_by(get_request_kept().user if request else None)
+        if self.pk:
             self.update_count+=1
+            self.pre_update()
         else:
+            self.set_create_by(get_request_kept().user if request else None)
             self.pre_create()
+
+    def save(self, *args, **kwargs):
+        self.default_data()
         super().save(*args, **kwargs)
-        if not exist: 
-            self.post_create()
+        if not self.pk: self.post_create()
 
     def pre_create(self):
+        pass
+
+    def pre_update(self):
         pass
 
     def post_create(self):

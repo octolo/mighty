@@ -1,5 +1,15 @@
 default_app_config = 'mighty.applications.logger.apps.LoggerConfig'
 
+def format_log_field(field, value, instance, fk_column, fk_field):
+    return {
+        fk_column: instance,
+        'field': field,
+        'value': bytes(str(value), 'utf-8'),
+        'fmodel': instance.fields()[field],
+        'date_begin': instance._unmodified.date_update,
+        'user': instance._unmodified.update_by,
+    }
+
 def EnableChangeLog(model, excludes=()):
     def deco(cls):
         setattr(cls, "changelog_model", model)
@@ -19,12 +29,8 @@ def createorupdate_changeslog(instance, newvalues, oldvalues, *args, **kwargs):
     fk_field = kwargs.get("fk_field", "id")
     if len(oldvalues) > 0:
         instance.changelog_model.objects.bulk_create([
-            instance.changelog_model(**{
-                fk_column: instance,
-                'field': field,
-                'value': bytes(str(value), 'utf-8'),
-                'fmodel': instance.fields()[field],
-                'date_begin': instance._unmodified.date_update,
-                'user': instance._unmodified.update_by,
-            }) for field, value in oldvalues.items()
+            instance.changelog_model(
+                **format_log_field(field, value, instance, fk_column, fk_field)
+            ) for field, value in oldvalues.items()
         ])
+

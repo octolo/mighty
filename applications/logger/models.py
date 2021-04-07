@@ -53,7 +53,7 @@ class Log(models.Model):
         ordering = ['-created']
 
 class ChangeLog(models.Model):
-    object_id = models.ForeignKey('', on_delete=models.CASCADE)
+    #object_id = models.ForeignKey('', on_delete=models.CASCADE)
     field = models.CharField(_m.field, max_length=255, db_index=True)
     value = models.BinaryField(_m.value, )
     fmodel = models.CharField(_m.fmodel, max_length=255)

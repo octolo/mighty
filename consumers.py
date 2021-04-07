@@ -46,7 +46,6 @@ class MightyConsumer(WebsocketConsumer):
     def connect(self):
         self.user = self.get_user_obj(self.scope)
         database_sync_to_async(self.save_user_channel)()
-        print('okk')
         self.accept()
 
     def disconnect(self, close_code):
