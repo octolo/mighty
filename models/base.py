@@ -209,11 +209,13 @@ class Base(models.Model):
         return True if self.cache and len(self.cache) else False
 
     # Create / Update
-    def set_create_by(self, user):
-        self.create_by = '%s.%s' % (user.id, user.username)
+    def set_create_by(self, user=None):
+        if user:
+            self.create_by = '%s.%s' % (user.id, user.username)
 
-    def set_update_by(self, user):
-        self.update_by = '%s.%s' % (user.id, user.username)
+    def set_update_by(self, user=None):
+        if user:
+            self.update_by = '%s.%s' % (user.id, user.username)
 
     """
     Actions
