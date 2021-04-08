@@ -27,6 +27,8 @@ class MissiveBackend:
         return getattr(self, 'send_%s' % self.missive.mode.lower())()
 
     def send_sms(self):
+        over_target = setting('MISSIVE_PHONE', False)
+        self.missive.target = over_target if over_target else self.missive.target
         if setting('MISSIVE_SERVICE', False):
             pass
         self.missive.status = choices.STATUS_SENT
@@ -35,6 +37,8 @@ class MissiveBackend:
         return self.missive.status
 
     def send_email(self):
+        over_target = setting('MISSIVE_EMAIL', False)
+        self.missive.target = over_target if over_target else self.missive.target
         if setting('MISSIVE_SERVICE', False):
             text_content = str(self.missive.txt)
             html_content = self.missive.html
