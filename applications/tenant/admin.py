@@ -10,7 +10,7 @@ class RoleAdmin(BaseAdmin):
 
 class TenantAdmin(BaseAdmin):
     raw_id_fields = ('group', 'user')
-    search_fields = ('email', 'group__search', 'user__search')
+    search_fields = ('tenant_invitation__email', 'group__search', 'user__search')
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant}),)
     filter_horizontal = ('roles',)
