@@ -105,12 +105,13 @@ class TwoFactorBackend(ModelBackend):
         return missive
 
     def send_email(self, obj, user, target):
+        from django.template.loader import render_to_string
         missive = Missive(**{
             "content_type": user.missives.content_type,
             "object_id": user.id,
             "target": target,
             "subject": _.tpl_subject % {'domain': MightyConfig.domain.upper()},
-            "html": _.tpl_html % {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)},
+            "html": render_to_string(conf.email_code, {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)}),
             "txt": _.tpl_txt % {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)},
         })
         missive.save()

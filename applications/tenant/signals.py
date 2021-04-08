@@ -33,7 +33,7 @@ if TenantConfig.invitation_enable:
     post_save.connect(OnStatusChange, Invitation)
 
     def SendMissiveInvitation(sender, instance, **kwargs):
-        instance.status = choices.STATUS_ACCEPTED if instance.tenant else instance.status
+        instance.status = choices.STATUS_READY if instance.tenant else instance.status
         save_need = False
         if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
             from mighty.models import Missive

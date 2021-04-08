@@ -6,6 +6,7 @@ class Config:
     groups_onsave = []
     minutes_allowed = 5
     code_size = 6
+    email_code = 'twofactor/email_code.html'
 
     class method:
         email = True

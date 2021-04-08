@@ -222,7 +222,7 @@ class FilePDFView(ViewView):
     pass
 
 # Buffer for ExportView
-class Echo:
+class StreamingBuffer:
     def write(self, value): return value
 
 # ExportView download a csv file
@@ -240,7 +240,7 @@ class ExportView(ListView):
             objects_list = queryset.filter(q).values_list(*self.fields)
         else:
             objects_list = self.model.objects.all().values_list(*self.fields)
-        response = StreamingHttpResponse(streaming_content=(self.iter_items(objects_list, Echo())), content_type='text/csv',)
+        response = StreamingHttpResponse(streaming_content=(self.iter_items(objects_list, StreamingBuffer())), content_type='text/csv',)
         response['Content-Disposition'] = 'attachment;filename=%s.csv' % get_valid_filename(make_searchable(self.model._meta.verbose_name))
         return response
 

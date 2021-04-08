@@ -44,6 +44,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
         'classes': ('wide',),
         'fields': get_form_fields()}),)
     readonly_fields = ('method', 'channel')
+    list_display = ('username', 'email', 'date_create')
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
