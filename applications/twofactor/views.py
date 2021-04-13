@@ -129,10 +129,11 @@ class APISendCode(TemplateView):
     masking = None
     
     def get_identity(self, request):
-        return make_searchable(request.POST.get('identity', request.GET.get('identity', False)).lower())
+        return request.POST.get('identity', request.GET.get('identity', False)).lower()
 
     def send_code(self, request):
         identity = self.get_identity(request)
+        print(identity)
         if identity:
             missive = use_twofactor(identity)
             if missive:
