@@ -133,7 +133,6 @@ class APISendCode(TemplateView):
 
     def send_code(self, request):
         identity = self.get_identity(request)
-        print(identity)
         if identity:
             missive = use_twofactor(identity)
             if missive:

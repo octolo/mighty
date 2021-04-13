@@ -19,7 +19,12 @@ method_not_allowed = _("This authentication method is not allowed")
 
 tpl_subject = _("%(domain)s - Connection code")
 tpl_html = _("%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s")
-tpl_txt = _("%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s")
+tpl_txt = _("""%(domain)s  - Code de connexion
+Cher utilisateur,
+Vous venez de demander un code d'authentification afin de vous connecter sur %(domain)s.
+Afin de vous authentifier et accéder à votre espace, veuillez copier le code suivant : %(code)s.
+A tout de suite sur %(domain)s !
+""")
 
 
 help_login = _("Don't have an account? Register")
