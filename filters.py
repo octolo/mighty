@@ -47,7 +47,6 @@ class Filter(Verify):
     def verify_field(self):
         if not self.field:
             msg = "field can't be empty!"
-            logger.debug('filter %s: %s' % (self.id, msg))
             return msg
 
     def get_mask(self):
@@ -142,11 +141,9 @@ class Filter(Verify):
     def sql(self, request=None, *args, **kwargs):
         self.request = request
         self.user = kwargs.get('user')
-        logger.warning(self.request)
         if self.verify() and self.used:
             sql = self.get_Q()
             dep = self.get_dependencies()
-            logger.warning('sql: %s, dep: %s' % (sql, dep))
             return dep.add(sql, Q.AND) if dep and sql else sql
         return Q()
 
@@ -307,7 +304,6 @@ class FiltersManager:
             for param, value in self.get_data(request).lists():
                 flt = self.get_filter(param, value)
                 if flt: self.cache_filters.append(flt)
-                logger.warning('param: %s, value: %s' % (param, value))
         #self.cache_filters = [f.sql(request) for f in self.flts if f.sql(request)]
         return self.cache_filters
 
@@ -355,11 +351,6 @@ class Foxid:
             i = 0
             while i < len(input_str):
                 char = input_str[i]
-                logger.debug('WHILE compiled: %s' % self.compiled)
-                logger.debug('WHILE context: %s' % self.context)
-                logger.debug('WHILE idorarg: %s' % self.idorarg)
-                logger.debug('WHILE filter_idandargs: %s' % self.filter_idandargs)
-                logger.debug('WHILE char: %s' % char)
                 i += 1
                 if char in self.tokens:
 
@@ -394,13 +385,11 @@ class Foxid:
 
                         # closing filter
                         if char == self.Token._filter[2] and self.context[-1] == self.Token._filter[0]+self.Token._filter[1]:
-                            logger.warning('close filter')
                             self.context.pop()
                             self.add_filter(self.get_filter_by_idandargs())
 
                         # closing family
                         elif char == self.Token._family[1] and self.context[-1] == self.Token._family[0]:
-                            logger.warning('close family')
                             self.add_filter(reduce(self.operators.pop() if len(self.operators) else operator.and_, self.families.pop()))
                             self.context.pop()
 
@@ -423,11 +412,6 @@ class Foxid:
 
             if self.compiled:
                 self.compiled = reduce(self.operators.pop() if len(self.operators) else operator.and_, self.compiled)
-            logger.info('END compiled: %s' % self.compiled)
-            logger.info('END context: %s' % self.context)
-            logger.info('END idorarg: %s' % self.idorarg)
-            logger.info('END filter_idandargs: %s' % self.filter_idandargs)
-            logger.info('END char: %s' % char)
 
         if len(self.context):
             raise SyntaxError('invalid syntax of the request interpreter')
