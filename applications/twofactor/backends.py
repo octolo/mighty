@@ -28,8 +28,7 @@ class TwoFactorBackend(ModelBackend):
             if field_type == 'uid' and hasattr(UserModel, 'uid'):
                 user = UserModel.objects.get(uid=username)
             else:
-                username = username.lower()
-                user = UserModel.objects.get(Q(user_email__email=username)|Q(user_phone__phone=username)|Q(username=username))
+                user = UserModel.objects.get(Q(user_email__email__iexact=username)|Q(user_phone__phone=username)|Q(username=username))
                 #user = UserModel._default_manager.get_by_natural_key(username)
         except UserModel.DoesNotExist:
             UserModel().set_password(password)
