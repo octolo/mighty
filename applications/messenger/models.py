@@ -24,6 +24,7 @@ class Missive(Base):
     subject = models.CharField(max_length=255)
     html = CKEditor5Field()
     txt = models.TextField()
+    trace = models.TextField(blank=True, null=True)
     default = ''
     attachments = None
 

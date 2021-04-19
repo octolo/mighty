@@ -42,7 +42,8 @@ class MissiveBackend:
         if setting('MISSIVE_SERVICE', False):
             text_content = str(self.missive.txt)
             html_content = self.missive.html
-            email = EmailMultiAlternatives(self.missive.subject, html_content, conf.sender_email, [self.missive.target])
+            email = EmailMultiAlternatives(self.missive.subject, html_content, conf.sender_email, [self.missive.target],
+                headers={'MessageID': self.missive.uid},)
             email.attach_alternative(html_content, "text/html")
             if self.missive.attachments:
                 logs = []
