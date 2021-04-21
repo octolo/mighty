@@ -15,4 +15,4 @@ gyn@ArchlinuxVM01.localdomain   handle_status:
 
 # master.cf
 handle_status unix - n n - - pipe
-    flags=FRq user=gyn argv={{ PATH_DJANGO }}/mighty/applications/messenger/management/handleStatusMail.sh {{ PATH_PYTHON_ENV} {{ PATH_MANAGE_PY }}
+    flags=FRq user=gyn argv={{ PATH_DJANGO }}/mighty/applications/messenger/management/handleStatusMail.sh {{ PATH_PYTHON_ENV }} {{ PATH_MANAGE_PY }}
