@@ -119,7 +119,7 @@ class ModelBaseCommand(BaseCommand):
     def each_objects(self):
         qs = self.get_queryset()
         self.total = len(qs)
-        for obj in self.get_queryset():
+        for obj in qs:
             self.current_object = obj
             self.set_position()
             self.progress_bar()
