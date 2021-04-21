@@ -168,6 +168,9 @@ class TenantInvitation(Base):
     def tenant_uid(self):
         return self.tenant.uid if self.tenant else None
 
+    def to_send():
+        self.status = user_choices.STATUS_TOSEND
+
     def expired(self):
         self.status = choices.STATUS_EXPIRED
         self.save()

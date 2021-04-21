@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail, EmailMessage, EmailMultiAlternatives
+from django.core.mail.message import make_msgid
 
 from mighty.functions import setting
 from mighty.models import Missive
@@ -40,9 +41,10 @@ class MissiveBackend:
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
         if setting('MISSIVE_SERVICE', False):
+            self.missive.msg_id = make_msgid()
             text_content = str(self.missive.txt)
             html_content = self.missive.html
-            email = EmailMultiAlternatives(self.missive.subject, html_content, conf.sender_email, [self.missive.target])
+            email = EmailMultiAlternatives(self.missive.subject, html_content, conf.sender_email, [self.missive.target], headers={'Message-Id': self.missive.msg_id})
             email.attach_alternative(html_content, "text/html")
             if self.missive.attachments:
                 logs = []

@@ -9,4 +9,6 @@ missive = (
     "subject",
     "html",
     "txt",
+    "msg_id",
+    "trace"
 )

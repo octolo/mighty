@@ -22,10 +22,12 @@ class Missive(Base):
     backend = models.CharField(max_length=255, editable=False)
     response = models.TextField(editable=False)
     subject = models.CharField(max_length=255)
+    msg_id = models.CharField(max_length=255, blank=True, null=True)
     html = CKEditor5Field()
     txt = models.TextField()
     default = ''
     attachments = None
+    trace = models.TextField(blank=True, null=True)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -46,6 +48,9 @@ class Missive(Base):
 
     def prepare(self):
         self.status = choices.STATUS_PREPARE
+
+    def to_error(self):
+        self.status = choices.STATUS_ERROR
 
     @property
     def masking_email(self):
