@@ -140,6 +140,7 @@ class Filter(Verify):
 
     def sql(self, request=None, *args, **kwargs):
         self.request = request
+        self.data = kwargs.get('bdata')
         self.user = kwargs.get('user')
         if self.verify() and self.used:
             sql = self.get_Q()
@@ -284,7 +285,7 @@ class FiltersManager:
                 data.update(request.POST)
             elif hasattr(request, 'data'):
                 data.update(request.data)
-        return data
+        return list(data.lists())
 
     def params(self, request):
         return self.get_filters(request)
@@ -293,15 +294,16 @@ class FiltersManager:
         try:
             flt = next(x for x in self.flts if param in x.params_choices)
             if self.request.user.is_authenticated:
-                return flt.sql({param: value}, user=self.request.user)
-            return flt.sql({param: value})
+                return flt.sql({param: value}, user=self.request.user, bdata=self.data)
+            return flt.sql({param: value}, bdata=self.data)
         except StopIteration:
             return None
 
     def get_filters(self, request):
         if not self.cache_filters: 
             self.cache_filters = []
-            for param, value in self.get_data(request).lists():
+            self.data = self.get_data(request)
+            for param, value in self.data:
                 flt = self.get_filter(param, value)
                 if flt: self.cache_filters.append(flt)
         #self.cache_filters = [f.sql(request) for f in self.flts if f.sql(request)]
