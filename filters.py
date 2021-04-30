@@ -114,7 +114,11 @@ class Filter(Verify):
         if self.delimiter:
             values = []
             for value in self.request.get(self.param_used):
-                values += self.request.get(self.param_used).split(self.delimiter)
+                if self.is_array:
+                    for value in  self.request.get(self.param_used):
+                        values += value.split(self.delimiter)
+                else:
+                    values += self.request.get(self.param_used).split(self.delimiter)
             return values
         elif self.regex_delimiter:
             values = []
@@ -303,10 +307,12 @@ class FiltersManager:
         if not self.cache_filters: 
             self.cache_filters = []
             self.data = self.get_data(request)
+            logger.info('URL data: %s' % self.data)
             for param, value in self.data:
                 flt = self.get_filter(param, value)
                 if flt: self.cache_filters.append(flt)
         #self.cache_filters = [f.sql(request) for f in self.flts if f.sql(request)]
+        logger.info('Filter: %s' % self.cache_filters)
         return self.cache_filters
 
     def add(self, id_, filter_):
