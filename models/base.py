@@ -51,6 +51,7 @@ class Base(models.Model):
     update_count = models.PositiveBigIntegerField(default=0)
     note = models.TextField(blank=True, null=True)
     cache = JSONField(blank=True, null=True, default=dict)
+    _old_self = None
 
     class mighty:
         perm_title = actions
@@ -60,6 +61,12 @@ class Base(models.Model):
     class Meta:
         abstract = True
         default_permissions = default_permissions + permissions
+    
+    def __init__(self, *args, **kwargs):
+        super(Base, self).__init__(*args, **kwargs)
+        if self.pk:
+            self._old_self = self
+
         
     """
     Properties
