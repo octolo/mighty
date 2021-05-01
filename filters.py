@@ -289,7 +289,7 @@ class FiltersManager:
                 data.update(request.POST)
             elif hasattr(request, 'data'):
                 data.update(request.data)
-        return list(data.lists())
+        return data
 
     def params(self, request):
         return self.get_filters(request)
@@ -306,7 +306,7 @@ class FiltersManager:
     def get_filters(self, request):
         if not self.cache_filters: 
             self.cache_filters = []
-            self.data = self.get_data(request)
+            self.data = list(self.get_data(request).lists())
             logger.info('URL data: %s' % self.data)
             for param, value in self.data:
                 flt = self.get_filter(param, value)
