@@ -251,6 +251,7 @@ class Base(models.Model):
         self.default_data()
         super().save(*args, **kwargs)
         if not self.pk: self.post_create()
+        else: self.post_update()
 
     def pre_create(self):
         pass
@@ -259,4 +260,7 @@ class Base(models.Model):
         pass
 
     def post_create(self):
+        pass
+
+    def post_update(self):
         pass
