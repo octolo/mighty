@@ -13,17 +13,32 @@ from django_ckeditor_5.fields import CKEditor5Field
 ###########################
 # Models in mighty
 ###########################
-class ConfigClient(Base):
+class Config(Base):
     name = models.CharField(max_length=255, unique=True)
     url_name = models.CharField(max_length=255, null=True, blank=True, editable=False)
-    config = JSONField(null=True, blank=True)
 
     class Meta(Base.Meta):
+        abstract = True
         ordering = ('date_create', 'name')
 
     def save(self, *args, **kwargs):
         self.url_name = get_valid_filename(make_searchable(self.name))
-        super(ConfigClient, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
+class ConfigClient(Config):
+    config = JSONField(null=True, blank=True)
+
+class ConfigSimple(Config):
+    configchar = models.CharField(max_length=255, null=True, blank=True)
+    configbool = models.BooleanField(default=False)
+    is_boolean = models.BooleanField(default=False)
+
+    @property
+    def config(self):
+        return self.configbool if self.is_boolean else self.configchar
+
+    class Meta(Base.Meta):
+        ordering = ('date_create', 'name')
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     class Channel(Base):

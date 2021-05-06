@@ -87,7 +87,6 @@ class InvitationBase:
             args['token'] = token
         else:
             args["email__in"] = self.request.user.get_emails()
-        print(args)
         return get_object_or_404(self.model, **args)
 
     def get_fields(self, invitation):

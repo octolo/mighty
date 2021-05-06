@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView, RedirectView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
-from django.http import JsonResponse, HttpResponse, FileResponse
+from django.http import JsonResponse, HttpResponse, FileResponse, Http404
 
 from django.core.files import File
 from django.template.loader import get_template
@@ -14,7 +14,7 @@ from django.template import Context, Template
 
 from mighty import translates as _
 from mighty.filters import FiltersManager, Foxid
-from mighty.models import ConfigClient
+from mighty.models import ConfigClient, ConfigSimple
 from mighty.apps import MightyConfig as conf
 from mighty.functions import tpl, tplx
 from mighty.functions import make_searchable, setting
@@ -289,24 +289,36 @@ class Config(TemplateView):
 # Return all configs in model ConfigClient
 class ConfigListView(ListView):
     model = ConfigClient
-    queryset = ConfigClient.objects.all()
+
+    def get_queryset(self):
+        return [ConfigClient.objects.filter(is_disable=False), ConfigSimple.objects.filter(is_disable=False)]
 
     def render_to_response(self, context):
-        cfg = {cfg.url_name: cfg.config for cfg in context['object_list']}
-        cfg.update(base_config)
+        cfg = base_config
+        for cfgs in context['object_list']:
+            cfg.update({cfg.url_name: cfg.config for cfg in cfgs})
         return JsonResponse(cfg)
 
-# Return a named ConfigCLient
+# Return a named Config
 class ConfigDetailView(DetailView):
     model = ConfigClient
 
+    def get_config(self):
+        try:
+            return ConfigClient.objects.get(url_name=self.kwargs.get('name'))
+        except ConfigClient.DoesNotExist:
+            return ConfigSimple.objects.get(url_name=self.kwargs.get('name'))
+
     def get_object(self, queryset=None):
-        return ConfigClient.objects.get(url_name=self.kwargs.get('name'))
+        try:
+            return self.get_config()
+        except ObjectDoesNotExist:
+            raise Http404
+
 
     def render_to_response(self, context):
-        cfg = context['object'].config
-        key = self.request.GET.get('key', False)
-        return JsonResponse({key: cfg[key]} if key in cfg else cfg)
+        cfg = self.get_object()
+        return JsonResponse({cfg.name: cfg.config})
 
 # Generic response
 class GenericSuccess(View):

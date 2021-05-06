@@ -18,6 +18,30 @@ class Config:
     days_in_year = 365.25
     consumers = {'chat': 'mighty.applications.messenger.consumers.ChatConsumer'}
     auth_consumer = 'channels.auth.AuthMiddlewareStack'
+    config_simple = {
+        'current_maintenance': False,
+    }
+    multi_apps = {
+        'messenger': [
+            'Missive',
+            'Invitation',
+        ],
+        'languages/translations': [
+            'Nationality',
+            'Translator',
+        ],
+        'user': [
+            'User',
+            'Twofactor'
+        ],
+        'Configuration': [
+            'ConfigSimple',
+            'ConfigClient',
+        ],
+        'Websocket': [
+            'Channel',
+        ]
+    }
     pdf_options = {
             'encoding': 'UTF-8',
             'page-size':'A4',

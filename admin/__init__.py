@@ -33,6 +33,13 @@ class ConfigClientAdmin(BaseAdmin):
     list_display = ('name',)
     readonly_fields = ('url_name',)
 
+@admin.register(all_models.ConfigSimple)
+class ConfigClientAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'configchar', 'configbool', 'is_boolean')}),)
+    list_display = ('name',)
+    readonly_fields = ('url_name',)
+
 if hasattr(settings, 'CHANNEL_LAYERS'):
     @admin.register(all_models.Channel)
     class ChannelAdmin(BaseAdmin):

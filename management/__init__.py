@@ -77,7 +77,7 @@ class BaseCommand(BaseCommand):
 
     def showErrors(self):
         for error in self.errors:
-            print(error)
+            logger.info(error)
 
     def do(self):
         raise NotImplementedError("Command should implement method do(self)")
@@ -124,10 +124,6 @@ class ModelBaseCommand(BaseCommand):
             self.set_position()
             self.progress_bar()
             self.on_object(obj)
-            #try:
-            #except Exception as e:
-            #    self.errors.append([e, obj])
-            #    print([e, obj])
 
     def on_object(self, object):
         raise NotImplementedError("Command should implement method on_object(self, obj)")

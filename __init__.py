@@ -1,3 +1,5 @@
+default_app_config = 'mighty.apps.MightyConfig'
+
 class VerifyException(Exception):
     def __init__(self, message):
         self.message = message

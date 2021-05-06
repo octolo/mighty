@@ -1,8 +1,10 @@
+from django.apps import apps
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponseRedirect
+from django.utils.text import capfirst
 from django.urls import reverse, resolve
 from django.views.decorators.cache import never_cache
 from django.template.response import TemplateResponse
@@ -13,6 +15,8 @@ from mighty import translates as _
 from mighty.apps import MightyConfig as conf
 from mighty.functions import service_uptime, service_cpu, service_memory
 from functools import update_wrapper
+import logging, asyncio, aioredis
+logger = logging.getLogger(__name__)
 
 supervision = {
     'server': {
@@ -23,8 +27,6 @@ supervision = {
 }
 supervision.update(getattr(settings, 'SUPERVISION', {}))
 
-import asyncio
-import aioredis
 async def channels_group(pattern):
     redis = await aioredis.create_redis_pool(settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0])
     keys = await redis.keys(pattern, encoding='utf-8')
@@ -39,9 +41,6 @@ async def flushdb():
     redis.close()
     await redis.wait_closed()
 
-
-from django.apps import apps
-from django.utils.text import capfirst
 class AdminSite(admin.AdminSite):
     site_header = conf.site_header
     index_title = conf.index_title
@@ -61,7 +60,8 @@ class AdminSite(admin.AdminSite):
         for model, model_admin in models.items():
             app_label = model._meta.app_label
             app_config = apps.get_app_config(app_label)
-            if hasattr(app_config, 'multi_apps'):        
+            logger.info(app_config)    
+            if hasattr(app_config, 'multi_apps'):    
                 has_module_perms = model_admin.has_module_permission(request)
                 if not has_module_perms:
                     continue
