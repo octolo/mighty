@@ -41,7 +41,7 @@ class Config:
     class ForeignKey:
         group = setting('TENANT_GROUP', 'auth.Group')
         role = setting('TENANT_ROLE', 'mighty.Role')
-        alternate = setting('TENANT_ALTERNATE', 'mighty.TenantAlternate')
+        #alternate = setting('TENANT_ALTERNATE', 'mighty.TenantAlternate')
         tenant = setting('TENANT_MODEL', 'mighty.Tenant')
         missive = setting('TENANT_MISSIVE', 'mighty.Missive')
         invitation = setting('TENANT_INVITATION', 'mighty.TenantInvitation')

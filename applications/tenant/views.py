@@ -17,7 +17,7 @@ from itertools import chain
 Role = get_tenant_model(TenantConfig.ForeignKey.role)
 Invitation = get_tenant_model(TenantConfig.ForeignKey.invitation)
 TenantModel = get_tenant_model(TenantConfig.ForeignKey.tenant)
-TenantAlternate = get_tenant_model(TenantConfig.ForeignKey.alternate)
+#TenantAlternate = get_tenant_model(TenantConfig.ForeignKey.alternate)
 TenantGroup = get_tenant_model(TenantConfig.ForeignKey.group)
 
 """

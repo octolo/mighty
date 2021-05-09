@@ -16,11 +16,11 @@ class TenantAdmin(BaseAdmin):
     filter_horizontal = ('roles',)
     readonly_fields = ('invitation',)
 
-class TenantAlternateAdmin(admin.StackedInline):
-    fk_name = 'tenant'
-    raw_id_fields = ('tenant', 'alternate')
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_alternate}),)
-    extra = 1
+#class TenantAlternateAdmin(admin.StackedInline):
+#    fk_name = 'tenant'
+#    raw_id_fields = ('tenant', 'alternate')
+#    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_alternate}),)
+#    extra = 1
 
 class TenantInvitationAdmin(BaseAdmin):
     raw_id_fields = ('group', 'by', 'tenant')

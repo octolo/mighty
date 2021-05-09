@@ -92,48 +92,48 @@ class Tenant(Base):
     def uid_group(self):
         return str(self.group.uid)
 
-class TenantAlternate(Base):
-    tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="tenant_for_alternate")
-    alternate = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="alternate_tenant")
-    position = models.PositiveSmallIntegerField(blank=True, null=True)
-
-    objects = models.Manager()
-    objectsB = managers.TenantAlternateManager()
-
-    class Meta(Base.Meta):
-        abstract = True
-        unique_together = ('tenant', 'alternate')
-
-    def __str__(self):
-        return self.representation
-
-    @property
-    def representation(self):
-        return "%s , %s" % (str(self.alternate.user), str(self.tenant.group))
-
-    @property
-    def group(self):
-        return self.tenant.group
-
-    @property
-    def company_representative(self):
-        return self.tenant.company_representative
-
-    @property
-    def fullname(self):
-        return self.alternate.fullname
-
-    @property
-    def roles(self):
-        return self.tenant.roles
-
-    @property
-    def str_group(self):
-        return str(self.tenant.group)
-
-    @property
-    def uid_group(self):
-        return str(self.tenant.group.uid)
+#class TenantAlternate(Base):
+#    tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="tenant_for_alternate")
+#    alternate = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="alternate_tenant")
+#    position = models.PositiveSmallIntegerField(blank=True, null=True)
+#
+#    objects = models.Manager()
+#    objectsB = managers.TenantAlternateManager()
+#
+#    class Meta(Base.Meta):
+#        abstract = True
+#        unique_together = ('tenant', 'alternate')
+#
+#    def __str__(self):
+#        return self.representation
+#
+#    @property
+#    def representation(self):
+#        return "%s , %s" % (str(self.alternate.user), str(self.tenant.group))
+#
+#    @property
+#    def group(self):
+#        return self.tenant.group
+#
+#    @property
+#    def company_representative(self):
+#        return self.tenant.company_representative
+#
+#    @property
+#    def fullname(self):
+#        return self.alternate.fullname
+#
+#    @property
+#    def roles(self):
+#        return self.tenant.roles
+#
+#    @property
+#    def str_group(self):
+#        return str(self.tenant.group)
+#
+#    @property
+#    def uid_group(self):
+#        return str(self.tenant.group.uid)
 
 by_method = (
     ('USER', 'user'),
