@@ -12,3 +12,5 @@ FREQUENCIES = (
     (MONTH, 'MONTH'),
     (ONESHOT, 'ONESHOT'),
 )
+
+exports = _('Exports')

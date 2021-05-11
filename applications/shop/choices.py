@@ -6,3 +6,8 @@ FREQUENCIES = (
     ('YEAR', _('Annuel')),
     ('CUSTOM', _('Custom')),
 )
+
+PAYMETHOD = (
+    ("CB", "CB"),
+    ("IBAN", "IBAN"),
+)

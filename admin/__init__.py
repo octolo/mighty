@@ -76,7 +76,6 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import admin as admin_user
-
     class UserEmailAdmin(admin_user.UserEmailAdmin): model = all_models.UserEmail
     class UserPhoneAdmin(admin_user.UserPhoneAdmin): model = all_models.UserPhone
     class InternetProtocolAdmin(admin_user.InternetProtocolAdmin): model = all_models.InternetProtocol
@@ -109,6 +108,19 @@ if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     @admin.register(all_models.Twofactor)
     class TwofactorAdmin(admin_twofactor.TwofactorAdmin): pass
 
+# Shop
+if 'mighty.applications.shop' in settings.INSTALLED_APPS:
+    from mighty.applications.shop import admin as admin_shop
+    @admin.register(all_models.Offer)
+    class OfferAdmin(admin_shop.OfferAdmin): pass
+    @admin.register(all_models.Subscription)
+    class SubscriptionAdmin(admin_shop.SubscriptionAdmin): pass
+    @admin.register(all_models.Bill)
+    class BillAdmin(admin_shop.BillAdmin): pass
+    @admin.register(all_models.Discount)
+    class DiscountAdmin(admin_shop.DiscountAdmin): pass
+    @admin.register(all_models.PaymentMethod)
+    class PaymentMethodAdmin(admin_shop.PaymentMethodAdmin): pass
 
 #if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
 #    from mighty.admin.applications import grapher

@@ -30,6 +30,13 @@ class Config:
             'Nationality',
             'Translator',
         ],
+        'shop': [
+            'Offer',
+            'Subscription',
+            'Discount',
+            'Bill',
+            'PaymentMethod',
+        ],
         'user': [
             'User',
             'Twofactor'

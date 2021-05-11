@@ -226,6 +226,9 @@ class StreamingBuffer:
     def write(self, value): return value
 
 # ExportView download a csv file
+from django.http import StreamingHttpResponse
+from django.utils.text import get_valid_filename
+import csv
 class ExportView(ListView):
     def iter_items(self, items, pseudo_buffer):
         writer = csv.writer(pseudo_buffer)
@@ -235,11 +238,7 @@ class ExportView(ListView):
 
     def render_to_response(self, context, **response_kwargs):
         frmat = self.request.GET.get('format', '')
-        if self.filter_model:
-            queryset, q = self.filter_model(self.request)
-            objects_list = queryset.filter(q).values_list(*self.fields)
-        else:
-            objects_list = self.model.objects.all().values_list(*self.fields)
+        objects_list = self.get_queryset().values_list(*self.fields)
         response = StreamingHttpResponse(streaming_content=(self.iter_items(objects_list, StreamingBuffer())), content_type='text/csv',)
         response['Content-Disposition'] = 'attachment;filename=%s.csv' % get_valid_filename(make_searchable(self.model._meta.verbose_name))
         return response

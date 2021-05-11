@@ -106,7 +106,6 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import models as models_user
-
     class UserAccessLogModel(models_user.UserAccessLogModel): pass
     class UserChangeLogModel(models_user.UserChangeLogModel): pass
     @EnableAccessLog(UserAccessLogModel)
@@ -129,14 +128,14 @@ if 'mighty.applications.extend' in settings.INSTALLED_APPS:
     from mighty.applications.extend import models as models_extend
     class Key(models_extend.Key): pass
 
-# Extend
+# Shop
 if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     from mighty.applications.shop import models as models_shop
+    class Offer(models_shop.Offer): pass
     class Subscription(models_shop.Subscription): pass
     class Discount(models_shop.Discount): pass
     class Bill(models_shop.Bill): pass
     class PaymentMethod(models_shop.PaymentMethod): pass
-
 
 from mighty.models.filesystem import MimeType
 class MimeType(MimeType): pass
