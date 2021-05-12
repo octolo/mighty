@@ -20,6 +20,12 @@ from datetime import datetime
 import uuid, logging
 logger = logging.getLogger(__name__)
 
+class GroupActivable(models.Model):
+    gstatus = models.CharField(max_length=255, choices=choices.GROUP_STATUS)
+
+    class Meta:
+        abstract = True
+
 class Role(Base):
     search_fields = ['name']
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_role")
