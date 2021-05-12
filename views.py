@@ -6,8 +6,8 @@ from django.views.generic.base import TemplateView, RedirectView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
-from django.http import JsonResponse, HttpResponse, FileResponse, Http404
-
+from django.http import JsonResponse, HttpResponse, FileResponse, Http404, StreamingHttpResponse
+from django.utils.text import get_valid_filename
 from django.core.files import File
 from django.template.loader import get_template
 from django.template import Context, Template
@@ -22,8 +22,7 @@ from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.nationality.apps import NationalityConfig
 from mighty.applications.user import get_form_fields
 
-import pdfkit, os
-import tempfile
+import pdfkit, os, tempfile, csv, logging
 
 base_config = { 
     'base': {
@@ -35,9 +34,6 @@ base_config = {
         'fields': get_form_fields(),
     }}
 base_config.update(setting('BASE_CONFIG', {}))
-
-
-import logging
 logger = logging.getLogger(__name__)
 
 """
@@ -226,15 +222,19 @@ class StreamingBuffer:
     def write(self, value): return value
 
 # ExportView download a csv file
-from django.http import StreamingHttpResponse
-from django.utils.text import get_valid_filename
-import csv
 class ExportView(ListView):
+    protect_limit = None
+
     def iter_items(self, items, pseudo_buffer):
         writer = csv.writer(pseudo_buffer)
         yield writer.writerow(self.fields)
         for item in items:
             yield writer.writerow(item)
+
+    def get_queryset(self, queryset):
+        if protect_limit is not None:
+            return super().get_queryset(queryset)[0:self.protect_limit]
+        return super().get_queryset(queryset)
 
     def render_to_response(self, context, **response_kwargs):
         frmat = self.request.GET.get('format', '')

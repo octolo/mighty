@@ -3,13 +3,14 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 from django.core.validators import EmailValidator, ValidationError
 from django.db.models import Q
+from django.utils import timezone
+from django.template.loader import render_to_string
 
 from mighty.apps import MightyConfig
 from mighty.models import Twofactor, Missive
-from mighty.applications.twofactor import translates as _
+from mighty.applications.twofactor import translates as _, SpamException
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.messenger import choices
-
 
 from phonenumber_field.validators import validate_international_phonenumber
 import datetime, logging
@@ -92,27 +93,44 @@ class TwoFactorBackend(ModelBackend):
             pass
         return False
         
-    def send_sms(self, obj, user, target):
-        missive = Missive(**{
+
+    def get_date_protect(self, minutes):
+        return timezone.now()-timezone.timedelta(minutes=minutes)
+
+    def raise_date_protect(self, date, minutes):
+        date = date+timezone.timedelta(minutes=minutes)
+        raise SpamException(date)
+        
+    def check_protect(self, target, subject, minutes):
+        missive = Missive.objects.filter(
+            target=target,
+            subject=subject, 
+            date_update__gte=self.get_date_protect(minutes)
+        ).order_by('-date_update').last()
+        if missive:
+            self.raise_date_protect(missive.date_update, minutes)
+
+    def get_data_missive(self, user, obj):
+        return {
             "content_type": user.missives.content_type,
             "object_id": user.id,
-            "target": target,
-            "mode": choices.MODE_SMS,
             "subject": _.tpl_subject % {'domain': MightyConfig.domain.upper()},
+            "html": render_to_string(conf.email_code, {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)}),
             "txt": _.tpl_txt % {'domain': MightyConfig.domain, 'code': str(obj.code)},
-        })
+        }
+
+    def send_sms(self, obj, user, target):
+        data = self.get_data_missive(user, obj)
+        data.update({"target": target, "mode": choices.MODE_SMS})
+        self.check_protect(target, data["subject"], conf.sms_protect_spam)
+        missive = Missive(**data)
         missive.save()
         return missive
 
     def send_email(self, obj, user, target):
-        from django.template.loader import render_to_string
-        missive = Missive(**{
-            "content_type": user.missives.content_type,
-            "object_id": user.id,
-            "target": target,
-            "subject": _.tpl_subject % {'domain': MightyConfig.domain.upper()},
-            "html": render_to_string(conf.email_code, {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)}),
-            "txt": _.tpl_txt % {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)},
-        })
+        data = self.get_data_missive(user, obj)
+        data.update({"target": target})
+        self.check_protect(target, data["subject"], conf.mail_protect_spam)
+        missive = Missive(**data)
         missive.save()
         return missive

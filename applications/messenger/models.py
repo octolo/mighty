@@ -26,13 +26,13 @@ class Missive(Base):
     html = CKEditor5Field()
     txt = models.TextField()
     trace = models.TextField(blank=True, null=True)
-    default = ''
-    attachments = None
-    trace = models.TextField(blank=True, null=True)
-
+    
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+
+    default = ''
+    attachments = None
 
     class Meta(Base.Meta):
         abstract = True

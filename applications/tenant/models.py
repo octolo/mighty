@@ -20,11 +20,11 @@ from datetime import datetime
 import uuid, logging
 logger = logging.getLogger(__name__)
 
-class GroupActivable(models.Model):
-    gstatus = models.CharField(max_length=255, choices=choices.GROUP_STATUS)
-
-    class Meta:
-        abstract = True
+#class GroupActivable(models.Model):
+#    gstatus = models.CharField(max_length=255, choices=choices.GROUP_STATUS)
+#
+#    class Meta:
+#        abstract = True
 
 class Role(Base):
     search_fields = ['name']
