@@ -22,6 +22,12 @@ usage()
 
 VUETPL="templates/frontend"
 LOGDIR="logs"
+FULLSERVICE=false
+REDIS_CMD="redis-server"
+DJANGO_CMD="./manage.py"
+VUE_CMD="npm"
+CELERY_CMD="celery"
+
 while true; do
     case $1 in
         -a)
@@ -71,6 +77,10 @@ while true; do
             if [ ! -z $1 ] && [[ $1 != -* ]]; then
                 REDIS=$1
             fi
+            ;;
+        -f)
+            shift
+            FULLSERVICE=true
             ;;
         -h)
             shift
@@ -127,32 +137,32 @@ if [ ! -d "/path/to/dir" ]; then
     `mkdir -p ${LOGDIR}`
 fi
 
-if [ ! -z ${REDIS+x} ]; then
+if [ ! -z ${REDIS+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $REDIS == 1 ]]; then 
-        REDIS="redis-server" 
+        REDIS_CMD="redis-server" 
     fi   
-    prep_term "${REDIS} --save '' --appendonly no" "redis"
+    prep_term "${REDIS_CMD} --save '' --appendonly no" "redis"
 fi
 
-if [ ! -z ${CELERY+x} ]; then
+if [ ! -z ${CELERY+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $CELERY == 1 ]]; then 
-        CELERY="celery" 
+        CELERY_CMD="celery" 
     fi   
-    prep_term "${CELERY} -A configuration worker --loglevel=debug  --max-tasks-per-child 50 -f ${LOGDIR}/celery.log" "celery"
+    prep_term "${CELERY_CMD} -A configuration worker --loglevel=debug  --max-tasks-per-child 50 -f ${LOGDIR}/celery.log" "celery"
 fi
 
-if [ ! -z ${DJANGO+x} ]; then
+if [ ! -z ${DJANGO+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $DJANGO == 1 ]]; then 
-        DJANGO="./manage.py" 
+        DJANGO_CMD="./manage.py" 
     fi   
-    prep_term "${DJANGO} runserver 0.0.0.0:8000 -v3" "django"
+    prep_term "${DJANGO_CMD} runserver 0.0.0.0:8000 -v3" "django"
 fi
 
-if [ ! -z ${VUE+x} ]; then
+if [ ! -z ${VUE+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $VUE == 1 ]]; then 
-        VUE="npm" 
+        VUE_CMD="npm" 
     fi   
-    prep_term "${VUE} run serve --prefix ${VUETPL}" "vuejs"
+    prep_term "${VUE_CMD} run serve --prefix ${VUETPL}" "vuejs"
 fi
 
 if [ ! ${#PIDS[@]} -eq 0 ]; then
