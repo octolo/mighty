@@ -62,10 +62,14 @@ class Base(models.Model):
         abstract = True
         default_permissions = default_permissions + permissions
     
+    def save_old_self(self):
+        if self.pk:
+            if not self._old_self:
+                self._old_self = self
+
     def __init__(self, *args, **kwargs):
         super(Base, self).__init__(*args, **kwargs)
-        if self.pk:
-            self._old_self = self
+        self.save_old_self()
 
         
     """

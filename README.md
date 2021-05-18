@@ -46,7 +46,6 @@ Mighty can extend the model base and generate all view model via a viewset class
 # H3 Extend Model
 You can extend your model base with some class.
 
-
 # H4 Class base
 This class allows you to access the different model management links.
 
