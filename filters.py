@@ -204,16 +204,18 @@ class MultiParamFilter(ParamFilter):
 
 class SearchFilter(ParamFilter):
     regex_delimiter = r'[;,\s]\s*'
+    startw = ''
 
     def __init__(self, id='search', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
+        self.startw = kwargs.get('startw', '_')
 
     def get_mask(self):
         return self.mask
 
     def get_value(self):
-        return ['_'+value for value in super().get_value()]
+        return [self.startw+value for value in super().get_value()]
 
     def get_Q(self):
         if self.is_negative or self.is_array_negative:
