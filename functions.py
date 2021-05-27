@@ -298,12 +298,16 @@ def foreignkey_from(model, field, data, ret):
 """
 Make a string searchable
 """
-def make_searchable(input_str):
+def searchable(input_str):
     for i in conf.Test.replace:
         input_str = input_str.replace(i, " ")
     input_str = re.sub(" +", " ", input_str)
     nfkd_form = unicodedata.normalize("NFKD", input_str)
-    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
+    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+def make_searchable(input_str):
+    return searchable(input_str).lower()
+
 
 """
 Return differences between 2 models
@@ -344,7 +348,7 @@ def file_directory_path(instance, filename, directory=None):
         parent = getattr(instance, instance.fieldparent)
         selfpath = parent.uid if hasattr(parent, 'uid') and parent.uid else parent.id
         return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, selfpath, filename)
-    selfpath = instance.uid if hasattr(instance, 'uid') and instance.uid else instance.id  
+    selfpath = instance.uid if hasattr(instance, 'uid') and instance.uid else instance.id
     return "%s/%s/%s/%s/%s" % (directory, date.year, date.month, selfpath, filename)
 
 """
