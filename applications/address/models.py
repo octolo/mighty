@@ -48,9 +48,6 @@ class AddressNoBase(models.Model):
                 self.raw = " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])
         super().save(*args, **kwargs)
 
-    @property
-    def street(self):
-        return  " ".join([str(ad) for ad in [self.street_number, self.way, self.route] if ad]).strip()
 
     @property
     def city(self):

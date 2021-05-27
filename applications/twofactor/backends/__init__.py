@@ -102,13 +102,14 @@ class TwoFactorBackend(ModelBackend):
         raise SpamException(date)
         
     def check_protect(self, target, subject, minutes):
-        missive = Missive.objects.filter(
-            target=target,
-            subject=subject, 
-            date_update__gte=self.get_date_protect(minutes)
-        ).order_by('-date_update').last()
-        if missive:
-            self.raise_date_protect(missive.date_update, minutes)
+        if minutes:
+            missive = Missive.objects.filter(
+                target=target,
+                subject=subject, 
+                date_update__gte=self.get_date_protect(minutes)
+            ).order_by('-date_update').last()
+            if missive:
+                self.raise_date_protect(missive.date_update, minutes)
 
     def get_data_missive(self, user, obj):
         return {

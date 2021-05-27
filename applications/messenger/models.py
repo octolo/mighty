@@ -15,17 +15,27 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django_ckeditor_5.fields import CKEditor5Field
 from html2text import html2text
 
-class Missive(Base):
+class Missive(Address):
     mode = models.CharField(max_length=6, choices=choices.MODE, default=choices.MODE_EMAIL)
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=8)
+
     target = models.CharField(max_length=255)
+    service = models.CharField(max_length=255, blank=True, null=True)
+    denomination = models.CharField(max_length=255, blank=True, null=True)
+
     backend = models.CharField(max_length=255, editable=False)
-    response = models.TextField(editable=False)
     subject = models.CharField(max_length=255)
     msg_id = models.CharField(max_length=255, blank=True, null=True)
+
+    header_html = CKEditor5Field(blank=True, null=True)
+    footer_html = CKEditor5Field(blank=True, null=True)
     html = CKEditor5Field()
     txt = models.TextField()
-    trace = models.TextField(blank=True, null=True)
+
+    response = models.TextField(blank=True, null=True, editable=False)
+    partner_id = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    code_error = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    trace = models.TextField(blank=True, null=True, editable=False)
     
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -52,6 +62,14 @@ class Missive(Base):
 
     def to_error(self):
         self.status = choices.STATUS_ERROR
+
+    def to_sent(self):
+        self.clear_errors()
+        self.status = choices.STATUS_SENT
+
+    def clear_errors(self):
+        self.trace = None
+        self.code_error = None
 
     @property
     def masking_email(self):

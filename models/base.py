@@ -257,14 +257,25 @@ class Base(models.Model):
         if not self.pk: self.post_create()
         else: self.post_update()
 
+    def delete(self, *args, **kwargs):
+        self.pre_delete()
+        super().delete(*args, **kwargs)
+        self.post_delete()
+ 
     def pre_create(self):
         pass
 
     def pre_update(self):
         pass
 
+    def pre_delete(self):
+        pass
+
     def post_create(self):
         pass
 
     def post_update(self):
+        pass
+
+    def post_delete(self):
         pass

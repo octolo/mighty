@@ -7,8 +7,12 @@ missive = (
     "backend",
     "response",
     "subject",
+    "header_html",
+    "footer_html",
     "html",
     "txt",
     "msg_id",
-    "trace"
+    "partner_id",
+    "trace",
+    "code_error"
 )
