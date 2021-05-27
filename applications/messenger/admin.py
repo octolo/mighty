@@ -4,15 +4,16 @@ from django.contrib.admin.utils import unquote
 
 from mighty.admin.models import BaseAdmin
 from mighty.applications.messenger import fields
+from mighty.applications.address import fields as addr_fields
 
 class MissiveAdmin(BaseAdmin):
     change_form_template  = 'admin/change_form_missives.html'
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.missive}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.missive + addr_fields}),)
     list_display = ('target', 'subject', 'mode', 'status')
     search_fields = ('target',)
     list_filter = ('mode', 'status')
-    readonly_fields = ('backend', 'response')
+    readonly_fields = ('backend', 'response', 'partner_id', 'code_error', 'trace')
 
     def html_view(self, request, object_id, extra_context=None):
         opts = self.model._meta

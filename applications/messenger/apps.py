@@ -10,7 +10,7 @@ class Config:
     user_or_invitation = 'mighty.UserOrInvitation'
     missive = 'mighty.Missive'
     delimiter = '__'
-    missive_backends = settings.MISSIVE_BACKENDS if hasattr(settings, 'MISSIVE_BACKENDS') else ['mighty.applications.messenger.backend']
+    missive_backends = settings.MISSIVE_BACKENDS if hasattr(settings, 'MISSIVE_BACKENDS') else ['mighty.applications.messenger.backends']
     
     class enable:
         email = True
