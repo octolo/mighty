@@ -68,6 +68,16 @@ class AddressNoBase(models.Model):
             self.clean_locality()
             self.clean_postal_or_state_code()
 
+    @property
+    def address_is_usable(self):
+        try:
+            self.clean_address()
+            self.clean_locality()
+            self.clean_postal_or_state_code()
+        except ValidationError:
+            return False
+        return True
+
     def save(self, *args, **kwargs):
         self.fill_raw()
         self.clean_address_fields()
