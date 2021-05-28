@@ -61,7 +61,7 @@ def maskedSerializer(except_mask=(), full_mask=()):
 def maskedView(masked_for=()):
     def deco(cls):
         setattr(cls, "masked_for", masked_for)
-        
+
         class Masked(cls):
             need_tobe_masked = True
 

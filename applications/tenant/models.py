@@ -15,20 +15,15 @@ from mighty.applications.tenant import managers, translates as _, choices, get_t
 from mighty.applications.tenant.apps import TenantConfig as conf
 from mighty.applications.user import choices as user_choices
 from mighty.applications.user.apps import UserConfig as user_conf
+from mighty.applications.tenant.decorators import TenantAssociation
 
 from datetime import datetime
 import uuid, logging
 logger = logging.getLogger(__name__)
 
-#class GroupActivable(models.Model):
-#    gstatus = models.CharField(max_length=255, choices=choices.GROUP_STATUS)
-#
-#    class Meta:
-#        abstract = True
-
+@TenantAssociation(related_name='group_role')
 class Role(Base):
     search_fields = ['name']
-    group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_role")
     name = models.CharField(max_length=255)
     is_immutable = models.BooleanField(default=False)
 
@@ -53,6 +48,7 @@ class Role(Base):
         super().save(*args, **kwargs)
 
 CHAT_WITH_TENANTUSERS = "can_chat_with_tenant_users"
+@TenantAssociation(related_name='group_tenant')
 class Tenant(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_tenant")
     roles = models.ManyToManyField(conf.ForeignKey.role, related_name="roles_tenant", blank=True)
@@ -98,54 +94,13 @@ class Tenant(Base):
     def uid_group(self):
         return str(self.group.uid)
 
-#class TenantAlternate(Base):
-#    tenant = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="tenant_for_alternate")
-#    alternate = models.ForeignKey(conf.ForeignKey.tenant, on_delete=models.CASCADE, related_name="alternate_tenant")
-#    position = models.PositiveSmallIntegerField(blank=True, null=True)
-#
-#    objects = models.Manager()
-#    objectsB = managers.TenantAlternateManager()
-#
-#    class Meta(Base.Meta):
-#        abstract = True
-#        unique_together = ('tenant', 'alternate')
-#
-#    def __str__(self):
-#        return self.representation
-#
-#    @property
-#    def representation(self):
-#        return "%s , %s" % (str(self.alternate.user), str(self.tenant.group))
-#
-#    @property
-#    def group(self):
-#        return self.tenant.group
-#
-#    @property
-#    def company_representative(self):
-#        return self.tenant.company_representative
-#
-#    @property
-#    def fullname(self):
-#        return self.alternate.fullname
-#
-#    @property
-#    def roles(self):
-#        return self.tenant.roles
-#
-#    @property
-#    def str_group(self):
-#        return str(self.tenant.group)
-#
-#    @property
-#    def uid_group(self):
-#        return str(self.tenant.group.uid)
 
 by_method = (
     ('USER', 'user'),
     ('TOKEN', 'token'),
     ('EMAIL', 'email')
 )
+@TenantAssociation(related_name='group_tenantinv')
 class TenantInvitation(Base):
     group = models.ForeignKey(conf.ForeignKey.group, on_delete=models.CASCADE, related_name="group_tenantinv")
     email = models.EmailField()
