@@ -1,13 +1,11 @@
 from django.core.files import File
-from django.utils.text import get_valid_filename
-from django.template import Context, Template
 
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
 from mighty.functions import setting
 
 from uuid import uuid4
-import tempfile, os, requests, pdfkit, shutil, json
+import os, requests, json
 
 from mighty.functions import get_logger
 logger = get_logger()
@@ -31,6 +29,7 @@ class MissiveBackend(MissiveBackend):
     access_token = None
     priority = 1
     in_error = False
+    fields = ["denomination", "target", "complement", "address"]
 
     @property
     def auth_data(self):
@@ -51,7 +50,7 @@ class MissiveBackend(MissiveBackend):
             "color_printing": True,
             "duplex_printing": True,
             "optional_address_sheet": False,
-            "notification_email": "postal@octolo.tech",
+            "notification_email": setting("LAPOST_NOTIFICATION"),
             "archiving_duration": 0,
             "envelope_windows_type": "SIMPLE",
             "postage_type": "ECONOMIC",
@@ -59,17 +58,19 @@ class MissiveBackend(MissiveBackend):
 
     @property
     def target_data(self):
-        return {
+        data = {
             "custom_id":  self.missive.msg_id,
             "custom_data": self.missive.msg_id,
-            "address_line_1": self.missive.denomination,
-            "address_line_2": self.missive.target,
-            "address_line_3": self.missive.complement,
-            "address_line_4": self.missive.address,
-            "address_line_5": "",
             "address_line_6": self.missive.city,
             "country_code": self.missive.country_code.upper(),
         }
+        i = 0
+        for field in self.fields:
+            attr = getattr(self.missive, field)
+            if attr:
+                i+=1
+                data["address_line_"+str(i)] = attr
+        return data
 
     @property
     def api_url(self):
@@ -92,7 +93,6 @@ class MissiveBackend(MissiveBackend):
             self.in_error = True
             return False
         return True
-            
 
     def authentication(self):
         response = requests.post(self.api_url["auth"], data=self.auth_data)
@@ -105,59 +105,10 @@ class MissiveBackend(MissiveBackend):
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)
 
-    def base_doc(self):
-        api = self.api_url["documents"] % self.sending_id
-        options = MightyConfig.pdf_options
-        context = Context()
-        
-        # header
-        header = self.missive.header_html
-        header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        header_html.write(Template(header).render(context).encode("utf-8"))
-        header_html.close()
-
-        # footer
-        footer = self.missive.footer_html
-        footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        footer_html.write(Template(footer).render(context).encode("utf-8"))
-        footer_html.close()
-
-        # file
-        tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
-        content_html = Template(self.missive.html).render(context)
-        pdf = pdfkit.from_string(content_html, tmp_pdf.name, options={
-            'encoding': "UTF-8",
-            '--header-html': header_html.name,
-            '--footer-html': footer_html.name,
-            'page-size':'A4',
-            'margin-top': '0.75in',
-            'margin-right': '0.75in',
-            'margin-bottom': '0.75in',
-            'margin-left': '0.75in',
-            'custom-header' : [
-                ('Accept-Encoding', 'gzip')
-            ]
-        })
-        path_tmp = tmp_pdf.name
-        valid_file_name = get_valid_filename('%s.pdf' % self.missive.subject)
-        path_basedoc = tempfile.gettempdir() + '/' + valid_file_name
-        shutil.copyfile(path_tmp, path_basedoc)
-        doc_name = os.path.basename(path_basedoc)
-        headers = self.api_headers
-
-        files = {'document': (doc_name, open(path_basedoc, 'rb'))}
-        data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
-        response = requests.post(api, headers=headers, files=files, data=data)
-
-        os.remove(footer_html.name)
-        os.remove(header_html.name)
-        tmp_pdf.close()
-        os.remove(path_basedoc)
-        return self.valid_response(response)
-
-    def add_documents(self):
+    def postal_attachments(self):
         if self.missive.attachments:
             api = self.api_url["documents"] % self.sending_id
+            headers = self.api_headers
             logs = []
             for document in self.missive.attachments:
                 self.priority+=1
@@ -167,7 +118,7 @@ class MissiveBackend(MissiveBackend):
                 data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
                 response = requests.post(api, headers=headers, files=files, data=data)
                 self.valid_response(response)
-            self.missive.logs = logs
+            self.missive.logs['attachments'] = logs
         return False if self.in_error else True
 
     def add_recipients(self):
@@ -188,13 +139,12 @@ class MissiveBackend(MissiveBackend):
         if not self.in_error:
             self.add_recipients()
         if not self.in_error:
-            self.base_doc()
-        if not self.in_error:
-            self.add_documents()
+            self.postal_base()
+            self.postal_attachments()
+            os.remove(self.path_base_doc)
         if not self.in_error and self.submit():
             self.missive.to_sent()
         else:
             self.missive.to_error()
         self.missive.save()
         return self.missive.status
-

@@ -42,7 +42,7 @@ class Missive(Address):
     content_object = GenericForeignKey('content_type', 'object_id')
 
     default = ''
-    attachments = None
+    attachments = []
 
     class Meta(Base.Meta):
         abstract = True

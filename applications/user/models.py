@@ -65,6 +65,7 @@ class UserPhone(Data, Base):
 
 class UserAddress(Data, Address):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_address')
+    enable_clean_fields = True
 
     def __str__(self):
         return "%s - %s" % (str(self.user), self.representation)

@@ -1,18 +1,26 @@
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
+from django.utils.text import get_valid_filename
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail, EmailMessage, EmailMultiAlternatives
 from django.core.mail.message import make_msgid
+from django.template import Context, Template
 
+from mighty.apps import MightyConfig
 from mighty.functions import setting
 from mighty.models import Missive
 from mighty.applications.messenger import choices
 from mighty.applications.messenger.apps import MessengerConfig as conf
-import datetime, logging
+import datetime, logging, os, tempfile, pdfkit, shutil
 
 logger = logging.getLogger(__name__)
 
 class MissiveBackend:
+    email = None
+    sms = None
+    postal = None
+    path_base_doc = None
+
     def __init__(self, missive, *args, **kwargs):
         self.missive = missive
 
@@ -37,6 +45,17 @@ class MissiveBackend:
         logger.info("send sms: %s" % self.message, extra=self.extra)
         return self.missive.status
 
+    def email_attachments(self):
+        if self.missive.attachments:
+            logs = []
+            for document in self.missive.attachments:
+                if setting('MISSIVE_SERVICE', False):
+                    self.email.attach(os.path.basename(document.name), document.read(), 'application/pdf')
+                logs.append(os.path.basename(document.name))
+            self.missive.logs['attachments'] = logs
+            if setting('MISSIVE_SERVICE', False):
+                self.email.send()
+
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
@@ -44,24 +63,85 @@ class MissiveBackend:
             self.missive.msg_id = make_msgid()
             text_content = str(self.missive.txt)
             html_content = self.missive.html
-            email = EmailMultiAlternatives(self.missive.subject, html_content, conf.sender_email, [self.missive.target], headers={'Message-Id': self.missive.msg_id})
-            email.attach_alternative(html_content, "text/html")
-            if self.missive.attachments:
-                logs = []
-                import os
-                for document in self.missive.attachments:
-                    email.attach(os.path.basename(document.name), document.read(), 'application/pdf')
-                    logs.append(os.path.basename(document.name))
-                self.missive.logs = logs
-            email.send()
-        self.missive.status = choices.STATUS_SENT
+            self.email = EmailMultiAlternatives(
+                self.missive.subject,
+                html_content,
+                conf.sender_email,
+                [self.missive.target],
+                headers={'Message-Id': self.missive.msg_id}
+            )
+            self.email.attach_alternative(html_content, "text/html")
+        self.email_attachments()
+        self.missive.to_sent()
         self.missive.save()
         return self.missive.status
 
+    def postal_attachments(self):
+        if self.missive.attachments:
+            logs = []
+            for document in self.missive.attachments:
+                logs.append(os.path.basename(document.name))
+            self.missive.logs['attachments'] = logs
+
+    def postal_base(self):
+        options = MightyConfig.pdf_options
+        context = Context()
+        
+        # header
+        header = self.missive.header_html
+        header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
+        header_html.write(Template(header).render(context).encode("utf-8"))
+        header_html.close()
+
+        # footer
+        footer = self.missive.footer_html
+        footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
+        footer_html.write(Template(footer).render(context).encode("utf-8"))
+        footer_html.close()
+
+        # file
+        tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
+        content_html = Template(self.missive.html).render(context)
+        pdf = pdfkit.from_string(content_html, tmp_pdf.name, options={
+            'encoding': "UTF-8",
+            '--header-html': header_html.name,
+            '--footer-html': footer_html.name,
+            'page-size':'A4',
+            'margin-top': '0.75in',
+            'margin-right': '0.75in',
+            'margin-bottom': '0.75in',
+            'margin-left': '0.75in',
+            'custom-header' : [
+                ('Accept-Encoding', 'gzip')
+            ]
+        })
+        path_tmp = tmp_pdf.name
+        valid_file_name = get_valid_filename('%s.pdf' % self.missive.subject)
+        path_basedoc = tempfile.gettempdir() + '/' + valid_file_name
+        shutil.copyfile(path_tmp, path_basedoc)
+        doc_name = os.path.basename(path_basedoc)
+        #headers = self.api_headers
+
+
+        logger.warning(path_basedoc)
+        self.path_base_doc = path_basedoc
+        self.missive.attachments.insert(0, open(path_basedoc, 'rb'))
+        
+        #files = {'document': (doc_name, )}
+        #data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
+        #response = requests.post(api, headers=headers, files=files, data=data)
+
+        os.remove(footer_html.name)
+        os.remove(header_html.name)
+        tmp_pdf.close()
+        #os.remove(path_basedoc)
+        #return self.valid_response(response)
+
     def send_postal(self):
-        if setting('MISSIVE_SERVICE', False):
-            pass
-        self.missive.status = choices.STATUS_SENT
+        self.postal_base()
+        self.postal_attachments()
+        os.remove(self.path_base_doc)
+        self.missive.to_sent()
         self.missive.save()
         return self.missive.status
 
