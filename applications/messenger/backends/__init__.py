@@ -53,13 +53,14 @@ class MissiveBackend:
                     self.email.attach(os.path.basename(document.name), document.read(), 'application/pdf')
                 logs.append(os.path.basename(document.name))
             self.missive.logs['attachments'] = logs
-            if setting('MISSIVE_SERVICE', False):
-                self.email.send()
+        if setting('MISSIVE_SERVICE', False):
+            self.email.send()
 
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
         if setting('MISSIVE_SERVICE', False):
+            print('ok')
             self.missive.msg_id = make_msgid()
             text_content = str(self.missive.txt)
             html_content = self.missive.html
