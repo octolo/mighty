@@ -4,7 +4,7 @@ from mighty.applications.tenant.apps import TenantConfig as conf
 def TenantAssociation(**kwargs):
     def decorator(obj):
 
-        class Test(obj):
+        class TAModel(obj):
             group = models.ForeignKey(conf.ForeignKey.group,
                 on_delete=kwargs.get('on_delete', models.CASCADE), 
                 related_name=kwargs.get('related_name', 'group_set'),
@@ -22,5 +22,5 @@ def TenantAssociation(**kwargs):
                 if not self.group: self.set_group()
                 super().save(*args, **kwargs)
 
-        return Test
+        return TAModel
     return decorator

@@ -4,6 +4,7 @@ from django.utils.module_loading import import_string
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+from mighty.models.file import File
 from mighty.models.base import Base
 from mighty.applications.messenger import choices, translates as _, send_missive
 from mighty.applications.messenger.apps import MessengerConfig as conf
@@ -18,6 +19,7 @@ from html2text import html2text
 class Missive(Address):
     mode = models.CharField(max_length=6, choices=choices.MODE, default=choices.MODE_EMAIL)
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=8)
+    priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
 
     target = models.CharField(max_length=255)
     service = models.CharField(max_length=255, blank=True, null=True)
@@ -51,10 +53,20 @@ class Missive(Address):
         permissions = [('can_check', _.permission_check),]
         ordering = ['-date_create',]
 
+    def prepare_sms(self):
+        self.html = 'not used for sms'
+
+    def prepare_postal(self):
+        self.txt = 'not used for postal'
+
+    def prepare_email(self):
+        pass
+
     def save(self, *args, **kwargs):
         if self.html and not self.txt: self.txt = html2text(self.html)
         if self.target is not None: self.email = self.target.lower()
         if self.status == choices.STATUS_PREPARE: send_missive(self)
+        getattr(self, 'prepare_%s' % self.mode.lower())
         super().save(*args, **kwargs)
 
     def prepare(self):
@@ -108,10 +120,3 @@ class Missive(Address):
         return self.user.address
     postal.short_description = _.postal
     postal.admin_order_field = 'user__address'
-
-from mighty.models.file import File
-class Attachment(Base, File):
-    missive = models.ForeignKey(conf.missive, on_delete=models.CASCADE, related_name="attachement_missive")
-    
-    class Meta(Base.Meta):
-        abstract = True

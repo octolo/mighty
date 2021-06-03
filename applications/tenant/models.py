@@ -1,17 +1,10 @@
 from django.db import models
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
-from django.template.loader import render_to_string
 
-from mighty.apps import MightyConfig
-from mighty.fields import JSONField
-from mighty.models import Missive
 from mighty.models.base import Base
 from mighty.functions import setting
-from mighty.applications.tenant import managers, translates as _, choices, get_tenant_model
+from mighty.applications.tenant import managers, translates as _, choices
 from mighty.applications.tenant.apps import TenantConfig as conf
 from mighty.applications.user import choices as user_choices
 from mighty.applications.user.apps import UserConfig as user_conf

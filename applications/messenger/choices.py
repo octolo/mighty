@@ -62,3 +62,10 @@ MODE = (
     (MODE_SMS, _("sms")),
     (MODE_POSTAL, _("postal")),
 )
+
+PRIORITIES = (
+    (0, _("economic")),
+    (1, _("normal")),
+    (2, _("recommanded")),
+    (3, _("urgent")),
+)
