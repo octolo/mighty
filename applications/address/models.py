@@ -42,7 +42,7 @@ class AddressNoBase(models.Model):
     def has_state_or_postal_code(self):
         return True if self.postal_code or self.state_code else False
     
-    def has_state_or_postal_code(self):
+    def clean_state_or_postal_code(self):
         if not self.check_postal_state_code:
             raise ValidationError(_.validate_postal_state_code)
 
@@ -66,14 +66,14 @@ class AddressNoBase(models.Model):
         if self.enable_clean_fields:
             self.clean_address()
             self.clean_locality()
-            self.clean_postal_or_state_code()
+            self.clean_state_or_postal_code()
 
     @property
     def address_is_usable(self):
         try:
             self.clean_address()
             self.clean_locality()
-            self.clean_postal_or_state_code()
+            self.clean_state_or_postal_code()
         except ValidationError:
             return False
         return True
