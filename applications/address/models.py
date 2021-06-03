@@ -43,7 +43,7 @@ class AddressNoBase(models.Model):
         return True if self.postal_code or self.state_code else False
     
     def clean_state_or_postal_code(self):
-        if not self.check_postal_state_code:
+        if not self.has_state_or_postal_code:
             raise ValidationError(_.validate_postal_state_code)
 
     @property
