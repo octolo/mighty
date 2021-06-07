@@ -11,7 +11,8 @@ class DictListView(ListView):
     model = TranslateDict
 
     def get_queryset(self, queryset=None):
-        lng = self.request.GET.get('lang', 'en')
+        lng = self.request.GET.get('lang', conf.default)
+        lng = lng if lng in conf.availables else conf.default
         first = Q(precision__icontains=lng) | Q(search__icontains=lng) | Q(language__alpha2__icontains=lng)
         second = Q(precision__icontains=conf.default) | Q(search__icontains=conf.default) | Q(language__alpha2__icontains=conf.default)
         try:
@@ -27,7 +28,8 @@ class DictDetailView(DetailView):
 
     def get_object(self, queryset=None):
         name = self.kwargs.get('name')
-        lng = self.request.GET.get('language', 'en')
+        lng = self.request.GET.get('lang', conf.default)
+        lng = lng if lng in conf.availables else conf.default
         first = Q(precision__icontains=lng) | Q(search__icontains=lng) | Q(language__alpha2__icontains=lng)
         second = Q(precision__icontains=conf.default) | Q(search__icontains=conf.default) | Q(language__alpha2__icontains=conf.default)
         try:
