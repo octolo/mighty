@@ -76,6 +76,8 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import admin as admin_user
+    from mighty.applications.user.apps import UserConfig as user_conf
+
     class UserEmailAdmin(admin_user.UserEmailAdmin): model = all_models.UserEmail
     class UserPhoneAdmin(admin_user.UserPhoneAdmin): model = all_models.UserPhone
     class InternetProtocolAdmin(admin_user.InternetProtocolAdmin): model = all_models.InternetProtocol
@@ -101,6 +103,10 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     
     @admin.register(all_models.Invitation)
     class InvitationAdmin(admin_user.InvitationAdmin): pass
+
+    if user_conf.protect_trashmail:
+        @admin.register(all_models.Trashmail)
+        class TrashmailAdmin(admin_user.TrashmailAdmin): pass
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:

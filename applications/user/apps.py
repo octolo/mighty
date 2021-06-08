@@ -9,6 +9,7 @@ class Config:
     invitation_url = 'http://%(domain)s/user/invitation/%(uid)s/?token=%(token)s'
     cgu = True
     cgv = False
+    protect_trashmail = True
 
     class ForeignKey:
         missive = 'mighty.Missive'

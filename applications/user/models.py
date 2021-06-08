@@ -26,6 +26,9 @@ from datetime import datetime
 import uuid, logging
 
 logger = logging.getLogger(__name__)
+validate_email = validators.validate_email
+validate_phone = validators.validate_phone
+validate_trashmail = validators.validate_trashmail
 
 class Data(models.Model):
     default = models.BooleanField(default=False)
@@ -35,7 +38,7 @@ class Data(models.Model):
 
 class UserEmail(Data, Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_email')
-    email = models.EmailField(_.email, unique=True)
+    email = models.EmailField(_.email, unique=True, validators=[validate_trashmail])
     search_fields = ('email',)
 
     def __str__(self):
@@ -103,15 +106,14 @@ class UserChangeLogModel(ChangeLog):
     class Meta:
         abstract = True
 
-validate_email = validators.validate_email
-validate_phone = validators.validate_phone
+
 class User(AbstractUser, Base, Image, AddressNoBase):
     search_fields = fields.search
     username = models.CharField(_.username, max_length=254, unique=True, blank=True, null=True)
     if conf.Field.username == 'email':
-        email = models.EmailField(_.email, unique=True)
+        email = models.EmailField(_.email, unique=True, validators=[validate_trashmail])
     else:
-        email = models.EmailField(_.email, blank=True, null=True, unique=True, validators=[validate_email])
+        email = models.EmailField(_.email, blank=True, null=True, unique=True, validators=[validate_email, validate_trashmail])
     if conf.Field.username == 'phone':
         phone = PhoneNumberField(_.phone, unique=True)
     else:
@@ -367,3 +369,13 @@ class Invitation(Base):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+
+
+class Trashmail(Base):
+    domain = models.CharField(max_length=255)
+
+    class Meta(Base.Meta):
+        abstract = True
+
+    def __str__(self):
+        return "@" + self.domain

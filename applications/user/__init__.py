@@ -1,5 +1,6 @@
 default_app_config = 'mighty.applications.user.apps.UserConfig'
 
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from mighty.applications.user.apps import UserConfig as conf
@@ -24,3 +25,4 @@ def get_form_fields(fields='*'):
         return (conf.Field.username,) + conf.Field.required + conf.Field.optional
     else:
         return getattr(conf.Field, fields)
+

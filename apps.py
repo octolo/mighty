@@ -39,7 +39,8 @@ class Config:
         ],
         'user': [
             'User',
-            'Twofactor'
+            'Twofactor',
+            'Trashmail'
         ],
         'Configuration': [
             'ConfigSimple',

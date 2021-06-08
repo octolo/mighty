@@ -82,3 +82,9 @@ class InvitationAdmin(BaseAdmin):
         link = reverse("admin:mighty_missive_change", args=[obj.missive.id])
         return format_html('<a href="{}">{}</a>', link, obj.missive) if obj.missive else None
     missive_link.short_description = 'Missive'
+
+class TrashmailAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': ('domain',)}),)
+    list_display = ('__str__', 'domain')
+    search_fields = ('domain',)

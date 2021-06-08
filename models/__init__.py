@@ -106,6 +106,7 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import models as models_user
+    from mighty.applications.user.apps import UserConfig as user_conf
     class UserAccessLogModel(models_user.UserAccessLogModel): pass
     class UserChangeLogModel(models_user.UserChangeLogModel): pass
     @EnableAccessLog(UserAccessLogModel)
@@ -117,6 +118,8 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     class UserAgent(models_user.UserAgent): pass
     class UserAddress(models_user.UserAddress): pass
     class Invitation(models_user.Invitation): pass
+    if user_conf.protect_trashmail:
+        class Trashmail(models_user.Trashmail): pass
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
