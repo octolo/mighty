@@ -10,7 +10,7 @@ fields = ("based_on", "config", "context")
 fields_sign = fields + ("signatory", "is_signed")
 
 def generate_pdf(**kwargs):
-    filename = kwargs.get("file_name", False)
+    file_name = kwargs.get("file_name", False)
     header_enable, footer_enable = False, False
     options = kwargs.get("options", conf.pdf_options)
     conf_header = kwargs.get("conf_header", conf.pdf_header)
@@ -44,16 +44,17 @@ def generate_pdf(**kwargs):
         content_html = Template(content).render(context)
         pdf = pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
-        valid_file_name = get_valid_filename(filename)
-        path_convene = tempfile.gettempdir() + "/" + valid_file_name
-        shutil.copyfile(path_tmp, path_convene)
+        valid_file_name = get_valid_filename(file_name)
+        final_pdf = tempfile.gettempdir() + "/" + valid_file_name
+        shutil.copyfile(path_tmp, final_pdf)
 
-        # a verifier
+    # a verifier
     os.remove(footer_html.name)
     os.remove(header_html.name)
+    return final_pdf, tmp_pdf
 
-def remove_tmpdf(files):
-    for f in files:
-        if hasattr(f, "close"):
-            f.close()
-        #os.remove(f.)
+#def remove_tmpdf(files):
+#    for f in files:
+#        if hasattr(f, "close"):
+#            f.close()
+#        #os.remove(f.)
