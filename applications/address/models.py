@@ -1,8 +1,9 @@
 from django.db import models
-from mighty.models.base import Base
-from mighty.applications.address import translates as _, fields
-from mighty.applications.address.apps import AddressConfig as conf
 from django.core.exceptions import ValidationError
+from mighty.models.base import Base
+from mighty.applications.address import translates as _, fields, get_address_backend
+from mighty.applications.address.apps import AddressConfig as conf
+address_backend = get_address_backend()
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
 class AddressNoBase(models.Model):
@@ -29,6 +30,26 @@ class AddressNoBase(models.Model):
         abstract = True
         verbose_name = _.v_address
         verbose_name_plural = _.vp_address
+
+    def fill_from_raw(self):
+        addresses = address_backend.give_list(self.raw)
+        if len(addresses):
+            self.backend_id = addresses[0]["id"]
+            self.address = addresses[0]["address"]
+            self.complement = addresses[0]["complement"]
+            self.locality = addresses[0]["locality"]
+            self.postal_code = addresses[0]["postal_code"]
+            self.state = addresses[0]["state"]
+            self.state_code = addresses[0]["state_code"]
+            self.country = addresses[0]["country"]
+            self.country_code = addresses[0]["country_code"]
+            self.cedex = addresses[0]["cedex"]
+            self.cedex_code = addresses[0]["cedex_code"]
+            self.special = addresses[0]["special"]
+            self.index = addresses[0]["index"]
+            self.latitude = addresses[0]["latitude"]
+            self.longitude = addresses[0]["longitude"]
+            self.source = addresses[0]["source"]
 
     def fill_raw(self):
         if not self.raw:
