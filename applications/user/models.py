@@ -120,7 +120,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         phone = PhoneNumberField(_.phone, blank=True, null=True, db_index=True)
 
     def check_phone(self):
-        validate_phone(self.phone, {"pk": self.pk})
+        validate_phone(self.phone, {"id": self.id, "user_phone__user__id": self.id})
 
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)

@@ -5,15 +5,16 @@ from mighty.applications.user import translates as _
 from mighty.functions import get_model
 
 def validate_phone(value, exclude):
-    UserModel = get_user_model()
-    fltr = Q(phone=value)|Q(user_phone__phone=value)
-    if UserModel.objects.filter(fltr).exclude(**exclude).exists():
-        raise ValidationError(_.error_phone_already)
+    if value:
+        UserModel = get_user_model()
+        fltr = Q(phone=value)|Q(user_phone__phone=value)
+        if UserModel.objects.exclude(**exclude).filter(fltr).exists():
+            raise ValidationError(_.error_phone_already)
 
 def validate_email(value):
-    UserModel = get_user_model()
-    fltr = Q(email=value)|Q(user_email__email=value)
     if value:
+        UserModel = get_user_model()
+        fltr = Q(email=value)|Q(user_email__email=value)
         try:
             UserModel.objects.get(fltr)
             raise ValidationError(_.error_email_already)
