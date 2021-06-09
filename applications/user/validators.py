@@ -4,15 +4,11 @@ from django.core.exceptions import ValidationError
 from mighty.applications.user import translates as _
 from mighty.functions import get_model
 
-def validate_phone(value):
+def validate_phone(value, exclude):
     UserModel = get_user_model()
     fltr = Q(phone=value)|Q(user_phone__phone=value)
-    if value:
-        try:
-            UserModel.objects.get(fltr)
-            raise ValidationError(_.error_phone_already)
-        except UserModel.DoesNotExist:
-            pass
+    if UserModel.objects.filter(fltr).exclude(**exclude).exists():
+        raise ValidationError(_.error_phone_already)
 
 def validate_email(value):
     UserModel = get_user_model()

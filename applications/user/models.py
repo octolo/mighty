@@ -113,11 +113,15 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     if conf.Field.username == 'email':
         email = models.EmailField(_.email, unique=True, validators=[validate_trashmail])
     else:
-        email = models.EmailField(_.email, blank=True, null=True, unique=True, validators=[validate_email, validate_trashmail])
+        email = models.EmailField(_.email, blank=True, null=True, validators=[validate_email, validate_trashmail])
     if conf.Field.username == 'phone':
         phone = PhoneNumberField(_.phone, unique=True)
     else:
-        phone = PhoneNumberField(_.phone, blank=True, null=True, db_index=True, validators=[validate_phone])
+        phone = PhoneNumberField(_.phone, blank=True, null=True, db_index=True)
+
+    def check_phone(self):
+        validate_phone(self.phone, {"pk": self.pk})
+
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
     gender = models.CharField(_.gender, max_length=1, choices=choices.GENDER, blank=True, null=True)
@@ -279,11 +283,16 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     def in_address(self):
         pass
-
+    
+    def clean(self):
+        self.check_phone()
+        super().clean()
+    
     def save(self, *args, **kwargs):
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: self.username = self.username.lower()
         else: self.username = self.gen_username()
+        self.check_phone()
         super(User, self).save(*args, **kwargs)
         self.in_emails()
         self.in_phones()
