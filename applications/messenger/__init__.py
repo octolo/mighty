@@ -36,10 +36,10 @@ def send_missive_type(**kwargs):
     return missive
 
 def send_email(**kwargs):
-    send_missive_type(**kwargs, mode=MODE_EMAIL)
+    return send_missive_type(**kwargs, mode=MODE_EMAIL)
 
 def send_sms(**kwargs):
-    send_missive_type(**kwargs, mode=MODE_SMS, html="empty_for_sms")
+    return send_missive_type(**kwargs, mode=MODE_SMS, html="empty_for_sms")
 
 def send_postal(**kwargs):
-    send_missive_type(**kwargs, mode=MODE_POSTAL, txt="empty_for_postal")
+    return send_missive_type(**kwargs, mode=MODE_POSTAL, txt="empty_for_postal")
