@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
@@ -34,6 +35,10 @@ base_config = {
         'fields': get_form_fields(),
     }}
 base_config.update(setting('BASE_CONFIG', {}))
+
+#if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
+#    from mighty.applications.nationality import conf_prefix_numbering
+#    base_config.update({"phones": conf_prefix_numbering()})
 logger = logging.getLogger(__name__)
 
 """

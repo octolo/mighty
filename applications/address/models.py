@@ -35,29 +35,24 @@ class AddressNoBase(models.Model):
         addresses = address_backend.give_list(self.raw)
         if len(addresses):
             self.backend_id = addresses[0]["id"]
-            self.address = addresses[0]["address"]
-            self.complement = addresses[0]["complement"]
-            self.locality = addresses[0]["locality"]
-            self.postal_code = addresses[0]["postal_code"]
-            self.state = addresses[0]["state"]
-            self.state_code = addresses[0]["state_code"]
-            self.country = addresses[0]["country"]
-            self.country_code = addresses[0]["country_code"]
-            self.cedex = addresses[0]["cedex"]
-            self.cedex_code = addresses[0]["cedex_code"]
-            self.special = addresses[0]["special"]
-            self.index = addresses[0]["index"]
-            self.latitude = addresses[0]["latitude"]
-            self.longitude = addresses[0]["longitude"]
             self.source = addresses[0]["source"]
+            for field in fields:
+                setattr(self, field, addresses[0][field])
 
     def fill_raw(self):
         if not self.raw:
-            formatting = 'format_%s' % self.country_code.lower()
-            if hasattr(self, formatting):
-                self.raw = getattr(self, formatting)()
+            if self.country_code:
+                formatting = 'format_%s' % self.country_code.lower()
+                self.raw = getattr(self, formatting)() if hasattr(self, formatting) else self.format_universal()
             else:
-                self.raw = " ".join([str(getattr(self, field)) for field in fields if getattr(self, field)])
+                self.raw = self.format_universal()
+
+    def erase_to_new(self, *args, **kwargs):
+        self.backend_id = kwargs.get('backend_id', None)
+        self.source = kwargs.get('source', 'FROMUSER')
+        self.raw = None
+        for field in fields:
+            setattr(self, field, kwargs.get(field, None))
 
     @property
     def has_state_or_postal_code(self):
@@ -134,10 +129,14 @@ class AddressNoBase(models.Model):
     def fields_used(self):
         return fields
 
-    def format_fr(self):
-        if self.address and self.postal_code and self.locality:
-            return "%(address)s, %(postal_code)s %(locality)s" % ({field: getattr(self, field) for field in self.fields_used})
-        return None
+    def format_universal(self):
+        tpl = ""
+        if self.address: tpl += "%(address)s"
+        if self.postal_code: tpl += ", %(postal_code)s" if len(tpl) else "%(postal_code)s"
+        if self.locality: tpl += ", %(locality)s"  if len(tpl) else "%(locality)s"
+        if self.state: tpl += ", %(state)s" if len(tpl) else "%(state)s"
+        if self.country: tpl += ", %(country)s"  if len(tpl) else "%(country)s"
+        return tpl % ({field: getattr(self, field) for field in self.fields_used})
 
 class Address(AddressNoBase, Base):
     search_fields = ['locality', 'postal_code']

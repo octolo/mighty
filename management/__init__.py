@@ -77,6 +77,7 @@ class BaseCommand(BaseCommand):
 
     def showErrors(self):
         for error in self.errors:
+            print(error)
             logger.info(error)
 
     def do(self):
