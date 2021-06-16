@@ -36,9 +36,9 @@ base_config = {
     }}
 base_config.update(setting('BASE_CONFIG', {}))
 
-#if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-#    from mighty.applications.nationality import conf_prefix_numbering
-#    base_config.update({"phones": conf_prefix_numbering()})
+if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
+    from mighty.applications.nationality import conf_prefix_numbering
+    base_config.update({"phones": conf_prefix_numbering()})
 logger = logging.getLogger(__name__)
 
 """

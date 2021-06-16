@@ -64,11 +64,11 @@ class BaseAdmin(admin.ModelAdmin):
         if hasattr(model, 'alerts'): self.list_filter += (InAlertListFilter,)
         if hasattr(model, 'errors'): self.list_filter += (InErrorListFilter,)
 
-    def save_model(self, request, obj, form, change):
-        #if not obj.create_by:
-        #    if hasattr(obj, 'create_by'): obj.set_create_by(request.user)
-        #if hasattr(obj, 'update_by'):  obj.set_update_by(request.user)
-        super().save_model(request, obj, form, change)
+    #def save_model(self, request, obj, form, change):
+    #    #if not obj.create_by:
+    #    #    if hasattr(obj, 'create_by'): obj.set_create_by(request.user)
+    #    #if hasattr(obj, 'update_by'):  obj.set_update_by(request.user)
+    #    super().save_model(request, obj, form, change)
 
     def has_enable_permission(self, request, obj=None):
         opts = self.opts

@@ -285,14 +285,14 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         pass
     
     def clean(self):
-        self.check_phone()
+        #self.check_phone()
         super().clean()
     
     def save(self, *args, **kwargs):
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: self.username = self.username.lower()
         else: self.username = self.gen_username()
-        self.check_phone()
+        #self.check_phone()
         super(User, self).save(*args, **kwargs)
         self.in_emails()
         self.in_phones()
