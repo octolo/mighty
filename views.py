@@ -35,10 +35,6 @@ base_config = {
         'fields': get_form_fields(),
     }}
 base_config.update(setting('BASE_CONFIG', {}))
-
-if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-    from mighty.applications.nationality import conf_prefix_numbering
-    base_config.update({"phones": conf_prefix_numbering()})
 logger = logging.getLogger(__name__)
 
 """
@@ -299,6 +295,9 @@ class ConfigListView(ListView):
 
     def render_to_response(self, context):
         cfg = base_config
+        if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
+            from mighty.applications.nationality import conf_prefix_numbering
+            cfg.update({"phones": conf_prefix_numbering()})
         for cfgs in context['object_list']:
             cfg.update({cfg.url_name: cfg.config for cfg in cfgs})
         return JsonResponse(cfg)
