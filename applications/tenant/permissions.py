@@ -26,14 +26,18 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
         check_destroy = base_permission
         check_others = base_permission
 
-        def is_tenant(self, group_pk):
-            return self.request.user.user_tenant.groups.filter(**{self.group_pk: group_pk}).exists()
+        # Test
+        def is_tenant(self, group, pk=None):
+            if pk: return self.user.user_tenant.filter(**{"group__"+pk: group}).exists()
+            return self.user.user_tenant.filter(group=group).exists()
 
-        def has_role(self, role_pk):
-            return self.request.user.user_tenant.filter(roles__uid=role_pk).exists()
+        def has_role(self, role, pk=None):
+            if pk: return self.user.user_tenant.filter(**{"roles__"+pk: role}).exists()
+            return self.user.user_tenant.filter(roles=role).exists()
 
-        def has_one_role(self, roles_pks):
-            return self.request.user.user_tenant.filter(roles__uid__in=roles_pks).exists()
+        def has_one_role(self, roles, pk=None):
+            if pk: return self.user.user_tenant.filter(**{"roles__"+pk+"__in": roles}).exists()
+            return self.user.user_tenant.filter(roles__in=roles).exists()
 
         # Properties
         @property
