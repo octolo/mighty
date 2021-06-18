@@ -197,11 +197,11 @@ if 'rest_framework' in settings.INSTALLED_APPS:
         def is_tenant(self, group_pk):
             return self.request.user.user_tenant.groups.filter(**{self.group_pk: group_pk}).exists()
 
-        def has_role(self, role_pk):
-            return self.request.user.user_tenant.filter(roles__uid=role_pk).exists()
+        def has_role(self, role):
+            return self.request.user.user_tenant.filter(roles=role).exists()
 
-        def has_one_role(self, roles_pks):
-            return self.request.user.user_tenant.filter(roles__uid__in=roles_pks).exists()
+        def has_one_role(self, roles):
+            return self.request.user.user_tenant.filter(roles__in=roles).exists()
 
         # Properties
         @property
