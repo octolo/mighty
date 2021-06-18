@@ -31,10 +31,10 @@ class RoleBase:
         tenant_filters.SearchByRoleUid(field='uid')
     ]
 
-    def get_queryset(self, queryset=None):
+    def get_queryset(self):
         group = Q(group__in=self.request.user.user_tenant.all().values_list('group', flat=True))
         self.queryset = Role.objectsB.filter(group)
-        return super().get_queryset(queryset)
+        return super().get_queryset()
 
     def get_fields(self, role):
         return {field: str(getattr(role, field)) for field in ('uid',) + tenant_fields.role}
@@ -181,6 +181,44 @@ if 'rest_framework' in settings.INSTALLED_APPS:
     from rest_framework.generics import RetrieveAPIView, ListAPIView, RetrieveAPIView
     from rest_framework.response import Response
     from mighty.applications.tenant.serializers import RoleSerializer, TenantSerializer
+    from mighty.views import ModelViewSet
+
+    class TenantModelViewSet(ModelViewSet):
+        group_pk = "uid"
+        tenant_user = "tenant__user"
+        group_way = "group"
+        user_way = "tenant__user"
+
+        # Filter query
+        def Q_is_tenant(self, prefix=""):
+            return Q(**{prefix+self.group_way+"__in": self.tenant_groups})
+
+        # Test
+        def is_tenant(self, group_pk):
+            return self.request.user.user_tenant.groups.filter(**{self.group_pk: group_pk}).exists()
+
+        def has_role(self, role_pk):
+            return self.request.user.user_tenant.filter(roles__uid=role_pk).exists()
+
+        def has_one_role(self, roles_pks):
+            return self.request.user.user_tenant.filter(roles__uid__in=roles_pks).exists()
+
+        # Properties
+        @property
+        def tenant_roles(self):
+            return Role.objects.filter(roles_tenant__user=self.request.user)
+
+        @property
+        def current_tenant_group(self):
+            return self.request.user.current_tenant.group
+        
+        @property
+        def tenant_groups(self):
+            return [tenant.group for tenant in self.request.user.user_tenant.all()]
+
+        @property
+        def tenant_groups_pk(self):
+            return [group.uid for group in self.tenant_groups]
 
     class RoleList(RoleBase, ListAPIView):
         def get(self, request, format=None):
@@ -212,3 +250,8 @@ if 'rest_framework' in settings.INSTALLED_APPS:
         def get(self, request, uid, action=None, format=None):
             invitation = self.actions()
             return Response(self.get_fields(invitation))
+
+    class RoleApiViewSet(RoleBase, ModelViewSet):
+        queryset = Role.objects.all()
+        serializer_class = RoleSerializer
+        lookup_field = 'uid'
