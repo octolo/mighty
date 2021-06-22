@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericRelation
 
 from mighty.models.base import Base
+from mighty.models.image import Image
 from mighty.functions import setting
 from mighty.applications.tenant import managers, translates as _, choices
 from mighty.applications.tenant.apps import TenantConfig as conf
@@ -15,10 +16,11 @@ import uuid, logging
 logger = logging.getLogger(__name__)
 
 @TenantAssociation(related_name='group_role')
-class Role(Base):
+class Role(Base, Image):
     search_fields = ['name']
     name = models.CharField(max_length=255)
     is_immutable = models.BooleanField(default=False)
+    number = models.PositiveIntegerField(default=0)
 
     objects = models.Manager()
     objectsB = managers.RoleManager()
@@ -35,6 +37,9 @@ class Role(Base):
 
     def count(self):
         return self.sql_count if hasattr(self, 'sql_count') else self.roles_tenant.all().count()
+
+    def pre_save(self):
+        self.number = self.roles_tenant.count()
 
     def save(self, *args, **kwargs):
         self.name = self.name.lower()
