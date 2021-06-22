@@ -106,7 +106,8 @@ class AddressNoBase(models.Model):
     @property
     def city(self):
         formatting = 'city_%s' % self.country_code.lower()
-        return getattr(self, formatting)() if hasattr(self, formatting) else self.city_default
+        print(formatting)
+        return getattr(self, formatting) if hasattr(self, formatting) else self.city_default
 
     @property
     def city_fr(self):
