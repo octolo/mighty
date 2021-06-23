@@ -62,7 +62,6 @@ class ChangeLog(models.Model):
     user = models.CharField(max_length=255, blank=True, null=True, default='anonymous~root')
 
     def get_value(self):
-        print(self.field)
         if hasattr(self.value, 'decode'):
             return self.value.decode('utf-8')
         elif hasattr(self.value, 'tobytes'):
