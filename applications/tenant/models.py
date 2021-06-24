@@ -39,11 +39,10 @@ class Role(Base, Image):
         return self.sql_count if hasattr(self, 'sql_count') else self.roles_tenant.all().count()
 
     def pre_save(self):
-        self.number = self.roles_tenant.count()
-
-    def save(self, *args, **kwargs):
         self.name = self.name.lower()
-        super().save(*args, **kwargs)
+
+    def pre_update(self):
+        self.number = self.roles_tenant.count()
 
 CHAT_WITH_TENANTUSERS = "can_chat_with_tenant_users"
 @TenantAssociation(related_name='group_tenant')
