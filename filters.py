@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django.http import QueryDict
+from django.core.exceptions import PermissionDenied
 
 from mighty import Verify
 from mighty.functions import make_searchable, test, get_logger, make_float, make_int
@@ -277,24 +278,32 @@ class FilterByYearDelta(FilterByGTEorLTE):
 class FiltersManager:
     cache_filters = None
     request = None
+    data_load = None
 
-    def __init__(self, flts):
-        self.flts = flts
+    def __init__(self, *args, **kwargs):
+        self.flts = kwargs.get('flts', [])
+        self.mandatories = kwargs.get('mandatories', [])
+
+    def check_mandatories(self, request):
+        return all(k in self.get_data(request) for k in self.mandatories)
     
-    def get_data(self, request):
-        data = QueryDict('', mutable=True)
-        self.request = request
-        if hasattr(request, 'GET'):
-            data.update(request.GET)
-        if hasattr(request, 'POST'):
-            if request.POST:
-                data.update(request.POST)
-            elif hasattr(request, 'data'):
-                data.update(request.data)
-        return data
+    def get_data(self, request, force=False):
+        if not self.data_load or force:
+            self.data_load = QueryDict('', mutable=True)
+            self.request = request
+            if hasattr(request, 'GET'):
+                self.data_load.update(request.GET)
+            if hasattr(request, 'POST'):
+                if request.POST:
+                    self.data_load.update(request.POST)
+                elif hasattr(request, 'data'):
+                    self.data_load.update(request.data)
+        return self.data_load
 
     def params(self, request):
-        return self.get_filters(request)
+        if self.check_mandatories(request):
+            return self.get_filters(request)
+        raise PermissionDenied()
 
     def get_filter(self, param, value):
         try:

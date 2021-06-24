@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.views import View
 from django.views.generic.base import TemplateView, RedirectView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
@@ -119,22 +119,34 @@ class FormView(BaseView, FormView):
 class TemplateView(BaseView, TemplateView):
     pass
 
-# ListView overrided
-class ListView(ModelView, ListView):
+class FoxidView(ModelView, BaseView):
     cache_manager = None
     filters = []
+    mandatories = ()
+
+    @property
+    def check_mandatories(self):
+        print(self.request)
+        return True
 
     def foxid(self, queryset):
-        return Foxid(queryset, self.request, f=self.manager.flts).ready()
+        if self.check_mandatories:
+            return Foxid(queryset, self.request, f=self.manager.flts).ready()
+        return PermissionDenied()
 
     @property
     def manager(self):
-        self.cache_manager = self.cache_manager if self.cache_manager else FiltersManager(flts=self.filters)
+        self.cache_manager = self.cache_manager if self.cache_manager else FiltersManager(flts=self.filters, mandatories=self.mandatories)
         return self.cache_manager
+
+    def get_object(self):
+        return self.foxid(super().get_queryset()).get(*self.manager.params(self.request))
 
     def get_queryset(self, queryset=None):
         return self.foxid(super().get_queryset()).filter(*self.manager.params(self.request))
 
+# ListView overrided
+class ListView(FoxidView, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({"title": self.model._meta.verbose_name_plural,})
