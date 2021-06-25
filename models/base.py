@@ -52,6 +52,8 @@ class Base(models.Model):
     note = models.TextField(blank=True, null=True)
     cache = JSONField(blank=True, null=True, default=dict)
     _old_self = None
+    use_create_by = True
+    use_update_by = True
 
     class mighty:
         perm_title = actions
@@ -221,11 +223,11 @@ class Base(models.Model):
 
     # Create / Update
     def set_create_by(self, user=None):
-        if user:
+        if user and self.use_create_by:
             self.create_by = '%s.%s' % (user.id, user.username)
 
     def set_update_by(self, user=None):
-        if user:
+        if user and self.use_create_by:
             self.update_by = '%s.%s' % (user.id, user.username)
 
     """
