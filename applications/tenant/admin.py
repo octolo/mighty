@@ -16,6 +16,15 @@ class TenantAdmin(BaseAdmin):
     filter_horizontal = ('roles',)
     readonly_fields = ('invitation',)
 
+    def render_change_form(self, request, context, *args, **kwargs):
+        if hasattr(kwargs['obj'], 'roles'):
+            context['adminform'].form.fields['roles'].queryset = context['adminform'].form.fields['roles']\
+                .queryset.filter(group=kwargs['obj'].group)
+        else:
+            context['adminform'].form.fields['roles'].queryset = context['adminform'].form.fields['roles']\
+                .queryset.none()
+        return super(TenantAdmin, self).render_change_form(request, context, *args, **kwargs)
+
 #class TenantAlternateAdmin(admin.StackedInline):
 #    fk_name = 'tenant'
 #    raw_id_fields = ('tenant', 'alternate')

@@ -60,7 +60,7 @@ class Tenant(Base):
         abstract = True
         verbose_name = _.v_tenant
         verbose_name_plural = _.vp_tenant
-        unique_together = (('user', 'group'),)
+        unique_together = ('user', 'group',)
         permissions = [(CHAT_WITH_TENANTUSERS, _.perm_chat_tenantusers)]
 
     def __str__(self):
