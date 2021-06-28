@@ -9,6 +9,7 @@ from mighty.functions import make_searchable, get_request_kept
 from mighty import translates as _
 from uuid import uuid4
 from sys import getsizeof
+import copy
 
 lvl_priority = ["alert", "warning", "notify", "info", "debug"]
 def default_logfield_dict():
@@ -65,9 +66,8 @@ class Base(models.Model):
         default_permissions = default_permissions + permissions
     
     def save_old_self(self):
-        if self.pk:
-            if not self._old_self:
-                self._old_self = self
+        if self.pk and not self._old_self:
+            self._old_self = copy.deepcopy(self)
 
     def __init__(self, *args, **kwargs):
         super(Base, self).__init__(*args, **kwargs)
