@@ -21,7 +21,6 @@ def TenantAssociation(**kwargs):
                 pass
 
             def groups_m2m(self, field):
-                print(getattr(self, field).all())
                 return [obj.group.id for obj in getattr(self, field).all()]
 
             @property
