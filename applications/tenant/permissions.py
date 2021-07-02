@@ -1,14 +1,15 @@
+from mighty.functions import setting
+
 if 'rest_framework' in setting('INSTALLED_APPS'):
+    from mighty.applications.tenant.apps import TenantConfig
     from mighty.applications.tenant import get_tenant_model
     from mighty.permissions import MightyPermission, base_action, base_permission
     from rest_framework.permissions import BasePermission
 
-
     Role = get_tenant_model(TenantConfig.ForeignKey.role)
     TenantModel = get_tenant_model(TenantConfig.ForeignKey.tenant)
     TenantGroup = get_tenant_model(TenantConfig.ForeignKey.group)
-    base_permission = base_permission.append("is_tenant")
-
+    
     class TenantRolePermission(MightyPermission):
         role_model = Role
         tenant_model = TenantModel
@@ -26,7 +27,10 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
         check_destroy = base_permission
         check_others = base_permission
 
-        # Test
+        def get_group_model(self, uid):
+            return self.group_model.objects.get(uid=uid)
+
+        # Tenant test
         def is_tenant(self, group, pk=None):
             if pk: return self.user.user_tenant.filter(**{"group__"+pk: group}).exists()
             return self.user.user_tenant.filter(group=group).exists()
