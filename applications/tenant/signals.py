@@ -1,19 +1,29 @@
 from django.apps import apps
 from django.conf import settings
-from django.db.models.signals import post_save, pre_save, post_delete
+from django.db.models.signals import post_save, m2m_changed
+
 
 from mighty.apps import MightyConfig
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.tenant import get_tenant_model
 
-TenantGroup = apps.get_model(*TenantConfig.ForeignKey.group.split('.'))
+TenantModel = get_tenant_model()
+TenantGroup = get_tenant_model(TenantConfig.ForeignKey.group)
 TenantRole = get_tenant_model(TenantConfig.ForeignKey.role)
 
 def Roles(sender, instance, **kwargs):
     for role in TenantConfig.roles:
         role['group'] = instance
         role, status = TenantRole.objects.get_or_create(**role)
-post_save.connect(Roles, TenantGroup    )
+post_save.connect(Roles, TenantGroup)
+
+def AddOrRemoveRoles(sender, instance, action, **kwargs):
+    if action == 'post_add' or action == 'post_remove':
+        roles = TenantRole.objects.filter(id__in=kwargs.get('pk_set'))
+        for role in roles:
+            role.save()
+m2m_changed.connect(AddOrRemoveRoles, sender=TenantModel.roles.through)
+
 
 if TenantConfig.invitation_enable:
     from django.contrib.auth import get_user_model

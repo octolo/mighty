@@ -254,10 +254,12 @@ class Base(models.Model):
             self.pre_create()
 
     def save(self, *args, **kwargs):
+        do_post_create = False
         self.pre_save()
         self.default_data()
+        if not self.pk: do_post_create = True
         super().save(*args, **kwargs)
-        if not self.pk: self.post_create()
+        if do_post_create: self.post_create()
         else: self.post_update()
         self.post_save()
 

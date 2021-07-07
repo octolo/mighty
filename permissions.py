@@ -10,13 +10,13 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
         view = None
         user = None
         model = None
-        user_perms_list = [True,]
-        user_perms_retrieve = [True,]
-        user_perms_create = [True,]
-        user_perms_update = [True,]
-        user_perms_partial_update = [True,]
-        user_perms_destroy = [True,]
-        user_perms_default = [True,]
+        user_perms_list = []
+        user_perms_retrieve = []
+        user_perms_create = []
+        user_perms_update = []
+        user_perms_partial_update = []
+        user_perms_destroy = []
+        user_perms_default = []
 
         def has_perm(self, perm):
             return self.user.has_perm(perm)
@@ -24,7 +24,7 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
         """ Properties """
         @property
         def user(self):
-            return request.user
+            return self.request.user
 
         @property
         def is_authenticated(self):
@@ -83,16 +83,20 @@ if 'rest_framework' in setting('INSTALLED_APPS'):
                 return any([getattr(self, check) for check in self.check_others])
 
         """ Loop on permission action """
-        def check_user_permissions(action):
-            user_perms = getattr(self, "user_perms_"+action)
-            if hasattr(self, user_perms):
+        def check_user_permissions(self, action):
+            user_perms = "user_perms_"+action
+            if action != 'default' and hasattr(self, user_perms) and len(getattr(self, user_perms)):
                 return any([getattr(self, perm) for perm in getattr(self, user_perms)])
-            return any([getattr(self, perm) for perm in self.user_perms_default])
+            elif len(self.user_perms_default):
+                return any([getattr(self, perm) for perm in self.user_perms_default])
+            return True
 
-        def check_by_action(action):
-            can_action = getattr(self, "can_"+action)
-            if callable(self, can_action):
-                return getattr(self, action)()
+        def check_by_action(self, action):
+            if action:
+                can_action = "can_"+action
+                if hasattr(self, can_action):
+                    return getattr(self, can_action)()
+            return self.can_default()
 
         def has_permission(self, request, view):
             self.request = request

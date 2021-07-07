@@ -20,7 +20,7 @@ class Role(Base, Image):
     search_fields = ['name']
     name = models.CharField(max_length=255)
     is_immutable = models.BooleanField(default=False)
-    number = models.PositiveIntegerField(default=0)
+    number = models.PositiveIntegerField(default=0, editable=False)
 
     objects = models.Manager()
     objectsB = managers.RoleManager()

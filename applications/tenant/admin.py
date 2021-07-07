@@ -7,6 +7,7 @@ class RoleAdmin(BaseAdmin):
     search_fields = ('name', 'group__search')
     list_display = ('name', 'is_immutable', 'group')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.role}),)
+    readonly_fields = ('number',)
 
 class TenantAdmin(BaseAdmin):
     raw_id_fields = ('group', 'user')
@@ -24,12 +25,6 @@ class TenantAdmin(BaseAdmin):
             context['adminform'].form.fields['roles'].queryset = context['adminform'].form.fields['roles']\
                 .queryset.none()
         return super(TenantAdmin, self).render_change_form(request, context, *args, **kwargs)
-
-#class TenantAlternateAdmin(admin.StackedInline):
-#    fk_name = 'tenant'
-#    raw_id_fields = ('tenant', 'alternate')
-#    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_alternate}),)
-#    extra = 1
 
 class TenantInvitationAdmin(BaseAdmin):
     raw_id_fields = ('group', 'by', 'tenant')
