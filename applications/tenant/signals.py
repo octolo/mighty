@@ -24,7 +24,6 @@ def AddOrRemoveRoles(sender, instance, action, **kwargs):
             role.save()
 m2m_changed.connect(AddOrRemoveRoles, sender=TenantModel.roles.through)
 
-
 if TenantConfig.invitation_enable:
     from django.contrib.auth import get_user_model
     from django.template.loader import render_to_string

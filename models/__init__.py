@@ -134,6 +134,7 @@ if 'mighty.applications.extend' in settings.INSTALLED_APPS:
 # Shop
 if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     from mighty.applications.shop import models as models_shop
+    class Service(models_shop.Service): pass
     class Offer(models_shop.Offer): pass
     class Subscription(models_shop.Subscription): pass
     class Discount(models_shop.Discount): pass

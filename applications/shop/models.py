@@ -7,26 +7,42 @@ from mighty.applications.shop import generate_code_type, choices
 from mighty.applications.shop.apps import ShopConfig
 
 from schwifty import IBAN, BIC
+from datetime import timedelta
+
+class Service(Base):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=50, default=generate_code_type, unique=True)
+
+    class Meta(Base.Meta):
+        abstract = True
+        ordering = ['name']
+
+    def __str__(self):
+        return "%s(%s)" % (self.name, self.code)
 
 class Offer(Base):
     name = models.CharField(max_length=255)
     frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default='ONUSE')
     duration = models.DurationField(blank=True, null=True, editable=False)
     price = models.FloatField()
+    service = models.ManyToManyField('mighty.Service', blank=True, related_name='service_offer')
+    price_tenant = models.FloatField(default=0.0)
 
     class Meta(Base.Meta):
         abstract = True
         ordering = ['name']
 
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.get_frequency_display())
+
 class Subscription(Base):
     group = models.ForeignKey(ShopConfig.group, on_delete=models.CASCADE, related_name='group_subscription')
     offer = models.ForeignKey('mighty.Offer', on_delete=models.CASCADE, related_name='offer_subscription')
+    bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='bill_subscription', blank=True, null=True, editable=False)
+    discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_subscription')
     next_paid = models.DateField(blank=True, null=True, editable=False)
-    bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='discount_subscription', blank=True, null=True, editable=False)
-    discount = models.ManyToManyField('mighty.Discount', blank=True)
     date_start = models.DateField(blank=True, null=True, editable=False)
     date_end = models.DateField(blank=True, null=True, editable=False)
-    amount = models.FloatField(editable=False)
     is_used = models.BooleanField(default=False)
 
     class Meta(Base.Meta):
@@ -41,39 +57,82 @@ class Subscription(Base):
     def is_paid(self):
         return self.bill.paid if self.bill else False
 
+    @property
+    def price(self):
+        return self.offer.price
+    
+    @property
+    def price_tenant(self):
+        return self.offer.price_tenant*self.group.nbr_tenant
+
+    def do_bill(self):
+        amount = self.price+self.price_tenant
+        for disc in self.discount.filter(date_end__lt=timezone.now).order_by('-amount'):
+            if disc.amount and disc.is_percent:
+                amount -= amount*(disc.amount/100)
+            elif disc.amount:
+                amount -= disc.amount
+        self.subscription_bill.create(amount=amount, group= self.group)
+
+    def set_date_duration(self):
+        pass
+
+    @property
+    def get_date_month(self):
+        return self.next_paid+timedelta(days=30)
+
+    @property
+    def get_date_year(self):
+        return self.next_paid+timedelta(days=MightyConfig.days_in_year)
+
+    @property
+    def get_date_oneshot(self)
+        return timezone.now
+
+    def set_date_by_duration(self):
+        pass
+
+    def should_bill(self):
+
+    def set_date_by_frequency(self):
+        self.next_paid = getattr(self, 'get_date_%s' % self.frequency.lower()) if self.next_paid else timezone.now
+
     def set_date_on_paid(self):
-        if self.is_paid:
-            self.date_start = timezone.now
-            if self.offer.duration:
-                self.date_end = timezone.now + self.offer.duration
+        if self.offer.duration:
+            self.set_date_by_duration()
+        else:
+            self.set_date_by_frequency()
+        #if self.is_paid:
+        #    now = timezone.now
+        #    self.date_start = now
+        #    if self.offer.duration:
+        #        self.date_end = now + self.offer.duration
+
+    def set_on_use_count(self):
+        self.one_use_count = True if self.offer.frequency =='ONUSE' else False
+
+    def set_subscription(self):
+        if hasattr(self.group, 'subscription'):
+            self.group.subscription = self
+            self.group.save()
+
+    def set_cache_service(self):
+        for service in self.offer.service.all():
+            self.add_cache(service.name.lower(), service.code)
+
+    def has_service(self, service):
+        return self.has_cache_field(service.lower())
+
+    def pre_save(self):
+        self.set_on_use_count()
 
     def pre_update(self):
         self.set_date_on_paid()
+        self.set_cache_service()
 
-class SubscriptionGroup(models.Model):
-    last_subscription = models.ForeignKey('mighty.Subscription', on_delete=models.SET_NULL, blank=True, null=True, related_name='last_subscription', editable=False)
-    valid_method = models.PositiveIntegerField(default=0, editable=False)
-    one_use_count = models.PositiveIntegerField(default=0, editable=False)
-
-    def is_valid(self):
-        return any([self.valid_subscription, self.one_use_count])
-
-    def set_valid_method(self):
-        self.valid_method = len(list(filter(True, [pm.is_valid() for pm in self.payment_method.all()])))
-
-    def set_on_use_count(self):
-        self.one_use_count = self.group_subscription.filter(frequency='ONUSE', is_used=False).count()
-
-    def set_last_subscription(self):
-        self.last_subscription = self.last_subscription.order_by('-date_start').last()
-
-    def pre_update(self):
-        self.set_last_subscription()
-        self.set_valid_method()
-        self.set_on_use_count()
-
-    class Meta:
-        abstract = True
+    def post_save(self):
+        self.should_bill()
+        self.set_subscription()
 
 class Bill(Base):
     group = models.ForeignKey(ShopConfig.group, on_delete=models.SET_NULL, blank=True, null=True)

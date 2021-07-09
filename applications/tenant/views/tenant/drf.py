@@ -63,4 +63,4 @@ class TenantModelViewSet(ModelViewSet):
 
     @property
     def tenant_groups_pk(self):
-        return [group.uid for group in self.tenant_groups]
+        return [group.pk for group in self.tenant_groups]

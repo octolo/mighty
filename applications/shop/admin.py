@@ -6,6 +6,12 @@ from django.urls import reverse, resolve
 from mighty.admin.models import BaseAdmin
 from mighty.applications.shop import fields, translates as _
 
+class ServiceAdmin(BaseAdmin):
+    view_on_site = False
+    readonly_fields = ('code',)
+    search_fields = ('name', 'code')
+    list_display = ('name', 'code')
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.service}),)
 
 class OfferAdmin(BaseAdmin):
     view_on_site = False
@@ -13,6 +19,7 @@ class OfferAdmin(BaseAdmin):
     search_fields = ('name',)
     list_display = ('name', 'frequency', 'duration')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.offer}),)
+    filter_horizontal = ('service',)
 
 class SubscriptionAdmin(BaseAdmin):
     change_list_template = "admin/subscription_change_list.html"
@@ -23,7 +30,6 @@ class SubscriptionAdmin(BaseAdmin):
         'discount',
         'date_start',
         'date_end',
-        'amount',
     )
     raw_id_fields = ('group', 'offer')
     search_fields = ('group__search',)
@@ -116,7 +122,6 @@ class SubscriptionAdminInline(admin.StackedInline):
         'discount',
         'date_start',
         'date_end',
-        'amount',
     )
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.subscription}),)
     extra = 0

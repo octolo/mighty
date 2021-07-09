@@ -1,18 +1,22 @@
+service = (
+    'name',
+    'code',
+)
 offer = (
     'name',
     'frequency',
     'duration',
     'price',
+    'service',
 )
 subscription = (
     'group',
     'offer',
-    'next_paid',
     'bill',
     'discount',
+    'next_paid',
     'date_start',
     'date_end',
-    'amount',
 )
 bill = (
     'group',

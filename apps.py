@@ -31,6 +31,7 @@ class Config:
             'Translator',
         ],
         'shop': [
+            'Service',
             'Offer',
             'Subscription',
             'Discount',

@@ -47,3 +47,23 @@ def TenantAssociation(**kwargs):
 
         return TAModel
     return decorator
+
+def TenantGroup(**kwargs):
+    def decorator(obj):
+
+        class TGModel(obj):
+            nbr_tenant = models.PositiveBigIntegerField(default=1, editable=False)
+
+            def set_nbr_tenant(self):
+                if self.pk:
+                    self.nbr_tenant = self.group_tenant.count()
+
+            class Meta(obj.Meta):
+                abstract = True
+
+            def save(self, *args, **kwargs):
+                self.set_nbr_tenant()
+                super().save(*args, **kwargs)
+
+        return TGModel
+    return decorator
