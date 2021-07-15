@@ -86,13 +86,14 @@ class Subscription(Base):
         return self.next_paid+timedelta(days=MightyConfig.days_in_year)
 
     @property
-    def get_date_oneshot(self)
+    def get_date_oneshot(self):
         return timezone.now
 
     def set_date_by_duration(self):
         pass
 
     def should_bill(self):
+        pass
 
     def set_date_by_frequency(self):
         self.next_paid = getattr(self, 'get_date_%s' % self.frequency.lower()) if self.next_paid else timezone.now

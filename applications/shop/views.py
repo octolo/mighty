@@ -14,4 +14,3 @@ class ShopExport(ExportView):
     model = Subscription
     queryset = Subscription.objects.all()
     fields = ['group', 'amount']
-
