@@ -86,10 +86,7 @@ class Subscription(Base):
         self.next_paid = getattr(self, 'get_date_%s' % self.frequency.lower()) if self.next_paid else timezone.now
 
     def set_date_on_paid(self):
-        if self.offer.duration:
-            self.set_date_by_duration()
-        else:
-            self.set_date_by_frequency()
+        self.set_date_by_duration() if self.offer.duration else self.set_date_by_frequency()
         #if self.is_paid:
         #    now = timezone.now
         #    self.date_start = now

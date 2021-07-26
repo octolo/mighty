@@ -11,22 +11,27 @@ def EnableSubscription(**kwargs):
                 blank=kwargs.get('blank', True),
                 null=kwargs.get('null', True),
             )
-            valid_payment_methods = models.PositiveIntegerField(default=0, editable=False)
+            valid_payment_methods = models.DateField(blank=True, null=True, editable=False)
+            valid_subscription = models.DateField(blank=True, null=True, editable=False)
+            
 
             class Meta(obj.Meta):
                 abstract = True
 
-            #def set_last_subscription(self):
-            #    self.last_subscription = getattr(self,kwargs.get('related_name', 'subscription_set')).order_by('-date_start').last()
+            def set_valid_date_pm(self, pm):
+                if pm.is_valid:
+                    if self.valid_payment_methods is None or pm.date_valid > self.valid_payment_methods:
+                        self.valid_payment_methods = pm.date_valid
 
             def set_valid_valid_payment_methods(self):
-                self.valid_payment_methods = len(list(filter(True, [pm.is_valid() for pm in self.payment_method.all()])))
+                pms = list(filter(True, [pm.is_valid() for pm in self.payment_method.all()]))
+                for pm in pms:
+                    self.set_valid_date_pm(pm)
 
             @property
             def subscription_active(self):
                 if self.subscription:
-                    now = timezone.now
-                    return True if now >= self.subscription.date_start and now <= self.subscription.date_end else False
+                    return True if self.valid_subscription < timezone.now else False
                 return False
 
             def save(self, *args, **kwargs):

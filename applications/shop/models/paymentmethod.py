@@ -16,7 +16,7 @@ class PaymentMethod(Base):
     iban = models.CharField(max_length=27, blank=True, null=True)
     bic = models.CharField(max_length=12, blank=True, null=True)
     cb = models.CharField(max_length=16, blank=True, null=True)
-    date_cb = models.DateField(blank=True, null=True)
+    date_valid = models.DateField(blank=True, null=True)
 
     # SERVICE
     backend = models.CharField(max_length=255, editable=False)
@@ -72,7 +72,7 @@ class PaymentMethod(Base):
 
     @property
     def is_valid_cb(self):
-        if self.date_cb:
+        if self.date_valid:
             return self.validate_luhn(self.cb)
         return False
 
@@ -84,8 +84,8 @@ class PaymentMethod(Base):
 
     @property        
     def cb_month(self):
-        return self.date_cb.month
+        return self.date_valid.month
 
     @property
     def cb_year(self):
-        return self.date_cb.year
+        return self.date_valid.year
