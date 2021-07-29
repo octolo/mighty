@@ -11,7 +11,7 @@ class PaymentMethodSerializer(ModelSerializer):
 class OfferSerializer(ModelSerializer):
     class Meta:
         model = Offer
-        fields = ('uid', 'name', 'frequency', 'duration', 'price')
+        fields = ('uid', 'name', 'frequency', 'duration', 'price', 'named_id')
 
 class SubscriptionSerializer(ModelSerializer):
     offer = OfferSerializer()

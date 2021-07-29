@@ -15,7 +15,7 @@ class ServiceAdmin(BaseAdmin):
 
 class OfferAdmin(BaseAdmin):
     view_on_site = False
-    readonly_fields = ('duration',)
+    readonly_fields = ('duration', 'named_id')
     search_fields = ('name',)
     list_display = ('name', 'frequency', 'duration')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.offer}),)

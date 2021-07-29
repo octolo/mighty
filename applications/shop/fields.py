@@ -3,11 +3,13 @@ service = (
     'code',
 )
 offer = (
+    'named_id',
     'name',
     'frequency',
     'duration',
     'price',
     'service',
+    'is_custom',
 )
 subscription = (
     'group',
