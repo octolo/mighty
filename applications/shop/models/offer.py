@@ -16,8 +16,6 @@ class Service(Base):
     def __str__(self):
         return "%s(%s)" % (self.name, self.code)
 
-
-
 class Offer(Base):
     named_id = models.CharField(max_length=255, db_index=True, null=True, editable=False)
     name = models.CharField(max_length=255)
@@ -36,12 +34,12 @@ class Offer(Base):
     def __str__(self):
         return "%s (%s)" % (self.name, self.get_frequency_display())
 
-    def set_named_id(self):
-        self.named_id = conf.named_tpl % {"named": slugify(self.name), "id": self.id}
+    #def set_named_id(self):
+    #    self.named_id = conf.named_tpl % {"named": slugify(self.name), "id": self.id}
 
-    def pre_update(self):
-        self.set_named_id()
+    #def pre_update(self):
+    #    self.set_named_id()
 
-    def post_create(self):
-        if not self.named_id:
-            self.save()
+    #def post_create(self):
+    #    if not self.named_id:
+    #        self.save()

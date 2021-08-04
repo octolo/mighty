@@ -1,6 +1,7 @@
 default_app_config = 'mighty.applications.shop.apps.ShopConfig'
 from django.core.exceptions import ObjectDoesNotExist
 from mighty.functions import key, get_model
+from django.db.utils import OperationalError
 import string
 
 def generate_code_type():
@@ -25,4 +26,6 @@ def generate_code_offer():
         get_model('mighty', 'Offer').objects.get(code=code)
         return generate_code_offer()
     except ObjectDoesNotExist:
+        return code
+    except OperationalError:
         return code
