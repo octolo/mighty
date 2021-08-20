@@ -23,7 +23,11 @@ class Discount(Base):
         return True
 
 class Subscription(Base):
-    group = models.ForeignKey(ShopConfig.group, on_delete=models.CASCADE, related_name='group_subscription')
+    if ShopConfig.subscription_for == 'group':
+        group = models.ForeignKey(ShopConfig.group, on_delete=models.CASCADE, related_name='group_subscription')
+    else:
+        from django.contrib.auth import get_user_model
+        user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='user_subscription')
     offer = models.ForeignKey('mighty.Offer', on_delete=models.CASCADE, related_name='offer_subscription')
     bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='bill_subscription', blank=True, null=True, editable=False)
     discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_subscription')
@@ -35,6 +39,10 @@ class Subscription(Base):
     class Meta(Base.Meta):
         abstract = True
         ordering = ['date_start', 'next_paid']
+
+    @property
+    def user_or_group(self):
+        return self.group if ShopConfig.subscription_for == 'group' else self.user
 
     @property
     def subscription_usage(self):
@@ -50,7 +58,7 @@ class Subscription(Base):
     
     @property
     def price_tenant(self):
-        return self.offer.price_tenant*self.group.nbr_tenant
+        return self.offer.price_tenant*self.user_or_group.nbr_tenant
 
     def do_bill(self):
         amount = self.price+self.price_tenant
@@ -59,7 +67,7 @@ class Subscription(Base):
                 amount -= amount*(disc.amount/100)
             elif disc.amount:
                 amount -= disc.amount
-        self.subscription_bill.create(amount=amount, group= self.group)
+        self.subscription_bill.create(amount=amount, group= self.user_or_group)
 
     def set_date_duration(self):
         pass
@@ -97,9 +105,9 @@ class Subscription(Base):
         self.one_use_count = True if self.offer.frequency =='ONUSE' else False
 
     def set_subscription(self):
-        if hasattr(self.group, 'subscription'):
-            self.group.subscription = self
-            self.group.save()
+        if hasattr(self.user_or_group, 'subscription'):
+            self.user_or_group.subscription = self
+            self.user_or_group.save()
 
     def set_cache_service(self):
         for service in self.offer.service.all():

@@ -10,13 +10,18 @@ from datetime import timedelta
 
 class PaymentMethod(Base):
     group = models.ForeignKey(ShopConfig.group, on_delete=models.SET_NULL, blank=True, null=True, related_name="payment_method")
-    form_method = models.CharField(max_length=4, choices=choices.PAYMETHOD, default="CB")
+    form_method = models.CharField(max_length=17, choices=choices.PAYMETHOD, default="CB")
+    date_valid = models.DateField(blank=True, null=True)
 
     # IBAN
     iban = models.CharField(max_length=27, blank=True, null=True)
     bic = models.CharField(max_length=12, blank=True, null=True)
+
+    # CB
     cb = models.CharField(max_length=16, blank=True, null=True)
-    date_valid = models.DateField(blank=True, null=True)
+    cvc = models.CharField(max_length=3, blank=True, null=True)
+    month = models.DateField(blank=True, null=True)
+    year = models.DateField(blank=True, null=True)
 
     # SERVICE
     backend = models.CharField(max_length=255, editable=False)
@@ -82,10 +87,3 @@ class PaymentMethod(Base):
             return (self.is_valid_iban and self.is_valid_bic)
         return self.is_valid_cb
 
-    @property        
-    def cb_month(self):
-        return self.date_valid.month
-
-    @property
-    def cb_year(self):
-        return self.date_valid.year

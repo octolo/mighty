@@ -11,3 +11,5 @@ class ShopConfig(AppConfig, Config):
     name = 'mighty.applications.shop'
     group = setting('PAYMENT_GROUP', 'auth.Group')
     method = setting('PAYMENT_METHOD', 'mighty.PaymentMethod')
+    subscription_for = setting('SUBSCRIPTION_FOR', 'group')
+    invoice_backend = setting('INVOICE_BACKEND', 'mighty.applications.shop.backends.stripe')
