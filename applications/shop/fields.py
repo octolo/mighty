@@ -19,15 +19,19 @@ subscription = (
     'next_paid',
     'date_start',
     'date_end',
+    'method',
 )
 bill = (
     'group',
     'amount',
+    'end_amount',
     'date_payment',
     'paid',
     'payment_id',
     'subscription',
     'method',
+    'discount',
+    'end_discount',
 )
 discount = (
     'code',

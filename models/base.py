@@ -9,7 +9,7 @@ from mighty.functions import make_searchable, get_request_kept
 from mighty import translates as _
 from uuid import uuid4
 from sys import getsizeof
-import copy
+import copy, json
 
 lvl_priority = ["alert", "warning", "notify", "info", "debug"]
 def default_logfield_dict():
@@ -87,6 +87,10 @@ class Base(models.Model):
     def is_enable(self): return True if self.is_disable is False else False
     @property
     def all_permissions(self): return self._meta.default_permissions + tuple([perm[0] for perm in self._meta.permissions])
+    @property
+    def cache_json(self): return json.dumps(self.cache)
+    @property
+    def logs_json(self): return json.dumps(self.logs)
 
     # Admin URL
     @property

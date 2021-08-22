@@ -277,6 +277,8 @@ class BaseAdmin(admin.ModelAdmin):
         my_urls = [
             path('<path:object_id>/disable/', self.wrap(self.disable_view), name='%s_%s_disable' % info),
             path('<path:object_id>/enable/', self.wrap(self.enable_view), name='%s_%s_enable' % info),
+            path('<path:object_id>/cachefield/', self.wrap(self.cachefield_view), name='%s_%s_cache_field' % info),
+            path('<path:object_id>/logsfield/', self.wrap(self.logsfield_view), name='%s_%s_logs_field' % info),
         ]
         if hasattr(self.model, 'timeline_model'):
             my_urls += [
@@ -290,6 +292,36 @@ class BaseAdmin(admin.ModelAdmin):
                 path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/<str:sourcetype>/', self.wrap(self.source_addfield_view), name='%s_%s_source_addfield' % info),
             ]
         return my_urls + urls
+
+    def cachefield_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/cache_field.html', context)
+
+    def logsfield_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/logs_field.html', context)
 
     @csrf_protect_m
     def disable_view(self, request, object_id, extra_context=None):

@@ -1,44 +1,104 @@
 from mighty.applications.shop.backends import PaymentBackend
 from mighty.functions import setting
-import stripe
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PaymentBackend(PaymentBackend):
     APIKEY = setting('STRIPE_KEY', 'pk_test_2HJblgmwriJiakxRAgSCiAiZ')
     APISECRET = setting('STRIPE_SECRET', 'sk_test_Ut8KxxgMdbQnWqfXcyYe0JiY')
-    api = None
+    pmtypes = {
+        "CB": "card",
+        "IBAN": "sepa_debit",
+    }
 
-    def to_invoice(self):
+    def to_charge(self):
         invoice = self.set_charge()
         self.bill.payment_id = invoice.id
-        self.bill.log = invoice
-        self.bill.backend = 'mighty.applications.shop.backends.stripe'
+        self.bill.add_cache[self.backend] = invoice
+        self.bill.backend = self.backend
         self.bill.save()
-
         return True
 
+    @property
+    def pmtype(self):
+        if self.payment_method.form_method in self.pmtypes:
+            return self.pmtypes[self.payment_method.form_method]
+        return self.payment_method.form_method.lower()
+
+    @property
+    def pm_stripe(self):
+        pm = self.api.PaymentMethod.retrieve(self.payment_method_cache["id"],)
+
     # STRIPE
-    def get_charge(self, id_charge):
-        charge = stripe.Charge.retrieve(id_charge, api_key=self.APISECRET)
-        charge.save()
+    @property
+    def api(self):
+        import stripe
+        stripe.api_key = self.APISECRET
+        return stripe
+
+    # Charge
+    @property
+    def payment_id(self):
+        return self.charge["id"]
+
+    @property
+    def data_bill(self):
+        return {
+            "amount": int(round(self.bill.end_amount*100)),
+            "currency": "eur",
+            "payment_method": self.payment_method_cache["id"],
+            "description": self.bill.follow_id,
+            "payment_method_types": [self.pmtype]
+        }
+
+    def retry_to_charge(self):
+        self.add_payment_method(True)
+        return self.api.PaymentIntent.modify(self.charge["id"], **self.data_bill)
+
+    def to_charge(self):
+        if self.charge:
+            charge = self.api.PaymentIntent.retrieve(self.charge["id"])
+            if charge.status not in ["processing", "canceled", "succeeded"]:
+                self.retry_to_charge()
+        else:
+            charge = self.api.PaymentIntent.create(**self.data_bill, confirm=True)
         return charge
 
-    def get_api(self):
-        if self.api is None:
-            self.api = stripe.api_key = self.APISECRET
-        return self.api
+    @property
+    def is_paid_success(self):
+        return True if self.charge["status"] == "succeeded" else False
 
-    def set_charge(self):
-        charge = self.get_api().Charge.create(
-            amount=self.bill.real_amount,
-            currency="eur",
-            source=self.payment_method.id,
-            description=self.bill.id)
-        return charge
+    # Payment Method
+    @property
+    def data_cb(self):
+        return {
+            "billing_details": self.billing_details,
+            "type": "card",
+            "card": {
+                "number": self.payment_method.cb,
+                "exp_month": self.payment_method.month.month,
+                "exp_year": self.payment_method.year.year,
+                "cvc": self.payment_method.cvc}}
+    
+    @property
+    def billing_details(self):
+        return {
+            "name": self.billing_detail,
+        }
 
-    def add_pm_cb(self, obj):
-        pm = stripe.PaymentMethod.create(type="card", card={"number": obj.cb, "exp_month": obj.month.month, "exp_year": obj.year.year,, "cvc": obj.cvc})
-        return pm
+    @property
+    def data_iban(self):
+        return {
+            "billing_details": self.billing_details,
+            "type": "sepa_debit",
+            "sepa_debit": {"iban": self.payment_method.iban}}
 
-    def add_pm_iban(self, obj):
-        pm = stripe.PaymentMethod.create(type="sepa_debit",sepa_debit={"iban": obj.iban})
-        return pm
+    def add_payment_method(self, force=False):
+        if not force:
+            try:
+                return self.api.PaymentMethod.retrieve(self.payment_method_cache['id'])
+            except Exception:
+                pass
+        data_pm = getattr(self, "data_%s" % self.form_method.lower())
+        return self.api.PaymentMethod.create(**data_pm)

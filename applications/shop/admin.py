@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
-from django.urls import reverse, resolve
+from django.template.response import TemplateResponse
+from django.urls import resolve, path, include
 
 from mighty.admin.models import BaseAdmin
 from mighty.applications.shop import fields, translates as _
+from mighty.applications.shop.apps import ShopConfig
 
 class ServiceAdmin(BaseAdmin):
     view_on_site = False
@@ -22,12 +24,12 @@ class OfferAdmin(BaseAdmin):
     filter_horizontal = ('service',)
 
 class SubscriptionAdmin(BaseAdmin):
-    change_list_template = "admin/subscription_change_list.html"
+    change_list_template = "admin/change_list_subscription.html"
+    change_form_template = "admin/change_form_subscription.html"
     view_on_site = False
     readonly_fields = (
         'next_paid',
         'bill',
-        'discount',
         'date_start',
         'date_end',
     )
@@ -35,6 +37,16 @@ class SubscriptionAdmin(BaseAdmin):
     search_fields = ('group__search',)
     list_display = ('group', 'offer', 'date_start')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.subscription}),)
+    filter_horizontal = ('discount',)
+
+    def render_change_form(self, request, context, *args, **kwargs):
+        if hasattr(kwargs['obj'], 'method'):
+            context['adminform'].form.fields['method'].queryset = context['adminform'].form.fields['method']\
+                .queryset.filter(group=kwargs['obj'].group)
+        else:
+            context['adminform'].form.fields['method'].queryset = context['adminform'].form.fields['method']\
+                .queryset.none()
+        return super(SubscriptionAdmin, self).render_change_form(request, context, *args, **kwargs)
 
     def exports_view(self, request, object_id=None, extra_context=None):
         current_url = resolve(request.path_info).url_name
@@ -81,12 +93,27 @@ class SubscriptionAdmin(BaseAdmin):
         from mighty.applications.shop.views import ShopExport
         return ShopExport.as_view(**defaults)(request)
 
+    def dobill_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        obj.do_bill()
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/do_bill.html', context)
 
     def get_urls(self):
-        from django.urls import path, include
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
+            path('<path:object_id>/dobill/', self.wrap(self.dobill_view), name='%s_%s_dobill_subscription' % info),
             path("exports/", include([
                 path("", self.exports_view, name="%s_%s_exports_subscription" % info),
                 path("csv/", self.export_view, name="%s_%s_export_all" % info),
@@ -97,21 +124,81 @@ class SubscriptionAdmin(BaseAdmin):
 
 class BillAdmin(BaseAdmin):
     view_on_site = False
+    change_form_template  = 'admin/change_form_bill.html'
     readonly_fields = ('paid', 'payment_id', 'subscription', 'method', 'date_payment')
     search_fields = ('group__search',)
     list_display = ('group', 'paid', 'subscription')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.bill}),)
+    filter_horizontal = ('discount',)
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        if ShopConfig.subscription_for == 'group':
+            self.readonly_fields += ('group',)
+        else:
+            self.readonly_fields += ('user',)
+
+    def trytocharge_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        obj.try_to_charge()
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/try_to_charge.html', context)
+
+    def billpdf_view(self, request, object_id=None, extra_context=None):
+        current_url = resolve(request.path_info).url_name
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        #obj = self.get_object(request, unquote(object_id), to_field)
+
+        #context = {
+        #    **self.admin_site.each_context(request),
+        #    "current_url": current_url,
+        #    "title": "%s (%s)" % (_.exports, obj) if obj else _.exports,
+        #    "object_name": str(opts.verbose_name),
+        #    "object": obj,
+        #    "opts": opts,
+        #    "app_label": opts.app_label,
+        #    "media": self.media
+        #}
+        #request.current_app = self.admin_site.name
+        #defaults = {
+        #    "extra_context": context,
+        #    "template_name": "admin/shop_exports.html",
+        #}
+        from mighty.applications.shop.views import ShopInvoicePDF
+        return ShopInvoicePDF.as_view()(request)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        info = self.model._meta.app_label, self.model._meta.model_name
+        my_urls = [
+            path('<path:object_id>/pdf/', self.billpdf_view, name='%s_%s_pdf_bill' % info),
+            path('<path:object_id>/trytocharge/', self.wrap(self.trytocharge_view), name='%s_%s_trytocharge_bill' % info),
+        ]
+        return my_urls + urls
 
 class DiscountAdmin(BaseAdmin):
     view_on_site = False
-    list_display = ('code', 'amount', 'is_percent')
+    search_fields = ('code',)
+    list_display = ('code', 'amount', 'is_percent', 'date_end')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.discount}),)
 
 class PaymentMethodAdmin(BaseAdmin):
     view_on_site = False
+    raw_id_fields = ('group',)
     readonly_fields = ('backend', 'service_id', 'service_detail')
     search_fields = ('group__search',)
-    list_display = ('group', 'form_method')
+    list_display = ('group', 'form_method', 'date_valid')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.payment_method}),)
 
 class SubscriptionAdminInline(admin.StackedInline):

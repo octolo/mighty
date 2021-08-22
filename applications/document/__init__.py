@@ -10,8 +10,8 @@ fields = ("based_on", "config", "context")
 fields_sign = fields + ("signatory", "is_signed")
 
 def generate_pdf(**kwargs):
-    file_name = kwargs.get("file_name", False)
     header_enable, footer_enable = False, False
+    file_name = kwargs.get("file_name", False)
     options = kwargs.get("options", conf.pdf_options)
     conf_header = kwargs.get("conf_header", conf.pdf_header)
     conf_footer = kwargs.get("conf_footer", conf.pdf_footer)
