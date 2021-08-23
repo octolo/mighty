@@ -6,7 +6,7 @@ from mighty.views import Widget, Config, ConfigListView, ConfigDetailView, Gener
 app_name = "mighty"
 urlpatterns = [
     path('success/', GenericSuccess.as_view(), name="generic-success"),
-    path('widgets/<str:widget>/<str:id>/', Widget.as_view(), name="mighty-widget")
+    path('widgets/<str:widget>/<str:id>/', Widget.as_view(), name="mighty-widget"),
 ]
 api_urlpatterns = [path('config/', include([
         path('base/', Config.as_view(), name="api-config-base"),

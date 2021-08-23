@@ -28,6 +28,12 @@ def GroupOrUser(**kwargs):
             def group_or_user(self):
                 return self.group if hasattr(self, 'group') else self.user
 
+            def set_group_or_user(self, obj):
+                if ShopConfig.subscription_for == 'group':
+                    self.group = obj
+                else:
+                    self.user = obj
+
         return GOUModel
     return decorator
 

@@ -28,7 +28,7 @@ class PaymentMethod(Base):
 
     # CB
     cb = models.CharField(max_length=16, blank=True, null=True)
-    cvc = models.CharField(max_length=3, blank=True, null=True)
+    cvc = models.CharField(max_length=4, blank=True, null=True)
     month = models.DateField(blank=True, null=True)
     year = models.DateField(blank=True, null=True)
 

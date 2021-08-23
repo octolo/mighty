@@ -12,13 +12,13 @@ class PaymentBackend(PaymentBackend):
         "IBAN": "sepa_debit",
     }
 
-    def to_charge(self):
-        invoice = self.set_charge()
-        self.bill.payment_id = invoice.id
-        self.bill.add_cache[self.backend] = invoice
-        self.bill.backend = self.backend
-        self.bill.save()
-        return True
+    #def to_charge(self):
+    #    invoice = self.set_charge()
+    #    self.bill.payment_id = invoice.id
+    #    self.bill.add_cache[self.backend] = invoice
+    #    self.bill.backend = self.backend
+    #    self.bill.save()
+    #    return True
 
     @property
     def pmtype(self):
@@ -53,7 +53,7 @@ class PaymentBackend(PaymentBackend):
         }
 
     def retry_to_charge(self):
-        self.add_payment_method(True)
+        self.bill.add_cache("payment_method", self.add_payment_method(True))
         return self.api.PaymentIntent.modify(self.charge["id"], **self.data_bill)
 
     def to_charge(self):
@@ -63,6 +63,7 @@ class PaymentBackend(PaymentBackend):
                 self.retry_to_charge()
         else:
             charge = self.api.PaymentIntent.create(**self.data_bill, confirm=True)
+            print(charge)
         return charge
 
     @property

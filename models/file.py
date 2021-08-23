@@ -14,9 +14,12 @@ Add [file, name, mimetype] field at the model
 from django.db import models
 from django.utils.text import get_valid_filename
 from django.utils.html import format_html
+from django.http import FileResponse
+from django.core.exceptions import  PermissionDenied
+
 from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
 from mighty.fields import JSONField
-import os, magic, logging
+import os, magic, logging, requests, tempfile
 logger = logging.getLogger(__name__)
 
 class File(models.Model):
@@ -27,6 +30,8 @@ class File(models.Model):
     extracontenttype = JSONField(blank=True, null=True)
     size = models.BigIntegerField(default=0, editable=False)
     client_date = models.DateTimeField(null=True, blank=True)
+    proxy_cloud_streaming = False
+    chunk_size = 1024
 
     class Meta:
         abstract = True
@@ -64,7 +69,8 @@ class File(models.Model):
             self.size = self.file._file.size
             self.charset = self.file._file.charset
             self.extracontenttype = self.file._file.content_type_extra
-            #self.client_date = 
+            if not self.filename:
+                self.filename = self.file_name
         super(File, self).save(*args, **kwargs)
 
     def size_long(self, unit=None):
@@ -72,3 +78,21 @@ class File(models.Model):
 
     def size_short(self, unit=None):
         return pretty_size_short(self.size, unit) if self.size else None
+
+    @property
+    def cloud_file(self):
+        cloud_file = requests.get(self.file.url, stream=True)
+        cloud_file.raise_for_status()
+        status_code = str(cloud_file.status_code)[0]
+        if status_code == "2" or status_code == "3":
+            #with tempfile.NamedTemporaryFile(mode='w+b') as tmp_file:
+            #    for chunk in cloud_file.iter_content(self.chunk_size):
+            #        tmp_file.write(chunk)
+            return cloud_file
+        raise PermissionDenied()
+
+    def http_download(self):
+        todl_file = self.cloud_file if self.proxy_cloud_streaming else self.file
+        response = FileResponse(todl_file)
+        response['Content-Disposition'] = 'attachment; filename="%s"' % self.file_name
+        return response

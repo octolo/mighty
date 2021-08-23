@@ -1,6 +1,7 @@
 from django.conf import settings
+from django.utils import timezone
 from mighty.apps import MightyConfig
-import logging, datetime
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ class PaymentBackend:
             if self.is_paid_success:
                 self.bill.paid = True
                 self.bill.payment_id = self.payment_id
-                self.bill.date_payment = datetime.datetime.now()
+                self.bill.date_payment = timezone.now()
             self.bill.save()
 
     # To implement

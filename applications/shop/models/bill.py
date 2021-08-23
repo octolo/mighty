@@ -19,12 +19,13 @@ class Bill(Base):
     discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_bill')
     end_discount = models.FloatField(blank=True, null=True)
     backend = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    need_action = models.CharField(max_length=25, blank=True, null=True, editable=False)
     
     class Meta(Base.Meta):
         abstract = True
 
     def __str__(self):
-        return "%s - %s (" % (self.group, self.subscription)
+        return "%s - %s" % (self.group, self.subscription)
 
     @property
     def offer(self):

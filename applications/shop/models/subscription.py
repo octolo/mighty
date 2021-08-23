@@ -2,8 +2,9 @@ from django.db import models
 
 from mighty.models.base import Base
 from mighty.apps import MightyConfig
-from mighty.applications.shop.apps import ShopConfig
 from mighty.applications.shop import generate_code_type
+from mighty.applications.shop.apps import ShopConfig
+from mighty.applications.shop.decorators import GroupOrUser
 
 from datetime import timedelta, datetime, date
 from dateutil.relativedelta import relativedelta
@@ -34,12 +35,14 @@ class Discount(Base):
             return (self.date_end >= date.today())
         return True
 
+
+@GroupOrUser(related_name="group_subscription", on_delete=models.SET_NULL, blank=True, null=True)
 class Subscription(Base):
-    if ShopConfig.subscription_for == 'group':
-        group = models.ForeignKey(ShopConfig.group, on_delete=models.CASCADE, related_name='group_subscription')
-    else:
-        from django.contrib.auth import get_user_model
-        user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='user_subscription')
+    #if ShopConfig.subscription_for == 'group':
+    #    group = models.ForeignKey(ShopConfig.group, on_delete=models.CASCADE, related_name='group_subscription')
+    #else:
+    #    from django.contrib.auth import get_user_model
+    #    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='user_subscription')
     offer = models.ForeignKey('mighty.Offer', on_delete=models.CASCADE, related_name='offer_subscription')
     bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='bill_subscription', blank=True, null=True, editable=False)
     method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_subscription')
@@ -74,16 +77,18 @@ class Subscription(Base):
     
     @property
     def price_tenant(self):
-        return self.offer.price_tenant*self.user_or_group.nbr_tenant
+        if self.user_or_group:
+            return self.offer.price_tenant*self.user_or_group.nbr_tenant
+        return 0
 
     @property
     def should_bill(self):
         if self.method:
-            print('ok')
             if not self.bill:
                 self.next_paid = date.today()
             if self.offer.frequency != 'ONUSE':
                 return True if not self.next_paid or self.next_paid <= date.today() else False
+        return False
 
     @property
     def discount_amount(self):
@@ -101,6 +106,7 @@ class Subscription(Base):
             bill.discount.add(*self.discount.filter(date_end__gt=datetime.now()).order_by('-amount'))
             self.bill = bill
             self.save()
+        return self.bill
 
 
     def update_bill(self):
@@ -147,15 +153,15 @@ class Subscription(Base):
         for service in self.offer.service.all():
             self.add_cache(service.name.lower(), service.code)
 
-
     # On Save
     def pre_save(self):
         self.set_on_use_count()
 
     def pre_update(self):
-        self.update_bill()
+        #self.update_bill()
         self.set_date_on_paid()
         self.set_cache_service()
 
-    def post_save(self):
+    def post_create(self):
         self.set_subscription()
+        self.do_bill()
