@@ -38,11 +38,6 @@ class Discount(Base):
 
 @GroupOrUser(related_name="group_subscription", on_delete=models.SET_NULL, blank=True, null=True)
 class Subscription(Base):
-    #if ShopConfig.subscription_for == 'group':
-    #    group = models.ForeignKey(ShopConfig.group, on_delete=models.CASCADE, related_name='group_subscription')
-    #else:
-    #    from django.contrib.auth import get_user_model
-    #    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='user_subscription')
     offer = models.ForeignKey('mighty.Offer', on_delete=models.CASCADE, related_name='offer_subscription')
     bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='bill_subscription', blank=True, null=True, editable=False)
     method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_subscription')
@@ -50,6 +45,7 @@ class Subscription(Base):
     next_paid = models.DateField(blank=True, null=True, editable=False)
     date_start = models.DateField(blank=True, null=True, editable=False)
     date_end = models.DateField(blank=True, null=True, editable=False)
+    coin = models.PositiveIntegerField(default=0)
     is_used = models.BooleanField(default=False)
 
     class Meta(Base.Meta):
@@ -60,8 +56,10 @@ class Subscription(Base):
         return "%s - %s" % (self.offer, self.next_paid)
 
     @property
-    def user_or_group(self):
-        return self.group if ShopConfig.subscription_for == 'group' else self.user
+    def is_active(self):
+        if self.offer.frequency != 'ONUSE':
+            return True if self.next_paid >= timezone.now() else False
+        return self.coin > 0
 
     @property
     def subscription_usage(self):
@@ -77,8 +75,8 @@ class Subscription(Base):
     
     @property
     def price_tenant(self):
-        if self.user_or_group:
-            return self.offer.price_tenant*self.user_or_group.nbr_tenant
+        if self.group_or_user:
+            return self.offer.price_tenant*self.group_or_user.nbr_tenant
         return 0
 
     @property
@@ -102,7 +100,7 @@ class Subscription(Base):
     def do_bill(self):
         if self.should_bill:
             logger.info('generate a new bill for subscription: %s' % self.pk)
-            bill = self.subscription_bill.create(amount=self.price_full, group=self.user_or_group, subscription=self, method=self.method)
+            bill = self.subscription_bill.create(amount=self.price_full, group=self.group_or_user, subscription=self, method=self.method)
             bill.discount.add(*self.discount.filter(date_end__gt=datetime.now()).order_by('-amount'))
             self.bill = bill
             self.save()
@@ -115,6 +113,14 @@ class Subscription(Base):
             self.bill.discount.add(*self.discount.filter(date_end__gt=datetime.now()).order_by('-amount'))
             self.bill.del_cache('payment_method')
             self.bill.save()
+
+
+    def on_bill_paid(self):
+        if self.offer.frequency != 'ONUSE':
+            pass
+        else:
+            self.coin+=1
+            self.save()
 
     # Test
     def has_service(self, service):
@@ -145,9 +151,9 @@ class Subscription(Base):
         self.one_use_count = True if self.offer.frequency =='ONUSE' else False
 
     def set_subscription(self):
-        if hasattr(self.user_or_group, 'subscription'):
-            self.user_or_group.subscription = self
-            self.user_or_group.save()
+        if hasattr(self.group_or_user, 'subscription'):
+            self.group_or_user.subscription = self
+            self.group_or_user.save()
 
     def set_cache_service(self):
         for service in self.offer.service.all():

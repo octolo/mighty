@@ -19,7 +19,7 @@ class SubscriptionSerializer(ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ('uid', 'next_paid', 'date_end', 'date_start', 'offer', 'service', )
+        fields = ('uid', 'next_paid', 'date_end', 'date_start', 'offer', 'service', 'is_active')
 
     def get_service(self, obj):
         return obj.cache

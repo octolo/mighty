@@ -65,9 +65,7 @@ def EnableSubscription(**kwargs):
 
             @property
             def subscription_active(self):
-                if self.subscription:
-                    return True if self.valid_subscription < timezone.now else False
-                return False
+                return True if self.subscription and self.subscription.is_active else False
 
             def save(self, *args, **kwargs):
                 #self.set_valid_valid_payment_methods()
