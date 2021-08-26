@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from mighty.models.base import Base
 from mighty.apps import MightyConfig
@@ -58,7 +59,7 @@ class Subscription(Base):
     @property
     def is_active(self):
         if self.offer.frequency != 'ONUSE':
-            return True if self.next_paid >= timezone.now() else False
+            return True if self.next_paid and self.next_paid >= timezone.now() else False
         return self.coin > 0
 
     @property
@@ -156,17 +157,18 @@ class Subscription(Base):
             self.group_or_user.save()
 
     def set_cache_service(self):
-        for service in self.offer.service.all():
-            self.add_cache(service.name.lower(), service.code)
+        if self.offer:
+            for service in self.offer.service.all():
+                self.add_cache(service.name.lower(), service.code)
 
     # On Save
     def pre_save(self):
         self.set_on_use_count()
-
-    def pre_update(self):
-        #self.update_bill()
-        self.set_date_on_paid()
         self.set_cache_service()
+
+    #def pre_update(self):
+    #    #self.update_bill()
+    #    self.set_date_on_paid()
 
     def post_create(self):
         self.set_subscription()

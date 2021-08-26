@@ -48,10 +48,9 @@ if "mighty.applications.address" in settings.INSTALLED_APPS:
     if hasattr(urls_address, 'api_urlpatterns'):
         api_urlpatterns += urls_address.api_urlpatterns
 
-
 # Enable app shop
 if "mighty.applications.shop" in settings.INSTALLED_APPS:
-    from mighty.applications.address import urls as urls_shop
+    from mighty.applications.shop import urls as urls_shop
     urlpatterns += urls_shop.urlpatterns
     if hasattr(urls_shop, 'api_urlpatterns'):
         api_urlpatterns += urls_shop.api_urlpatterns
