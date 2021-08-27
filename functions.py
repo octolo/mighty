@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 
 from mighty.apps import MightyConfig as conf
 from mighty import stdtypes, fields

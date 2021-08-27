@@ -2,14 +2,16 @@ from django.db import models
 from django.urls import reverse
 from django.utils.html import format_html
 from django.db.models.options import Options
+from django.contrib.contenttypes.models import ContentType
 
 from mighty.fields import JSONField
-from mighty.functions import make_searchable, get_request_kept
+from mighty.functions import make_searchable, get_request_kept, get_logger
+from mighty.functions import get_request_kept
 
 from mighty import translates as _
 from uuid import uuid4
 from sys import getsizeof
-import copy, json
+import copy, json, logging
 
 lvl_priority = ["alert", "warning", "notify", "info", "debug"]
 def default_logfield_dict():
@@ -55,6 +57,12 @@ class Base(models.Model):
     _old_self = None
     use_create_by = True
     use_update_by = True
+    _logger = get_logger()
+
+    @property
+    def _user(self):
+        grk = get_request_kept()
+        return grk.user if grk else None
 
     class mighty:
         perm_title = actions
@@ -77,7 +85,6 @@ class Base(models.Model):
     """
     Properties
     """
-
     # Model
     @property
     def app_label(self): return str(self._meta.app_label)
@@ -146,6 +153,8 @@ class Base(models.Model):
     """
     Functions
     """
+    def get_content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     # permissions
     def perm(self, perm):
@@ -258,13 +267,18 @@ class Base(models.Model):
             self.pre_create()
 
     def save(self, *args, **kwargs):
-        do_post_create = False
+        self._logger.info("saving: %s" % type(self))
+        do_post_create = False if self.pk else True
+        self._logger.info("Do post create: %s" % do_post_create)
         self.pre_save()
         self.default_data()
-        if not self.pk: do_post_create = True
         super().save(*args, **kwargs)
-        if do_post_create: self.post_create()
-        else: self.post_update()
+        if do_post_create:
+            self._logger.info("Do post create: %s" % type(self))
+            self.post_create() 
+        else:
+            self._logger.info("Do post udpate: %s" % type(self))
+            self.post_update()
         self.post_save()
 
     def delete(self, *args, **kwargs):

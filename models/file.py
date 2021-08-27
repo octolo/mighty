@@ -16,9 +16,12 @@ from django.utils.text import get_valid_filename
 from django.utils.html import format_html
 from django.http import FileResponse
 from django.core.exceptions import  PermissionDenied
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
 from mighty.fields import JSONField
+
 import os, magic, logging, requests, tempfile
 logger = logging.getLogger(__name__)
 
@@ -30,6 +33,11 @@ class File(models.Model):
     extracontenttype = JSONField(blank=True, null=True)
     size = models.BigIntegerField(default=0, editable=False)
     client_date = models.DateTimeField(null=True, blank=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, blank=True, null=True)
+    object_id = models.PositiveBigIntegerField(blank=True, null=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
     proxy_cloud_streaming = False
     chunk_size = 1024
 
