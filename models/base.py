@@ -270,8 +270,8 @@ class Base(models.Model):
         self._logger.info("saving: %s" % type(self))
         do_post_create = False if self.pk else True
         self._logger.info("Do post create: %s" % do_post_create)
-        self.pre_save()
         self.default_data()
+        self.pre_save()
         super().save(*args, **kwargs)
         if do_post_create:
             self._logger.info("Do post create: %s" % type(self))
