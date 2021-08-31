@@ -306,9 +306,14 @@ def searchable(input_str):
     nfkd_form = unicodedata.normalize("NFKD", input_str)
     return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
+def format_non_alpha(text):
+    for ch in ['\\','`','*','_','{','}','[',']','(',')','>','#','+','-','.','!','$','\'']:
+        if ch in text:
+            text = text.replace(ch, "-")
+    return text
+
 def make_searchable(input_str):
     return searchable(input_str).lower()
-
 
 """
 Return differences between 2 models
