@@ -72,6 +72,8 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
     from mighty.applications.messenger import admin as admin_messenger
     @admin.register(all_models.Missive)
     class NationalityAdmin(admin_messenger.MissiveAdmin): pass
+    @admin.register(all_models.Notification)
+    class NotificationAdmin(admin_messenger.NotificationAdmin): pass
 
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:

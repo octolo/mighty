@@ -25,6 +25,7 @@ class Config:
     multi_apps = {
         'messenger': [
             'Missive',
+            'Notification',
             'Invitation',
         ],
         'languages/translations': [

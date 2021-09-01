@@ -16,3 +16,22 @@ missive = (
     "trace",
     "code_error"
 )
+
+notification = (
+    "content_type",
+    "object_id",
+    "is_read",
+    "missive",
+    "mode",
+    "status",
+    "priority",
+    "target",
+    "service",
+    "subject",
+    "denomination",
+    "header_html",
+    "footer_html",
+    "html",
+    "txt",
+    "level",
+)

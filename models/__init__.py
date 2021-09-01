@@ -102,6 +102,7 @@ if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
 if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
     from mighty.applications.messenger import models as models_messenger
     class Missive(models_messenger.Missive): pass
+    class Notification(models_messenger.Notification): pass
 
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:

@@ -43,3 +43,10 @@ def send_sms(**kwargs):
 
 def send_postal(**kwargs):
     return send_missive_type(**kwargs, mode=MODE_POSTAL, txt="empty_for_postal")
+
+def notify(subject, content_type, object_id, **kwargs):
+    from mighty.models import Notification
+    notif = Notification(**kwargs, subject=subject, content_type=content_type, object_id=object_id)
+    notif.save()
+
+

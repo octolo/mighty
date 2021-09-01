@@ -10,8 +10,8 @@ def MissiveFollower(**kwargs):
         class MFModel(obj):
             priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
             missive = models.ForeignKey(user_conf.ForeignKey.missive, 
-                on_delete=kwargs.get('on_delete', models.CASCADE),
-                related_name=kwargs.get('related_name', 'group_set'),
+                on_delete=kwargs.get('on_delete', models.SET_NULL),
+                related_name=kwargs.get('related_name', 'missive_set'),
                 blank=kwargs.get('blank', True),
                 null=kwargs.get('null', True),
             )

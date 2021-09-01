@@ -38,3 +38,11 @@ class MissiveAdmin(BaseAdmin):
             path('<path:object_id>/html/', self.wrap(self.html_view), name='%s_%s_html' % info),
         ]
         return my_urls + urls 
+
+class NotificationAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.notification}),)
+    list_display = ('target', 'subject', 'mode',)
+    search_fields = ('target',)
+    list_filter = ('mode', 'status')
+    readonly_fields = ('missive',)

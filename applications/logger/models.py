@@ -2,28 +2,10 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth import get_user_model
-from mighty.applications.logger.apps import LoggerConfig as conf
-from mighty.applications.logger import translates as _
+from mighty.applications.logger import translates as _, choices
 from mighty import translates as _m
 from datetime import datetime
 
-EMERG = conf.Code.emerg
-ALERT = conf.Code.alert
-CRITICAL = conf.Code.critical
-ERROR = conf.Code.error
-WARNING = conf.Code.warning
-NOTICE = conf.Code.notice
-INFO = conf.Code.info
-DEBUG = conf.Code.debug
-LEVEL_CHOICES = (
-    (EMERG, "EMERGENCY"),
-    (ALERT, "ALERT"),
-    (CRITICAL, "CRITICAL"),
-    (ERROR, "ERROR"),
-    (WARNING, "WARNING"),
-    (NOTICE, "NOTICE"),
-    (INFO, "INFO"),
-    (DEBUG, "DEBUG"))
 class Log(models.Model):
     args = models.CharField(_.args, max_length=255, blank=True, null=True)
     created = models.DateTimeField(_.created, auto_now_add=True, editable=False)
