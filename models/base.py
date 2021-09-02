@@ -54,10 +54,35 @@ class Base(models.Model):
     update_count = models.PositiveBigIntegerField(default=0)
     note = models.TextField(blank=True, null=True)
     cache = JSONField(blank=True, null=True, default=dict)
-    _old_self = None
     use_create_by = True
     use_update_by = True
+    
+    _old_self = None
     _logger = get_logger()
+    _history = []
+    _hfirst = None
+    _hlast = None
+
+    def history_queryset(self):
+        return type(self).objects.all().order_by('-date_create')
+
+    @property
+    def history(self):
+        if not len(self._history):
+            self._history = self.history_queryset()
+        return self._history
+
+    @property
+    def history_last(self):
+        if not self._hlast:
+            self._hlast = self.history_queryset().last()
+        return self._hlast
+
+    @property
+    def history_first(self):
+        if not self._hfirst:
+            self._hfirst = self.history_queryset().first()
+        return self._hfirst
 
     @property
     def _user(self):
