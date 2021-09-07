@@ -11,7 +11,7 @@ from mighty.functions import get_request_kept
 from mighty import translates as _
 from uuid import uuid4
 from sys import getsizeof
-import copy, json, logging
+import copy, json
 
 lvl_priority = ["alert", "warning", "notify", "info", "debug"]
 def default_logfield_dict():
@@ -57,8 +57,8 @@ class Base(models.Model):
     use_create_by = True
     use_update_by = True
     
-    _old_self = None
     _logger = get_logger()
+    _old_self = None
     _history = []
     _hfirst = None
     _hlast = None
@@ -292,19 +292,11 @@ class Base(models.Model):
             self.pre_create()
 
     def save(self, *args, **kwargs):
-        self._logger.info("saving: %s" % type(self))
         do_post_create = False if self.pk else True
-        self._logger.info("Do post create: %s" % do_post_create)
         self.default_data()
-        print('pre save')
         self.pre_save()
         super().save(*args, **kwargs)
-        if do_post_create:
-            self._logger.info("Do post create: %s" % type(self))
-            self.post_create() 
-        else:
-            self._logger.info("Do post udpate: %s" % type(self))
-            self.post_update()
+        self.post_create() if do_post_create else self.post_update()
         self.post_save()
 
     def delete(self, *args, **kwargs):
@@ -312,7 +304,6 @@ class Base(models.Model):
         super().delete(*args, **kwargs)
         self.post_delete()
  
-
     def pre_save(self):
         pass
 

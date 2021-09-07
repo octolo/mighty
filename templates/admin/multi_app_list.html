@@ -15,7 +15,9 @@
           <a href="{{ app.app_url }}" class="section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">{{ app.name }}</a>
         </caption>
         {% for parent,data in app.apps.items %}
-        <tr><th colspan="3" class="multi_apps">{{ parent }}</th></tr>
+        <tr><th colspan="3" class="multi_apps">
+          <a href="{{ app.app_url }}?s={{ parent }}">{{ parent }}</a>
+        </th></tr>
         {% for model in data.models %}
         <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
           {% if model.admin_url %}

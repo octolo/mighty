@@ -12,7 +12,7 @@ from mighty.models import Invitation
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.user.apps import UserConfig
 from mighty.applications.user import fields
-from mighty.views import TemplateView, DetailView, CreateView, CheckData
+from mighty.views import TemplateView, DetailView, AddView, CheckData
 from mighty.applications.user.choices import STATUS_PENDING
 from mighty.applications.user.forms import UserCreationForm
 from mighty.models import UserEmail, UserPhone
@@ -101,7 +101,7 @@ class InvitationDetail(InvitationBase, DetailView):
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
 
-class CreateUser(CreateView):
+class CreateUser(AddView):
     form_class = UserCreationForm
     template_name = 'mighty/form.html'
     model = UserModel

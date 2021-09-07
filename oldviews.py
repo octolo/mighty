@@ -228,7 +228,7 @@ class FileDownloadView(BaseView, RedirectView):
         return fil.file_url
 
 # FilePDFView open a pdf file in a viewer
-class FilePDFView(ViewView):
+class FilePDFView(DetailView):
     pass
 
 # Buffer for ExportView

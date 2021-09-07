@@ -13,7 +13,7 @@ from django.utils.translation import gettext
 
 from mighty import translates as _
 from mighty.apps import MightyConfig as conf
-from mighty.functions import service_uptime, service_cpu, service_memory
+from mighty.functions import service_uptime, service_cpu, service_memory, make_searchable
 from functools import update_wrapper
 import logging, asyncio, aioredis
 logger = logging.getLogger(__name__)
@@ -106,9 +106,8 @@ class AdminSite(admin.AdminSite):
                         'apps': {},
                     }
 
-                app_parent = capfirst(app_parent)
                 if app_parent in multi_app_dict[app_label]['apps']:
-                     multi_app_dict[app_label]['apps'][app_parent]['models'].append(model_dict)
+                    multi_app_dict[app_label]['apps'][app_parent]['models'].append(model_dict)
                 else:
                     multi_app_dict[app_label]['apps'][app_parent] = {
                         'name': capfirst(app_parent),
@@ -122,6 +121,8 @@ class AdminSite(admin.AdminSite):
                         'models': [model_dict],
                         'app_config': app_config,
                     }
+
+
         if label:
             return multi_app_dict.get(label)
         return multi_app_dict

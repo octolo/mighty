@@ -1,9 +1,13 @@
 from django.conf import settings
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, DateField
 from mighty.models import Subscription, PaymentMethod, Offer
 from mighty.applications.shop import fields
 
 class PaymentMethodSerializer(ModelSerializer):
+    date_valid = DateField(format="%m/%Y", required=False)
+    month = DateField(format="%m", required=False)
+    year = DateField(format="%Y", required=False)
+
     class Meta:
         model = PaymentMethod
         fields = ('uid',) + fields.payment_method

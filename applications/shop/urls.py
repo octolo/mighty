@@ -10,3 +10,9 @@ urlpatterns = [
         ])),
     ])),
 ]
+api_urlpatterns = [
+    path('shop/', include([
+        path('bic/', views.BicCalculJSON.as_view())
+    ])),
+]
+

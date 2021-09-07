@@ -47,6 +47,14 @@ class StripeConfTest:
         {"cvc": "123", "number": "378282246310005", },
     ]
 
+    sepa = [
+        {"iban": "AT611904300234573201", "status": "succeeded",
+        {"iban": "AT321904300235473204", "status": "succeeded3",
+        {"iban": "AT861904300235473202", "status": "requires_payment_method",
+        {"iban": "AT051904300235473205", "status": "requires_payment_method3",
+        {"iban": "AT591904300235473203", "status": "succeededwlit",
+    ]
+
 class StripeTestCase(TestCase):
     offer = None
     subscription = None

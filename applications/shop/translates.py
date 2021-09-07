@@ -13,4 +13,7 @@ FREQUENCIES = (
     (ONESHOT, 'ONESHOT'),
 )
 
+error_iban_empty = _('IBAN empty')
+error_bic_empty = _('BIC empty')
+
 exports = _('Exports')

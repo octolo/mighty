@@ -8,22 +8,16 @@ from mighty.applications.shop import generate_code_type, choices
 from mighty.applications.shop.decorators import GroupOrUser
 
 from schwifty import IBAN, BIC
-from datetime import datetime
+import datetime
 from dateutil.relativedelta import relativedelta
 
 @GroupOrUser(related_name="payment_method", blank=True, null=True)
 class PaymentMethod(Base):
-    #if ShopConfig.subscription_for == 'group':
-    #    group = models.ForeignKey(ShopConfig.group, on_delete=models.SET_NULL, blank=True, null=True, related_name="payment_method")
-    #else:
-    #    from django.contrib.auth import get_user_model
-    #    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, blank=True, null=True, related_name='payment_method')
-
     form_method = models.CharField(max_length=17, choices=choices.PAYMETHOD, default="CB")
     date_valid = models.DateField(blank=True, null=True)
 
     # IBAN
-    iban = models.CharField(max_length=27, blank=True, null=True)
+    iban = models.CharField(max_length=34, blank=True, null=True)
     bic = models.CharField(max_length=12, blank=True, null=True)
 
     # CB
@@ -36,6 +30,7 @@ class PaymentMethod(Base):
     backend = models.CharField(max_length=255, editable=False)
     service_id = models.CharField(max_length=255, editable=False)
     service_detail = models.TextField(editable=False)
+    default = models.BooleanField(default=False)
 
     class Meta(Base.Meta):
         abstract = True
@@ -57,22 +52,37 @@ class PaymentMethod(Base):
         return " ".join(self.iban[i:i+4] for i in range(0, len(self.iban), 4))
 
     @property
-    def is_valid_iban(self):
+    def is_valid_ibanlib(self):
         try:
             iban = IBAN(self.iban)
-            if not self.bic:
-                self.bic = iban.bic
-                self.save()
-            
+            if not self.bic: self.bic = str(iban.bic)
+            return True
         except ValueError:
-            raise ValidationError(code='code01IBAN', message='invalid IBAN')
-
+            return False
+            
     @property
     def is_valid_bic(self):
         try:
-            BIC(self.bic)
+            if self.bic: 
+                BIC(self.bic)
+            return True
         except ValueError:
+            return False
+
+    @property
+    def is_exist_iban(self):
+        qs = type(self).objects.filter(iban=self.iban, bic=self.bic)
+        if self.pk: qs = qs.exclude(pk=self.pk)
+        return False if qs.exists() else True
+
+    @property
+    def is_valid_iban(self):
+        if not self.is_valid_ibanlib:
+            raise ValidationError(code='code01IBAN', message='invalid IBAN')
+        if not self.is_valid_bic:
             raise ValidationError(code='code01BIC', message='invalid BIC')
+        if not self.is_exist_iban:
+            raise ValidationError(code='code02IBAN', message='IBAN already exist')
 
     #def get_cc_number():
     #    if len(sys.argv) < 2:
@@ -103,15 +113,21 @@ class PaymentMethod(Base):
 
     @property
     def is_valid_date(self):
+        if not self.date_valid: return False
         if self.month and self.year:
             date_valid = "%s/%s/%s" % ("01", str(self.month.month), str(self.year.year))
-            self.date_valid = datetime.strptime(date_valid, '%d/%m/%Y')+relativedelta(months=1)
-            return False if self.date_valid < datetime.now() else True
-        return False
+            self.date_valid = datetime.datetime.strptime(date_valid, "%d/%m/%Y").date()
+        return False if self.date_valid < datetime.date.today() else True
 
     @property
     def is_valid_cvc(self):
         return self.cvc
+
+    @property
+    def is_exist_cb(self):
+        qs = type(self).objects.filter(cvc=self.cvc, cb=self.cb, date_valid=self.date_valid)
+        if self.pk: qs = qs.exclude(pk=self.pk)
+        return False if qs.exists() else True
 
     @property
     def is_valid_cb(self):
@@ -121,6 +137,8 @@ class PaymentMethod(Base):
             raise ValidationError(code='code02CBnumber', message='invalid number')
         if not self.is_valid_cvc:
             raise ValidationError(code='code03CBcvc', message='invalid cvc')
+        if not self.is_exist_cb:
+            raise ValidationError(code='code04CBalready', message='CB already exist')
 
     @property
     def is_valid(self):
@@ -133,15 +151,37 @@ class PaymentMethod(Base):
     def check_validity(self):
         if self.form_method == "IBAN":
             self.is_valid_iban
-            #self.is_valid_bic
         else:
             self.is_valid_cb
+
+    def pre_set_month_year(self):
+        if self.date_valid:
+            if not self.year:
+                self.year = self.date_valid
+            if not self.month:
+                self.month = self.date_valid
+
+    def qs_default(self):
+        qs = type(self).objects
+        return qs.filter(group=self.group) if hasattr(self, 'group') else qs.filter(user=self.user)
+
+    def has_default(self):
+        return self.qs_default().exists()
+
+    def pre_set_default(self):
+        if not self.default and not self.has_default():
+            self.default = True
+
+    def set_has_default(self):
+        self.qs_default.update(default=False)
+        self.default = True
+        self.save()
 
     def clean(self):
         self.check_validity()
 
-    def save(self, *args, **kwargs):
-        #self.check_validity()
-        super().save(*args, **kwargs)
-
+    def pre_save(self):
+        self.check_validity()
+        self.pre_set_month_year()
+        self.pre_set_default()
             

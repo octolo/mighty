@@ -6,7 +6,7 @@ from mighty.applications.messenger.apps import MessengerConfig as conf
 
 def send_missive(missive):
     for backend, backend_path in get_backends(conf.missive_backends, return_tuples=True, path_extend='.MissiveBackend', missive=missive):
-        backend.send()
+        return backend.send()
     return False
 
 def send_missive_type(**kwargs):
@@ -48,5 +48,3 @@ def notify(subject, content_type, object_id, **kwargs):
     from mighty.models import Notification
     notif = Notification(**kwargs, subject=subject, content_type=content_type, object_id=object_id)
     notif.save()
-
-
