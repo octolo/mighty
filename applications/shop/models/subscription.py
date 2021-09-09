@@ -48,6 +48,7 @@ class Subscription(Base):
     date_end = models.DateField(blank=True, null=True, editable=False)
     coin = models.PositiveIntegerField(default=0)
     is_used = models.BooleanField(default=False)
+    advance = models.PositiveIntegerField(default=0)
 
     class Meta(Base.Meta):
         abstract = True
