@@ -3,11 +3,14 @@ from django.template.defaultfilters import slugify
 
 from mighty.apps import MightyConfig as conf
 from mighty.models.base import Base
+from mighty.models.image import Image
 from mighty.applications.shop import generate_code_service, generate_code_offer, choices
+import re
 
-class Service(Base):
-    name = models.CharField(max_length=255)
+class Service(Base, Image):
+    name = models.CharField(max_length=255, unique=True)
     code = models.CharField(max_length=50, default=generate_code_service, unique=True)
+    key = models.CharField(max_length=255, unique=True)
 
     class Meta(Base.Meta):
         abstract = True
@@ -16,7 +19,13 @@ class Service(Base):
     def __str__(self):
         return "%s(%s)" % (self.name, self.code)
 
-class Offer(Base):
+    def set_key(self):
+        self.key = re.sub("[^a-zA-Z0-9]+", "", self.name).lower()
+
+    def pre_save(self):
+        self.set_key()
+
+class Offer(Base, Image):
     named_id = models.CharField(max_length=255, db_index=True, null=True, editable=False)
     name = models.CharField(max_length=255)
     frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default='MONTH')

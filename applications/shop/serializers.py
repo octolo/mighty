@@ -1,7 +1,12 @@
 from django.conf import settings
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, DateField
-from mighty.models import Subscription, PaymentMethod, Offer
+from mighty.models import Subscription, PaymentMethod, Offer, Service
 from mighty.applications.shop import fields
+
+class ServiceSerializer(ModelSerializer):
+    class Meta:
+        model = Service
+        fields = ('name', 'code', 'key')
 
 class PaymentMethodSerializer(ModelSerializer):
     date_valid = DateField(format="%m/%Y", required=False)
@@ -13,9 +18,11 @@ class PaymentMethodSerializer(ModelSerializer):
         fields = ('uid',) + fields.payment_method
 
 class OfferSerializer(ModelSerializer):
+    service = ServiceSerializer(many=True)
+
     class Meta:
         model = Offer
-        fields = ('uid', 'name', 'frequency', 'duration', 'price', 'named_id')
+        fields = ('uid', 'name', 'frequency', 'duration', 'price', 'price_tenant', 'named_id', 'service')
 
 class SubscriptionSerializer(ModelSerializer):
     offer = OfferSerializer()

@@ -8,6 +8,7 @@ offer = (
     'frequency',
     'duration',
     'price',
+    'price_tenant',
     'service',
     'is_custom',
 )

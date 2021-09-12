@@ -1,9 +1,10 @@
 from django.utils.translation import gettext_lazy as _
 
 FREQUENCIES = (
-    ('ONUSE', _('Par utilisation')),
+    ('ONEUSE', _('Par utilisation')),
     ('MONTH', _('Mensuel')),
     ('YEAR', _('Annuel')),
+    ('FREE', _('Gratuite')),
     ('CUSTOM', _('Custom')),
 )
 
