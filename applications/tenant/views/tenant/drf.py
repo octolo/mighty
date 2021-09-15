@@ -35,6 +35,9 @@ class TenantModelViewSet(ModelViewSet):
     def Q_is_tenant(self, prefix=""):
         return Q(**{prefix+self.group_way+"__in": self.tenant_groups})
 
+    def Q_current_group(self, prefix=""):
+        return Q(**{prefix+self.group_way: self.request.GET.get('group', self.current_tenant_group)})
+
     # Test
     def is_tenant(self, group, pk=None):
         if pk: return self.request.user.user_tenant.filter(**{"group__"+pk: group}).exists()

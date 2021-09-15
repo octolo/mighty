@@ -93,12 +93,15 @@ def key(size=32, generator=string.hexdigits):
 # Generate unique code for model
 def generate_code(obj, *args, **kwargs):
     number = kwargs.get('number', '')
-    params = kwargs.get('unique', {})
+    params = kwargs.get('params', {})
     size = kwargs.get('size', 6)
     generator = kwargs.get('generator', string.ascii_uppercase+string.digits)
     params['code'] = kwargs.get('code', key(size, generator)) + number
     try:
-        obj.objects.get(**params)
+        if obj.pk:
+            type(obj).objects.exclude(pk=obj.pk).get(**params)
+        else:
+            type(obj).objects.get(**params)
         return generate_code(model, *args, **kwargs)
     except ObjectDoesNotExist:
         return code

@@ -1,11 +1,17 @@
 class FormDescriptor:
     form = None
     current_field = None
+    formats_input = {
+        'DATETIME_INPUT_FORMATS': 'datetime',
+    }
 
     def __init__(self, form, *args, **kwargs):
         self.form = form()
 
     def input_type_field(self, field):
+        if hasattr(field.widget, 'format_key'):
+            if field.widget.format_key in self.formats_input:
+                return self.formats_input[field.widget.format_key]
         return field.widget.input_type
 
     def errors_field(self, field):
@@ -13,10 +19,10 @@ class FormDescriptor:
 
     def config_field(self, field):
         config = {
-            "required": field.widget.is_required,
+            "required": field.required,
             "mutlipart": field.widget.needs_multipart_form,
         }
-        if hasattr(field, 'choices'): config["choices"] = self.choices_field(field)
+        if hasattr(field, 'choices'): config["options"] = self.choices_field(field)
         if hasattr(field, "min_length"): config["min_length"] = field.min_length
         if hasattr(field, "max_length"): config["max_length"] = field.max_length
         if hasattr(field.widget, "allow_multiple_selected"): 
@@ -38,25 +44,28 @@ class FormDescriptor:
 
     def choices_field(self, field):
         if hasattr(field.choices, 'queryset'):
-            return {self.choice_label(obj, field): self.choice_value(obj, field)
-                for obj in field.choices.queryset}
+            return [{
+                "label": self.choice_label(obj, field),
+                "value": self.choice_value(obj, field)}
+            for obj in field.choices.queryset]
         return None
-            
 
     def field_definition(self, field, name):
         self.current_field = name
-        return {
+        config = self.config_field(field)
+        config.update({
+            "name": name,
             "type": self.input_type_field(field),
             "errors": self.errors_field(field),
-            "config": self.config_field(field),
             "attrs": self.attrs_field(field),
             "help_text": field.help_text,
             "label": field.label,
-        }
+        })
+        return config
 
     def get_fields(self):
-        return { name: self.field_definition(field, name)
-            for name,field in self.form.fields.items()}
+        return [self.field_definition(field, name)
+            for name,field in self.form.fields.items()]
 
     def as_json(self):
         return self.get_fields()
