@@ -7,11 +7,11 @@ from mighty.filters import Foxid, FiltersManager
 class ModelViewSet(ModelViewSet):
     cache_manager = None
     filters = []
-    user_way = "user"
+    user_way = "user__id"
 
     # Filter query
     def Q_is_me(self, prefix=""):
-        return Q(**{prefix+self.user_way: self.request.user})
+        return Q(**{prefix+self.user_way: self.user.id})
 
     # Queryset
     def get_queryset(self, queryset=None):
@@ -29,8 +29,12 @@ class ModelViewSet(ModelViewSet):
 
     # Properties
     @property
+    def user(self):
+        return self.request.user
+
+    @property
     def user_groups(self):
-        return self.request.user.groups.all()
+        return self.user.groups.all()
 
     @property
     def user_groups_pk(self):
@@ -38,11 +42,11 @@ class ModelViewSet(ModelViewSet):
 
     @property
     def is_staff(self):
-        return self.request.user.is_staff
+        return self.user.is_staff
 
     @property
     def is_superuser(self):
-        return self.request.user.is_superuser
+        return self.user.is_superuser
 
     # Actions
     @action(detail=True, methods=['get'])
