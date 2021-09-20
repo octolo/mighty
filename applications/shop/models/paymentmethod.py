@@ -1,11 +1,13 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 from mighty.models.base import Base
 from mighty.apps import MightyConfig
-from mighty.applications.shop import generate_code_type, choices
+from mighty.applications.shop import generate_code_type, choices, translates as _
 from mighty.applications.shop.decorators import GroupOrUser
+from mighty.applications.shop.apps import cards_test, sepas_test
 
 from schwifty import IBAN, BIC
 import datetime
@@ -13,16 +15,17 @@ from dateutil.relativedelta import relativedelta
 
 @GroupOrUser(related_name="payment_method", blank=True, null=True)
 class PaymentMethod(Base):
+    owner = models.CharField(max_length=255, blank=True, null=True, help_text="Owner")
     form_method = models.CharField(max_length=17, choices=choices.PAYMETHOD, default="CB")
-    date_valid = models.DateField(blank=True, null=True)
+    date_valid = models.DateField(blank=True, null=True, help_text="Expire date")
 
     # IBAN
-    iban = models.CharField(max_length=34, blank=True, null=True)
-    bic = models.CharField(max_length=12, blank=True, null=True)
+    iban = models.CharField(max_length=34, blank=True, null=True, help_text="IBAN")
+    bic = models.CharField(max_length=12, blank=True, null=True, help_text="BIC")
 
     # CB
-    cb = models.CharField(max_length=16, blank=True, null=True)
-    cvc = models.CharField(max_length=4, blank=True, null=True)
+    cb = models.CharField(_.card_number, max_length=16, blank=True, null=True, help_text=_.card_number)
+    cvc = models.CharField(max_length=4, blank=True, null=True, help_text="CVC")
     month = models.DateField(blank=True, null=True)
     year = models.DateField(blank=True, null=True)
 
@@ -41,7 +44,7 @@ class PaymentMethod(Base):
 
     @property
     def str_cb(self):
-        return "%s (%s-%s %s/%s)" % (self.form_method, self.cb, self.cvc, self.month.month, self.year.year)
+        return "%s (%s-%s %s)" % (self.form_method, self.cb, self.cvc, self.date_valid)
 
     @property
     def str_iban(self):
@@ -77,18 +80,12 @@ class PaymentMethod(Base):
 
     @property
     def is_valid_iban(self):
-        if not self.is_valid_ibanlib:
-            raise ValidationError(code='code01IBAN', message='invalid IBAN')
+        if not self.iban or not self.is_valid_ibanlib:
+            raise ValidationError(code='invalid_iban', message='invalid IBAN')
         if not self.is_valid_bic:
-            raise ValidationError(code='code01BIC', message='invalid BIC')
+            raise ValidationError(code='invalid_bic', message='invalid BIC')
         if not self.is_exist_iban:
-            raise ValidationError(code='code02IBAN', message='IBAN already exist')
-
-    #def get_cc_number():
-    #    if len(sys.argv) < 2:
-    #        usage()
-    #        sys.exit(1)
-    #    return sys.argv[1]
+            raise ValidationError(code='already_iban', message='IBAN already exist')
 
     def sum_digits(self, digit):
         if digit < 10:
@@ -98,6 +95,8 @@ class PaymentMethod(Base):
             return sum
 
     def validate_luhn(self, cc_num):
+        if settings.DEBUG and cc_num in cards_test():
+            return True
         cc_num = cc_num[::-1]
         cc_num = [int(x) for x in cc_num]
         doubled_second_digit_list = list()
@@ -113,11 +112,10 @@ class PaymentMethod(Base):
 
     @property
     def is_valid_date(self):
-        if not self.date_valid: return False
-        if self.month and self.year:
-            date_valid = "%s/%s/%s" % ("01", str(self.month.month), str(self.year.year))
-            self.date_valid = datetime.datetime.strptime(date_valid, "%d/%m/%Y").date()
-        return False if self.date_valid < datetime.date.today() else True
+        if not self.date_valid: 
+            return False
+        date_valid = datetime.datetime.strptime(self.date_valid, "%Y-%m-%d").date()
+        return False if date_valid < datetime.date.today() else True
 
     @property
     def is_valid_cvc(self):
@@ -132,13 +130,13 @@ class PaymentMethod(Base):
     @property
     def is_valid_cb(self):
         if not self.is_valid_date:
-            raise ValidationError(code='code01CBdate', message='invalid date')
-        if not self.validate_luhn(self.cb):
-            raise ValidationError(code='code02CBnumber', message='invalid number')
+            raise ValidationError(code='invalid_date', message='invalid date')
+        if not self.cb or not self.validate_luhn(self.cb):
+            raise ValidationError(code='invalid_number', message='invalid number')
         if not self.is_valid_cvc:
-            raise ValidationError(code='code03CBcvc', message='invalid cvc')
+            raise ValidationError(code='invalid_cvc', message='invalid cvc')
         if not self.is_exist_cb:
-            raise ValidationError(code='code04CBalready', message='CB already exist')
+            raise ValidationError(code='already_cb', message='CB already exist')
 
     @property
     def is_valid(self):
@@ -154,12 +152,6 @@ class PaymentMethod(Base):
         else:
             self.is_valid_cb
 
-    def pre_set_month_year(self):
-        if self.date_valid:
-            if not self.year:
-                self.year = self.date_valid
-            if not self.month:
-                self.month = self.date_valid
 
     def qs_default(self):
         qs = type(self).objects
@@ -182,6 +174,5 @@ class PaymentMethod(Base):
 
     def pre_save(self):
         self.check_validity()
-        self.pre_set_month_year()
         self.pre_set_default()
             

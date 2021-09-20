@@ -16,7 +16,7 @@ class FormDescView(TemplateView):
     form = None
 
     def get_context_data(self, **kwargs):
-        return self.descriptor_class(self.form()).as_json()
+        return FormDescriptor(self.form).as_json()
 
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(context, **response_kwargs)
+        return JsonResponse(context, **response_kwargs, safe=False)

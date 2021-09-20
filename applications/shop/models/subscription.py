@@ -60,7 +60,7 @@ class Subscription(Base):
     @property
     def is_active(self):
         if self.offer.frequency != 'ONUSE':
-            return True if self.next_paid and self.next_paid >= timezone.now() else False
+            return True if self.next_paid and self.next_paid >= timezone.now().date() else False
         return self.coin > 0
 
     @property

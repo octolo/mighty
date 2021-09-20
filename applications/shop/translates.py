@@ -17,3 +17,5 @@ error_iban_empty = _('IBAN empty')
 error_bic_empty = _('BIC empty')
 
 exports = _('Exports')
+
+card_number = _('Card number')

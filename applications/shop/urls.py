@@ -12,7 +12,16 @@ urlpatterns = [
 ]
 api_urlpatterns = [
     path('shop/', include([
-        path('bic/', views.BicCalculJSON.as_view())
+        path('bic/', views.BicCalculJSON.as_view()),
+        path('form/', include([
+            path('cb/', views.CBFormDescView.as_view()),
+            path('iban/', views.IbanFormDescView.as_view()),
+            path('paymentmethod/', views.PaymentMethodFormDescView.as_view()),
+        ])),
+        path('check/', include([
+            path('cb/', views.CheckCB.as_view()),
+            path('iban/', views.CheckIban.as_view()),
+        ])),
     ])),
 ]
 

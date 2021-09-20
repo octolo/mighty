@@ -90,3 +90,16 @@ class SourceForm(forms.ModelForm):
         amodel.date_begin = cleaned_data.get("date_begin")
         amodel.date_end = cleaned_data.get("date_end")
         amodel.save()
+
+class FormDescriptable(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        self.kwargs = kwargs.pop("kwargs")
+        super().__init__(*args, **kwargs)
+
+class ModelFormDescriptable(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        self.kwargs = kwargs.pop("kwargs")
+        super().__init__(*args, **kwargs)
+    

@@ -9,7 +9,6 @@ from mighty.models import Subscription, Bill
 from mighty.applications.shop import translates as _
 from schwifty import IBAN
 
-
 @method_decorator(login_required, name='dispatch')
 class ShopExports(TemplateView):
     template_name = "admin/shop_exports.html"

@@ -4,9 +4,13 @@ class FormDescriptor:
     formats_input = {
         'DATETIME_INPUT_FORMATS': 'datetime',
     }
+    request = None
+    kwargs = None
 
     def __init__(self, form, *args, **kwargs):
-        self.form = form()
+        self.request = kwargs.get("request")
+        self.kwargs = kwargs.get("kwargs")
+        self.form = form(request=self.request, kwargs=self.kwargs)
 
     def input_type_field(self, field):
         if hasattr(field.widget, 'format_key'):
@@ -48,7 +52,10 @@ class FormDescriptor:
                 "label": self.choice_label(obj, field),
                 "value": self.choice_value(obj, field)}
             for obj in field.choices.queryset]
-        return None
+        return [{
+                "label": choice[1],
+                "value": choice[0]}
+            for choice in field.choices]
 
     def field_definition(self, field, name):
         self.current_field = name
@@ -58,7 +65,7 @@ class FormDescriptor:
             "type": self.input_type_field(field),
             "errors": self.errors_field(field),
             "attrs": self.attrs_field(field),
-            "help_text": field.help_text,
+            "placeholder": field.help_text,
             "label": field.label,
         })
         return config

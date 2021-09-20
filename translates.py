@@ -42,6 +42,8 @@ next = _('Suivant')
 previous = _('Précédent')
 
 # Descriptions 
+since = _('Depuis')
+until = _("Jusqu'au")
 login = _('Login')
 are_you_sure = _("Are you sure?")
 are_you_sure_disable  = _('Are you sure you want to disable "%s"?')
