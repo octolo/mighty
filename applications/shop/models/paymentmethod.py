@@ -113,6 +113,7 @@ class PaymentMethod(Base):
     @property
     def is_valid_date(self):
         if not self.date_valid: 
+            print('okkkk')
             return False
         date_valid = datetime.datetime.strptime(self.date_valid, "%Y-%m-%d").date()
         return False if date_valid < datetime.date.today() else True
