@@ -32,12 +32,13 @@ class AddressNoBase(models.Model):
         verbose_name_plural = _.vp_address
 
     def fill_from_raw(self):
-        addresses = address_backend.give_list(self.raw)
-        if len(addresses):
-            self.backend_id = addresses[0]["id"]
-            self.source = addresses[0]["source"]
+        address = address_backend.get_location(self.raw)
+        print(address)
+        if address:
+            self.backend_id = address["id"]
+            self.source = address["source"]
             for field in fields:
-                setattr(self, field, addresses[0][field])
+                setattr(self, field, address[field])
 
     def fill_raw(self):
         if not self.raw:
@@ -68,7 +69,7 @@ class AddressNoBase(models.Model):
 
     def clean_address(self):
         if not self.has_address:
-            raise ValidationError()
+            raise ValidationError(code='invalid_address', message='invalid address')
 
     @property
     def has_locality(self):
@@ -76,7 +77,7 @@ class AddressNoBase(models.Model):
 
     def clean_locality(self):
         if not self.has_locality:
-            raise ValidationError()
+            raise ValidationError(code='invalid_locality', message='invalid locality')
 
     def clean_address_fields(self):
         if self.enable_clean_fields:
@@ -94,7 +95,17 @@ class AddressNoBase(models.Model):
             return False
         return True
 
+    @property
+    def address_is_empty(self):
+        return sum([1 if getattr(self, field) or field != 'raw' else 0 
+            for field in fields])
+
+    def only_raw(self):
+        if self.address_is_empty:
+            self.fill_from_raw()
+
     def save(self, *args, **kwargs):
+        self.only_raw()
         self.fill_raw()
         self.clean_address_fields()
         super().save(*args, **kwargs)

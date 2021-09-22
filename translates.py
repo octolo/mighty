@@ -65,6 +65,7 @@ is_in_alert = _('Est en alerte')
 is_in_error = _('Est en erreur')
 supervision = _('supervision')
 can = _('test')
+search = _('Rechercher')
 
 # Anticipate model
 v_timeline = _("timeline")

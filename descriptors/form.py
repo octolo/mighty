@@ -57,6 +57,9 @@ class FormDescriptor:
                 "value": choice[0]}
             for choice in field.choices]
 
+    def help_text_field(self, field):
+        return field.help_text if field.help_text else field.label
+
     def field_definition(self, field, name):
         self.current_field = name
         config = self.config_field(field)
@@ -65,7 +68,7 @@ class FormDescriptor:
             "type": self.input_type_field(field),
             "errors": self.errors_field(field),
             "attrs": self.attrs_field(field),
-            "placeholder": field.help_text,
+            "placeholder": self.help_text_field(field),
             "label": field.label,
         })
         return config
