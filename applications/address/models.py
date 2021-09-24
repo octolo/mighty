@@ -14,8 +14,8 @@ class AddressNoBase(models.Model):
     postal_code = models.CharField(_.postal_code, max_length=255, null=True, blank=True)
     state = models.CharField(_.state, max_length=255, null=True, blank=True)
     state_code = models.CharField(_.state_code, max_length=255, null=True, blank=True)
-    country = models.CharField(_.country, max_length=255, default=conf.Default.country)
-    country_code = models.CharField(_.country_code, max_length=255, default=conf.Default.country_code)
+    country = models.CharField(_.country, max_length=255, default=conf.Default.country, blank=True, null=True)
+    country_code = models.CharField(_.country_code, max_length=255, default=conf.Default.country_code, blank=True, null=True)
     cedex = models.CharField(_.cedex, max_length=255, null=True, blank=True)
     cedex_code = models.CharField(_.cedex_code, max_length=255, null=True, blank=True)
     special = models.CharField(max_length=255, null=True, blank=True)
@@ -33,7 +33,6 @@ class AddressNoBase(models.Model):
 
     def fill_from_raw(self):
         address = address_backend.get_location(self.raw)
-        print(address)
         if address:
             self.backend_id = address["id"]
             self.source = address["source"]
@@ -82,7 +81,7 @@ class AddressNoBase(models.Model):
     def clean_address_fields(self):
         if self.enable_clean_fields:
             self.clean_address()
-            self.clean_locality()
+            #self.clean_locality()
             self.clean_state_or_postal_code()
 
     @property
@@ -101,11 +100,10 @@ class AddressNoBase(models.Model):
             for field in fields])
 
     def only_raw(self):
-        if self.address_is_empty:
+        if self.address_is_empty and self.raw:
             self.fill_from_raw()
 
     def save(self, *args, **kwargs):
-        self.only_raw()
         self.fill_raw()
         self.clean_address_fields()
         super().save(*args, **kwargs)

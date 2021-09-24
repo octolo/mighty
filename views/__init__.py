@@ -8,7 +8,7 @@ from mighty.views.template import TemplateView
 from mighty.views.model import ModelView
 from mighty.views.crud import ListView, DetailView, ChangeView, DeleteView, AddView, EnableView, DisableView
 from mighty.views.form import FormView, FormDescView
-from mighty.views.file import StreamingBuffer, FileDownloadView, FilePDFView, ExportView
+from mighty.views.file import FileDownloadView, FilePDFView, ExportView
 from mighty.views.pdf import PDFView
 from mighty.views.config import Config, ConfigListView, ConfigDetailView
 from mighty.views.check import CheckData
@@ -26,7 +26,7 @@ __all__ = (
     ModelView,
     ListView, DetailView, ChangeView, DeleteView, AddView, EnableView, DisableView,
     FormView, FormDescView,
-    StreamingBuffer, FileDownloadView, FilePDFView, ExportView,
+    FileDownloadView, FilePDFView, ExportView,
     PDFView,
     Config, ConfigListView, ConfigDetailView,
     CheckData,
