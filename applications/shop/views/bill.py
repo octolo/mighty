@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.template import Context, Template
 
-from mighty.views import PDFView
+from mighty.views import PDFView, DetailView
 from mighty.models import Bill
 
 @method_decorator(login_required, name='dispatch')
@@ -21,3 +21,6 @@ class ShopInvoicePDF(PDFView):
 
     def get_template(self, context):
         return Template(self.bill_content_pdf).render(context)
+
+class BillReturnURL(DetailView):
+    pk_url_kwarg = 'payment_id'

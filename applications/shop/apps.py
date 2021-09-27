@@ -9,6 +9,7 @@ class Config:
     subscription_for = setting('SUBSCRIPTION_FOR', 'group')
     invoice_backend = setting('INVOICE_BACKEND', 'mighty.applications.shop.backends.stripe.PaymentBackend')
     invoice_template = setting('INVOICE_TEMPLATE', 'shop/invoice.html')
+    tpl_return_url = "http://%(domain)s/%(group)s/%(bill)s/"
 
     class bank_card_conf:
         basic_cards = [

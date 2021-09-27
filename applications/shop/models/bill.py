@@ -4,22 +4,26 @@ from django.utils.text import get_valid_filename
 
 from mighty.models.base import Base
 from mighty.applications.shop.apps import ShopConfig
+from mighty.applications.shop import translates as _
+from mighty.applications.shop import choices as choice
 from mighty.applications.shop.decorators import GroupOrUser
 from mighty.applications.document import generate_pdf
 
-@GroupOrUser(related_name="group_bill", blank=True, null=True)
+
+@GroupOrUser(related_name="group_bill", on_delete=models.CASCADE)
 class Bill(Base):
     amount = models.FloatField(blank=True, null=True)
     end_amount = models.FloatField(blank=True, null=True)
     date_payment = models.DateTimeField(blank=True, null=True, editable=False)
     paid = models.BooleanField(default=False, editable=False)
-    payment_id = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    payment_id = models.CharField(max_length=255, blank=True, null=True, editable=False, unique=True)
     subscription = models.ForeignKey('mighty.Subscription', on_delete=models.SET_NULL, blank=True, null=True, related_name='subscription_bill', editable=False)
     method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_bill', editable=False)
     discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_bill')
     end_discount = models.FloatField(blank=True, null=True)
     backend = models.CharField(max_length=255, blank=True, null=True, editable=False)
-    need_action = models.CharField(max_length=25, blank=True, null=True, editable=False)
+    need_action = models.CharField(max_length=25, choices=choice.NEED_ACTION, blank=True, null=True, editable=False)
+    action = models.TextField(blank=True, null=True, editable=False)
     
     class Meta(Base.Meta):
         abstract = True

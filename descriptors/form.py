@@ -60,6 +60,10 @@ class FormDescriptor:
     def help_text_field(self, field):
         return field.help_text if field.help_text else field.label
 
+    def dependencies_field(self, name):
+        print("%s_dependencies" % name)
+        return getattr(self.form, "%s_dependencies" % name) if hasattr(self.form, "%s_dependencies" % name) else None
+
     def field_definition(self, field, name):
         self.current_field = name
         config = self.config_field(field)
@@ -70,6 +74,7 @@ class FormDescriptor:
             "attrs": self.attrs_field(field),
             "placeholder": self.help_text_field(field),
             "label": field.label,
+            "dependencies": self.dependencies_field(name),
         })
         return config
 

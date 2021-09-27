@@ -1,5 +1,7 @@
 from mighty.applications.shop.backends import PaymentBackend
 from mighty.functions import setting
+from mighty.applications.shop import choices as choice
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,6 +13,7 @@ class PaymentBackend(PaymentBackend):
         "CB": "card",
         "IBAN": "sepa_debit",
     }
+    api_stripe = None
 
     #def to_charge(self):
     #    invoice = self.set_charge()
@@ -53,33 +56,37 @@ class PaymentBackend(PaymentBackend):
         }
 
     def retry_to_charge(self):
-        self.bill.add_cache("payment_method", self.add_payment_method(True))
-        return self.api.PaymentIntent.modify(self.charge["id"], **self.data_bill)
+        charge = self.api.PaymentIntent.retrieve(self.charge["id"])
+        if charge.status not in ["processing", "canceled", "succeeded"]:
+            self.bill.add_cache("payment_method", self.add_payment_method(True))
+            return self.api.PaymentIntent.modify(self.charge["id"], **self.data_bill)
 
     def to_charge(self):
-        if self.charge:
-            charge = self.api.PaymentIntent.retrieve(self.charge["id"])
-            if charge.status not in ["processing", "canceled", "succeeded"]:
-                self.retry_to_charge()
-        else:
-            charge = self.api.PaymentIntent.create(**self.data_bill, confirm=True)
-            print(charge)
-        return charge
+        if self.charge: return self.retry_to_charge()
+        return self.api.PaymentIntent.create(**self.data_bill, confirm=True, return_url=self.return_url)
 
     @property
     def is_paid_success(self):
         return True if self.charge["status"] == "succeeded" else False
 
+    def on_paid_failed(self):
+        if self.charge["status"] == "requires_source_action":
+            need_action = self.charge["next_action"]["type"]
+            if need_action == "redirect_to_url":
+                self.bill.need_action = choice.NEED_ACTON_URL
+                self.bill.action = self.charge["next_action"][need_action]["url"]
+
     # Payment Method
     @property
     def data_cb(self):
+        datepm = datetime.strptime(str(self.payment_method.date_valid), "%Y-%m-%d")
         return {
             "billing_details": self.billing_details,
             "type": "card",
             "card": {
                 "number": self.payment_method.cb,
-                "exp_month": self.payment_method.month.month,
-                "exp_year": self.payment_method.year.year,
+                "exp_month": datepm.month,
+                "exp_year": datepm.year,
                 "cvc": self.payment_method.cvc}}
     
     @property

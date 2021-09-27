@@ -28,3 +28,9 @@ PAYMETHOD = (
     ("SOFORT", "SOFORT"),
     ("WECHAT_PAY", "WECHAT_PAY"),
 )
+
+NEED_ACTON_URL = "URL"
+
+NEED_ACTION = (
+    (NEED_ACTON_URL, _("url")),
+)
