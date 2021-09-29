@@ -24,7 +24,7 @@ class FormDescriptor:
     def config_field(self, field):
         config = {
             "required": field.required,
-            "mutlipart": field.widget.needs_multipart_form,
+            "mutlipart": getattr(field.widget, "needs_multipart_form", False),
         }
         if hasattr(field, 'choices'): config["options"] = self.choices_field(field)
         if hasattr(field, "min_length"): config["min_length"] = field.min_length
