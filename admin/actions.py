@@ -2,6 +2,7 @@ from django.contrib.admin.utils import model_ngettext
 from django.contrib.admin import helpers
 from django.template.response import TemplateResponse
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 
 from mighty import translates as _
 

@@ -18,6 +18,7 @@ class PaymentBackend:
 
     @property
     def return_url(self):
+        return "https://octolo.org/"
         url = ShopConfig.tpl_return_url % {"domain": self.domain, "group": self.bill.group, "bill": self.bill.uid}
         print(url)
         return url
