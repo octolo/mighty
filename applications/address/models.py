@@ -40,7 +40,7 @@ class AddressNoBase(models.Model):
                 setattr(self, field, address[field])
 
     def fill_raw(self):
-        if not self.raw:
+        if not self.address_is_empty:
             if self.country_code:
                 formatting = 'format_%s' % self.country_code.lower()
                 self.raw = getattr(self, formatting)() if hasattr(self, formatting) else self.format_universal()
@@ -96,8 +96,8 @@ class AddressNoBase(models.Model):
 
     @property
     def address_is_empty(self):
-        return sum([1 if getattr(self, field) or field != 'raw' else 0 
-            for field in fields])
+        nb_fields = sum([1 if getattr(self, field) and field != 'raw' else 0  for field in fields])
+        return (nb_fields < 2)
 
     def only_raw(self):
         if self.address_is_empty and self.raw:

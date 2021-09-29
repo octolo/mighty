@@ -3,9 +3,13 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
-from mighty.views import TemplateView
+from mighty.views import TemplateView, FormDescView
 from mighty.applications.address import get_address_backend
+from mighty.applications.address.forms import AddressFormDesc
 address_backend = get_address_backend()
+
+class AddresFormDescView(FormDescView):
+    form = AddressFormDesc
 
 @method_decorator(login_required, name='dispatch')
 class LocationDetail(TemplateView):
