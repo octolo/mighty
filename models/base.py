@@ -260,6 +260,19 @@ class Base(models.Model):
         return True if self.cache and len(self.cache) else False
 
     # Create / Update
+    @property
+    def create_by_id(self):
+        return self.create_by.split('.')[0]
+    @property
+    def update_by_id(self):
+        return self.update_by.split('.')[0]
+    @property
+    def create_by_username(self):
+        return self.create_by.split('.')[1]
+    @property
+    def update_by_username(self):
+        return self.update_by.split('.')[1]
+
     def set_create_by(self, user=None):
         if user and self.use_create_by:
             self.create_by = '%s.%s' % (user.id, user.username)

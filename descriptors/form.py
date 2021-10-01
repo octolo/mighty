@@ -16,7 +16,9 @@ class FormDescriptor:
         if hasattr(field.widget, 'format_key'):
             if field.widget.format_key in self.formats_input:
                 return self.formats_input[field.widget.format_key]
-        return field.widget.input_type
+        if hasattr(field.widget, 'input_type'):
+            return field.widget.input_type
+        return field.widget.__class__.__name__.lower()
 
     def errors_field(self, field):
         return field.error_messages
