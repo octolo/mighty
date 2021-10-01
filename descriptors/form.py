@@ -67,11 +67,11 @@ class FormDescriptor:
     def field_definition(self, field, name):
         self.current_field = name
         config = self.config_field(field)
+        config.update(self.attrs_field(field),)
         config.update({
             "name": name,
             "type": self.input_type_field(field),
             "errors": self.errors_field(field),
-            "attrs": self.attrs_field(field),
             "placeholder": self.help_text_field(field),
             "label": field.label,
             "dependencies": self.dependencies_field(name),

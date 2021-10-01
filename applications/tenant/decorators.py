@@ -17,9 +17,6 @@ def TenantAssociation(**kwargs):
             class Meta(obj.Meta):
                 abstract = True
 
-            def set_group(self):
-                pass
-
             def groups_m2m(self, field):
                 return [obj.group.id for obj in getattr(self, field).all()]
 
