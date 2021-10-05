@@ -72,8 +72,9 @@ class FormDescriptor:
         return self.fusion_field(name)
 
     def fusion_field(self, name):
-        for field in self.form.fusion:
-            if name in field[1]: return field[0]
+        if hasattr(self.form, "fusion"):
+            for field in self.form.fusion:
+                if name in field[1]: return field[0]
         return name
                 
     def field_definition(self, field, name):
