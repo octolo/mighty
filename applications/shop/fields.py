@@ -33,6 +33,8 @@ bill = (
     'method',
     'discount',
     'end_discount',
+    'name',
+    'items',
 )
 discount = (
     'code',

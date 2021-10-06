@@ -24,6 +24,8 @@ class Bill(Base):
     backend = models.CharField(max_length=255, blank=True, null=True, editable=False)
     need_action = models.CharField(max_length=25, choices=choice.NEED_ACTION, blank=True, null=True, editable=False)
     action = models.TextField(blank=True, null=True, editable=False)
+    name = models.CharField(max_length=255, blank=True, null=True)
+    items = models.TextField(blank=True, null=True)
     
     class Meta(Base.Meta):
         abstract = True
@@ -34,6 +36,10 @@ class Bill(Base):
     @property
     def offer(self):
         return self.subscription.offer
+
+    @property
+    def items_list(self):
+        return [item.split(":") for item in self.items.splitlines()]
 
     @property
     def follow_id(self):

@@ -28,7 +28,7 @@ class Service(Base, Image):
 class Offer(Base, Image):
     named_id = models.CharField(max_length=255, db_index=True, null=True, editable=False)
     name = models.CharField(max_length=255)
-    frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default='MONTH')
+    frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default=choices.MONTH)
     duration = models.DurationField(blank=True, null=True, editable=False)
     price = models.FloatField()
     service = models.ManyToManyField('mighty.Service', blank=True, related_name='service_offer')

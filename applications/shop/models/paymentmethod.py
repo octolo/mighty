@@ -10,14 +10,14 @@ from mighty.applications.shop.decorators import GroupOrUser
 from mighty.applications.shop.apps import cards_test, sepas_test
 
 from schwifty import IBAN, BIC
-import datetime
 from dateutil.relativedelta import relativedelta
+import datetime, re
 
 @GroupOrUser(related_name="payment_method", on_delete=models.CASCADE)
 class PaymentMethod(Base):
-    owner = models.CharField(max_length=255, blank=True, null=True, help_text="Owner")
-    form_method = models.CharField(max_length=17, choices=choices.PAYMETHOD, default="CB")
-    date_valid = models.DateField(blank=True, null=True, help_text="Expire date")
+    owner = models.CharField(_.owner, max_length=255, blank=True, null=True, help_text="Owner")
+    form_method = models.CharField(_.form_method, max_length=17, choices=choices.PAYMETHOD, default="CB")
+    date_valid = models.DateField(_.date_valid, blank=True, null=True, help_text="Expire date")
 
     # IBAN
     iban = models.CharField(max_length=34, blank=True, null=True, help_text="IBAN")
@@ -43,16 +43,38 @@ class PaymentMethod(Base):
         return "%s - %s" % (self.group_or_user, getattr(self, "str_%s" % self.form_method.lower()))
 
     @property
+    def readable_cb(self):
+        return ' '.join([self.cb[i:i+4] for i in range(0, len(self.cb), 4)])
+
+    @property
     def str_cb(self):
-        return "%s (%s-%s %s)" % (self.form_method, self.cb, self.cvc, self.date_valid)
+        return "%s %s %s/%s" % (self.readable_cb, self.cvc, self.date_valid.month, self.date_valid.year)
+
+    @property
+    def mask_cb(self):
+        cb = self.readable_cb[0:4]+re.sub(r"\d", '*', self.readable_cb[4:-4])+self.readable_cb[-4:]
+        return "%s %s %s/%s" % (cb, self.cvc, self.date_valid.month, str(self.date_valid.year)[-2:])
+
+    @property
+    def readable_iban(self):
+        return ' '.join([self.iban[i:i+4] for i in range(0, len(self.iban), 4)])
 
     @property
     def str_iban(self):
-        return "%s (%s/%s)" % (self.form_method, self.iban, self.bic)
+        return "%s/%s" % (self.readable_iban, self.bic)
 
     @property
     def iban_readable(self):
         return " ".join(self.iban[i:i+4] for i in range(0, len(self.iban), 4))
+
+    @property
+    def mask_iban(self):
+        iban = self.readable_cb[0:4]+re.sub(r"[a-zA-Z0-9]", '*', self.iban_readable[4:-4])+self.iban_readable[-4:]
+        return "%s/%s" % (iban, self.bic)
+
+    @property
+    def masked(self):
+        return getattr(self, "mask_%s" % self.form_method.lower())
 
     @property
     def is_valid_ibanlib(self):

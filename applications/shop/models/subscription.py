@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from mighty.models.base import Base
 from mighty.apps import MightyConfig
-from mighty.applications.shop import generate_code_type
+from mighty.applications.shop import generate_code_type, choices
 from mighty.applications.shop.apps import ShopConfig
 from mighty.applications.shop.decorators import GroupOrUser
 
@@ -49,6 +49,7 @@ class Subscription(Base):
     coin = models.PositiveIntegerField(default=0)
     is_used = models.BooleanField(default=False)
     advance = models.PositiveIntegerField(default=0)
+    frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default=choices.MONTH)
 
     class Meta(Base.Meta):
         abstract = True
