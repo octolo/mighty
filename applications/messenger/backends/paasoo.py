@@ -1,6 +1,7 @@
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.functions import setting
 from mighty.apps import MightyConfig
+from mighty.applications.messenger import choices
 import requests, json
 
 class MissiveBackend(MissiveBackend):
@@ -11,7 +12,7 @@ class MissiveBackend(MissiveBackend):
     in_error = False
 
     def get_api_url(self):
-        return api_url % {
+        return self.APIURL % {
             "key": self.APIKEY,
             "secret": self.APISECRET,
             "from": self.APIFROM,
@@ -27,13 +28,13 @@ class MissiveBackend(MissiveBackend):
         return True
 
     def send_sms(self):
-        over_target = 
+        over_target = setting('MISSIVE_PHONE', False)
         self.missive.target = over_target if over_target else self.missive.target
         self.missive.status = choices.STATUS_SENT
-        if setting('MISSIVE_SERVICE', False):
+        if setting('MISSIVE_SERVICE', True):
             api_url = self.get_api_url(self.missive)
             headers = {'accept': 'application/json'}
-            response = requests.get(api_url, headers=headers)
+            response = requests.get(self.get_api_url(), headers=headers)
             if self.valid_response(response):
                 self.missive.msg_id = response.json()['messageid']
         if not self.in_error:
