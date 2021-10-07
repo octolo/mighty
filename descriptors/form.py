@@ -29,6 +29,7 @@ class FormDescriptor:
             "mutlipart": getattr(field.widget, "needs_multipart_form", False),
         }
         if hasattr(field, 'choices'): config["options"] = self.choices_field(field)
+        if hasattr(field, 'choices_enhanced'): config["options_enhanced"] = self.choices_field(field)
         if hasattr(field, "min_length"): config["min_length"] = field.min_length
         if hasattr(field, "max_length"): config["max_length"] = field.max_length
         if hasattr(field.widget, "allow_multiple_selected"): 

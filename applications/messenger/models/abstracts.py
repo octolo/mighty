@@ -41,7 +41,6 @@ class MessengerModel(Base):
         raise NotImplementedError("Subclasses should implement need_to_send()")
 
     def set_txt(self):
-        print('test')
         if self.html and not self.txt:
             self.txt = html2text(self.html)
 
