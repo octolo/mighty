@@ -38,7 +38,7 @@ def TenantAssociation(**kwargs):
                     raise ValidationError('groups relation are not coherent')
 
             def save(self, *args, **kwargs):
-                if not self.group: self.set_group()
+                if not self.group and callable(self.set_group): self.set_group()
                 self.check_group_coherence()
                 super().save(*args, **kwargs)
 

@@ -75,13 +75,13 @@ class Base(models.Model):
     @property
     def history_last(self):
         if not self._hlast:
-            self._hlast = self.history_queryset().last()
+            self._hlast = self.history.last()
         return self._hlast
 
     @property
     def history_first(self):
         if not self._hfirst:
-            self._hfirst = self.history_queryset().first()
+            self._hfirst = self.history.first()
         return self._hfirst
 
     @property

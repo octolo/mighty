@@ -20,9 +20,6 @@ class FormDescriptor:
             return field.widget.input_type
         return field.widget.__class__.__name__.lower()
 
-    def errors_field(self, field):
-        return field.error_messages
-
     def config_field(self, field):
         config = {
             "required": field.required,
@@ -36,8 +33,22 @@ class FormDescriptor:
             config["multiselect"] = field.widget.allow_multiple_selected,
         return config
 
-    def attrs_field(self, field):
-        return field.widget.attrs
+    def as_json(self): return self.get_fields()
+    def many_field(self, field): return field.many if hasattr(field, "many") else False
+    def errors_field(self, field): return field.error_messages
+    def attrs_field(self, field): return field.widget.attrs
+    def name_field(self, name): return self.fusion_field(name)
+    def help_text_field(self, field): return field.help_text if field.help_text else field.label
+
+    def dependencies_field(self, name):
+        return getattr(self.form, "%s_dependencies" % name) if hasattr(self.form, "%s_dependencies" % name) else None
+    
+    def emptyif_field(self, name):
+        return getattr(self.form, "%s_emptyif" % name) if hasattr(self.form, "%s_emptyif" % name) else None
+
+    def get_fields(self):
+        return [self.field_definition(field, name)
+            for name,field in self.form.fields.items()]
 
     def choice_label(self, obj, field):
         if hasattr(self.form, self.current_field+"_choices"):
@@ -60,18 +71,6 @@ class FormDescriptor:
                 "value": choice[0]}
             for choice in field.choices]
 
-    def help_text_field(self, field):
-        return field.help_text if field.help_text else field.label
-
-    def dependencies_field(self, name):
-        return getattr(self.form, "%s_dependencies" % name) if hasattr(self.form, "%s_dependencies" % name) else None
-    
-    def emptyif_field(self, name):
-        return getattr(self.form, "%s_emptyif" % name) if hasattr(self.form, "%s_emptyif" % name) else None
-
-    def name_field(self, name):
-        return self.fusion_field(name)
-
     def fusion_field(self, name):
         if hasattr(self.form, "fusion"):
             for field in self.form.fusion:
@@ -90,12 +89,7 @@ class FormDescriptor:
             "label": field.label,
             "dependencies": self.dependencies_field(name),
             "emptyif": self.emptyif_field(name),
+            "many": self.many_field(field),
         })
         return config
 
-    def get_fields(self):
-        return [self.field_definition(field, name)
-            for name,field in self.form.fields.items()]
-
-    def as_json(self):
-        return self.get_fields()

@@ -39,7 +39,7 @@ class Bill(Base):
 
     @property
     def items_list(self):
-        return [item.split(":") for item in self.items.splitlines()]
+        return [item.split(":") for item in self.items.splitlines()] if self.items else []
 
     @property
     def follow_id(self):
