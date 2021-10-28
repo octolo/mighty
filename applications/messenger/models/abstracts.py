@@ -55,8 +55,8 @@ class MessengerModel(Base):
 
     def pre_save(self):
         self.set_txt()
-        self.need_to_send()
         self.prepare_mode()
+        self.need_to_send()
         getattr(self, 'prepare_%s' % self.mode.lower())
 
     def __str__(self):

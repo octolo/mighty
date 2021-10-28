@@ -39,8 +39,8 @@ class Notification(MessengerModel):
     def data_shared(self):
         data = {field: getattr(self, field) for field in fields_shared}
         data.update({
-            "content_type": self.get_content_type(),
-            "object_id": self.id,
+            "content_type": self.content_type,
+            "object_id": self.object_id,
         })
         return data
 
