@@ -55,14 +55,18 @@ STATUS = (
 )
 
 MODE_EMAIL = 'EMAIL'
+MODE_EMAILAR = 'EMAILAR'
 MODE_SMS = 'SMS'
 MODE_POSTAL = 'POSTAL'
+MODE_POSTALAR = 'POSTALAR'
 MODE_WEB = 'WEB'
 MODE_APP = 'APP'
 MODE = (
     (MODE_EMAIL, _("email")),
+    (MODE_EMAILAR, _("emailar")),
     (MODE_SMS, _("sms")),
     (MODE_POSTAL, _("postal")),
+    (MODE_POSTALAR, _("postalar")),
     (MODE_WEB, _("web")),
     (MODE_APP, _("app")),
 )

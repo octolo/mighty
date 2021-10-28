@@ -28,6 +28,15 @@ def get_descendant_value(path, obj):
         obj = getattr(obj, p) if hasattr(obj, p) else False
     return obj
 
+def batch_bulk_chunk(model, objects, chunk):
+    schunk = chunk
+    while True:
+        batch = objects[schunk:schunk+chunk]
+        if not len(batch):
+            break
+        model.objects.bulk_create(objects)
+        schunk+=chunk
+
 """
 Round function for sql usage
 """

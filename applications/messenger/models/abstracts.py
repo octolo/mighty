@@ -11,7 +11,7 @@ from django_ckeditor_5.fields import CKEditor5Field
 from html2text import html2text
 
 class MessengerModel(Base):
-    mode = models.CharField(max_length=6, choices=choices.MODE, default=choices.MODE_WEB)
+    mode = models.CharField(max_length=8, choices=choices.MODE, default=choices.MODE_WEB)
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=8)
     priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
     
