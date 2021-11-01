@@ -76,6 +76,9 @@ class MissiveBackend:
         self.missive.save()
         return self.missive.status
 
+    def send_emailar(self):
+        return self.send_email()
+
     def postal_attachments(self):
         if self.missive.attachments:
             logs = []
@@ -144,6 +147,15 @@ class MissiveBackend:
         self.missive.to_sent()
         self.missive.save()
         return self.missive.status
+
+    def send_postalar(self):
+        return self.send_postal()
+
+    def send_web(self):
+        return ""
+
+    def send_app(self):
+        return ""
 
     def check(self, missive):
         return True
