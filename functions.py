@@ -29,7 +29,7 @@ def get_descendant_value(path, obj):
     return obj
 
 def batch_bulk_chunk(model, objects, chunk):
-    schunk = chunk
+    schunk = 0
     while True:
         batch = objects[schunk:schunk+chunk]
         if not len(batch):
