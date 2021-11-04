@@ -124,7 +124,8 @@ class Filter(Verify):
         elif self.regex_delimiter:
             values = []
             for value in self.request.get(self.param_used):
-                values += re.split(self.regex_delimiter, value)
+                if value:
+                    values += re.split(self.regex_delimiter, value)
             return values
         elif self.is_array:
             return self.request.get(self.param_used)
@@ -216,12 +217,18 @@ class SearchFilter(ParamFilter):
         return self.mask
 
     def get_value(self):
-        return [self.startw+value for value in super().get_value()]
+        values = super().get_value()
+        print("test111")
+        print(values)
+        return [self.startw+value for value in values]
 
     def get_Q(self):
-        if self.is_negative or self.is_array_negative:
-            return reduce(self.operator, [~Q(**{self.get_field(): value }) for value in self.get_value()])
-        return reduce(self.operator, [Q(**{self.get_field(): value }) for value in self.get_value()])
+        values = self.get_value()
+        if len(values):
+            if self.is_negative or self.is_array_negative:
+                return reduce(self.operator, [~Q(**{self.get_field(): value }) for value in values])
+            return reduce(self.operator, [Q(**{self.get_field(): value }) for value in values])
+        return Q()
 
 class BooleanParamFilter(ParamFilter):
     def get_mask(self):
