@@ -3,6 +3,7 @@ base_action = ["list", "detail", "delete", "retrieve", "create", "update", "part
 base_permission = ["is_superuser", "is_staff", "is_me",]
 
 class MightyPermission:
+    obj = None
     request = None
     view = None
     user = None
@@ -73,6 +74,7 @@ class MightyPermission:
 
     """ Check if action has permission """
     def can_check_action(self, action):
+        print(action)
         check_action = getattr(self, "check_"+action)
         if len(check_action):
             return any([getattr(self, check) for check in check_action])
@@ -81,6 +83,7 @@ class MightyPermission:
 
     """ Loop on permission action """
     def check_user_permissions(self, action):
+        print(action)
         user_perms = "user_perms_"+action
         if action != 'default' and hasattr(self, user_perms) and len(getattr(self, user_perms)):
             return any([getattr(self, perm) for perm in getattr(self, user_perms)])
@@ -95,16 +98,31 @@ class MightyPermission:
                 return getattr(self, can_action)()
         return self.can_default()
 
+    def check_permission(self):
+        if self.request.user.is_authenticated:
+            if hasattr(self.view, 'action'):
+                return self.check_by_action(self.view.action)
+            return self.can_default()
+        return self.can_default_unauth()
+
     def has_permission(self, request, view):
         self.request = request
         self.view = view
-        if request.user.is_authenticated:
-            if hasattr(view, 'action'):
-                return self.check_by_action(view.action)
-            return self.can_default()
-        return self.can_default_unauth()
+        return self.check_permission()
+
+    def has_object_permission(self, request, view, obj):
+        self.obj = obj
+        return self.has_permission(request, view)
 
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from rest_framework.permissions import BasePermission
 
-    class MightyPermissionDrf(BasePermission): pass
+    class MightyPermissionDrf(BasePermission, MightyPermission):
+        def has_permission(self, request, view):
+            self.request = request
+            self.view = view
+            return self.check_permission()
+
+        def has_object_permission(self, request, view, obj):
+            self.obj = obj
+            return self.has_permission(request, view)

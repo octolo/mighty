@@ -29,5 +29,5 @@ class TenantRolePermission(MightyPermission, TenantAccess):
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from mighty.permissions import MightyPermissionDrf
 
-    class TenantRolePermissionDrf(MightyPermissionDrf): pass
+    class TenantRolePermissionDrf(MightyPermissionDrf, TenantRolePermission): pass
     
