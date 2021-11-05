@@ -13,7 +13,7 @@ from schwifty import IBAN, BIC
 from dateutil.relativedelta import relativedelta
 import datetime, re
 
-@GroupOrUser(related_name="payment_method", on_delete=models.CASCADE)
+@GroupOrUser(related_name="payment_method", on_delete=models.SET_NULL, null=True, blank=True)
 class PaymentMethod(Base):
     owner = models.CharField(_.owner, max_length=255, blank=True, null=True, help_text="Owner")
     form_method = models.CharField(_.form_method, max_length=17, choices=choices.PAYMETHOD, default="CB")

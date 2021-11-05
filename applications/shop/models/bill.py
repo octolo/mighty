@@ -10,7 +10,7 @@ from mighty.applications.shop.decorators import GroupOrUser
 from mighty.applications.document import generate_pdf
 
 
-@GroupOrUser(related_name="group_bill", on_delete=models.CASCADE)
+@GroupOrUser(related_name="group_bill", on_delete=models.SET_NULL, null=True, blank=True)
 class Bill(Base):
     amount = models.FloatField(blank=True, null=True)
     end_amount = models.FloatField(blank=True, null=True)

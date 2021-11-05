@@ -37,7 +37,7 @@ class Discount(Base):
         return True
 
 
-@GroupOrUser(related_name="group_subscription", on_delete=models.CASCADE)
+@GroupOrUser(related_name="group_subscription", on_delete=models.SET_NULL, null=True, blank=True)
 class Subscription(Base):
     offer = models.ForeignKey('mighty.Offer', on_delete=models.CASCADE, related_name='offer_subscription')
     bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='bill_subscription', blank=True, null=True, editable=False)

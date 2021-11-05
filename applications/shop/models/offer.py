@@ -10,7 +10,7 @@ import re
 class Service(Base, Image):
     name = models.CharField(max_length=255, unique=True)
     code = models.CharField(max_length=50, default=generate_code_service, unique=True)
-    key = models.CharField(max_length=255, unique=True)
+    key = models.CharField(max_length=255, unique=True, default="")
 
     class Meta(Base.Meta):
         abstract = True
@@ -19,8 +19,11 @@ class Service(Base, Image):
     def __str__(self):
         return "%s(%s)" % (self.name, self.code)
 
+    def generate_key(self):
+        return re.sub("[^a-zA-Z0-9]+", "", self.name).lower()
+
     def set_key(self):
-        self.key = re.sub("[^a-zA-Z0-9]+", "", self.name).lower()
+        self.key = self.generate_key()
 
     def pre_save(self):
         self.set_key()
