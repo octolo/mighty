@@ -3,6 +3,7 @@ class FormDescriptor:
     current_field = None
     formats_input = {
         'DATETIME_INPUT_FORMATS': 'datetime',
+        'datefield': 'date'
     }
     request = None
     kwargs = None
@@ -17,8 +18,8 @@ class FormDescriptor:
             if field.widget.format_key in self.formats_input:
                 return self.formats_input[field.widget.format_key]
         if hasattr(field.widget, 'input_type'):
-            return field.widget.input_type
-        return field.widget.__class__.__name__.lower()
+            return self.formats_input.get(field.widget.input_type, field.widget.input_type)
+        return self.formats_input.get(field.widget.__class__.__name__.lower(), field.widget.__class__.__name__.lower()) 
 
     def config_field(self, field):
         config = {
@@ -37,7 +38,7 @@ class FormDescriptor:
     def many_field(self, field): return field.many if hasattr(field, "many") else False
     def isObj_field(self, field): return field.isObj if hasattr(field, "isObj") else None
     def errors_field(self, field): return field.error_messages
-    def attrs_field(self, field): return field.widget.attrs
+    def attrs_field(self, field): return getattr(field.widget, "attrs", {})
     def name_field(self, name): return self.fusion_field(name)
     def help_text_field(self, field): return field.help_text if field.help_text else field.label
 
