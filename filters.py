@@ -218,8 +218,6 @@ class SearchFilter(ParamFilter):
 
     def get_value(self):
         values = super().get_value()
-        print("test111")
-        print(values)
         return [self.startw+value for value in values]
 
     def get_Q(self):
