@@ -45,6 +45,9 @@ class FormDescriptor:
     def dependencies_field(self, name):
         return getattr(self.form, "%s_dependencies" % name) if hasattr(self.form, "%s_dependencies" % name) else None
     
+    def choice_dependencies_field(self, name):
+        return getattr(self.form, "%s_choice_dependencies" % name) if hasattr(self.form, "%s_choice_dependencies" % name) else None
+
     def emptyif_field(self, name):
         return getattr(self.form, "%s_emptyif" % name) if hasattr(self.form, "%s_emptyif" % name) else None
 
@@ -90,6 +93,7 @@ class FormDescriptor:
             "placeholder": self.help_text_field(field),
             "label": field.label,
             "dependencies": self.dependencies_field(name),
+            "choice_dependencies": self.choice_dependencies_field(name),
             "emptyif": self.emptyif_field(name),
             "many": self.many_field(field),
             "isObj": self.isObj_field(field),
