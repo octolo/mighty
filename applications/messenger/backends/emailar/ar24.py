@@ -13,17 +13,11 @@ logger = get_logger()
 class MissiveBackend(MissiveBackend):
     api_sandbox = {
         "auth": "https://connexion.sandbox.maileva.net/auth/realms/services/protocol/openid-connect/token",
-        "sendings": "https://api.sandbox.maileva.net/mail/v2/sendings",
-        "documents": "https://api.sandbox.maileva.net/mail/v2/sendings/%s/documents",
-        "recipients": "https://api.sandbox.maileva.net/mail/v2/sendings/%s/recipients",
-        "submit": "https://api.sandbox.maileva.net/mail/v2/sendings/%s/submit",
+        "email": "https://test.ar24.fr/api/mail",
     }
     api_official = {
         "auth": "https://connexion.maileva.com/auth/realms/services/protocol/openid-connect/token",
-        "sendings": "https://api.maileva.com/mail/v2/sendings",
-        "documents": "https://api.maileva.com/mail/v2/sendings/%s/documents",
-        "recipients": "https://api.maileva.com/mail/v2/sendings/%s/recipients",
-        "submit": "https://api.maileva.com/mail/v2/sendings/%s/submit",
+        "endpoint": "https://test.ar24.fr/api/",
     }
     sending_id = None
     access_token = None
@@ -50,7 +44,7 @@ class MissiveBackend(MissiveBackend):
             "color_printing": True,
             "duplex_printing": True,
             "optional_address_sheet": False,
-            "notification_email": setting("LAPOSTE_NOTIFICATION"),
+            "notification_email": setting("LAPOST_NOTIFICATION"),
             "archiving_duration": 0,
             "envelope_windows_type": "SIMPLE",
             "postage_type": "ECONOMIC",
@@ -108,22 +102,6 @@ class MissiveBackend(MissiveBackend):
         self.sending_id = response.json()["id"]
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)
-
-    def postal_attachments(self):
-        if self.missive.attachments:
-            api = self.api_url["documents"] % self.sending_id
-            headers = self.api_headers
-            logs = []
-            for document in self.missive.attachments:
-                self.priority+=1
-                doc_name = os.path.basename(document.name)
-                logs.append(doc_name)
-                files = {'document': (doc_name, open(document.name, 'rb'))}
-                data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
-                response = requests.post(api, headers=headers, files=files, data=data)
-                self.valid_response(response)
-            self.missive.logs['attachments'] = logs
-        return False if self.in_error else True
 
     def add_recipients(self):
         api = self.api_url["recipients"] % self.sending_id

@@ -37,6 +37,7 @@ class FormDescriptor:
     def as_json(self): return self.get_fields()
     def many_field(self, field): return field.many if hasattr(field, "many") else False
     def isObj_field(self, field): return field.isObj if hasattr(field, "isObj") else None
+    def isArray_field(self, field): return field.isArray if hasattr(field, "isArray") else None
     def errors_field(self, field): return field.error_messages
     def attrs_field(self, field): return getattr(field.widget, "attrs", {})
     def name_field(self, name): return self.fusion_field(name)
@@ -97,6 +98,7 @@ class FormDescriptor:
             "emptyif": self.emptyif_field(name),
             "many": self.many_field(field),
             "isObj": self.isObj_field(field),
+            "isArray": self.isArray_field(field)
         })
         return config
 

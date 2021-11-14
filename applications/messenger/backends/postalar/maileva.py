@@ -13,17 +13,17 @@ logger = get_logger()
 class MissiveBackend(MissiveBackend):
     api_sandbox = {
         "auth": "https://connexion.sandbox.maileva.net/auth/realms/services/protocol/openid-connect/token",
-        "sendings": "https://api.sandbox.maileva.net/mail/v2/sendings",
-        "documents": "https://api.sandbox.maileva.net/mail/v2/sendings/%s/documents",
-        "recipients": "https://api.sandbox.maileva.net/mail/v2/sendings/%s/recipients",
-        "submit": "https://api.sandbox.maileva.net/mail/v2/sendings/%s/submit",
+        "sendings": "https://api.sandbox.maileva.net/registered_mail/v2/sendings",
+        "documents": "https://api.sandbox.maileva.net/registered_mail/v2/sendings/%s/documents",
+        "recipients": "https://api.sandbox.maileva.net/registered_mail/v2/sendings/%s/recipients",
+        "submit": "https://api.sandbox.maileva.net/registered_mail/v2/sendings/%s/submit",
     }
     api_official = {
         "auth": "https://connexion.maileva.com/auth/realms/services/protocol/openid-connect/token",
-        "sendings": "https://api.maileva.com/mail/v2/sendings",
-        "documents": "https://api.maileva.com/mail/v2/sendings/%s/documents",
-        "recipients": "https://api.maileva.com/mail/v2/sendings/%s/recipients",
-        "submit": "https://api.maileva.com/mail/v2/sendings/%s/submit",
+        "sendings": "https://api.maileva.com/registered_mail/v2/sendings",
+        "documents": "https://api.maileva.com/registered_mail/v2/sendings/%s/documents",
+        "recipients": "https://api.maileva.com/registered_mail/v2/sendings/%s/recipients",
+        "submit": "https://api.maileva.com/registered_mail/v2/sendings/%s/submit",
     }
     sending_id = None
     access_token = None
@@ -50,7 +50,7 @@ class MissiveBackend(MissiveBackend):
             "color_printing": True,
             "duplex_printing": True,
             "optional_address_sheet": False,
-            "notification_email": setting("LAPOSTE_NOTIFICATION"),
+            "notification_email": setting("LAPOST_NOTIFICATION"),
             "archiving_duration": 0,
             "envelope_windows_type": "SIMPLE",
             "postage_type": "ECONOMIC",
