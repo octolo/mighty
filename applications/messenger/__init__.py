@@ -6,8 +6,7 @@ from mighty.applications.messenger.choices import MODE_EMAIL, MODE_SMS, MODE_POS
 from mighty.applications.messenger.apps import MessengerConfig as conf
 
 def send_missive(missive):
-    for backend, backend_path in get_backends([missive.backend], return_tuples=True, path_extend='.MissiveBackend', missive=missive):
-        print(backend)
+    for backend, backend_path in get_backends(missive.backend, return_tuples=True, path_extend='.MissiveBackend', missive=missive):
         return backend.send()
     return False
 
