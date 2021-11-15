@@ -15,8 +15,8 @@ class TenantAccess:
     tenant_model = TenantModel
     group_model = TenantGroup
 
-    def get_group_model(self, uid):
-        return self.group_model.objects.get(uid=uid)
+    def get_group_model(self, uid, field="uid"):
+        return self.group_model.objects.get(**{field: uid})
 
     # Query filter
     def Q_current_group(self, prefix=""):
