@@ -72,6 +72,8 @@ class File(models.Model):
         return self.get_url('pdf', arguments={'pk': self.pk})
 
     def save(self, *args, **kwargs):
+        import boto3
+        print("SAVING FILE TO CLOUD")
         if self.file._file:
             self.filemimetype = self.file._file.content_type
             self.size = self.file._file.size
@@ -79,7 +81,9 @@ class File(models.Model):
             self.extracontenttype = self.file._file.content_type_extra
             if not self.filename:
                 self.filename = self.file_name
+        boto3.set_stream_logger(name='botocore')
         super(File, self).save(*args, **kwargs)
+
 
     def size_long(self, unit=None):
         return pretty_size_long(self.size, unit) if self.size else None
