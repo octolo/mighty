@@ -1,4 +1,5 @@
 from mighty.functions import setting
+from django.db.models import Q
 base_action = ["list", "detail", "delete", "retrieve", "create", "update", "partial_update", "destroy"]
 base_permission = ["is_superuser", "is_staff", "is_me",]
 
@@ -8,6 +9,7 @@ class MightyPermission:
     view = None
     user = None
     model = None
+    user_way = "user"
     user_perms_list = []
     user_perms_retrieve = []
     user_perms_create = []
@@ -18,6 +20,9 @@ class MightyPermission:
 
     def has_perm(self, perm):
         return self.user.has_perm(perm)
+
+    def Q_is_me(self, prefix=""):
+        return Q(**{prefix+self.user_way: self.request.user})
 
     """ Properties """
     @property
