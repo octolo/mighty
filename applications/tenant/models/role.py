@@ -14,7 +14,7 @@ class Role(Base, Image):
     number = models.PositiveIntegerField(default=0, editable=False)
 
     objects = models.Manager()
-    objectsB = managers.RoleManager()
+    objectsB = models.Manager()
 
     class Meta(Base.Meta):
         abstract = True
@@ -22,9 +22,6 @@ class Role(Base, Image):
         verbose_name_plural = _.vp_role
         ordering = ["name", "group"]
         unique_together = ('id', 'group', 'name')
-
-    def __str__(self):
-        return "%s (%s)" % (self.name.title(), str(self.group))
 
     def count(self):
         return self.sql_count if hasattr(self, 'sql_count') else self.roles_tenant.all().count()
