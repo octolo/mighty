@@ -8,7 +8,7 @@ from django.conf import settings
 from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Protocol.KDF import PBKDF2
-import hashlib, base64, datetime, requests, json
+import hashlib, base64, datetime, requests, json, os
 
 class MissiveBackend(MissiveBackend):
     api_sandbox = {
@@ -16,13 +16,14 @@ class MissiveBackend(MissiveBackend):
         "base": "https://test.ar24.fr/api/",
         "user": "https://test.ar24.fr/api/user/",
         "confirm": "https://test.ar24.fr/api/user/request_access",
+        "attachment": "https://test.ar24.fr/api/attachment/",
     }
-
-    api_url = {
+    api_prod = {
         "email": "https://ar24.fr/api/mail",
         "base": "https://ar24.fr/api/",
         "user": "https://ar24.fr/api/user/",
         "confirm": "https://ar24.fr/api/user/request_access",
+        "attachment": "https://ar24.fr/api/attachment/",
     }
     api_key_test = "7X9gx9E3Qx4EiUdB63nc"
     api_token = settings.AR24_TOKEN
@@ -33,6 +34,8 @@ class MissiveBackend(MissiveBackend):
     in_error = False
     cache_date_send = None
     user = None
+    list_attach = []
+    files_attach = []
     format_date = "%Y-%m-%d %H:%M:%S" # -> YYYY-MM-DD HH:MM:SS
 
     __pad = lambda self,s: s + (AES.block_size - len(s) % AES.block_size) * chr(AES.block_size - len(s) % AES.block_size)
@@ -155,14 +158,45 @@ class MissiveBackend(MissiveBackend):
             "dest_statut": "professionnel",
             "content": self.missive.html if self.missive.html else self.missive.txt,
             "to_company": "Easy-Shares",
-         })
+        })
+        #i = 0
+        #for attach in self.list_attach:
+        #    data.update({
+        #        "attachment[%s]" % str(i): attach["file_id"]
+        #    })
+        #    i+=1
+        print(data)
         return data
+
+    def data_attachment(self, document):
+        data = self.base_headers
+        data.update({
+            "file": open(document.name, 'rb'),
+            "file_name": os.path.basename(document.name),
+            "id_user": self.user["id"],
+        })
+        return data
+
+    def email_attachments(self):
+        if self.missive.attachments:
+            for document in self.missive.attachments:
+                response = requests.post(self.api_url["attachment"], 
+                headers=self.api_headers,
+                files={'file': (os.path.basename(document.name), open(document.name, 'rb'))},
+                data=self.data_attachment(document))
+                response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
+                if not self.in_error:
+                    response = json.loads(response)["result"]
+                    self.list_attach.append(response)
+            self.missive.logs['attachments'] = self.list_attach
+        return False if self.in_error else True
 
     def send_email(self):
         self.get_user()
         self.generate_date_send()
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
+        self.email_attachments()
         response = requests.post(self.api_url["email"], headers=self.api_headers, data=self.data_ar())
         response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
         if not self.in_error:
@@ -170,8 +204,6 @@ class MissiveBackend(MissiveBackend):
             self.missive.msg_id = response["id"]
             self.missive.cache = response
             self.missive.to_sent()
-            #self.email.attach_alternative(html_content, "text/html")
-        #self.email_attachments()
         if not self.missive.in_test:
             self.missive.save()
         return self.missive.status
@@ -181,5 +213,6 @@ class MissiveBackend(MissiveBackend):
         self.missive.last_name = "Mighty-Lastname"
         self.missive.first_name = "Mighty-Firstname"
         self.missive.target = "charles@easyshares.io"
+        self.missive.attachments = [open(os.path.realpath(__file__))]
         self.send_email()
         self.logger.info("Send email: %s" % self.missive.cache)
