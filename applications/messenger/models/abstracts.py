@@ -20,6 +20,7 @@ from django_ckeditor_5.fields import CKEditor5Field
 from html2text import html2text
 
 class MessengerModel(Base):
+    in_test = False
     mode = models.CharField(max_length=8, choices=choices.MODE, default=choices.MODE_EMAIL)
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=8)
     priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
@@ -27,6 +28,8 @@ class MessengerModel(Base):
     target = models.CharField(max_length=255)
     service = models.CharField(max_length=255, blank=True, null=True)
     denomination = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
 
     header_html = CKEditor5Field(blank=True, null=True)
     footer_html = CKEditor5Field(blank=True, null=True)

@@ -1,5 +1,19 @@
 default_app_config = 'mighty.applications.logger.apps.LoggerConfig'
 
+class EnableLogger:
+    cache_logger = None
+
+    def reload_logger(self):
+        import logging
+        self.cache_logger = logging.getLogger(__name__)
+
+    @property
+    def logger(self):
+        if not self.cache_logger:
+            self.reload_logger()
+        return self.cache_logger
+
+
 def format_log_field(field, value, instance, fk_column, fk_field):
     return {
         fk_column: instance,

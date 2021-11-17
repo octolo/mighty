@@ -14,8 +14,9 @@ from mighty.applications.messenger.apps import MessengerConfig as conf
 import datetime, logging, os, tempfile, pdfkit, shutil
 
 logger = logging.getLogger(__name__)
+from mighty.applications.logger import EnableLogger
 
-class MissiveBackend:
+class MissiveBackend(EnableLogger):
     email = None
     sms = None
     postal = None
