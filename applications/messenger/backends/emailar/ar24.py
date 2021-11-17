@@ -159,13 +159,15 @@ class MissiveBackend(MissiveBackend):
             "content": self.missive.html if self.missive.html else self.missive.txt,
             "to_company": "Easy-Shares",
         })
-        #i = 0
-        #for attach in self.list_attach:
-        #    data.update({
-        #        "attachment[%s]" % str(i): attach["file_id"]
-        #    })
-        #    i+=1
+        i = 0
+        for attach in self.list_attach:
+            data.update({
+                "attachment[%s]" % str(i): attach["file_id"]
+            })
+            i+=1
+        print("")
         print(data)
+        print("")
         return data
 
     def data_attachment(self, document):
@@ -199,6 +201,7 @@ class MissiveBackend(MissiveBackend):
         self.email_attachments()
         response = requests.post(self.api_url["email"], headers=self.api_headers, data=self.data_ar())
         response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
+        print(response)
         if not self.in_error:
             response = json.loads(response)["result"]
             self.missive.msg_id = response["id"]

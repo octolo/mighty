@@ -2,7 +2,7 @@ default_app_config = 'mighty.applications.messenger.apps.MessengerConfig'
 
 from django.conf import settings
 from mighty.functions import get_backends
-from mighty.applications.messenger.choices import MODE_EMAIL, MODE_SMS, MODE_POSTAL
+from mighty.applications.messenger.choices import MODE_EMAIL, MODE_SMS, MODE_POSTAL, MODE_EMAILAR, MODE_POSTALAR
 from mighty.applications.messenger.apps import MessengerConfig as conf
 
 def send_missive(missive):
@@ -20,6 +20,9 @@ def send_missive_type(**kwargs):
         mode=kwargs.get('mode'),
         target=kwargs.get('target'),
         subject=kwargs.get('subject'),
+        last_name=kwargs.get('last_name'),
+        first_name=kwargs.get('first_name'),
+        denomination=kwargs.get('denomination'),
         html=kwargs.get('html'),
         txt=kwargs.get('txt'),
         address=kwargs.get('address'),
@@ -36,14 +39,14 @@ def send_missive_type(**kwargs):
     missive.save()
     return missive
 
-def send_email(**kwargs):
-    return send_missive_type(**kwargs, mode=MODE_EMAIL)
+def send_email(ar=False, **kwargs):
+    return send_missive_type(**kwargs, mode=MODE_EMAILAR if ar else MODE_EMAIL)
 
 def send_sms(**kwargs):
     return send_missive_type(**kwargs, mode=MODE_SMS, html="empty_for_sms")
 
-def send_postal(**kwargs):
-    return send_missive_type(**kwargs, mode=MODE_POSTAL, txt="empty_for_postal")
+def send_postal(ar=False, **kwargs):
+    return send_missive_type(**kwargs, mode=MODE_POSTALAR if ar else MODE_POSTAL, txt="empty_for_postal")
 
 # ** kwargs:
 #    -- mode
