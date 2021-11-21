@@ -4,16 +4,17 @@ from django.core.exceptions import MultipleObjectsReturned
 
 from mighty import functions
 from mighty.apps import MightyConfig as conf
-from mighty.applications.logger.apps import LoggerConfig
+from mighty.applications.logger import EnableLogger
 import datetime, sys, logging, csv, os.path
 logger = logging.getLogger(__name__)
 
-class BaseCommand(BaseCommand):
+class BaseCommand(BaseCommand, EnableLogger):
     help = 'Command Base override by Mighty'
     position = 0
     prefix_bar = 'Percent'
     current_info = ''
     errors = []
+    in_test = False
 
     def get_total(self):
         return self.total if self.total else 0
@@ -57,12 +58,14 @@ class BaseCommand(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
+        parser.add_argument('--test', action="store_true")
         parser.add_argument('--total', default=0)
         parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--logfile', default="%s_%s.log" % (str(self.subcommand).lower(), f"{datetime.datetime.now():%Y%m%d_%H%M%S_%f}"))
         parser.add_argument('--progressbar', action="store_true")
 
     def handle(self, *args, **options):
+        self.in_test = options.get('test')
         self.encoding = options.get('encoding')
         self.logfile = options.get('logfile')
         self.progressbar = options.get('progressbar')
@@ -73,7 +76,12 @@ class BaseCommand(BaseCommand):
         logger.debug('end')
 
     def makeJob(self):
+        self.before_job()
         self.do()
+        self.after_job()
+
+    def before_job(self): pass
+    def after_job(self): pass
 
     def showErrors(self):
         for error in self.errors:
@@ -88,6 +96,7 @@ class ModelBaseCommand(BaseCommand):
     manager = 'objects'
     label = None
     model = None
+    filter = None
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
@@ -107,11 +116,15 @@ class ModelBaseCommand(BaseCommand):
         self.search = options.get('search')
         super().handle(*args, **options)
 
-    def get_queryset(self, *args, **kwargs):
+    @property
+    def model_use(self):
         label = kwargs.get('label', self.label)
         model = kwargs.get('model', self.model)
+        return functions.get_model(label, model)
+
+    def get_queryset(self, *args, **kwargs):
         manager = kwargs.get('manager', self.manager)
-        model = functions.get_model(label, model)
+        model = self.model_use
         return getattr(model, manager).filter(**dict(x.split(',') for x in self.filter.split(';')) if self.filter else {})
 
     def do(self):
