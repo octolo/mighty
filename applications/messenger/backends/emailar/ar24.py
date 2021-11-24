@@ -183,9 +183,9 @@ class MissiveBackend(MissiveBackend):
         if self.missive.attachments:
             for document in self.missive.attachments:
                 response = requests.post(self.api_url["attachment"], 
-                headers=self.api_headers,
-                files={'file': (os.path.basename(document.name), open(document.name, 'rb'))},
-                data=self.data_attachment(document))
+                    headers=self.api_headers,
+                    files={'file': (os.path.basename(document.name), open(document.name, 'rb'))},
+                    data=self.data_attachment(document))
                 response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
                 if not self.in_error:
                     response = json.loads(response)["result"]
