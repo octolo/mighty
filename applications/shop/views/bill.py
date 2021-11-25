@@ -46,3 +46,4 @@ class BillList(ListView):
 
 class BillReturnURL(DetailView):
     pk_url_kwarg = 'payment_id'
+    

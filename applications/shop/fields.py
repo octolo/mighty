@@ -35,6 +35,7 @@ bill = (
     'end_discount',
     'name',
     'items',
+    'backend',
 )
 discount = (
     'code',

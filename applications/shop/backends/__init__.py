@@ -15,13 +15,14 @@ class PaymentBackend:
     def __init__(self, bill, backend, *args, **kwargs):
         self.bill = bill
         self.backend = backend
+        if bill.has_cache_field(bill.backend):
+            self.cache = bill.cache[bill.backend]
 
     @property
     def return_url(self):
         return "https://octolo.org/"
-        url = ShopConfig.tpl_return_url % {"domain": self.domain, "group": self.bill.group, "bill": self.bill.uid}
-        print(url)
-        return url
+        return ShopConfig.tpl_return_url % {"domain": self.domain, "group": self.bill.group, "bill": self.bill.uid}
+        
 
     @property
     def domain(self):
@@ -60,6 +61,9 @@ class PaymentBackend:
     def add_payment_method(self, force=False):
         raise NotImplementedError("Subclasses should implement add_payment_method(self, force)")
 
+    def check_status(self):
+        raise NotImplementedError("Subclasses should implement check_status(self)")
+
     # Charge
     @property
     def charge(self):
@@ -70,9 +74,10 @@ class PaymentBackend:
     def try_to_charge(self):
         if not self.bill.paid:
             self.bill.add_cache(self.backend, self.to_charge())
+            self.bill.payment_id = self.bill.cache[self.backend]["id"]
+            print(self.bill.payment_id)
             if self.is_paid_success:
                 self.bill.paid = True
-                self.bill.payment_id = self.payment_id
                 self.bill.date_payment = timezone.now()
             else:
                 self.on_paid_failed()

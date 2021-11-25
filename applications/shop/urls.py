@@ -3,6 +3,7 @@ from django.urls import path, include
 from mighty.applications.shop import views
 
 app_name='shop'
+
 urlpatterns = [
     path('shop/', include([
         path('bill/', include([
@@ -24,6 +25,14 @@ api_urlpatterns = [
         ])),
         path('bill/', include([
             path('<uuid:uid>/list/', views.BillList.as_view(), name="bill-list")
+        ])),
+    ])),
+]
+
+webhooks_urlpatterns= [
+    path('shop/', include([
+        path('stripe/', include([
+            path('checkstatus/<str:payment_id>/', views.StripeCheckStatus.as_view(), name="stripe-check-status"),
         ])),
     ])),
 ]

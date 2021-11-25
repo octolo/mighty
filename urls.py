@@ -8,12 +8,14 @@ urlpatterns = [
     path('success/', GenericSuccess.as_view(), name="generic-success"),
     path('widgets/<str:widget>/<str:id>/', Widget.as_view(), name="mighty-widget"),
 ]
+
 api_urlpatterns = [path('config/', include([
         path('base/', Config.as_view(), name="api-config-base"),
         path('full/', ConfigListView.as_view(), name="api-config-full"),
         path('<str:name>/', ConfigDetailView.as_view(), name="api-config-name"),
     ])
 )]
+webhooks_urlpatterns = []
 
 # Enable app nationality
 if "mighty.applications.nationality" in settings.INSTALLED_APPS:
@@ -54,6 +56,8 @@ if "mighty.applications.shop" in settings.INSTALLED_APPS:
     urlpatterns += urls_shop.urlpatterns
     if hasattr(urls_shop, 'api_urlpatterns'):
         api_urlpatterns += urls_shop.api_urlpatterns
+    if hasattr(urls_shop, 'webhooks_urlpatterns'):
+        webhooks_urlpatterns += urls_shop.webhooks_urlpatterns
 
 # Enable app grapher
 if "mighty.applications.grapher" in settings.INSTALLED_APPS:

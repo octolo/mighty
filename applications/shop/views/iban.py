@@ -10,21 +10,25 @@ from mighty.applications.shop.forms import IbanForm
 from mighty.models import PaymentMethod
 from mighty.functions import setting
 from schwifty import IBAN
+import re
 
 @method_decorator(login_required, name='dispatch')
 class BicCalculJSON(TemplateView):
     test_field = "iban"
 
     def get_iban(self):
-        return self.request.GET.get(self.test_field)
+        return re.sub(r"\s+", "",  self.request.GET.get(self.test_field), flags=re.UNICODE)
 
     def check_data(self):
         newiban = self.get_iban()
         if newiban:
-            newiban = IBAN(newiban).bic
-            if newiban:
-                return {"bic": str(newiban.bic)}
-            return { "code": "002", "error": _.error_bic_empty }
+            try:
+                newiban = IBAN(newiban)
+                if newiban:
+                    return {"bic": str(newiban.bic)}
+                return { "code": "002", "error": _.error_bic_empty }
+            except Exception as e:
+                return {"code": "003", "error": str(e)}
         return { "code": "001", "error": _.error_iban_empty }
 
     def get(self, request, format=None):

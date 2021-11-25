@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 class PaymentBackend(PaymentBackend):
     APIKEY = setting('STRIPE_KEY', 'pk_test_2HJblgmwriJiakxRAgSCiAiZ')
     APISECRET = setting('STRIPE_SECRET', 'sk_test_Ut8KxxgMdbQnWqfXcyYe0JiY')
-    pmtypes = {
-        "CB": "card",
-        "IBAN": "sepa_debit",
-    }
+    pmtypes = { "CB": "card", "IBAN": "sepa_debit" }
     api_stripe = None
+
+    def __init__(self, bill, backend, *args, **kwargs):
+        super().__init__(bill, backend, *args, **kwargs)
 
     #def to_charge(self):
     #    invoice = self.set_charge()
@@ -43,7 +43,7 @@ class PaymentBackend(PaymentBackend):
     # Charge
     @property
     def payment_id(self):
-        return self.charge["id"]
+        return self.bill.payment_id
 
     @property
     def data_bill(self):
@@ -56,12 +56,13 @@ class PaymentBackend(PaymentBackend):
         }
 
     def retry_to_charge(self):
-        charge = self.api.PaymentIntent.retrieve(self.charge["id"])
+        charge = self.api.PaymentIntent.retrieve(self.payment_id)
         if charge.status not in ["processing", "canceled", "succeeded"]:
             self.bill.add_cache("payment_method", self.add_payment_method(True))
-            return self.api.PaymentIntent.modify(self.charge["id"], **self.data_bill)
+            return self.api.PaymentIntent.modify(self.payment_id, **self.data_bill)
 
     def to_charge(self):
+        print("ok")
         if self.charge: return self.retry_to_charge()
         return self.api.PaymentIntent.create(**self.data_bill, confirm=True, return_url=self.return_url)
 
@@ -75,6 +76,9 @@ class PaymentBackend(PaymentBackend):
             if need_action == "redirect_to_url":
                 self.bill.need_action = choice.NEED_ACTON_URL
                 self.bill.action = self.charge["next_action"][need_action]["url"]
+
+    def check_status(self):
+        return self.api.PaymentIntent.retrieve(self.payment_id)
 
     # Payment Method
     @property

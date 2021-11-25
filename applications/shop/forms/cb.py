@@ -1,6 +1,6 @@
 from django import forms
 from mighty.models import PaymentMethod
-from mighty.forms import FormDescriptable, ModelFormDescriptable
+from mighty.forms import ModelFormDescriptable
 from mighty.applications.shop.forms.widgets import CBNumberInput, CBCVCInput, CBDateInput
 from mighty.applications.shop import translates as _
 

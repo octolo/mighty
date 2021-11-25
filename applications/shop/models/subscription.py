@@ -50,6 +50,7 @@ class Subscription(Base):
     is_used = models.BooleanField(default=False)
     advance = models.PositiveIntegerField(default=0)
     frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default=choices.MONTH)
+    is_active = models.BooleanField(default=False)
 
     class Meta(Base.Meta):
         abstract = True

@@ -18,10 +18,11 @@ class PaymentMethod(Base):
     owner = models.CharField(_.owner, max_length=255, blank=True, null=True, help_text="Owner")
     form_method = models.CharField(_.form_method, max_length=17, choices=choices.PAYMETHOD, default="CB")
     date_valid = models.DateField(_.date_valid, blank=True, null=True, help_text="Expire date")
+    signature = models.TextField(_.signature, blank=True, null=True)
 
     # IBAN
-    iban = models.CharField(max_length=34, blank=True, null=True, help_text="IBAN")
-    bic = models.CharField(max_length=12, blank=True, null=True, help_text="BIC")
+    iban = models.CharField(_.iban, max_length=34, blank=True, null=True, help_text="IBAN")
+    bic = models.CharField(_.bic, max_length=12, blank=True, null=True, help_text="BIC")
 
     # CB
     cb = models.CharField(_.card_number, max_length=16, blank=True, null=True, help_text=_.card_number)
@@ -78,6 +79,7 @@ class PaymentMethod(Base):
 
     @property
     def is_valid_ibanlib(self):
+        self.iban = re.sub(r"\s+", "", self.iban, flags=re.UNICODE)
         try:
             iban = IBAN(self.iban)
             if not self.bic: self.bic = str(iban.bic)
@@ -152,6 +154,7 @@ class PaymentMethod(Base):
 
     @property
     def is_valid_cb(self):
+        self.cb = re.sub(r"\s+", "", self.cb, flags=re.UNICODE)
         if not self.is_valid_date:
             raise ValidationError(code='invalid_date', message='invalid date')
         if not self.cb or not self.validate_luhn(self.cb):
@@ -174,7 +177,6 @@ class PaymentMethod(Base):
             self.is_valid_iban
         else:
             self.is_valid_cb
-
 
     def qs_default(self):
         qs = type(self).objects

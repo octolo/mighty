@@ -54,13 +54,23 @@ class Bill(Base):
         self.end_discount = round(self.amount-self.end_amount, 2)
 
     def try_to_charge(self):
+        print("try")
         if not self.paid and self.method is not None and self.method.is_valid:
             self.to_charge()
 
     def to_charge(self):
+        self.backend = ShopConfig.invoice_backend
         backend = import_string(ShopConfig.invoice_backend)(self, ShopConfig.invoice_backend)
         backend.add_pm()
         backend.try_to_charge()
+
+    def check_status(self):
+        backend = import_string(ShopConfig.invoice_backend)(self, ShopConfig.invoice_backend)
+        return backend.check_status()
+
+    def pre_save(self):
+        if self.payment_id:
+            self.check_status()
 
     def pre_update(self):
         self.calcul_discount()
@@ -96,4 +106,5 @@ class Bill(Base):
         final_pdf, tmp_pdf = generate_pdf(**pdf_data)
         tmp_pdf.close()
         return final_pdf
+       
 

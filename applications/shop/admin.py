@@ -125,7 +125,7 @@ class SubscriptionAdmin(BaseAdmin):
 class BillAdmin(BaseAdmin):
     view_on_site = False
     change_form_template  = 'admin/change_form_bill.html'
-    readonly_fields = ('paid', 'payment_id', 'subscription', 'method', 'date_payment')
+    readonly_fields = ('paid', 'payment_id', 'subscription', 'method', 'date_payment', 'backend')
     search_fields = ('group__search',)
     list_display = ('group', 'paid', 'subscription')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.bill}),)

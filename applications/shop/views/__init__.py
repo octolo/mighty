@@ -5,6 +5,8 @@ from mighty.applications.shop.views.cb import CBFormDescView, CheckCB
 from mighty.applications.shop.views.iban import IbanFormDescView, CheckIban
 from mighty.applications.shop.views.paymentmethod import PaymentMethodFormDescView
 
+from mighty.applications.shop.views.webhooks.stripe import StripeCheckStatus
+
 __all__ = (
     ShopExports, ShopExport,
     BillPDF, BillList,
@@ -12,4 +14,5 @@ __all__ = (
     CBFormDescView, CheckCB,
     IbanFormDescView, CheckIban,
     PaymentMethodFormDescView,
+    StripeCheckStatus,
 )
