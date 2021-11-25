@@ -61,19 +61,26 @@ class SignatureBackend(SignatureBackend):
         return response
 
     def add_file(self, instance):
+        import os
+        document = instance.document
+        document_file = document.document_file.last().file
+        url = "https://api.docage.com/TransactionFiles"
+
         payload = {
             'TransactionId': instance.transaction.transaction_id,
-            'FileName': instance.document_name,
-            'FriendlyName': instance.friendly_name,
+            'FileName': os.path.basename(document_file.name),
+            'FriendlyName': document.name,
             'Type': self.docage_dict[instance.document_type]
         }
-        document = instance.document.document_file.last().file
-        read_file = document.open('rb').read()
         files=[
-            (instance.friendly_name,(document.name,read_file,'application/octet-stream'))
+            ('FileToUpload',('file',document_file.read(), 'application/octet-stream'))
         ]
-        response = requests.post(self.api_url["file"], auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload, files=files)
-        print(response.raw.__dict__)
+        response = requests.request("POST", url, 
+            auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), 
+            data=payload, 
+            files=files, 
+            timeout=30,
+        )
         return response
 
     def add_member(self, instance):
