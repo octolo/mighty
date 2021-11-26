@@ -79,7 +79,6 @@ class MightyPermission:
 
     """ Check if action has permission """
     def can_check_action(self, action):
-        print(action)
         check_action = getattr(self, "check_"+action)
         if len(check_action):
             return any([getattr(self, check) for check in check_action])
@@ -88,7 +87,6 @@ class MightyPermission:
 
     """ Loop on permission action """
     def check_user_permissions(self, action):
-        print(action)
         user_perms = "user_perms_"+action
         if action != 'default' and hasattr(self, user_perms) and len(getattr(self, user_perms)):
             return any([getattr(self, perm) for perm in getattr(self, user_perms)])

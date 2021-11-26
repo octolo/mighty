@@ -66,15 +66,26 @@ class FormDescriptor:
             cfg = getattr(self.form, self.current_field+"_choices")
             return getattr(obj, cfg['value'])
 
+    def disable_choice(self, obj, field, choice):
+        print(self.current_field+"_disable")
+        if hasattr(self.form, self.current_field+"_disable"):
+            cfg = getattr(self.form, self.current_field+"_disable")
+            print(cfg)
+            return (choice in cfg)
+
     def choices_field(self, field):
         if hasattr(field.choices, 'queryset'):
             return [{
                 "label": self.choice_label(obj, field),
-                "value": self.choice_value(obj, field)}
+                "value": self.choice_value(obj, field),
+                "disable": self.disable_choice(obj, field),
+            }
             for obj in field.choices.queryset]
         return [{
                 "label": choice[1],
-                "value": choice[0]}
+                "value": choice[0],
+                "disable": self.disable_choice(choice, field, choice[0]),
+            }
             for choice in field.choices]
 
     def fusion_field(self, name):
