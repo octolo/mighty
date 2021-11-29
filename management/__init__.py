@@ -117,7 +117,7 @@ class ModelBaseCommand(BaseCommand):
         super().handle(*args, **options)
 
     @property
-    def model_use(self):
+    def model_use(self, *args, **kwargs):
         label = kwargs.get('label', self.label)
         model = kwargs.get('model', self.model)
         return functions.get_model(label, model)
