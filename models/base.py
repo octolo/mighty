@@ -56,6 +56,7 @@ class Base(models.Model):
     cache = JSONField(blank=True, null=True, default=dict)
     use_create_by = True
     use_update_by = True
+    can_notify = True
     
     _logger = get_logger()
     _old_self = None
@@ -102,10 +103,15 @@ class Base(models.Model):
         if self.pk and not self._old_self:
             self._old_self = copy.deepcopy(self)
 
+    def reset_old_self(self):
+        self.save_old_self()
+
     def __init__(self, *args, **kwargs):
         super(Base, self).__init__(*args, **kwargs)
         self.save_old_self()
 
+    def do_not_notify(self):
+        self.can_notify = False
         
     """
     Properties
