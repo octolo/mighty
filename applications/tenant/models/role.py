@@ -24,7 +24,7 @@ class Role(Base, Image):
         unique_together = ('id', 'group', 'name')
 
     def count(self):
-        return self.sql_count if hasattr(self, 'sql_count') else self.roles_tenant.all().count()
+        return self.sql_count if hasattr(self, 'sql_count') else self.number
 
     def pre_save(self):
         self.name = self.name.lower()
