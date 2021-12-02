@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model, authenticate
 from django.db.models import Q
 from django.urls import reverse, NoReverseMatch
 
+from mighty.forms import FormDescriptable
 from mighty.functions import masking_email, masking_phone
 from mighty.applications.twofactor import use_twofactor, translates as _
 from mighty.applications.twofactor.apps import TwofactorConfig
@@ -19,14 +20,13 @@ import secrets, string
 
 UserModel = get_user_model()
 
-class TwoFactorSearchForm(forms.Form):
+class TwoFactorSearchForm(FormDescriptable):
     username = forms.CharField(label=_.search, required=True)
     error_messages = { 'invalid_search': _.invalid_search, 'inactive': _.inactive }
 
-    def __init__(self, request, *args, **kwargs): 
+    def __init__(self, *args, **kwargs): 
         super().__init__(*args, **kwargs) 
         self.user_cache = None
-        self.request = request
 
     def set_session_with_uid(self, uid):
         self.request.session['login_uid'] = uid
@@ -46,13 +46,12 @@ class TwoFactorSearchForm(forms.Form):
         if not user.is_active:
             raise forms.ValidationError(self.error_messages['inactive'], code='inactive', )
 
-class TwoFactorChoicesForm(forms.Form):
+class TwoFactorChoicesForm(FormDescriptable):
     receiver = forms.CharField(widget=forms.HiddenInput)
     error_messages = { 'inactive': _.inactive, 'cant_send': _.cant_send, 'method_not_allowed': _.method_not_allowed }
 
-    def __init__(self, request, *args, **kwargs): 
+    def __init__(self, *args, **kwargs): 
         super().__init__(*args, **kwargs) 
-        self.request = request
         self.uid = self.request.session['login_uid']
         self.user_cache = UserModel.objects.get(uid=self.uid)
         self.emails, self.phones = [], []
@@ -103,17 +102,25 @@ class TwoFactorChoicesForm(forms.Form):
         return self.cleaned_data
 
 class TwoFactorCodeForm(AuthenticationForm):
-    def __init__(self, request, *args, **kwargs): 
-        super().__init__(*args, **kwargs) 
+    uid = None
+    error_messages = { 'cant_found': _.cant_found, }
+
+    def __init__(self, *args, **kwargs): 
+        super().__init__(*args, **kwargs)
         self.user_cache = None
-        self.request = request
-        self.uid = self.request.session['login_uid']
         self.fields.pop('username')
+
+    def init_uid(self):
+        if self.request.session:
+            self.uid = self.request.session.get('login_uid')
+        if not self.uid:
+            raise forms.ValidationError(self.error_messages['cant_found'], code='cant_found')
 
     def del_session_with_uid(self):
         del self.request.session['login_uid']
 
     def clean(self):
+        self.init_uid()
         password = self.cleaned_data.get('password')
         if password:
             self.user_cache = authenticate(self.request, username=self.uid, password=password, field_type='uid')

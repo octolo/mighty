@@ -91,15 +91,35 @@ class SourceForm(forms.ModelForm):
         amodel.date_end = cleaned_data.get("date_end")
         amodel.save()
 
+form_init_fields = (
+    "data",
+    "files",
+    "auto_id",
+    "prefix",
+    "initial",
+    "error_class",
+    "label_suffix",
+    "empty_permitted",
+    "use_required_attribute",
+    "renderer")
 class FormDescriptable(forms.Form):
+    request = None
+
+    def form_init(self, kwargs):
+        list_fields = form_init_fields + ("field_order",)
+        return {f: kwargs[f] for f in kwargs if f in list_fields}
+
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop("request")
-        self.kwargs = kwargs.pop("kwargs")
-        super().__init__(*args, **kwargs)
+        self.request = kwargs.pop("request") if "request" in kwargs else None
+        super(forms.Form, self).__init__(*args, **{f: kwargs[f] for f in self.form_init(kwargs)})
 
 class ModelFormDescriptable(forms.ModelForm):
+    request = None
+
+    def form_init(self, kwargs):
+        list_fields = form_init_fields + ("instance",)
+        return {f: kwargs[f] for f in kwargs if f in list_fields}
+
     def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop("request")
-        self.kwargs = kwargs.pop("kwargs")
-        super().__init__(*args, **kwargs)
-    
+        self.request = kwargs.pop("request") if "request" in kwargs else None
+        super().__init__(*args, **{f: kwargs.get(f) for f in self.form_init(kwargs)})

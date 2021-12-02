@@ -16,6 +16,7 @@ invalid_login = _("please enter a correct %s and password. Note that both fields
 inactive = _("this account is inactive.")
 cant_send = _("unable to send message")
 method_not_allowed = _("This authentication method is not allowed")
+cant_found = _("Can't found user")
 
 tpl_subject = _("%(domain)s - Connection code")
 tpl_html = _("%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s")

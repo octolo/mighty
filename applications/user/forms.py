@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, UsernameField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 from phonenumber_field.formfields import PhoneNumberField
 from mighty.applications.user import get_form_fields
+from mighty.forms import ModelFormDescriptable
 
 allfields = get_form_fields()
 required = get_form_fields('required')
@@ -22,7 +23,7 @@ if 'password1' not in allfields:
             self.cleaned_data["password1"] = None
             super().clean()
 
-class UserCreationForm(UserCreationForm):
+class UserCreationForm(UserCreationForm, ModelFormDescriptable):
     class UsernameField(UsernameField):
         pass
 
