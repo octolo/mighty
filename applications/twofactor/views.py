@@ -133,34 +133,29 @@ class Register(LoginStepSearch):
         return super(FormView, self).form_valid(form)
 
 class APISendCode(TemplateView):
-    device = None
-    user = None
-    masking = None
-    
-    def get_identity(self, request):
-        return request.POST.get('identity', request.GET.get('identity', False)).lower()
+    status = 200
 
     def send_code(self, request):
-        identity = self.get_identity(request)
-        if identity:
-            missive = use_twofactor(identity)
-            if missive:
-                device = missive.mode
-                target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
-                return {'mode': device, 'target': target}
-        return {'error': 'not enable to send a code'}
+        data = {"username": request.POST.get('identity', request.GET.get('identity', False)).lower()}
+        form = TwoFactorSearchForm(data)
+        if form.is_valid():
+            missive = use_twofactor(form.data["username"])
+            device = missive.mode
+            target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
+            return {'mode': device, 'target': target}
+        self.status = 400
+        return dict(form.errors.items())
 
     def get_context_data(self, **kwargs):
         if self.request.user.is_authenticated:
             return { 'msg': 'already authenticated' }
         return self.send_code(self.request)
+        #try:
+        #except Exception as e:
+        #    return {e.code: str(e)}
 
     def render_to_response(self, context, **response_kwargs):
-        if 'error' in context:
-            return JsonResponse(context, **response_kwargs, status=400)
-        return JsonResponse(context, **response_kwargs)
-
-
+        return JsonResponse(context, **response_kwargs, status=self.status)
 
 class CreatUserFormView(FormDescView):
     form = UserCreationForm

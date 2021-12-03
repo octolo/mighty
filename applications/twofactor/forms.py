@@ -29,7 +29,7 @@ class TwoFactorSearchForm(FormDescriptable):
         self.user_cache = None
 
     def set_session_with_uid(self, uid):
-        self.request.session['login_uid'] = uid
+        if self.request: self.request.session['login_uid'] = uid
 
     def clean(self):
         search = self.cleaned_data.get('username')
@@ -44,7 +44,7 @@ class TwoFactorSearchForm(FormDescriptable):
 
     def confirm_login_allowed(self, user):
         if not user.is_active:
-            raise forms.ValidationError(self.error_messages['inactive'], code='inactive', )
+            raise forms.ValidationError(self.error_messages['inactive'], code='inactive')
 
 class TwoFactorChoicesForm(FormDescriptable):
     receiver = forms.CharField(widget=forms.HiddenInput)
