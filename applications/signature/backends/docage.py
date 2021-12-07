@@ -13,6 +13,7 @@ class SignatureBackend(SignatureBackend):
 
     api_url = {
         'entity' : 'https://api.docage.com/Contacts',
+        'entity_with_id': 'https://api.docage.com/Contacts/%s',
         'batch_delete_entity' : 'https://api.docage.com/Contacts/BatchDelete',
         'transaction' : 'https://api.docage.com/Transactions',
         'file' : 'https://api.docage.com/TransactionFiles',
@@ -36,7 +37,7 @@ class SignatureBackend(SignatureBackend):
             'Content-Type': 'application/json'
         }
 
-    def create_entity(self, instance):
+    def entity(self, instance, method=None):
         payload = {}
         to_entity = instance.contact
         if instance.contact.has_representative :
@@ -47,9 +48,18 @@ class SignatureBackend(SignatureBackend):
             if to_entity.email_pref: payload['Email'] = to_entity.email_pref
             if to_entity.phone_pref: payload['Mobile'] = to_entity.phone_pref
             payload = json.dumps(payload)
-            response = requests.post(self.api_url["entity"], auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
+            response = self.get_url_entity(instance, method, payload)
             return response
         return
+
+    def get_url_entity(self, instance, method, payload):
+        if method == "create":
+            return requests.post(self.api_url["entity"] , auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
+        elif method == "update":
+            return requests.put(self.api_url["entity_with_id"] % instance.entity_id , auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
+        elif method == "delete":
+            return requests.delete(self.api_url["entity_with_id"] % instance.entity_id , auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers={}, data={})
+        return requests.get(self.api_url["entity_with_id"] % instance.entity_id , auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers={}, data={})
 
     def create_transaction(self, instance):
         payload_dict = {
