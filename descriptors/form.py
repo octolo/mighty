@@ -5,13 +5,9 @@ class FormDescriptor:
         'DATETIME_INPUT_FORMATS': 'datetime',
         'datefield': 'date'
     }
-    request = None
-    kwargs = None
 
-    def __init__(self, form, *args, **kwargs):
-        self.request = kwargs.get("request")
-        self.kwargs = kwargs.get("kwargs")
-        self.form = form(request=self.request, kwargs=self.kwargs)
+    def __init__(self, form, request, *args, **kwargs):
+        self.form = form(request=request, *args, **kwargs)
 
     def input_type_field(self, field):
         if hasattr(field.widget, 'format_key'):

@@ -10,18 +10,21 @@ from django.db.models import Q
 from mighty.views import DetailView, FormView, BaseView, TemplateView
 from mighty.models import Twofactor
 from mighty.functions import masking_email, masking_phone, make_searchable
+from mighty.views.form import FormDescView
 from mighty.applications.user.forms import UserCreationForm
 from mighty.applications.twofactor.forms import TwoFactorSearchForm, TwoFactorChoicesForm, TwoFactorCodeForm, SignUpForm
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.twofactor import translates as _, use_twofactor
 from mighty.applications.messenger import choices
-
 from urllib.parse import quote_plus, unquote_plus, urlencode
 
 import logging
 
 logger = logging.getLogger(__name__)
 UserModel = get_user_model()
+
+class TwoFactorSearchFormDesc(FormDescView):
+    form = TwoFactorSearchForm
 
 class LoginStepSearch(LoginView):
     redirect_authenticated_user = True
@@ -58,6 +61,9 @@ class LoginStepSearch(LoginView):
     def form_valid(self, form):
         return HttpResponseRedirect(self.get_success_url())
 
+class TwoFactorChoicesFormDesc(FormDescView):
+    form = TwoFactorChoicesForm
+
 class LoginStepChoices(BaseView, LoginStepSearch):
     redirect_authenticated_user = True
     over_no_permission = True
@@ -69,6 +75,9 @@ class LoginStepChoices(BaseView, LoginStepSearch):
 
     def form_valid(self, form):
         return HttpResponseRedirect(self.get_success_url())
+
+class TwoFactorCodeFormDesc(FormDescView):
+    form = TwoFactorCodeForm
 
 class LoginStepCode(BaseView, LoginView):
     redirect_authenticated_user = True
@@ -124,29 +133,29 @@ class Register(LoginStepSearch):
         return super(FormView, self).form_valid(form)
 
 class APISendCode(TemplateView):
-    device = None
-    user = None
-    masking = None
-    
-    def get_identity(self, request):
-        return request.POST.get('identity', request.GET.get('identity', False)).lower()
+    status = 200
 
     def send_code(self, request):
-        identity = self.get_identity(request)
-        if identity:
-            missive = use_twofactor(identity)
-            if missive:
-                device = missive.mode
-                target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
-                return {'mode': device, 'target': target}
-        return {'error': 'not enable to send a code'}
+        data = {"username": request.POST.get('identity', request.GET.get('identity', False)).lower()}
+        form = TwoFactorSearchForm(data)
+        if form.is_valid():
+            missive = use_twofactor(form.data["username"])
+            device = missive.mode
+            target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
+            return {'mode': device, 'target': target}
+        self.status = 400
+        return dict(form.errors.items())
 
     def get_context_data(self, **kwargs):
         if self.request.user.is_authenticated:
             return { 'msg': 'already authenticated' }
         return self.send_code(self.request)
+        #try:
+        #except Exception as e:
+        #    return {e.code: str(e)}
 
     def render_to_response(self, context, **response_kwargs):
-        if 'error' in context:
-            return JsonResponse(context, **response_kwargs, status=400)
-        return JsonResponse(context, **response_kwargs)
+        return JsonResponse(context, **response_kwargs, status=self.status)
+
+class CreatUserFormView(FormDescView):
+    form = UserCreationForm

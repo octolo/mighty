@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 
 from mighty.apps import MightyConfig
 from mighty.models import Twofactor, Missive
-from mighty.applications.twofactor import translates as _, SpamException
+from mighty.applications.twofactor import translates as _, SpamException, CantIdentifyError
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.messenger import choices
 
@@ -91,7 +91,7 @@ class TwoFactorBackend(ModelBackend):
             pass
         except ValidationError:
             pass
-        return False
+        return CantIdentifyError()
         
 
     def get_date_protect(self, minutes):
