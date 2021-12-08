@@ -129,9 +129,9 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
 
     if conf.cgu:
-        cgu = models.BooleanField(default=False)
+        cgu = models.BooleanField(_.cgu, default=False)
     if conf.cgv:
-        cgv = models.BooleanField(default=False)
+        cgv = models.BooleanField(_.cgu, default=False)
 
     if conf.ForeignKey.optional:
         optional = models.ForeignKey(conf.ForeignKey.optional, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional_user')

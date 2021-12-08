@@ -2,8 +2,17 @@ class FormDescriptor:
     form = None
     current_field = None
     formats_input = {
-        'DATETIME_INPUT_FORMATS': 'datetime',
-        'datefield': 'date'
+        "DATETIME_INPUT_FORMATS": "datetime",
+        "datefield": "date",
+        "tel": "phone"
+    }
+    default_icon = {
+        "email": "at",
+        "datetime": "calendar",
+        "date": "calendar",
+        "password": "key",
+        "file": "file-upload",
+        "phone": "mobile-alt",
     }
 
     def __init__(self, form, request, *args, **kwargs):
@@ -30,6 +39,9 @@ class FormDescriptor:
             config["multiselect"] = field.widget.allow_multiple_selected,
         return config
 
+    def defaultIcon_field(self, field):
+        return self.default_icon.get(self.input_type_field(field), None)
+
     def as_json(self): return self.get_fields()
     def many_field(self, field): return field.many if hasattr(field, "many") else False
     def isObj_field(self, field): return field.isObj if hasattr(field, "isObj") else None
@@ -38,6 +50,7 @@ class FormDescriptor:
     def attrs_field(self, field): return getattr(field.widget, "attrs", {})
     def name_field(self, name): return self.fusion_field(name)
     def help_text_field(self, field): return field.help_text if field.help_text else field.label
+    def hasIcon_field(self, field): return field.icon if hasattr(field, "icon") else self.defaultIcon_field(field)
 
     def dependencies_field(self, name):
         return getattr(self.form, "%s_dependencies" % name) if hasattr(self.form, "%s_dependencies" % name) else None
@@ -105,7 +118,8 @@ class FormDescriptor:
             "emptyif": self.emptyif_field(name),
             "many": self.many_field(field),
             "isObj": self.isObj_field(field),
-            "isArray": self.isArray_field(field)
+            "isArray": self.isArray_field(field),
+            "icon": self.hasIcon_field(field),
         })
         return config
 
