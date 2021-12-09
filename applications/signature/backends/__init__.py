@@ -4,12 +4,13 @@ logger = logging.getLogger(__name__)
 
 class SignatureBackend:
     in_error = False
-    transaction = None
-    entity = None
     backend = None
 
-    def create_transaction(self):
+    def transaction(self):
         raise NotImplementedError()
 
-    def create_entity(self):
+    def member(self):
+        raise NotImplementedError()
+
+    def document(self):
         raise NotImplementedError()
