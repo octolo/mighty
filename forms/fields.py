@@ -1,8 +1,10 @@
 from django import forms
 
 class MightyFormField(forms.Field):
+    icon = None
+
     def __init__(self, **kwargs):
-        self.icon = kwargs.pop("icon")
+        self.icon = kwargs.pop("icon") if "icon" in kwargs else self.icon
         super().__init__(**kwargs)
 
 class BooleanField(forms.BooleanField, MightyFormField):
@@ -12,37 +14,37 @@ class CharField(forms.CharField, MightyFormField):
     pass
 
 class ChoiceField(forms.ChoiceField, MightyFormField):
-    pass
+    icon = "check-square"
 
 class TypedChoiceField(forms.TypedChoiceField, MightyFormField):
-    pass
+    icon = "check-square"
 
 class DateField(forms.DateField, MightyFormField):
-    pass
+    icon = "calendar"
 
 class DateTimeField(forms.DateTimeField, MightyFormField):
-    pass
+    icon = "calendar"
 
 class DecimalField(forms.DecimalField, MightyFormField):
     pass
 
 class DurationField(forms.DurationField, MightyFormField):
-    pass
+    icon = "hourglass-half"
 
 class EmailField(forms.EmailField, MightyFormField):
-    pass
+    icon = "at"
 
 class FileField(forms.FileField, MightyFormField):
-    pass
+    icon = "file-upload"
 
 class FilePathField(forms.FilePathField, MightyFormField):
-    pass
+    icon = "file"
 
 class FloatField(forms.FloatField, MightyFormField):
     pass
 
 class ImageField(forms.ImageField, MightyFormField):
-    pass
+    icon = "image"
 
 class IntegerField(forms.IntegerField, MightyFormField):
     pass
@@ -51,13 +53,13 @@ class JSONField(forms.JSONField, MightyFormField):
     pass
 
 class GenericIPAddressField(forms.GenericIPAddressField, MightyFormField):
-    pass
+    icon = "network-wired"
 
 class MultipleChoiceField(forms.MultipleChoiceField, MightyFormField):
     pass
 
 class TypedMultipleChoiceField(forms.TypedMultipleChoiceField, MightyFormField):
-    pass
+    icon = "check-square"
 
 class NullBooleanField(forms.NullBooleanField, MightyFormField):
     pass
@@ -66,13 +68,13 @@ class RegexField(forms.RegexField, MightyFormField):
     pass
 
 class SlugField(forms.SlugField, MightyFormField):
-    pass
+    icon = "link"
 
 class TimeField(forms.TimeField, MightyFormField):
-    pass
+    icon = "clock"
 
 class URLField(forms.URLField, MightyFormField):
-    pass
+    icon = "link"
 
 class UUIDField(forms.UUIDField, MightyFormField):
     pass

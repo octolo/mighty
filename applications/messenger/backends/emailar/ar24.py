@@ -17,6 +17,8 @@ class MissiveBackend(MissiveBackend):
         "user": "https://test.ar24.fr/api/user/",
         "confirm": "https://test.ar24.fr/api/user/request_access",
         "attachment": "https://test.ar24.fr/api/attachment/",
+        "valid": "api/id_action/valid",
+        "refuse": "api/id_action/refuse",
     }
     api_prod = {
         "email": "https://ar24.fr/api/mail",
@@ -151,7 +153,7 @@ class MissiveBackend(MissiveBackend):
         data = self.base_headers
         data.update({
             "id_user": self.user["id"], 
-            "eidas": 0,
+            "eidas": 1,
             "to_lastname": self.missive.last_name,
             "to_firstname": self.missive.first_name,
             "to_email": self.missive.target,
