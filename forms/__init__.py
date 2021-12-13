@@ -1,4 +1,6 @@
 from django import forms
+from mighty import translates as _
+from mighty.forms.fields import CharField
 
 """
 Caching query for input choices in FormSet.
@@ -129,3 +131,6 @@ class ModelFormDescriptable(forms.ModelForm):
         self.request = kwargs.pop("request") if "request" in kwargs else None
         super().__init__(*args, **{f: kwargs.get(f) for f in self.form_init(kwargs)})
         self.prepare_descriptor(*args, **kwargs)
+
+class SearchForm(FormDescriptable):
+    search = CharField(label=_.search, icon="search")

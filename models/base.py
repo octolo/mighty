@@ -68,6 +68,10 @@ class Base(models.Model):
         return type(self).objects.all().order_by('-date_create')
 
     @property
+    def logger(self):
+        return self._logger
+
+    @property
     def history(self):
         if not len(self._history):
             self._history = self.history_queryset()

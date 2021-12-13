@@ -9,7 +9,11 @@ class Config:
     subscription_for = setting('SUBSCRIPTION_FOR', 'group')
     invoice_backend = setting('INVOICE_BACKEND', 'mighty.applications.shop.backends.stripe.PaymentBackend')
     invoice_template = setting('INVOICE_TEMPLATE', 'shop/invoice.html')
-    tpl_return_url = "http://%(domain)s/%(group)s/%(bill)s/"
+    bill_return_url = "http://%(domain)s/%(group)s/%(bill)s/"
+    bill_webhook_url = "http://%(domain)s/wh/%(group)s/%(bill)s/"
+    sub_return_url = "http://%(domain)s/%(group)s/%(subscription)s/"
+    sub_webhook_url = "http://%(domain)s/wh/%(group)s/%(subscription)s/"
+
 
     class bank_card_conf:
         basic_cards = [
@@ -52,6 +56,11 @@ class Config:
 
     class sepa_conf:
         basic_sepas = [
+            {"iban": "FR1420041010050500013M02606", "status": "succeeded"},
+            {"iban": "FR3020041010050500013M02609", "status": "succeeded3"},
+            {"iban": "FR8420041010050500013M02607", "status": "requires_payment_method"},
+            {"iban": "FR7920041010050500013M02600", "status": "requires_payment_method3"},
+            {"iban": "FR5720041010050500013M02608", "status": "succeededwlit"},
             {"iban": "AT611904300234573201", "status": "succeeded", },
             {"iban": "AT321904300235473204", "status": "succeeded3", },
             {"iban": "AT861904300235473202", "status": "requires_payment_method", },

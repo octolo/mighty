@@ -15,6 +15,7 @@ offer = (
 subscription = (
     'group',
     'offer',
+    'status',
     'bill',
     'discount',
     'next_paid',
@@ -24,6 +25,7 @@ subscription = (
 )
 bill = (
     'group',
+    'status',
     'amount',
     'end_amount',
     'date_payment',

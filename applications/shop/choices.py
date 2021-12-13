@@ -52,7 +52,28 @@ PAYMETHOD = (
     (WECHAT_PAY, "WECHAT_PAY"),
 )
 
+NOTHING = "NOTHING"
 NEED_ACTON_URL = "URL"
-NEED_ACTION = (
+CHARGE = "CHARGE"
+BILL_STATUS = (
+    (NOTHING, _("Nothing")),
     (NEED_ACTON_URL, _("url")),
+    (CHARGE, _("To charge")),
+)
+
+PREPARATION = "PREPARATION"
+ERROR = "ERROR"
+NEED_ACTION = "NEED_ACTION"
+VALID = "VALID"
+READY = "READY"
+DISABLE = "DISABLE"
+EXPIRED = "EXPIRED"
+SUB_STATUS = (
+    (PREPARATION, _("Preparation")),
+    (ERROR, _("Error")),
+    (NEED_ACTION, _("Need action")),
+    (VALID, _("Valid")),
+    (READY, _("Ready")),
+    (DISABLE, _("Disable")),
+    (EXPIRED, _("Expired")),
 )

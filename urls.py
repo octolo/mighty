@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path, include
 from mighty.apps import MightyConfig as conf
-from mighty.views import Widget, Config, ConfigListView, ConfigDetailView, GenericSuccess
+from mighty.views import Widget, Config, ConfigListView, ConfigDetailView, GenericSuccess, SearchFormDesc
 
 app_name = "mighty"
 urlpatterns = [
@@ -9,12 +9,16 @@ urlpatterns = [
     path('widgets/<str:widget>/<str:id>/', Widget.as_view(), name="mighty-widget"),
 ]
 
-api_urlpatterns = [path('config/', include([
+api_urlpatterns = [
+    path('config/', include([
         path('base/', Config.as_view(), name="api-config-base"),
         path('full/', ConfigListView.as_view(), name="api-config-full"),
         path('<str:name>/', ConfigDetailView.as_view(), name="api-config-name"),
-    ])
-)]
+    ])),
+    path('form/', include([
+        path('search/', SearchFormDesc.as_view(), name="api-form-search"),
+    ]))
+]
 webhooks_urlpatterns = []
 
 # Enable app nationality
