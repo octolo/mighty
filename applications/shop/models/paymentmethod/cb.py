@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from mighty.applications.shop.apps import cards_test
+from mighty.applications.shop.apps import cards_test, ShopConfig
 import re
 
 class CBModel:
@@ -46,7 +46,10 @@ class CBModel:
 
     @property
     def is_exist_cb(self):
-        qs = type(self).objects.filter(cvc=self.cvc, cb=self.cb, date_valid=self.date_valid)
+        if ShopConfig.subscription_for == 'group':
+            qs = type(self).objects.filter(cvc=self.cvc, cb=self.cb, date_valid=self.date_valid, group=self.group)
+        else:
+            qs = type(self).objects.filter(cvc=self.cvc, cb=self.cb, date_valid=self.date_valid, user=self.user)
         if self.pk: qs = qs.exclude(pk=self.pk)
         return False if qs.exists() else True
 

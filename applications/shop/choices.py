@@ -55,10 +55,14 @@ PAYMETHOD = (
 NOTHING = "NOTHING"
 NEED_ACTON_URL = "URL"
 CHARGE = "CHARGE"
+PAID = "PAID"
+CHECK = "CHECK"
 BILL_STATUS = (
     (NOTHING, _("Nothing")),
     (NEED_ACTON_URL, _("url")),
     (CHARGE, _("To charge")),
+    (PAID, _("Paid")),
+    (CHECK, _("Check")),
 )
 
 PREPARATION = "PREPARATION"

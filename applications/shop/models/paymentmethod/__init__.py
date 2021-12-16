@@ -39,6 +39,7 @@ class PaymentMethod(Base, IbanModel, CBModel, PMValid, BackendModel):
     service_id = models.CharField(max_length=255, editable=False)
     service_detail = models.TextField(editable=False)
     default = models.BooleanField(default=False)
+    need_to_valid_backend = models.BooleanField(default=False)
 
     class Meta(Base.Meta):
         abstract = True
@@ -67,10 +68,8 @@ class PaymentMethod(Base, IbanModel, CBModel, PMValid, BackendModel):
         self.default = True
         self.save()
 
-    def clean(self):
-        self.check_validity()
-        self.valid_backend()
-
     def pre_save(self):
         self.check_validity()
+        if self.need_to_valid_backend:
+            self.valid_backend()
         self.pre_set_default()

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from mighty.applications.shop.apps import sepas_test
+from mighty.applications.shop.apps import sepas_test, ShopConfig
 from schwifty import IBAN, BIC
 from dateutil.relativedelta import relativedelta
 import re
@@ -44,7 +44,10 @@ class IbanModel:
 
     @property
     def is_exist_iban(self):
-        qs = type(self).objects.filter(iban=self.iban, bic=self.bic)
+        if ShopConfig.subscription_for == 'group':
+            qs = type(self).objects.filter(iban=self.iban, bic=self.bic, group=self.group)
+        else:
+            qs = type(self).objects.filter(iban=self.iban, bic=self.bic, user=self.user)
         if self.pk: qs = qs.exclude(pk=self.pk)
         return False if qs.exists() else True
 

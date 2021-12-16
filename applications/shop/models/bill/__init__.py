@@ -15,6 +15,7 @@ from mighty.applications.shop.models.bill.charge import ChargeModel
 class Bill(Base, PDFModel, ChargeModel):
     amount = models.FloatField(blank=True, null=True)
     end_amount = models.FloatField(blank=True, null=True)
+    date_paid = models.DateField()
     date_payment = models.DateTimeField(blank=True, null=True, editable=False)
     paid = models.BooleanField(default=False, editable=False)
     payment_id = models.CharField(max_length=255, blank=True, null=True, editable=False, unique=True)
@@ -27,6 +28,7 @@ class Bill(Base, PDFModel, ChargeModel):
     action = models.TextField(blank=True, null=True, editable=False)
     name = models.CharField(max_length=255, blank=True, null=True)
     items = models.TextField(blank=True, null=True)
+    override_price = models.FloatField(blank=True, null=True)
     
     class Meta(Base.Meta):
         abstract = True
@@ -47,15 +49,18 @@ class Bill(Base, PDFModel, ChargeModel):
         return "msbID_%s.%s" % (self.uid, self.pk)
 
     def calcul_discount(self):
-        amount = self.amount
-        amount -= sum([discount.amount for discount in self.discount.filter(is_percent=False)])
-        for discount in self.discount.filter(is_percent=True).order_by('-amount'):
-            amount -= (amount/100*discount.amount)
-        self.end_amount = round(amount, 2)
-        self.end_discount = round(self.amount-self.end_amount, 2)
+        if self.override_price:
+            self.end_amount = self.override_price
+        else:
+            amount = self.amount
+            amount -= sum([discount.amount for discount in self.discount.filter(is_percent=False)])
+            for discount in self.discount.filter(is_percent=True).order_by('-amount'):
+                amount -= (amount/100*discount.amount)
+            self.end_amount = round(amount, 2)
+            self.end_discount = round(self.amount-self.end_amount, 2)
 
     def pre_save(self):
-        if self.payment_id:
+        if self.status == _c.CHECK:
             self.check_bill_status()
 
     def pre_update(self):

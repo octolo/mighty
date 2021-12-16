@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from mighty.applications.shop.apps import ShopConfig
 from mighty.backend import Backend
+from mighty.applications.shop import choices as _c
 
 class PaymentBackend(Backend):
     backend = None
@@ -20,11 +21,11 @@ class PaymentBackend(Backend):
     # Shortcuts
     @property
     def group(self):
-        if self.bill:
-            return self.bill.group.named_id if self.bill.group else self.bill.cache[self.cache_group_field]
-        elif self.subscription:
-            return self.subscription.group.named_id if self.subscription.group else self.subscription.cache[self.cache_group_field]
-        return self.payment_method.group.named_id if self.payment_method.group else self.payment_method.cache[self.cache_group_field]
+        if self.bill and self.bill.group:
+            return self.bill.group.named_id
+        elif self.subscription and self.subscription.group:
+            return self.subscription.group.named_id
+        return self.payment_method.group.named_id
 
     @property
     def cache(self):
@@ -104,6 +105,7 @@ class PaymentBackend(Backend):
                 self.bill.date_payment = timezone.now()
             else:
                 self.on_paid_failed()
+            self.bill.status = _c.PAID
             self.bill.save()
 
     def on_paid_failed(self):

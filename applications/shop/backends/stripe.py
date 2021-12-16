@@ -39,15 +39,16 @@ class PaymentBackend(PaymentBackend):
                 "iban": self.payment_method.iban}}
 
     def add_pm(self):
+        print("okkkkk")
         self.payment_method.cache = self.add_payment_method()
         customer = self.get_or_create_customer(self.payment_method.cache)
-        self.payment_method.cache["customer"] = customer
         self.payment_method.service_id = self.payment_method.cache["id"]
+        self.payment_method.cache["customer"] = customer["id"]
         self.payment_method.save()
 
     def get_or_create_customer(self, pm):
-        if pm["customer"]:
-            return self.api.Customer.modify(pm["customer"]["id"], payment_method=pm["id"], description=self.group)
+        if "customer" in pm and pm["customer"]:
+            return self.api.Customer.retrieve(pm["customer"])
         return self.api.Customer.create(payment_method=pm["id"], description=self.group)
 
     def add_payment_method(self, force=False):
@@ -74,7 +75,15 @@ class PaymentBackend(PaymentBackend):
             "currency": "eur",
             "payment_method": self.payment_method.service_id,
             "description": self.bill.follow_id,
-            "payment_method_types": [self.pmtype]
+            "payment_method_types": [self.pmtype],
+            "customer": self.payment_method.cache["customer"],
+            "mandate_data": {
+                "customer_acceptance": {
+                    "type": "offline",
+                }
+            },
+            "confirm": True, 
+            "return_url": self.bill_return_url,
         }
 
     @property
@@ -83,19 +92,19 @@ class PaymentBackend(PaymentBackend):
 
     @property
     def payment_id(self):
-        return self.bill.cache["id"]
+        return self.bill.payment_id
 
     def to_charge(self):
         return self.create_or_retry_payment()
 
     def create_or_retry_payment(self):
-        if self.bill.payment_id:
-            charge = self.api.PaymentIntent.retrieve(self.bill.payment_id)
+        if self.payment_id:
+            charge = self.api.PaymentIntent.retrieve(self.payment_id)
             if charge.status not in ["processing", "canceled", "succeeded"]:
                 self.bill.add_cache("payment_method", self.add_payment_method(True))
                 return self.api.PaymentIntent.modify(self.payment_id, **self.data_bill)
             return charge
-        return self.api.PaymentIntent.create(**self.data_bill, confirm=True, return_url=self.bill_return_url)
+        return self.api.PaymentIntent.create(**self.data_bill)
         #invoice = self.set_charge()
         #self.bill.payment_id = invoice.id
         #self.bill.add_cache[self.backend] = invoice
@@ -115,3 +124,11 @@ class PaymentBackend(PaymentBackend):
             if need_action == "redirect_to_url":
                 self.bill.need_action = _c.NEED_ACTON_URL
                 self.bill.action = self.bill.cache["next_action"][need_action]["url"]
+
+    def collect_status(self):
+        self.bill.status = _c.NOTHING
+
+    def check_bill_status(self):
+        self.bill.cache = self.api.PaymentIntent.retrieve(self.payment_id)
+        self.collect_status()
+        self.bill.save()
