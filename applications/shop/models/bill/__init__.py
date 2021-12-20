@@ -7,7 +7,7 @@ from mighty.applications.shop.apps import ShopConfig
 from mighty.applications.shop import translates as _
 from mighty.applications.shop import choices as _c
 from mighty.applications.shop.decorators import GroupOrUser
-
+from mighty.fields import JSONField
 from mighty.applications.shop.models.bill.pdf import PDFModel
 from mighty.applications.shop.models.bill.charge import ChargeModel
 
@@ -27,11 +27,13 @@ class Bill(Base, PDFModel, ChargeModel):
     status = models.CharField(max_length=25, choices=_c.BILL_STATUS, default=_c.NOTHING)
     action = models.TextField(blank=True, null=True, editable=False)
     name = models.CharField(max_length=255, blank=True, null=True)
-    items = models.TextField(blank=True, null=True)
+    items = JSONField(default=list())
     override_price = models.FloatField(blank=True, null=True)
+    numero = models.CharField(default="001")
     
     class Meta(Base.Meta):
         abstract = True
+        unique = ShopConfig.bill_unique_together
 
     def __str__(self):
         return "%s - %s" % (self.group, self.subscription)
@@ -41,8 +43,16 @@ class Bill(Base, PDFModel, ChargeModel):
         return self.subscription.offer
 
     @property
-    def items_list(self):
-        return [item.split(":") for item in self.items.splitlines()] if self.items else []
+    def add_item(self, *args, **kwargs):
+        self.items.append({
+            "description": kwargs.get("description", None),
+            "reference": kwargs.get("reference", None),
+            "quantity": kwargs.get("quantity", None),
+            "unique_price_ht_month": kwargs.get("unique_price_ht_month", None),
+            "amount_ht_month": kwargs.get("amount_ht_month", None),
+            "tva": kwargs.get("tva", None),
+            "amount_ttc_month": kwargs.get("amount_ttc_month", None),
+        })
 
     @property
     def follow_id(self):
@@ -60,6 +70,7 @@ class Bill(Base, PDFModel, ChargeModel):
             self.end_discount = round(self.amount-self.end_amount, 2)
 
     def pre_save(self):
+        self.set_numero()
         if self.status == _c.CHECK:
             self.check_bill_status()
 

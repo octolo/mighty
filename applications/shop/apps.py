@@ -13,6 +13,7 @@ class Config:
     bill_webhook_url = "http://%(domain)s/wh/%(group)s/%(bill)s/"
     sub_return_url = "http://%(domain)s/%(group)s/%(subscription)s/"
     sub_webhook_url = "http://%(domain)s/wh/%(group)s/%(subscription)s/"
+    bill_unique_together = ("group", "date_payment", "numero")
 
 
     class bank_card_conf:

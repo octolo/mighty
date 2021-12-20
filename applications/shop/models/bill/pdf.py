@@ -8,7 +8,12 @@ class PDFModel:
 
     @property
     def bill_pdf_context(self):
-        return {"group_or_user": self.group_or_user, "offer": self.offer, "subscription": self.subscription, "bill": self.bill}
+        return {
+            "group_or_user": self.group_or_user, 
+            "offer": self.offer, 
+            "subscription": self.subscription, 
+            "bill": self.bill,
+        }
 
     @property
     def bill_pdf_name(self):
