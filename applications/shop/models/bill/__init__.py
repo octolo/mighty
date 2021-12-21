@@ -15,7 +15,7 @@ from mighty.applications.shop.models.bill.charge import ChargeModel
 class Bill(Base, PDFModel, ChargeModel):
     amount = models.FloatField(blank=True, null=True)
     end_amount = models.FloatField(blank=True, null=True)
-    date_paid = models.DateField()
+    date_paid = models.DateField(blank=True, null=True)
     date_payment = models.DateTimeField(blank=True, null=True, editable=False)
     paid = models.BooleanField(default=False, editable=False)
     payment_id = models.CharField(max_length=255, blank=True, null=True, editable=False, unique=True)
@@ -27,13 +27,13 @@ class Bill(Base, PDFModel, ChargeModel):
     status = models.CharField(max_length=25, choices=_c.BILL_STATUS, default=_c.NOTHING)
     action = models.TextField(blank=True, null=True, editable=False)
     name = models.CharField(max_length=255, blank=True, null=True)
-    items = JSONField(default=list())
+    items = JSONField(default=list)
     override_price = models.FloatField(blank=True, null=True)
-    numero = models.CharField(default="001")
+    numero = models.CharField(max_length=10, blank=True, null=True)
     
     class Meta(Base.Meta):
         abstract = True
-        unique = ShopConfig.bill_unique_together
+        unique_together = ShopConfig.bill_unique_together
 
     def __str__(self):
         return "%s - %s" % (self.group, self.subscription)
@@ -54,9 +54,23 @@ class Bill(Base, PDFModel, ChargeModel):
             "amount_ttc_month": kwargs.get("amount_ttc_month", None),
         })
 
+    def set_numero(self):
+        if not self.numero:
+            nbr = type(self).objects.filter(group=self.group).count()+1
+            if nbr > 100:
+                self.numero = "0"+str(nbr)
+            elif nbr > 10:
+                self.numero = "00"+str(nbr)
+            else:
+                self.numero = "000"+str(nbr)
+
     @property
     def follow_id(self):
         return "msbID_%s.%s" % (self.uid, self.pk)
+
+    @property
+    def bill_numero(self):
+        return "%s-%s%s" % (self.date_payment.year, self.date_payment.month, self.numero)
 
     def calcul_discount(self):
         if self.override_price:

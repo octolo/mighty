@@ -158,7 +158,13 @@ class BillAdmin(BaseAdmin):
         current_url = resolve(request.path_info).url_name
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        #obj = self.get_object(request, unquote(object_id), to_field)
+        obj = self.get_object(request, unquote(object_id), to_field)
+        pdf = obj.bill_to_pdf()
+        from django.http import HttpResponse, FileResponse
+        import os
+        response = FileResponse(open(pdf, 'rb'), filename=obj.bill_pdf_name)
+        os.remove(pdf)
+        return response
 
         #context = {
         #    **self.admin_site.each_context(request),
@@ -175,8 +181,9 @@ class BillAdmin(BaseAdmin):
         #    "extra_context": context,
         #    "template_name": "admin/shop_exports.html",
         #}
-        from mighty.applications.shop.views import ShopInvoicePDF
-        return ShopInvoicePDF.as_view()(request)
+
+        #from mighty.applications.shop.views import BillPDF
+        #return BillPDF.as_view()(request)
 
     def get_urls(self):
         urls = super().get_urls()

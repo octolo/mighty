@@ -3,6 +3,7 @@ default_app_config = "mighty.applications.nationality.apps.DocumentConfig"
 from django.core.files import File
 from django.template import Context, Template
 from django.utils.text import get_valid_filename
+from django.template.loader import get_template
 from mighty.applications.document.apps import DocumentConfig as conf
 import pdfkit, tempfile, os, shutil
 
@@ -17,14 +18,15 @@ def generate_pdf(**kwargs):
     conf_footer = kwargs.get("conf_footer", conf.pdf_footer)
     header = kwargs.get("header", False)
     footer = kwargs.get("footer", False)
-    context = Context(kwargs.get("context", {}))
+    context = kwargs.get("context", {})
     content = kwargs.get("content", False)
+    as_string = kwargs.get("as_string", False)
 
     # header
     if header:
         header = conf.pdf_header % header
         header_html = tempfile.NamedTemporaryFile(suffix=".html", delete=False)
-        header_html.write(Template(header).render(context).encode("utf-8"))
+        header_html.write(Template(header).render(Context(context)).encode("utf-8"))
         header_html.close()
         header = header_html
         options["--header-html"] = header_html.name
@@ -33,7 +35,7 @@ def generate_pdf(**kwargs):
     if footer:
         footer = conf.pdf_footer % footer
         footer_html = tempfile.NamedTemporaryFile(suffix=".html", delete=False)
-        footer_html.write(Template(footer).render(context).encode("utf-8"))
+        footer_html.write(Template(footer).render(Context(context)).encode("utf-8"))
         footer_html.close()
         footer = footer_html
         options["--footer-html"] = footer_html.name
@@ -41,7 +43,7 @@ def generate_pdf(**kwargs):
 
     if content and file_name:
         tmp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", delete=True)
-        content_html = Template(content).render(context)
+        content_html = get_template(content).render(context)
         pdf = pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)
@@ -49,8 +51,14 @@ def generate_pdf(**kwargs):
         shutil.copyfile(path_tmp, final_pdf)
 
     # a verifier
-    os.remove(footer_html.name)
-    os.remove(header_html.name)
+    if footer:
+        os.remove(footer_html.name)
+    if header:
+        os.remove(header_html.name)
+    if as_string:
+        tmp_pdf.close()
+        os.remove(final_pdf)
+        return content_html
     return final_pdf, tmp_pdf
 
 #def remove_tmpdf(files):

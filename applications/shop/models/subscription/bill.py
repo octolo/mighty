@@ -9,14 +9,14 @@ class Bill:
             group=self.group_or_user,
             subscription=self,
             method=self.method,
-            date_paid=self.next_paid,
+            date_payment=self.next_paid,
         )
         bill.discount.add(*self.discount.filter(date_end__gt=datetime.now()).order_by('-amount'))
-        bill.status = _c.CHARGE if bill.date_paid <= date.today() else _c.NOTHING
+        bill.status = _c.CHARGE if bill.date_payment <= date.today() else _c.NOTHING
         bill.save()
         self.bill = bill
         self.save()
-        return True if bill.date_paid <= date.today() else False
+        return True if bill.date_payment <= date.today() else False
 
     def prepare_bill(self):
         if not self.bill or self.bill.date_paid != self.next_paid:

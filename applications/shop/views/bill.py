@@ -11,6 +11,7 @@ class BillPDF(PDFView):
     model = Bill
     slug_field = 'object_id'
     slug_url_kwarg = 'object_id'
+    pk_url_kwarg = "object_id"
     in_browser = True
 
     def get_context_data(self, **kwargs):
