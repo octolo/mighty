@@ -1,2 +1,2 @@
-schwifty
-stripe
+schwifty==2021.10.2
+stripe==2.63.0

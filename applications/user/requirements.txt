@@ -1,2 +1,2 @@
-phonenumbers
-django-phonenumber-field
+phonenumbers==8.12.37
+django-phonenumber-field==6.0.0
