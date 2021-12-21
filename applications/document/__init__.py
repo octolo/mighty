@@ -1,5 +1,6 @@
 default_app_config = "mighty.applications.nationality.apps.DocumentConfig"
 
+from django.conf import settings
 from django.core.files import File
 from django.template import Context, Template
 from django.utils.text import get_valid_filename
@@ -21,6 +22,10 @@ def generate_pdf(**kwargs):
     context = kwargs.get("context", {})
     content = kwargs.get("content", False)
     as_string = kwargs.get("as_string", False)
+    context.update({
+        "media": os.path.abspath(settings.MEDIA_ROOT),
+        "static": os.path.abspath(settings.MEDIA_ROOT),
+    })
 
     # header
     if header:
