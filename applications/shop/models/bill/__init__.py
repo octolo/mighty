@@ -13,23 +13,35 @@ from mighty.applications.shop.models.bill.charge import ChargeModel
 
 @GroupOrUser(related_name="group_bill", on_delete=models.SET_NULL, null=True, blank=True)
 class Bill(Base, PDFModel, ChargeModel):
-    amount = models.FloatField(blank=True, null=True)
-    end_amount = models.FloatField(blank=True, null=True)
+    # Related
+    subscription = models.ForeignKey('mighty.Subscription', on_delete=models.SET_NULL, blank=True, null=True, related_name='subscription_bill', editable=False)
+    service = models.ManyToManyField('mighty.Service', blank=True, related_name='service_bill')
+    discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_bill')
+    method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_bill', editable=False)
+
+    # Date
     date_paid = models.DateField(blank=True, null=True)
     date_payment = models.DateTimeField(blank=True, null=True, editable=False)
+    
+    # Status
     paid = models.BooleanField(default=False, editable=False)
-    payment_id = models.CharField(max_length=255, blank=True, null=True, editable=False, unique=True)
-    subscription = models.ForeignKey('mighty.Subscription', on_delete=models.SET_NULL, blank=True, null=True, related_name='subscription_bill', editable=False)
-    method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_bill', editable=False)
-    discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_bill')
-    end_discount = models.FloatField(blank=True, null=True)
-    backend = models.CharField(max_length=255, blank=True, null=True, editable=False)
-    status = models.CharField(max_length=25, choices=_c.BILL_STATUS, default=_c.NOTHING)
-    action = models.TextField(blank=True, null=True, editable=False)
-    name = models.CharField(max_length=255, blank=True, null=True)
-    items = JSONField(default=list)
-    override_price = models.FloatField(blank=True, null=True)
     numero = models.CharField(max_length=10, blank=True, null=True)
+    status = models.CharField(max_length=25, choices=_c.BILL_STATUS, default=_c.NOTHING)
+
+    items = JSONField(default=list)
+
+    # Backend
+    backend = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    payment_id = models.CharField(max_length=255, blank=True, null=True, editable=False, unique=True)
+    action = models.TextField(blank=True, null=True, editable=False)
+
+    # Price
+    override_price = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
+    amount = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
+    end_discount = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
+    end_amount = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
+    tva_calc_month = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
+    total_calc_month = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
     
     class Meta(Base.Meta):
         abstract = True
@@ -53,6 +65,25 @@ class Bill(Base, PDFModel, ChargeModel):
             "tva": kwargs.get("tva", None),
             "amount_ttc_month": kwargs.get("amount_ttc_month", None),
         })
+
+
+    @property
+    def tva_month_items(self):
+        return sum([amount_ht_month for item in self.items])
+    @property
+    def tva_calc_year(self):
+        return self.tva_month_items*12
+
+    @property
+    def total_month_items(self):
+        return sum([amount_ttc_month for item in self.items])
+    @property
+    def total_calc_year(self):
+        return self.total_month_items*12
+
+    def calcul_from_items(self):
+        self.tva_calc_month = self.tva_month_items
+        self.total_calc_month = self.total_month_items
 
     def set_numero(self):
         if not self.numero:

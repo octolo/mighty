@@ -10,9 +10,9 @@ from mighty.applications.shop.apps import ShopConfig
 
 class ServiceAdmin(BaseAdmin):
     view_on_site = False
-    readonly_fields = ('code',)
-    search_fields = ('name', 'code')
-    list_display = ('name', 'code')
+    readonly_fields = ('key',)
+    search_fields = ('name', 'key')
+    list_display = ('name', 'key')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.service}),)
 
 class OfferAdmin(BaseAdmin):

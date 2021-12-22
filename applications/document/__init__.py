@@ -21,6 +21,7 @@ def generate_pdf(**kwargs):
     footer = kwargs.get("footer", False)
     context = kwargs.get("context", {})
     content = kwargs.get("content", False)
+    content_html = kwargs.get("content_html", False)
     as_string = kwargs.get("as_string", False)
     context.update({
         "media": os.path.abspath(settings.MEDIA_ROOT),
@@ -46,9 +47,12 @@ def generate_pdf(**kwargs):
         options["--footer-html"] = footer_html.name
         footer_enable = True
 
-    if content and file_name:
+    if (content or content_html) and file_name:
         tmp_pdf = tempfile.NamedTemporaryFile(suffix=".pdf", delete=True)
-        content_html = get_template(content).render(context)
+        if content_html:
+            content_html = Template(content_html).render(Context(context))
+        else:
+            content_html = get_template(content).render(context)
         pdf = pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)

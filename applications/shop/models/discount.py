@@ -7,7 +7,7 @@ from datetime import date
 
 class Discount(Base):
     code = models.CharField(max_length=50, default=generate_code_type, unique=True)
-    amount = models.FloatField()
+    amount = models.DecimalField(max_digits=9, decimal_places=2)
     is_percent = models.BooleanField(default=False)
     date_end = models.DateField(blank=True, null=True)
 

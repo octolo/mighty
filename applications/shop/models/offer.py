@@ -4,40 +4,21 @@ from django.template.defaultfilters import slugify
 from mighty.apps import MightyConfig as conf
 from mighty.models.base import Base
 from mighty.models.image import Image
-from mighty.applications.shop import generate_code_service, generate_code_offer, choices
-import re
-
-class Service(Base, Image):
-    name = models.CharField(max_length=255, unique=True)
-    code = models.CharField(max_length=50, default=generate_code_service, unique=True)
-    key = models.CharField(max_length=255, unique=True, default="")
-
-    class Meta(Base.Meta):
-        abstract = True
-        ordering = ['name']
-
-    def __str__(self):
-        return "%s(%s)" % (self.name, self.code)
-
-    def generate_key(self):
-        return re.sub("[^a-zA-Z0-9]+", "", self.name).lower()
-
-    def set_key(self):
-        self.key = self.generate_key()
-
-    def pre_save(self):
-        self.set_key()
+from mighty.applications.shop import choices
 
 class Offer(Base, Image):
-    named_id = models.CharField(max_length=255, db_index=True, null=True, editable=False)
+    # Related
+    service = models.ManyToManyField('mighty.Service', blank=True, related_name='service_offer')
+
     name = models.CharField(max_length=255)
+    named_id = models.CharField(max_length=255, db_index=True, null=True, editable=False)
+    
     frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default=choices.MONTH)
     duration = models.DurationField(blank=True, null=True, editable=False)
-    price = models.FloatField()
-    service = models.ManyToManyField('mighty.Service', blank=True, related_name='service_offer')
-    price_tenant = models.FloatField(default=0.0)
+    
+    # Price
+    price = models.DecimalField(max_digits=9, decimal_places=2)
     is_custom = models.BooleanField(default=False)
-    code = models.CharField(max_length=50, default=generate_code_offer, unique=True)
 
     class Meta(Base.Meta):
         abstract = True

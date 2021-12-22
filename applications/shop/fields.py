@@ -1,6 +1,6 @@
 service = (
     'name',
-    'code',
+    'key',
 )
 offer = (
     'named_id',
