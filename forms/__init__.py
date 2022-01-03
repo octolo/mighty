@@ -48,7 +48,6 @@ class CachingModelChoicesForm(forms.ModelForm):
                 self.fields[field_name].choices = choices
 
 class TimelineForm(forms.ModelForm):
-    value = forms.CharField(required=True)
     date_begin = forms.DateField(required=True, widget=forms.SelectDateWidget())
     date_end = forms.DateField(required=False, widget=forms.SelectDateWidget())
 
@@ -56,6 +55,7 @@ class TimelineForm(forms.ModelForm):
         self._obj = _obj
         self.fieldname = fieldname
         super().__init__(*args, **kwargs)
+        self.override_value_field()
         self.prepared_fields = {
             'object_id': _obj,
             'fmodel': _obj._meta.get_field(fieldname).__class__.__name__,
@@ -63,12 +63,20 @@ class TimelineForm(forms.ModelForm):
             'user': user.username,
         }
 
+    def override_value_field(self):
+        class ModelForm(forms.ModelForm):
+            class Meta:
+                model = type(self._obj)
+                fields = (self.fieldname,)
+        mf = ModelForm()
+        self.fields["value"] = mf.fields[self.fieldname]
+
     def clean(self):
         cleaned_data = super().clean()
         amodel = self._obj.timeline_model(**self.prepared_fields)
         amodel.date_begin = cleaned_data.get("date_begin")
         amodel.date_end = cleaned_data.get("date_end")
-        amodel.value = bytes(str(cleaned_data.get("value")), 'utf-8')
+        amodel.value = str(cleaned_data.get("value"))
         amodel.save()
 
 class SourceForm(forms.ModelForm):

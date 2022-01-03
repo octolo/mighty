@@ -6,7 +6,7 @@ from datetime import datetime
 class TimelineModel(Base):
     object_id = models.ForeignKey('', on_delete=models.CASCADE)
     field = models.CharField(_.field, max_length=255, db_index=True)
-    value = models.BinaryField(_.value)
+    value = models.TextField(_.value)
     fmodel = models.CharField(_.fmodel, max_length=255)
     date_begin = models.DateField(_.date_begin)
     date_end = models.DateField(_.date_end, null=True, blank=True)
@@ -21,15 +21,11 @@ class TimelineModel(Base):
         unique_together = ['date_begin', 'value']
 
     @property
-    def get_value(self):
-        return bytes(self.value).decode('utf-8')
-
-    @property
     def is_init(self):
         return type(self).objects.filter(object_id=self.object_id, field=self.field).first()
 
     def replace_value(self):
-        setattr(self.object_id, self.field, self.get_value)
+        setattr(self.object_id, self.field, self.value)
         self.object_id.save()
 
     def save(self, *args, **kwargs):
@@ -38,7 +34,7 @@ class TimelineModel(Base):
             init = type(self)(
                 object_id=self.object_id,
                 field=self.field,
-                value=bytes(str(getattr(self.object_id, self.field)), 'utf-8'),
+                value=str(getattr(self.object_id, self.field)),
                 date_begin=self.object_id.date_create,
                 date_end=self.date_begin
             )

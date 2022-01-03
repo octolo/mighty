@@ -60,6 +60,7 @@ class Base(models.Model):
     
     _logger = get_logger()
     _old_self = None
+    _old_fields = None
     _history = []
     _hfirst = None
     _hlast = None
@@ -105,7 +106,13 @@ class Base(models.Model):
     
     def save_old_self(self):
         if self.pk and not self._old_self:
-            self._old_self = copy.deepcopy(self)
+            if not self._old_fields:
+                self._old_self = copy.deepcopy(self)
+            else:
+                self._old_self = {
+                    field: getattr(self, field)
+                    for field in self._old_fields
+                }
 
     def reset_old_self(self):
         self.save_old_self()
@@ -229,7 +236,7 @@ class Base(models.Model):
 
     def timeline_search(self):
         if hasattr(self, self.timeline_relate()):
-            return [make_searchable(field.get_value) for field in getattr(self, self.timeline_relate()).filter(field__in=self.search_fields)]
+            return [make_searchable(field.value) for field in getattr(self, self.timeline_relate()).filter(field__in=self.search_fields)]
         return []
 
     def set_search(self):
