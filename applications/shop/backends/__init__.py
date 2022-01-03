@@ -18,7 +18,19 @@ class PaymentBackend(Backend):
         self.payment_method = kwargs.get("payment_method") if "payment_method" in kwargs else None
         self.subscription = kwargs.get("subscription") if "subscription" in kwargs else None
 
-    # Shortcuts
+    # SHORTCUTS
+    @property
+    def offer(self):
+        return self.bill.offer
+
+    @property
+    def billing_detail(self):
+        return "%s - %s" % (self.domain, self.offer)
+
+    @property
+    def form_method(self):
+        return self.payment_method.form_method
+
     @property
     def group(self):
         if self.bill and self.bill.group:
@@ -33,6 +45,7 @@ class PaymentBackend(Backend):
             return self.bill.cache[self.bill.backend]
         return None
 
+    # URLS/WEBHOOKS
     @property
     def bill_return_url(self):
         return ShopConfig.bill_return_url % {"domain": self.domain, "group": self.group, "bill": self.bill.uid}
@@ -48,18 +61,6 @@ class PaymentBackend(Backend):
     @property
     def sub_webhook_url(self):
         return ShopConfig.sub_return_url % {"domain": self.domain, "group": self.group, "subscription": self.subscription.uid}
-
-    @property
-    def offer(self):
-        return self.bill.offer
-
-    @property
-    def billing_detail(self):
-        return "%s - %s" % (self.domain, self.offer)
-
-    @property
-    def form_method(self):
-        return self.payment_method.form_method
 
     @property
     def payment_method_cache(self):
@@ -85,17 +86,6 @@ class PaymentBackend(Backend):
         raise NotImplementedError("Subclasses should implement check_pm_status(self)")
 
     # BILL
-    @property
-    def is_paid_success(self):
-        raise NotImplementedError("Subclasses should implement is_paid_success")
-
-    @property
-    def payment_id(self):
-        raise NotImplementedError("Subclasses should implement payment_id")
-
-    def check_bill_status(self):
-        raise NotImplementedError("Subclasses should implement check_bill_status(self)")
-
     def try_to_charge(self):
         if not self.bill.paid:
             self.bill.cache = self.to_charge()
@@ -107,6 +97,17 @@ class PaymentBackend(Backend):
                 self.on_paid_failed()
             self.bill.status = _c.PAID
             self.bill.save()
+
+    @property
+    def is_paid_success(self):
+        raise NotImplementedError("Subclasses should implement is_paid_success")
+
+    @property
+    def payment_id(self):
+        raise NotImplementedError("Subclasses should implement payment_id")
+
+    def check_bill_status(self):
+        raise NotImplementedError("Subclasses should implement check_bill_status(self)")
 
     def on_paid_failed(self):
         raise NotImplementedError("Subclasses should implement on_paid_failed()")

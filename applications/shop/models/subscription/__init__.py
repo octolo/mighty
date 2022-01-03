@@ -22,7 +22,6 @@ class Subscription(Base, Bill, Service, PriceDatePaid):
     is_used = models.BooleanField(default=False)
     advance = models.PositiveIntegerField(default=0)
     frequency = models.CharField(max_length=255, choices=_c.FREQUENCIES, default=_c.MONTH)
-    is_active = models.BooleanField(default=False)
     status = models.CharField(max_length=255, choices=_c.SUB_STATUS, default=_c.PREPARATION, )
 
     class Meta(Base.Meta):
@@ -52,4 +51,6 @@ class Subscription(Base, Bill, Service, PriceDatePaid):
 
     def post_create(self):
         self.set_subscription()
+
+    def post_save(self):
         self.do_bill()

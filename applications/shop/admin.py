@@ -166,25 +166,6 @@ class BillAdmin(BaseAdmin):
         os.remove(pdf)
         return response
 
-        #context = {
-        #    **self.admin_site.each_context(request),
-        #    "current_url": current_url,
-        #    "title": "%s (%s)" % (_.exports, obj) if obj else _.exports,
-        #    "object_name": str(opts.verbose_name),
-        #    "object": obj,
-        #    "opts": opts,
-        #    "app_label": opts.app_label,
-        #    "media": self.media
-        #}
-        #request.current_app = self.admin_site.name
-        #defaults = {
-        #    "extra_context": context,
-        #    "template_name": "admin/shop_exports.html",
-        #}
-
-        #from mighty.applications.shop.views import BillPDF
-        #return BillPDF.as_view()(request)
-
     def get_urls(self):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
