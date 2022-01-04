@@ -8,6 +8,12 @@ from mighty.admin.models import BaseAdmin
 from mighty.applications.shop import fields, translates as _
 from mighty.applications.shop.apps import ShopConfig
 
+class DiscountAdmin(BaseAdmin):
+    view_on_site = False
+    search_fields = ('code',)
+    list_display = ('code', 'amount', 'is_percent', 'date_end')
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.discount}),)
+
 class ServiceAdmin(BaseAdmin):
     view_on_site = False
     readonly_fields = ('key',)
@@ -22,6 +28,12 @@ class OfferAdmin(BaseAdmin):
     list_display = ('name', 'frequency', 'duration')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.offer}),)
     filter_horizontal = ('service',)
+
+class ItemAdmin(BaseAdmin):
+    view_on_site = False
+    search_fields = ('code',)
+    list_display = ('code', 'amount', 'is_percent', 'date_end')
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.discount}),)
 
 class SubscriptionAdmin(BaseAdmin):
     change_list_template = "admin/change_list_subscription.html"
@@ -174,12 +186,6 @@ class BillAdmin(BaseAdmin):
             path('<path:object_id>/trytocharge/', self.wrap(self.trytocharge_view), name='%s_%s_trytocharge_bill' % info),
         ]
         return my_urls + urls
-
-class DiscountAdmin(BaseAdmin):
-    view_on_site = False
-    search_fields = ('code',)
-    list_display = ('code', 'amount', 'is_percent', 'date_end')
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.discount}),)
 
 class PaymentMethodAdmin(BaseAdmin):
     view_on_site = False

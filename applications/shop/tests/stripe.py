@@ -25,7 +25,7 @@ class StripeTestCase(TestCase):
             return get_user_model().objects.first()
 
     def create_offer(self):
-        self.offer = Offer(name="Month 9.90€", price=9.99, price_tenant=1.99)
+        self.offer = Offer(name="Month 9.90€", price=999, price_tenant=199)
         self.offer.save()
 
     def create_subscription(self):

@@ -1,7 +1,7 @@
 from django.db import models
 from mighty.models.base import Base
 
-class RealPrice:
+class RealPrice(Base):
     price = models.PositiveIntegerField(default=0)
     number = models.PositiveIntegerField(default=1)
     tax = models.PositiveIntegerField(blank=True, null=True)

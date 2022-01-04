@@ -5,9 +5,9 @@ from mighty.models.base import Base
 from mighty.applications.shop import choices as _c
 from mighty.applications.shop.decorators import GroupOrUser
 
-from mighty.applications.shop.models.items.subscription.bill import Bill
-from mighty.applications.shop.models.items.subscription.service import Service
-from mighty.applications.shop.models.items.subscription.pricedatepaid import PriceDatePaid
+from mighty.applications.shop.models.subscription.bill import Bill
+from mighty.applications.shop.models.subscription.service import Service
+from mighty.applications.shop.models.subscription.pricedatepaid import PriceDatePaid
 
 @GroupOrUser(related_name="group_subscription", on_delete=models.SET_NULL, null=True, blank=True)
 class Subscription(Base, Bill, Service, PriceDatePaid):
@@ -51,6 +51,4 @@ class Subscription(Base, Bill, Service, PriceDatePaid):
 
     def post_create(self):
         self.set_subscription()
-
-    def post_save(self):
         self.do_bill()

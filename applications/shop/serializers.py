@@ -22,7 +22,7 @@ class OfferSerializer(ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = ('uid', 'name', 'frequency', 'duration', 'price', 'price_tenant', 'named_id', 'service')
+        fields = ('uid', 'name', 'frequency', 'duration', 'price', 'named_id', 'service')
 
 class SubscriptionSerializer(ModelSerializer):
     offer = OfferSerializer()

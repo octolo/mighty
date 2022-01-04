@@ -13,6 +13,7 @@ class Offer(RealPrice, Image):
     frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default=choices.MONTH)
     duration = models.DurationField(blank=True, null=True, editable=False)
     is_custom = models.BooleanField(default=False)
+    price_tenant = models.PositiveIntegerField(default=0)
 
     class Meta(RealPrice.Meta):
         abstract = True
@@ -20,6 +21,10 @@ class Offer(RealPrice, Image):
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.get_frequency_display())
+
+    @property
+    def real_price_tenant(self):
+        return self.price_tenant/100
 
     def set_named_id(self):
         self.named_id = conf.named_tpl % {"named": slugify(self.name), "id": self.id}

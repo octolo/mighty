@@ -1,8 +1,24 @@
+discount = (
+    "code",
+    "amount",
+    "is_percent",
+    "date_end",
+)
+
 service = (
     "name",
     "key",
     "price",
-    "has_counter",
+    "tax",
+    "number",
+)
+
+item = (
+    "name",
+    "key",
+    "price",
+    "tax",
+    "number",
 )
 
 offer = (
@@ -11,8 +27,10 @@ offer = (
     "named_id",
     "frequency",
     "duration",
-    "price",
     "is_custom",
+    "price",
+    "tax",
+    "number",
 )
 
 
@@ -53,13 +71,6 @@ bill = (
     "end_amount",
     "tva_calc_month",
     "total_calc_month",
-)
-
-discount = (
-    "code",
-    "amount",
-    "is_percent",
-    "date_end",
 )
 
 payment_method = (
