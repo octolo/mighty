@@ -122,6 +122,12 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     if user_conf.protect_trashmail:
         class Trashmail(models_user.Trashmail): pass
 
+# Data protect
+if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:
+    from mighty.applications.dataprotect import models as models_dataprotect
+    class ServiceData(models_dataprotect.ServiceData): pass
+    class UserDataProtect(models_dataprotect.UserDataProtect): pass
+
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     from mighty.applications.twofactor.models import Twofactor
