@@ -6,7 +6,7 @@ from mighty.models import ServiceData, UserDataProtect
 class ServiceDataAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.servicedata}),)
-    list_display = ('name', 'level')
+    list_display = ('name', 'category')
 
 class UserDataProtectAdmin(BaseAdmin):
     view_on_site = False

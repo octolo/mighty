@@ -7,8 +7,8 @@ from mighty.applications.dataprotect import choices as _c
 
 class ServiceData(Base):
     name = models.CharField(max_length=255)
-    category = models.CharField(max_length="10", choices=_c.CATEGORY, default=_c.STRICTLY)
-    code = models.CharField(max_length=255, blank=True, null=True)
+    category = models.CharField(max_length=15, choices=_c.CATEGORY, default=_c.STRICTLY)
+    code = models.CharField(max_length=255, blank=True, null=True, unique=True)
 
     class Meta(Base.Meta):
         abstract = True
@@ -24,8 +24,16 @@ class ServiceData(Base):
     def pre_save(self):
         self.set_code()
 
+    def as_json(self):
+        return {
+            "name": self.name,
+            "category": self.category,
+            "code": self.code,
+        }
+
 class UserDataProtect(Base):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    session_id = models.TextField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
     accept = models.ManyToManyField("mighty.ServiceData", blank=True, related_name="accept_service_data")
     refuse = models.ManyToManyField("mighty.ServiceData", blank=True, related_name="refuse_service_data")
 

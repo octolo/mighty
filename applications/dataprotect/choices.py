@@ -19,9 +19,9 @@ TARGETING_DESC = _("These cookies may be set through our site by our advertising
 SOCIAL_DESC = _("These cookies are set by a range of social media services that we have added to the site to enable you to share our content with your friends and networks. They are capable of tracking your browser across other sites and building up a profile of your interests. This may impact the content and messages you see on other websites you visit. If you do not allow these cookies you may not be able to use or see these sharing tools.")
 
 CATEGORY = (
-    (STRICTLY, STRICTLY_LABEL)
-    (PERFORMANCE, PERFORMANCE_LABEL)
-    (FUNCTIONAL, FUNCTIONAL_LABEL)
-    (TARGETING, TARGETING_LABEL)
-    (SOCIAL, SOCIAL_LABEL)
+    (STRICTLY, STRICTLY_LABEL),
+    (PERFORMANCE, PERFORMANCE_LABEL),
+    (FUNCTIONAL, FUNCTIONAL_LABEL),
+    (TARGETING, TARGETING_LABEL),
+    (SOCIAL, SOCIAL_LABEL),
 )

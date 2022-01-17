@@ -123,14 +123,15 @@ Make a file with the sql result in json
 [conf] dict() contain the config to override
 """
 def over_config(clas, conf):
-    settable = stdtypes['mapping']+stdtypes['numeric']+stdtypes['text']+stdtypes['sequential']
-    for key, val in conf.items():
-        if hasattr(clas, key) and type(getattr(clas, key)) in settable:
-            if type(getattr(clas, key)) in stdtypes['mapping']:
-                getattr(clas, key).update(val)
+    if conf:
+        settable = stdtypes['mapping']+stdtypes['numeric']+stdtypes['text']+stdtypes['sequential']
+        for key, val in conf.items():
+            if hasattr(clas, key) and type(getattr(clas, key)) in settable:
+                if type(getattr(clas, key)) in stdtypes['mapping']:
+                    getattr(clas, key).update(val)
+                else:
+                    setattr(clas, key, val)
+            elif type(getattr(clas, key)) == type:
+                over_config(getattr(clas, key), val)
             else:
                 setattr(clas, key, val)
-        elif type(getattr(clas, key)) == type:
-            over_config(getattr(clas, key), val)
-        else:
-            setattr(clas, key, val)
