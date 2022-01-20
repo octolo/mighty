@@ -11,4 +11,4 @@ class ServiceDataAdmin(BaseAdmin):
 class UserDataProtectAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.userdataprotect}),)
-    list_display = ('user', 'nbr_accept', 'nbr_refuse')
+    list_display = ('session_id', 'user')
