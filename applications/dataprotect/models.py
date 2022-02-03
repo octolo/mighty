@@ -10,7 +10,7 @@ class ServiceData(Base):
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=15, choices=_c.CATEGORY, default=_c.STRICTLY)
     code = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    desc = models.CharField(max_length=255, blank=True, null=True)
+    desc = models.TextField(blank=True, null=True)
     keywords = models.CharField(max_length=255, blank=True, null=True)
     prefix = models.CharField(max_length=255, blank=True, null=True)
 
