@@ -11,39 +11,21 @@ class SignatureBackend(SignatureBackend):
     APIKEY = setting('DOCAGE_KEY', '86002628-1a83-434c-ba1e-72731a8b5318')
     APIUSER = setting('DOCAGE_USER', 'louis@easyshares.io')
 
-    transaction_status_dict= {
-        "ALL" : -100,
-        "DRAFT" : 0,
-        "SCHEDULED" : 1,
-        "FORMTOFILL" : 2,
-        "ACTIVE" : 3,
-        "VALIDATED" : 4,
-        "SIGNED" : 5,
-        "EXPIRED" : 6,
-        "REFUSED" : 7,
-        "ABORTED" : 8,
-    }
-
-    member_status_dict= {
-        "FORMTOFILL" : 0,
-        "PENDING" : 1,
-        "PROCESSING" : 2,
-        "VALIDATED" : 3,
-        "SIGNED" : 4,
-        "REFUSED" : 5,
-    }
 
     api_url = {
         'entity' : 'https://api.docage.com/Contacts',
         'entity_with_id': 'https://api.docage.com/Contacts/%s',
         'batch_delete_entity' : 'https://api.docage.com/Contacts/BatchDelete',
         'transaction' : 'https://api.docage.com/Transactions',
+        'stop_transaction' : 'https://api.docage.com/Transactions/Abort/%s',
+        'launch' : 'https://api.docage.com/Transactions/LaunchTransaction/%s',
         'document' : 'https://api.docage.com/TransactionFiles',
         'batch_delete_document' : 'https://api.docage.com/TransactionFiles/BatchDelete',
         'member' : 'https://api.docage.com/TransactionMembers',
         'batch_delete_member' : 'https://api.docage.com/TransactionMembers/BatchDelete',
         'location' : 'https://api.docage.com/SignatureLocations',
-        'launch' : 'https://api.docage.com/Transactions/LaunchTransaction/%s'
+        'webhook' : 'https://api.docage.com/Webhooks',
+        'webhook_endpoint' : 'https://webhook.site/96929467-6c3c-4cdf-910f-33d4f4a467f7',
     }
 
     docage_dict = {
@@ -60,12 +42,6 @@ class SignatureBackend(SignatureBackend):
         return {
             'Content-Type': 'application/json'
         }
-
-    # def parse_response(response):
-    #     status = _c.STATUS_CREATED
-    #     id = json.loads(response.content)
-    #     code = response.status_code
-    #     return status, id, code
 
     def entity(self, instance, method=None):
         payload = {}
@@ -98,6 +74,13 @@ class SignatureBackend(SignatureBackend):
         if instance.transaction_name: payload_dict['Name'] = instance.transaction_name
         payload = json.dumps(payload_dict)
         response = requests.post(self.api_url["transaction"], auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
+        return response
+    
+    def annul_transaction(self, instance):
+        url = self.api_url["stop_transaction"] % instance.transaction_id
+        payload={}
+        headers = {}
+        response = requests.get(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=headers, data=payload)
         return response
 
     def document(self, instance):
@@ -156,5 +139,20 @@ class SignatureBackend(SignatureBackend):
 
     def launch_transaction(self, instance):
         url = self.api_url["launch"] % instance.transaction_id
-        response = requests.post(url, headers=self.api_headers)
+        response = requests.post(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data={})
+        return response
+
+    def create_webhook(self):
+        url = self.api_url["webhook"]
+
+        payload = json.dumps({
+            "Url": self.api_url["webhook_endpoint"],
+            "Name": "Transactions modifiées",
+            "Description": "Modification des transactions",
+            "EntityTypeName": "Transaction",
+            "Action": "3",
+            "TransactionStatusTarget": "-100"
+        })
+
+        response = requests.post(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
         return response
