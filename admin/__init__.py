@@ -110,6 +110,14 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
         @admin.register(all_models.Trashmail)
         class TrashmailAdmin(admin_user.TrashmailAdmin): pass
 
+# Data protect
+if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:
+    from mighty.applications.dataprotect import admin as admin_dataprotect
+    @admin.register(all_models.ServiceData)
+    class ServiceDataAdmin(admin_dataprotect.ServiceDataAdmin): pass
+    @admin.register(all_models.UserDataProtect)
+    class UserDataProtectAdmin(admin_dataprotect.UserDataProtectAdmin): pass
+
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     from mighty.applications.twofactor import admin as admin_twofactor

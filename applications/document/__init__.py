@@ -1,4 +1,4 @@
-default_app_config = "mighty.applications.nationality.apps.DocumentConfig"
+default_app_config = "mighty.applications.document.apps.DocumentConfig"
 
 from django.conf import settings
 from django.core.files import File

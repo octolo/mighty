@@ -1,6 +1,6 @@
 from django.apps import AppConfig
-from django.conf import settings
 from mighty import over_config
+from mighty.functions import setting
 
 class Config:
     #user_or_inivitation_lct = {'app_label': 'mighty', 'model__in': ['user', 'userorinvitation']}
@@ -18,7 +18,7 @@ class Config:
         email = 'mighty.UserEmail'
         phone = 'mighty.UserPhone'
         address = 'mighty.UserAddress'
-        user = settings.AUTH_USER_MODEL
+        user = setting("AUTH_USER_MODEL")
         optional = False
         optional2 = False
         optional3 = False
@@ -31,7 +31,7 @@ class Config:
         optional = ('phone',)
         style = ['light',]
 
-if hasattr(settings, 'USER'): over_config(Config, settings.USER)
+over_config(Config, setting("USER"))
 class UserConfig(AppConfig, Config):
     name = 'mighty.applications.user'
 

@@ -1,7 +1,6 @@
 from django.apps import AppConfig
-from django.conf import settings
 from mighty import over_config
-
+from mighty.functions import setting
 class Config:
     pdf_options = {
         'encoding': 'UTF-8',
@@ -84,6 +83,6 @@ class Config:
 <body><br><br>%s</body>
 </html>"""
 
-if hasattr(settings, 'DOCUMENT'): over_config(Config, getattr(settings, 'MESSENGER'))
+over_config(Config, setting('DOCUMENT'))
 class DocumentConfig(AppConfig, Config):
     name = 'mighty.applications.document'

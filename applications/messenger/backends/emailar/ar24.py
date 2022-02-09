@@ -203,7 +203,6 @@ class MissiveBackend(MissiveBackend):
         self.email_attachments()
         response = requests.post(self.api_url["email"], headers=self.api_headers, data=self.data_ar())
         response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
-        print(response)
         if not self.in_error:
             response = json.loads(response)["result"]
             self.missive.msg_id = response["id"]

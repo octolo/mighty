@@ -45,6 +45,10 @@ class Config:
             'Twofactor',
             'Trashmail'
         ],
+        'dataprotect': [
+            'ServiceData',
+            'UserDataProtect',
+        ],
         'Configuration': [
             'ConfigSimple',
             'ConfigClient',
