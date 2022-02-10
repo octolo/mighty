@@ -128,10 +128,12 @@ class SignatureBackend(SignatureBackend):
         return response
 
     def signature_location(self, instance):
+        coordinates = instance.coordinates.split(',')
+        del coordinates[1]
         payload = json.dumps({
             "TransactionMemberId": instance.member.transaction_member_id,
             "TransactionFileId": instance.document.transaction_document_id,
-            "Coordinates": instance.coordinates,
+            "Coordinates": ','.join(coordinates),
             "Pages": instance.page
         })
         response = requests.post(self.api_url["location"], auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
