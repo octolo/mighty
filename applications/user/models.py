@@ -127,6 +127,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     gender = models.CharField(_.gender, max_length=1, choices=choices.GENDER, blank=True, null=True)
     style = models.CharField(max_length=255, default="clear")
     channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
+    first_connection = models.DateTimeField(blank=True, null=True)
 
     if conf.cgu:
         cgu = models.BooleanField(_.cgu, default=False)
@@ -216,6 +217,10 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         elif self.username: return self.username
         return self.uid
 
+    @property
+    def is_first_login(self):
+        return (self.first_connection == self.last_login)
+
     def __str__(self):
         if self.last_name and self.first_name:
             return self.fullname
@@ -288,12 +293,14 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         #self.check_phone()
         super().clean()
     
-    def save(self, *args, **kwargs):
+    def pre_save(self):
+        if not self.first_connection: self.first_connection = self.last_login
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: self.username = self.username.lower()
         else: self.username = self.gen_username()
         #self.check_phone()
-        super(User, self).save(*args, **kwargs)
+
+    def post_save(self, *args, **kwargs):
         self.in_emails()
         self.in_phones()
 
