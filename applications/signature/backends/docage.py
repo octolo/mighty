@@ -148,7 +148,7 @@ class SignatureBackend(SignatureBackend):
         url = self.api_url["webhook"]
 
         payload = json.dumps({
-            "Url": self.api_url["webhook_endpoint"],
+            "Url": self.api_url["webhook_endpoint"], #self.webhook_transaction_url
             "Name": "Transactions modifiées",
             "Description": "Modification des transactions",
             "EntityTypeName": "Transaction",
