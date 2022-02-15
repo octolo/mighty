@@ -13,6 +13,10 @@ class TenantRolePermission(MightyPermission, TenantAccess):
     check_destroy = base_permission
     check_others = base_permission
 
+    @property
+    def tenants(self):
+        return self.user.user_tenant.all()
+
     # Tenant test
     def is_tenant(self, group, pk=None):
         if pk: return self.user.user_tenant.filter(**{"group__"+pk: group}).exists()
