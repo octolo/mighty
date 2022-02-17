@@ -19,6 +19,7 @@ document = (
     "status",
     "location",
     "to_sign",
+    "nb_signatories",
 )
 
 document_sz = (
@@ -27,6 +28,9 @@ document_sz = (
     "status",
     "location",
     "to_sign",
+    "nb_signatories",
+    "name",
+    "document_sign",
 )
 
 signatory = (

@@ -16,3 +16,19 @@ class TransactionAdmin(BaseAdmin):
     list_display = ('name',)
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.transaction}),)
     readonly_fields = ()
+
+class TransactionDocumentAdmin(BaseAdmin):
+    raw_id_fields = ('transaction',)
+    view_on_site = False
+    search_fields = ('search',)
+    list_display = ('__str__',)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.document}),)
+    readonly_fields = ()
+
+class TransactionSignatoryAdmin(BaseAdmin):
+    raw_id_fields = ('transaction', 'signatory')
+    view_on_site = False
+    search_fields = ('search',)
+    list_display = ('__str__',)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.signatory}),)
+    readonly_fields = ()

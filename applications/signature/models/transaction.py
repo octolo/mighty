@@ -1,4 +1,6 @@
 from django.db import models
+from django.urls import reverse
+
 from mighty.models.base import Base
 from mighty.applications.signature import choices as _c
 
@@ -18,3 +20,12 @@ class Transaction(Base):
     @property
     def signatory_model(self):
         return type(self.transaction_to_signatory.model())
+
+    @property
+    def webhook_url(self):
+        return reverse("wbh-signature-transaction", self.transaction.uid)
+
+    #def start_transaction(self):
+    #    backend = get_backend()
+    #    backend = backend(transaction=self)
+    #    backend.start_transaction()

@@ -16,11 +16,13 @@ class TransactionSignatory(Base):
     status = models.CharField(max_length=20, choices=_c.STATUS_SIGNATORY, default=_c.PREPARATION)
     role = models.CharField(max_length=20, choices=_c.ROLE_SIGNATORY, default=_c.OBSERVER)
     mode = models.CharField(max_length=20, choices=_c.MODE_SIGNATORY, default=_c.EMAIL)
-    location = JSONField(blank=True, null=True)
     color = ColorField(format="hexa", default=generate_random_color)
 
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return "%s(%s)" % (str(self.signatory), str(self.transaction))
 
     class Meta:
         abstract = True
@@ -28,41 +30,19 @@ class TransactionSignatory(Base):
     def pre_save(self):
         if not self.email: self.email = self.signatory_email
         if not self.phone: self.phone = self.signatory_phone
+    
+    def post_save(self):
+        self.update_documents()
+
+    def update_documents(self):
+        if self.property_change("role"):
+            for doc in self.transaction.transaction_to_document.filter(to_sign=True):
+                doc.save()
 
     def add_signatory_id_to_cache(self):
         self.signatory.add_cache(self.transation.backend, {"id": self.signatory_id})
 
-    def set_height(self, height):
-        self.location["height"] = height
-    def set_width(self, width):
-        self.location["width"] = width
-    def set_coordx(self, x):
-        self.location["x"] = x
-    def set_coordy(self, y):
-        self.location["y"] = y
-
-    def get_height(self):
-        return self.location.get("height")
-    def get_width(self):
-        return self.location.get("width")
-    def get_coordx(self):
-        return self.location.get("x")
-    def get_coordy(self):
-        return self.location.get("y")
-
-    @property
-    def height(self):
-        return self.get_height()
-    @property
-    def width(self):
-        return self.get_width()
-    @property
-    def coordx(self):
-        return self.get_coordx()
-    @property
-    def coordy(self):
-        return self.get_coordy()
-    @property
+     @property
     def follow_model(self):
         from mighty.functions import get_model
         label, model = conf.signatory_relation.split(".")
@@ -72,6 +52,10 @@ class TransactionSignatory(Base):
         if hasattr(self.signatory, attr):
             return getattr(self.signatory, attr)
         raise NotImplementedError("Signatory need attribute : %s" % attr)
+
+    @property
+    def locations(self):
+        return self.signatory_to_location.all()
         
 
     # SIGNATORY NEEDS
