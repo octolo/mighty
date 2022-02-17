@@ -56,3 +56,12 @@ ROLE_SIGNATORY = (
     (VALIDATOR, VALIDATOR_TR),
     (SIGNATORY, SIGNATORY_TR),
 )
+
+EMAIL = "BY_EMAIL"
+SMS = "BY_SMS"
+EMAIL_TR = _("Code envoyé par email")
+SMS_TR = _("Code envoyé par sms")
+MODE_SIGNATORY = (
+    (EMAIL, EMAIL_TR),
+    (SMS, SMS_TR),
+)

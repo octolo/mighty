@@ -6,6 +6,7 @@ transaction = (
 )
 
 transaction_sz = (
+    "uid",
     "name",
     "status",
 )
@@ -21,6 +22,7 @@ document = (
 )
 
 document_sz = (
+    "uid",
     "transaction",
     "status",
     "location",
@@ -28,20 +30,31 @@ document_sz = (
 )
 
 signatory = (
+    "email",
+    "phone",
     "transaction",
     "signatory",
     "backend_id",
     "status",
     "role",
+    "mode",
     "location",
     "color",
 )
 
 signatory_sz = (
+    "uid",
+    "email",
+    "phone",
+    "fullname",
+    "picture",
     "transaction",
     "signatory",
     "status",
     "role",
+    "mode",
     "location",
     "color",
+    "has_email",
+    "has_phone",
 )

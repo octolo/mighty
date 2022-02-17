@@ -15,7 +15,7 @@ class TransactionDocument(Base):
     status = models.CharField(max_length=20, choices=_c.STATUS_DOCUMENT, default=_c.PREPARATION)
     location = JSONField(blank=True, null=True)
     to_sign = models.BooleanField(default=True)
-    object_signed_id = models.PositiveIntegerField()
+    object_signed_id = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:
         abstract = True
