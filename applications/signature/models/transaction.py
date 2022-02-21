@@ -22,6 +22,10 @@ class Transaction(Base):
         return type(self.transaction_to_signatory.model())
 
     @property
+    def location_model(self):
+        return type(self.transaction_to_location.model())
+
+    @property
     def webhook_url(self):
         return reverse("wbh-signature-transaction", self.transaction.uid)
 

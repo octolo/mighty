@@ -10,6 +10,10 @@ class TransactionSignatoryInline(admin.StackedInline):
     fields = fields.signatory
     extra = 0
 
+class TransactionLocationInline(admin.StackedInline):
+    fields = fields.location
+    extra = 0
+
 class TransactionAdmin(BaseAdmin):
     view_on_site = False
     search_fields = ('name', 'search')
@@ -31,4 +35,12 @@ class TransactionSignatoryAdmin(BaseAdmin):
     search_fields = ('search',)
     list_display = ('__str__',)
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.signatory}),)
+    readonly_fields = ()
+
+class TransactionLocationAdmin(BaseAdmin):
+    raw_id_fields = ('transaction', 'signatory', 'document')
+    view_on_site = False
+    search_fields = ('search',)
+    list_display = ('__str__',)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.location}),)
     readonly_fields = ()

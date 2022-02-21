@@ -1,10 +1,11 @@
 from django.conf import settings
-from rest_framework.serializers import ModelSerializer, SlugRelatedField
+from rest_framework.serializers import ModelSerializer, SlugRelatedField, SerializerMethodField
 from mighty.applications.signature import get_transaction_model, fields
 from mighty.applications.signature.apps import SignatureConfig as conf
 
 TransactionModel = get_transaction_model()
 DocumentModel = TransactionModel().document_model
+LocationModel = TransactionModel().location_model
 SignatoryModel = TransactionModel().signatory_model
 SignatoryFollow = SignatoryModel().follow_model
 
@@ -24,6 +25,15 @@ class TransactionDocumentSerializer(ModelSerializer):
     class Meta:
         model = DocumentModel
         fields = fields.document_sz
+
+class TransactionLocationSerializer(ModelSerializer):
+    transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all())
+    signatory = SlugRelatedField(slug_field="uid", queryset=SignatoryFollow.objects.all())
+    document = SlugRelatedField(slug_field="uid", queryset=DocumentModel.objects.all())
+
+    class Meta:
+        model = LocationModel
+        fields = fields.location_sz
 
 class TransactionSignatorySerializer(ModelSerializer):
     transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all(), required=False)

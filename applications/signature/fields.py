@@ -17,18 +17,18 @@ document = (
     "object_id",
     "backend_id",
     "status",
-    "location",
     "to_sign",
     "nb_signatories",
+    "nb_locations",
 )
 
 document_sz = (
     "uid",
     "transaction",
     "status",
-    "location",
     "to_sign",
     "nb_signatories",
+    "nb_locations",
     "name",
     "document_sign",
 )
@@ -42,7 +42,6 @@ signatory = (
     "status",
     "role",
     "mode",
-    "location",
     "color",
 )
 
@@ -57,8 +56,31 @@ signatory_sz = (
     "status",
     "role",
     "mode",
-    "location",
     "color",
     "has_email",
     "has_phone",
+)
+
+location = (
+    "transaction",
+    "signatory",
+    "document",
+    "backend_id",
+    "x",
+    "y",
+    "width",
+    "height",
+    "page",
+)
+
+location_sz = (
+    "uid",
+    "transaction",
+    "signatory",
+    "document",
+    "x",
+    "y",
+    "width",
+    "height",
+    "page",
 )

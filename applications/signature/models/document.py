@@ -16,6 +16,7 @@ class TransactionDocument(Base):
     to_sign = models.BooleanField(default=True)
     object_signed_id = models.PositiveIntegerField(blank=True, null=True)
     nb_signatories = models.PositiveIntegerField(default=0)
+    nb_locations = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return "%s(%s)" % (str(self.content_object), str(self.transaction))
@@ -25,11 +26,13 @@ class TransactionDocument(Base):
 
     def pre_save(self):
         self.set_nb_signatories()
-
+        self.set_nb_locations()
 
     def set_nb_signatories(self):
         self.nb_signatories = self.transaction.transaction_to_signatory.filter(role=_c.SIGNATORY).count()
 
+    def set_nb_locations(self):
+        self.nb_locations = self.document_to_location.count()
 
     @property
     def is_document(self):

@@ -42,7 +42,7 @@ class TransactionSignatory(Base):
     def add_signatory_id_to_cache(self):
         self.signatory.add_cache(self.transation.backend, {"id": self.signatory_id})
 
-     @property
+    @property
     def follow_model(self):
         from mighty.functions import get_model
         label, model = conf.signatory_relation.split(".")
