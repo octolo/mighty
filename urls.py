@@ -25,6 +25,8 @@ webhooks_urlpatterns = []
 if "mighty.applications.nationality" in settings.INSTALLED_APPS:
     from mighty.applications.nationality import urls as urls_nationality
     api_urlpatterns += urls_nationality.urlpatterns
+    if hasattr(urls_nationality, 'api_urlpatterns'):
+        api_urlpatterns += urls_nationality.api_urlpatterns
 
 # Enable app user
 if "mighty.applications.user" in settings.INSTALLED_APPS:

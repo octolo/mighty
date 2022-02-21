@@ -162,7 +162,7 @@ if [ ! -z ${VUE+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $VUE == 1 ]]; then 
         VUE_CMD="npm" 
     fi
-    export NODE_OPTIONS=--openssl-legacy-provider
+    #export NODE_OPTIONS=--openssl-legacy-provider
     prep_term "${VUE_CMD} run serve --prefix ${VUETPL}" "vuejs"
 fi
 
