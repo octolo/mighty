@@ -84,3 +84,6 @@ class TransactionSignatory(Base):
     @property
     def has_email(self): 
         return True if self.email else False
+    @property
+    def has_contact(self):
+        return True if (self.has_email or self.has_phone) else False

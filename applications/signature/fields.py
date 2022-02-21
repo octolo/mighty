@@ -9,6 +9,10 @@ transaction_sz = (
     "uid",
     "name",
     "status",
+    "has_signatory",
+    "has_documents_to_sign",
+    "has_contacts",
+    "has_documents"
 )
 
 document = (

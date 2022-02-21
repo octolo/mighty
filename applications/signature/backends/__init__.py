@@ -15,3 +15,6 @@ class SignatureBackend:
 
     def document(self):
         raise NotImplementedError()
+
+    def launch_transaction(self, instance):
+        raise NotImplementedError()

@@ -1,6 +1,8 @@
 from mighty.applications.signature.backends import SignatureBackend
 from mighty.functions import setting
 
+from django.db import router, transaction
+
 import os, requests, json
 from requests.auth import HTTPBasicAuth
 import logging
@@ -10,7 +12,6 @@ logger = logging.getLogger(__name__)
 class SignatureBackend(SignatureBackend):
     APIKEY = setting('DOCAGE_KEY', '86002628-1a83-434c-ba1e-72731a8b5318')
     APIUSER = setting('DOCAGE_USER', 'louis@easyshares.io')
-
 
     api_url = {
         'entity' : 'https://api.docage.com/Contacts',
@@ -139,10 +140,14 @@ class SignatureBackend(SignatureBackend):
         response = requests.post(self.api_url["location"], auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
         return response
 
-    def launch_transaction(self, instance):
-        url = self.api_url["launch"] % instance.transaction_id
-        response = requests.post(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data={})
-        return response
+    def launch_transaction(self, instance, data):
+        print(instance)
+        print(data)
+        # self.prepare_launch()
+        # url = self.api_url["launch"] % instance.transaction_id
+        # response = requests.post(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data={})
+        # return response
+        return
 
     def create_webhook(self):
         url = self.api_url["webhook"]

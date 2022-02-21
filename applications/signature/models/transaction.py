@@ -33,3 +33,20 @@ class Transaction(Base):
     #    backend = get_backend()
     #    backend = backend(transaction=self)
     #    backend.start_transaction()
+
+    @property
+    def has_documents(self):
+        return self.transaction_to_document.exists()
+
+    @property
+    def has_signatory(self):
+        print(self.transaction_to_signatory.filter(role=_c.SIGNATORY))
+        return self.transaction_to_signatory.filter(role=_c.SIGNATORY).exists()
+
+    @property
+    def has_documents_to_sign(self):
+        return self.transaction_to_document.filter(to_sign=True).exists()
+
+    @property
+    def has_contacts(self):
+        return all([x.has_contact for x in self.transaction_to_signatory.all()])
