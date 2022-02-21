@@ -36,7 +36,11 @@ class Translator(Base):
         abstract = True
         ordering = ('date_create', 'name')
 
+    def __str__(self):
+        return self.name
+
 class TranslateDict(Base):
+    one_dim = {}
     search_fields = ['precision', 'split_precision']
     language = models.ForeignKey('mighty.nationality', on_delete=models.CASCADE)
     translator = models.ForeignKey('mighty.translator', on_delete=models.CASCADE, related_name='translator_dict')
@@ -46,9 +50,26 @@ class TranslateDict(Base):
     objects = models.Manager()
     objectsB = managers.TranslateDictManager()
 
+    def __str__(self):
+        return "%s(%s)" % (self.translator, self.language)
+
     @property
     def split_precision(self):
         return ' '.join(self.precision.split('_'))
+
+    @property
+    def one_dim_format(self):
+        self.one_dim = {}
+        for key,tr in self.translates.items():
+            self.one_dim_keytr(self.translator.name+"."+key, tr)
+        return self.one_dim
+            
+    def one_dim_keytr(self, key, tr):
+        if type(tr) == dict:
+            for key2,tr2 in tr.items():
+                self.one_dim_keytr(key+"."+key2, tr2)
+        else:
+            self.one_dim[key] = tr
 
     class Meta(Base.Meta):
         abstract = True

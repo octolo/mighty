@@ -2,7 +2,7 @@
 from django.core import serializers
 from django.http import JsonResponse
 from mighty.views import DetailView, ListView
-from mighty.models import TranslateDict
+from mighty.models import Nationality, TranslateDict, Translator
 from mighty.applications.nationality.apps import NationalityConfig as conf
 from django.db.models import Q
 
@@ -41,3 +41,31 @@ class DictDetailView(DetailView):
         trans = context['object'].translates
         key = self.request.GET.get('key', False)
         return JsonResponse({key: trans[key]} if key in trans else trans)
+
+from rest_framework.generics import CreateAPIView
+from rest_framework.response import Response
+from mighty.applications.nationality.apps import NationalityConfig as conf
+
+class TrLoad(CreateAPIView):
+    queryset = Translator.objects.all()
+
+    def post(self, request, format=None):
+        path = request.data.get("path")
+        trans = request.data.get("trans")
+        path = path.split(".")
+        default_nationality = Nationality.objects.get(alpha2__iexact=conf.default)
+        translator, created1 = Translator.objects.get_or_create(name=path[0])
+        translatedict, created2 = TranslateDict.objects.get_or_create(
+            translator=translator,
+            language=default_nationality
+        )
+        cnt = len(path)-1
+        if not translatedict.translates: translatedict.translates = {}
+        ntr = translatedict.translates
+        pos = 0
+        for p in path[1:]:
+            pos+=1
+            ntr[p] = trans if pos == cnt else {}
+            ntr = ntr[p]
+        translatedict.save()
+        return Response({"translator": created1, "translatedict": created2 })

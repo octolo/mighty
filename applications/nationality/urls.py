@@ -8,3 +8,9 @@ urlpatterns = [
         path('dict/<str:name>/', views.DictDetailView.as_view())
     ])),
 ]
+
+api_urlpatterns = [
+    path('nationality/', include([
+        path('trload/', views.TrLoad.as_view()),
+    ])),
+]
