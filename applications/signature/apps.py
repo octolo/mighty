@@ -10,6 +10,7 @@ class Config:
     backend = "mighty.applications.signature.backends.docage"
     signatory_relation = setting("AUTH_USER_MODEL")
     document_relation = setting("SIGNATURE_DOCUMENT_MODEL")
+    location_relation = setting("SIGNATURE_LOCATION_MODEL")
 
 if hasattr(settings, 'SIGNATURE'): over_config(Config, settings.SIGNATURE)
 class SignatureConfig(AppConfig, Config):

@@ -5,8 +5,8 @@ from mighty.applications.signature.apps import SignatureConfig as conf
 
 class TransactionLocation(Base):
     transaction = models.ForeignKey(conf.transaction_relation, on_delete=models.CASCADE, related_name="transaction_to_location")
-    signatory = models.ForeignKey(conf.signatory_relation,
-        on_delete=models.SET_NULL, blank=True, null=True, related_name="signatory_to_location")
+    signatory = models.ForeignKey(conf.location_relation,
+        on_delete=models.CASCADE, related_name="signatory_to_location")
     document = models.ForeignKey(conf.document_relation, on_delete=models.CASCADE, related_name="document_to_location")
     backend_id = models.CharField(max_length=255, blank=True, null=True)
     height = models.PositiveIntegerField(default=80)
@@ -20,3 +20,17 @@ class TransactionLocation(Base):
 
     class Meta:
         abstract = True
+
+    def post_save(self):
+        self.document.save()
+
+    def post_delete(self):
+        self._old_self.document.save()
+
+    @property
+    def color(self):
+        return self.signatory.color
+
+    @property
+    def fullname(self):
+        return self.signatory.fullname

@@ -28,12 +28,18 @@ class TransactionDocument(Base):
         self.set_nb_signatories()
         self.set_nb_locations()
 
+    def post_save(self):
+        self.transaction.save()
+
     def set_nb_signatories(self):
         self.nb_signatories = self.transaction.transaction_to_signatory.filter(role=_c.SIGNATORY).count()
 
     def set_nb_locations(self):
         self.nb_locations = self.document_to_location.count()
 
+    @property
+    def object_uid(self):
+        return self.document.uid if hasattr(self.document, "uid") else None
     @property
     def is_document(self):
         return True if self.content_object.is_document else False

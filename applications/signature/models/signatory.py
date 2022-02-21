@@ -33,6 +33,7 @@ class TransactionSignatory(Base):
     
     def post_save(self):
         self.update_documents()
+        self.transaction.save()
 
     def update_documents(self):
         if self.property_change("role"):

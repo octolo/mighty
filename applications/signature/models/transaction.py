@@ -15,15 +15,15 @@ class Transaction(Base):
 
     @property
     def document_model(self):
-        return type(self.transaction_to_document.model())
+        return self.transaction_to_document.model
 
     @property
     def signatory_model(self):
-        return type(self.transaction_to_signatory.model())
+        return self.transaction_to_signatory.model
 
     @property
     def location_model(self):
-        return type(self.transaction_to_location.model())
+        return self.transaction_to_location.model
 
     @property
     def webhook_url(self):

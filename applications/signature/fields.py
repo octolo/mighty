@@ -31,6 +31,7 @@ document_sz = (
     "nb_locations",
     "name",
     "document_sign",
+    "object_uid",
 )
 
 signatory = (
@@ -83,4 +84,6 @@ location_sz = (
     "width",
     "height",
     "page",
+    "color",
+    "fullname",
 )
