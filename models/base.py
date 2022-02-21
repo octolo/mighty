@@ -298,6 +298,9 @@ class Base(models.Model):
         if user and self.use_create_by:
             self.update_by = '%s.%s' % (user.id, user.username)
 
+    def property_change(self, prop):
+        return (not self._old_self or getattr(self._old_self, prop) != getattr(self, prop))
+
     """
     Actions
     """

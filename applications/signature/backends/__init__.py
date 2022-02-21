@@ -1,4 +1,3 @@
-from django.urls import reverse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,3 @@ class SignatureBackend:
 
     def document(self):
         raise NotImplementedError()
-
-    @property
-    def webhook_transaction_url(self):
-        return reverse("octolo:wbg-signature-transaction", self.transaction.uid)

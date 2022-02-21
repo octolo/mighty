@@ -154,14 +154,15 @@ fi
 if [ ! -z ${DJANGO+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $DJANGO == 1 ]]; then 
         DJANGO_CMD="./manage.py" 
-    fi   
+    fi
     prep_term "${DJANGO_CMD} runserver 0.0.0.0:8000 -v3" "django"
 fi
 
 if [ ! -z ${VUE+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $VUE == 1 ]]; then 
         VUE_CMD="npm" 
-    fi   
+    fi
+    export NODE_OPTIONS=--openssl-legacy-provider
     prep_term "${VUE_CMD} run serve --prefix ${VUETPL}" "vuejs"
 fi
 
