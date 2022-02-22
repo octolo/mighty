@@ -86,6 +86,7 @@ location_sz = (
     "document",
     "x",
     "y",
+    "yb",
     "width",
     "height",
     "page",
