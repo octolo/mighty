@@ -40,19 +40,18 @@ class TransactionSignatory(Base):
             for doc in self.transaction.transaction_to_document.filter(to_sign=True):
                 doc.save()
 
-    def add_signatory_id_to_cache(self):
-        self.signatory.add_cache(self.transation.backend, {"id": self.signatory_id})
-
     @property
     def follow_model(self):
         from mighty.functions import get_model
         label, model = conf.signatory_relation.split(".")
         return get_model(label, model)
 
-    def getattr_signatory(self, attr):
+    def getattr_signatory(self, attr, raise_error=True):
         if hasattr(self.signatory, attr):
             return getattr(self.signatory, attr)
-        raise NotImplementedError("Signatory need attribute : %s" % attr)
+        if raise_error:
+            raise NotImplementedError("Signatory need attribute : %s" % attr)
+        return None
 
     @property
     def locations(self):
@@ -69,6 +68,12 @@ class TransactionSignatory(Base):
     def signatory_fullname(self):
         return self.getattr_signatory("signatory_fullname")
     @property
+    def signatory_first_name(self):
+        return self.getattr_signatory("signatory_first_name")
+    @property
+    def signatory_last_name(self):
+        return self.getattr_signatory("signatory_last_name")
+    @property
     def signatory_picture(self):
         return self.getattr_signatory("signatory_picture")
     @property
@@ -83,6 +88,9 @@ class TransactionSignatory(Base):
     @property
     def has_email(self): 
         return True if self.email else False
+    @property
+    def has_contact(self):
+        return True if (self.has_email or self.has_phone) else False
 
     def add_to_transaction(self):
         self.transaction.signature_backend.add_signatory(self)

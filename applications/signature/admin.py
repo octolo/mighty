@@ -27,6 +27,22 @@ class TransactionAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.transaction}),)
     readonly_fields = ()
 
+    def createtransaction_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        obj.create_transaction()
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/create_transaction.html', context)
+
     def starttransaction_view(self, request, object_id, extra_context=None):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
@@ -43,11 +59,29 @@ class TransactionAdmin(BaseAdmin):
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/start_transaction.html', context)
 
+    def fulltransaction_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        obj.make_transaction_one_shot()
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/full_transaction.html', context)
+
     def get_urls(self):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
+            path('<path:object_id>/createtransaction/', self.wrap(self.createtransaction_view), name='%s_%s_createtransaction' % info),
             path('<path:object_id>/starttransaction/', self.wrap(self.starttransaction_view), name='%s_%s_starttransaction' % info),
+            path('<path:object_id>/fulltransaction/', self.wrap(self.fulltransaction_view), name='%s_%s_fulltransaction' % info),
         ]
         return my_urls + urls 
 

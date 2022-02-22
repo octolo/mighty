@@ -26,6 +26,22 @@ class TransactionApiViewSet(ModelViewSet):
     queryset = TransactionModel.objects.all()
     serializer_class = TransactionSerializer
 
+    @action(detail=True, methods=["get"])
+    def launch(self, request, uid, group_named_id, pk=None):
+        transaction = self.get_object()
+        documents = transaction.transaction_to_document.all()
+        signatories = transaction.transaction_to_signatory.all()
+        locations = transaction.transaction_to_location.all()
+        launch_data = {
+            'transaction': transaction,
+            'documents': documents,
+            'signatories': signatories,
+            'locations': locations,
+        }
+        data = transaction.backend.launch_transaction(launch_data)
+        # signature_backend.create_webhook()
+        return Response(data)
+
 class TransactionDocumentApiViewSet(ModelViewSet):
     queryset = DocumentModel.objects.all()
     serializer_class = TransactionDocumentSerializer
@@ -37,14 +53,6 @@ class TransactionLocationApiViewSet(ModelViewSet):
     serializer_class = TransactionLocationSerializer
     pagination_class = None
     filters = signatory_filters
-
-    # @action(detail=True, methods=['post'])
-    # def add_or_update_location(self, request, uid, pk=None):
-    #     location = self.get_object()
-    #     location.set_all_attr(**request.data)
-    #     location.save()
-    #     serializer = self.get_serializer(location)
-    #     return Response(serializer.data)
 
 class TransactionSignatoryApiViewSet(ModelViewSet):
     queryset = SignatoryModel.objects.all()

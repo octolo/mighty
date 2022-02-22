@@ -10,6 +10,10 @@ class SignatureBackend(Backend):
         self.transaction.backend = path
 
     @property
+    def path(self):
+        return self.transaction.backend
+
+    @property
     def signatories(self):
         return self.transaction_to_signatory.all()
        

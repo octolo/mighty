@@ -13,6 +13,7 @@ class TransactionLocation(Base):
     width = models.PositiveIntegerField(default=120)
     x = models.PositiveIntegerField(default=0)
     y = models.PositiveIntegerField(default=0)
+    yb = models.PositiveIntegerField(default=0)
     page = models.PositiveIntegerField()
 
     def __str__(self):

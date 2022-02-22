@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.db import transaction
 
 from mighty.models.base import Base
 from mighty.applications.signature import choices as _c, get_signature_backend
@@ -54,3 +55,31 @@ class Transaction(Base):
     
     def remind_transaction(self):
         self.signature_backend.remind_transaction()
+
+    def start_transaction(self):
+        self.signature_backend.start_transaction()
+
+    @transaction.atomic
+    def make_transaction_one_shot(self):
+        self.create_transaction()
+        self.signature_backend.add_all_documents()
+        self.signature_backend.add_all_signatories()
+        self.signature_backend.add_all_locations()
+        self.start_transaction()
+
+    @property
+    def has_documents(self):
+        return self.transaction_to_document.exists()
+
+    @property
+    def has_signatory(self):
+        return self.transaction_to_signatory.filter(role=_c.SIGNATORY).exists()
+
+    @property
+    def has_documents_to_sign(self):
+        return self.transaction_to_document.filter(to_sign=True).exists()
+
+    @property
+    def has_contacts(self):
+        return all([x.has_contact for x in self.transaction_to_signatory.all()])
+

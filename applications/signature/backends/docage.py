@@ -19,16 +19,19 @@ class SignatureBackend(SignatureBackend):
         "Aborted": _c.CANCELLED,
     }
 
+    location_order = ["x", "yb", "width", "height"]
     api_url = {
         # Transaction
         'create_transaction' : 'https://api.docage.com/Transactions',
         'status_transaction': 'https://api.docage.com/Transactions/Status/%s',
         'cancel_transaction': 'https://api.docage.com/Transactions/Abort/%s',
         'remind_transaction': 'https://api.docage.com/Transactions/SendReminders/%s',
+        'start_transaction' : 'https://api.docage.com/Transactions/LaunchTransaction/%s',
         # Document
         'add_document' : 'https://api.docage.com/TransactionFiles',
         # Signatory
         'add_member' : 'https://api.docage.com/TransactionMembers',
+        'add_contact': 'https://api.docage.com/Contacts',
         # Location
         'add_location' : 'https://api.docage.com/SignatureLocations',
 
@@ -117,6 +120,10 @@ class SignatureBackend(SignatureBackend):
         transaction = json.loads(transaction.content)
         self.transaction.add_log("info", transaction, "remind")
     
+    def start_transaction(self):
+        transaction = self.generate_post_request(self.get_url("start_transaction", self.transaction.backend_id))
+        self.status_transaction()
+        self.transaction.save()
     
 
     # Documents
@@ -150,6 +157,25 @@ class SignatureBackend(SignatureBackend):
 
 
     # Members
+    def add_contact(self, member):
+        data = {
+            "Email": member.getattr_signatory("signatory_email", False),
+            "FirstName": member.getattr_signatory("signatory_first_name", False),
+            "LastName": member.getattr_signatory("signatory_last_name", False),
+            "Mobile": member.getattr_signatory("signatory_phone", False),
+            "Phone": member.getattr_signatory("signatory_phone", False),
+        }
+        response = self.generate_post_request(self.get_url("add_contact"), data)
+        response = json.loads(response.content)
+        signatory = member.signatory
+        signatory.add_cache(self.path, response)
+        signatory.save()
+        return response
+
+    def get_entity_id(self, member):
+        entity_id = member.signatory.has_cache_field(self.path)
+        return member.signatory.cache[self.path] if entity_id else self.add_contact(member)
+
     def member_role(self, member):
         return 0 if member.role == _c.SIGNATORY else 2
 
@@ -159,7 +185,7 @@ class SignatureBackend(SignatureBackend):
     def create_member(self, member):
         data = {
             "TransactionId": self.transaction.backend_id,
-            #"ContactId": member.get_entity_id(),
+            "ContactId": self.get_entity_id(member),
             "FriendlyName": member.fullname,
             "MemberRole": self.member_role(member),
             "SignMode": self.sign_mode(member)
@@ -183,12 +209,12 @@ class SignatureBackend(SignatureBackend):
     # Locations
     def create_location(self, location):
         data = {
-            "TransactionMemberId": location.member.backend_id,
+            "TransactionMemberId": location.signatory.backend_id,
             "TransactionFileId": location.document.backend_id,
-            "Coordinates": ','.join([location.x, location.y, location.width, location.height]),
+            "Coordinates": ','.join([str(getattr(location, f)) for f in self.location_order]),
             "Pages": location.page,
         }
-        response = self.generate_post_request(self.get_url["location"], data)
+        response = self.generate_post_request(self.get_url("add_location"), data)
         response = json.loads(response.content)
         location.add_log("info", response, "create")
         location.backend_id = response
@@ -297,10 +323,14 @@ class SignatureBackend(SignatureBackend):
         response = requests.post(self.api_url["location"], auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
         return response
 
-    def launch_transaction(self, instance):
-        url = self.api_url["launch"] % instance.transaction_id
-        response = requests.post(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data={})
-        return response
+    def launch_transaction(self, instance, data):
+        print(instance)
+        print(data)
+        # self.prepare_launch()
+        # url = self.api_url["launch"] % instance.transaction_id
+        # response = requests.post(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data={})
+        # return response
+        return
 
     def create_webhook(self):
         url = self.api_url["webhook"]
