@@ -1,47 +1,212 @@
 from mighty.applications.signature.backends import SignatureBackend
+from mighty.applications.signature import choices as _c
 from mighty.functions import setting
-
 import os, requests, json
 from requests.auth import HTTPBasicAuth
-import logging
-
-logger = logging.getLogger(__name__)
 
 class SignatureBackend(SignatureBackend):
     APIKEY = setting('DOCAGE_KEY', '86002628-1a83-434c-ba1e-72731a8b5318')
     APIUSER = setting('DOCAGE_USER', 'louis@easyshares.io')
-
+    STATUS_TRANSACTION = {
+        "Draft": _c.PREPARATION,
+        "Scheduled": _c.READY,
+        "WaitingInformations": _c.WAITING,
+        "Active": _c.WAITING,
+        "Validated": _c.WAITING,
+        "Signed": _c.SIGNED,
+        "Expired": _c.ERROR,
+        "Refused": _c.REFUSED,
+        "Aborted": _c.CANCELLED,
+    }
 
     api_url = {
+        # Transaction
+        'create_transaction' : 'https://api.docage.com/Transactions',
+        'status_transaction': 'https://api.docage.com/Transactions/Status/%s',
+        'cancel_transaction': 'https://api.docage.com/Transactions/Abort/%s',
+        'remind_transaction': 'https://api.docage.com/Transactions/SendReminders/%s',
+        # Document
+        'add_document' : 'https://api.docage.com/TransactionFiles',
+        # Signatory
+        'add_member' : 'https://api.docage.com/TransactionMembers',
+        # Location
+        'add_location' : 'https://api.docage.com/SignatureLocations',
+
+
         'entity' : 'https://api.docage.com/Contacts',
         'entity_with_id': 'https://api.docage.com/Contacts/%s',
         'batch_delete_entity' : 'https://api.docage.com/Contacts/BatchDelete',
-        'transaction' : 'https://api.docage.com/Transactions',
         'stop_transaction' : 'https://api.docage.com/Transactions/Abort/%s',
         'launch' : 'https://api.docage.com/Transactions/LaunchTransaction/%s',
-        'document' : 'https://api.docage.com/TransactionFiles',
         'batch_delete_document' : 'https://api.docage.com/TransactionFiles/BatchDelete',
-        'member' : 'https://api.docage.com/TransactionMembers',
         'batch_delete_member' : 'https://api.docage.com/TransactionMembers/BatchDelete',
-        'location' : 'https://api.docage.com/SignatureLocations',
         'webhook' : 'https://api.docage.com/Webhooks',
         'webhook_endpoint' : 'https://webhook.site/96929467-6c3c-4cdf-910f-33d4f4a467f7',
     }
 
-    docage_dict = {
-        'TO_SIGN' : 0,
-        'TO_ADD'  : 1,
-        'BY_SMS'  : 0,
-        'BY_EMAIL': 1,
-        'SIGN'    : 0,
-        'WATCH'   : 2,
-    }
+    def get_url(self, url, interpolates=None):
+        url = self.api_url[url] % interpolates if interpolates else self.api_url[url]
+        self.logger.info("Docage URL: %s" % url)
+        return url
 
     @property
-    def api_headers(self):
-        return {
-            'Content-Type': 'application/json'
+    def auth(self):
+        return HTTPBasicAuth(self.APIUSER, self.APIKEY)
+
+    @property
+    def headers(self):
+        return {'Content-Type': 'application/json'}
+
+    def change_status(self, status):
+        self.transaction.status = self.STATUS_TRANSACTION[status]
+
+    def generate_post_request(self, url, data=None, *args, **kwargs):
+        payload = {"auth": self.auth, "headers": self.headers}
+        if data: payload["data"] = json.dumps(data)
+        return requests.post(url, **payload, **kwargs)
+
+    def generate_get_request(self, url, data=None):
+        payload = {"auth": self.auth, "headers": self.headers}
+        if data: payload["data"] = json.dumps(data)
+        return requests.get(url, **payload)
+
+    def files_post_request(self, url, data, files):
+        return requests.post(
+            url,
+            auth=self.auth,
+            data=data,
+            files=files,
+            timeout=30,
+        )
+
+
+    # Transaction
+    def new_transaction(self):
+        transaction = self.generate_post_request(
+            self.get_url("create_transaction"), 
+            {
+                "Name": self.transaction.name,
+                "IsTest": setting("DEBUG"),
+            })
+        transaction = json.loads(transaction.content)
+        self.logger.info("ID: %s" % transaction)
+        self.transaction.backend_id = transaction
+        self.transaction.add_log("info", transaction, "create")
+
+    def status_transaction(self):
+        transaction = self.generate_get_request(self.get_url("status_transaction", self.transaction.backend_id))
+        transaction = json.loads(transaction.content)
+        self.logger.info("Status: %s" % transaction)
+        self.transaction.add_log("info", transaction, "status")
+        self.change_status(transaction)
+
+    def create_transaction(self):
+        if not self.transaction.backend_id:
+            self.new_transaction()
+        else:
+            self.status_transaction()
+        self.transaction.save()
+
+    def cancel_transaction(self):
+        transaction = self.generate_get_request(self.get_url("cancel_transaction", self.transaction.backend_id))
+        transaction = json.loads(transaction.content)
+        self.transaction.add_log("info", transaction, "cancel")
+
+    def remind_transaction(self):
+        transaction = self.generate_get_request(self.get_url("remind_transaction", self.transaction.backend_id))
+        transaction = json.loads(transaction.content)
+        self.transaction.add_log("info", transaction, "remind")
+    
+    
+
+    # Documents
+    def document_type(self, document):
+        return 0 if document.to_sign else 1
+
+    def create_document(self, document):
+        document_file = document.file_to_use
+        data = {
+            'TransactionId': self.transaction.backend_id,
+            'FileName': os.path.basename(document_file.name),
+            'FriendlyName': document.name,
+            'Type': self.document_type(document)
         }
+        files = [('FileToUpload',('file',document_file.read(), 'application/octet-stream'))]
+        response = self.files_post_request(self.get_url("add_document"), data, files)
+        response = json.loads(response.content)
+        document.add_log("info", response, "create")
+        document.backend_id = response
+        document.save()
+        return response
+
+    def add_document(self, document):
+        self.logger.info("Add doc: %s" % document.name)
+        if not document.backend_id:
+            return self.create_document(document)
+
+    def add_all_documents(self):
+        for doc in self.transaction.documents:
+            self.add_document(doc)
+
+
+    # Members
+    def member_role(self, member):
+        return 0 if member.role == _c.SIGNATORY else 2
+
+    def sign_mode(self, member):
+        return 1 if member.mode == _c.EMAIL else 0
+
+    def create_member(self, member):
+        data = {
+            "TransactionId": self.transaction.backend_id,
+            #"ContactId": member.get_entity_id(),
+            "FriendlyName": member.fullname,
+            "MemberRole": self.member_role(member),
+            "SignMode": self.sign_mode(member)
+        }
+        response = self.generate_post_request(self.get_url("add_member"), data)
+        response = json.loads(response.content)
+        member.add_log("info", response, "create")
+        member.backend_id = response
+        member.save()
+        return response
+
+    def add_signatory(self, signatory):
+        self.logger.info("Add member: %s" % signatory.fullname)
+        if not signatory.backend_id:
+            return self.create_member(signatory)
+
+    def add_all_signatories(self):
+        for mbr in self.transaction.signatories:
+            self.add_signatory(mbr)
+
+    # Locations
+    def create_location(self, location):
+        data = {
+            "TransactionMemberId": location.member.backend_id,
+            "TransactionFileId": location.document.backend_id,
+            "Coordinates": ','.join([location.x, location.y, location.width, location.height]),
+            "Pages": location.page,
+        }
+        response = self.generate_post_request(self.get_url["location"], data)
+        response = json.loads(response.content)
+        location.add_log("info", response, "create")
+        location.backend_id = response
+        location.save()
+        return response
+
+    def add_location(self, location):
+        self.logger.info("Add location: %s" % location.id)
+        if not location.backend_id:
+            return self.create_location(location)
+
+    def add_all_locations(self):
+        for loc in self.transaction.locations:
+            self.add_location(loc)
+
+
+
+    """ OLD """
 
     def entity(self, instance, method=None):
         payload = {}
@@ -67,14 +232,7 @@ class SignatureBackend(SignatureBackend):
             return requests.delete(self.api_url["entity_with_id"] % instance.entity_id , auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers={}, data={})
         return requests.get(self.api_url["entity_with_id"] % instance.entity_id , auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers={}, data={})
 
-    def transaction(self, instance):
-        payload_dict = {
-            "IsTest": "true"
-        }
-        if instance.transaction_name: payload_dict['Name'] = instance.transaction_name
-        payload = json.dumps(payload_dict)
-        response = requests.post(self.api_url["transaction"], auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data=payload)
-        return response
+
     
     def annul_transaction(self, instance):
         url = self.api_url["stop_transaction"] % instance.transaction_id

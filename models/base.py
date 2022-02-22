@@ -247,6 +247,7 @@ class Base(models.Model):
         return self.logs[lvl][field]
 
     def add_log(self, lvl, msg, field=None):
+        if lvl not in self.logs: self.logs[lvl] = {}
         self.logs[lvl][field] = msg
         
     def del_log(self, lvl, field=None):

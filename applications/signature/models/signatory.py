@@ -57,7 +57,6 @@ class TransactionSignatory(Base):
     @property
     def locations(self):
         return self.signatory_to_location.all()
-        
 
     # SIGNATORY NEEDS
     @property
@@ -84,3 +83,6 @@ class TransactionSignatory(Base):
     @property
     def has_email(self): 
         return True if self.email else False
+
+    def add_to_transaction(self):
+        self.transaction.signature_backend.add_signatory(self)

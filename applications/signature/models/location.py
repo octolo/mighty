@@ -34,3 +34,6 @@ class TransactionLocation(Base):
     @property
     def fullname(self):
         return self.signatory.fullname
+
+    def add_to_transaction(self):
+        self.transaction.signature_backend.add_location(self)

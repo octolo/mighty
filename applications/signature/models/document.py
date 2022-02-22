@@ -47,6 +47,9 @@ class TransactionDocument(Base):
     def document(self):
         return self.content_object
     @property
+    def file_to_use(self):
+        return self.getattr_document("file_to_use")
+    @property
     def locations(self):
         return self.signatory_to_location.all()
 
@@ -64,3 +67,6 @@ class TransactionDocument(Base):
     @property
     def document_sign(self):
         return self.getattr_document("document_sign")
+
+    def add_to_transaction(self):
+        self.transaction.signature_backend.add_document(self)
