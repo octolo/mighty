@@ -29,17 +29,7 @@ class TransactionApiViewSet(ModelViewSet):
     @action(detail=True, methods=["get"])
     def launch(self, request, uid, group_named_id, pk=None):
         transaction = self.get_object()
-        documents = transaction.transaction_to_document.all()
-        signatories = transaction.transaction_to_signatory.all()
-        locations = transaction.transaction_to_location.all()
-        launch_data = {
-            'transaction': transaction,
-            'documents': documents,
-            'signatories': signatories,
-            'locations': locations,
-        }
-        data = transaction.backend.launch_transaction(launch_data)
-        # signature_backend.create_webhook()
+        data = transaction.make_transaction_one_shot()
         return Response(data)
 
 class TransactionDocumentApiViewSet(ModelViewSet):
