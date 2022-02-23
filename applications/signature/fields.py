@@ -77,6 +77,7 @@ location = (
     "width",
     "height",
     "page",
+    "disable",
 )
 
 location_sz = (

@@ -39,7 +39,7 @@ class TransactionDocumentApiViewSet(ModelViewSet):
     filters = generic_filters
 
 class TransactionLocationApiViewSet(ModelViewSet):
-    queryset = LocationModel.objects.all()
+    queryset = LocationModel.objectsB.all()
     serializer_class = TransactionLocationSerializer
     pagination_class = None
     filters = signatory_filters

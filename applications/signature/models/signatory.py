@@ -32,6 +32,7 @@ class TransactionSignatory(Base):
         if not self.phone: self.phone = self.signatory_phone
     
     def post_save(self):
+        self.update_locations(self.role == _c.OBSERVER)
         self.update_documents()
         self.transaction.save()
 
@@ -39,6 +40,12 @@ class TransactionSignatory(Base):
         if self.property_change("role"):
             for doc in self.transaction.transaction_to_document.filter(to_sign=True):
                 doc.save()
+
+    def update_locations(self, status):
+        if self.property_change("role"):
+            for location in self.transaction.transaction_to_location.filter(signatory=self):
+                location.disable = status
+                location.save()
 
     @property
     def follow_model(self):
