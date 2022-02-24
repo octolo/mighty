@@ -36,6 +36,10 @@ class TransactionSignatory(Base):
         self.update_documents()
         self.transaction.save()
 
+    def post_delete(self):
+        for doc in self._old_self.transaction.transaction_to_document.all():
+            doc.save()
+
     def update_documents(self):
         if self.property_change("role"):
             for doc in self.transaction.transaction_to_document.filter(to_sign=True):

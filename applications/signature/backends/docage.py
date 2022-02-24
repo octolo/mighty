@@ -227,7 +227,6 @@ class SignatureBackend(SignatureBackend):
             return self.create_location(location)
 
     def add_all_locations(self):
-        #FIXME filter disable false (ca sort d ou transaction.locations ??)
         for loc in self.transaction.locations:
             self.add_location(loc)
 
