@@ -24,4 +24,3 @@ class IsMe(filters.BooleanParamFilter):
         value = self.get_value(exclude)
         return Q(**{self.field: self.request.user})
 
-    
