@@ -77,6 +77,7 @@ location = (
     "width",
     "height",
     "page",
+    "disable",
 )
 
 location_sz = (
@@ -86,6 +87,7 @@ location_sz = (
     "document",
     "x",
     "y",
+    "yb",
     "width",
     "height",
     "page",

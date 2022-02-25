@@ -36,7 +36,7 @@ class Transaction(Base):
 
     @property
     def locations(self):
-        return self.transaction_to_location.all()
+        return self.transaction_to_location.filter(signatory__role=_c.SIGNATORY)
 
     @property
     def webhook_url(self):
