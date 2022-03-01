@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from mighty.apps import MightyConfig as conf
 from mighty import stdtypes, fields
 from pathlib import Path
-import base64, datetime, string, random, unicodedata, re, json, sys, subprocess, threading
+import base64, datetime, string, random, unicodedata, re, json, sys, subprocess, threading, requests
 
 BS = conf.Crypto.BS
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -525,3 +525,17 @@ def pretty_size_long(size, unit=None):
 def pretty_size_short(size, unit=None):
     unit, size = pretty_size(size, unit)
     return conf.FileSystem.unit % (str(size), unit)
+
+def scrap_xpath(xpath, *args, **kwargs):
+    from lxml import html
+    content = kwargs.get("content")
+    url = kwargs.get("url")
+    content = requests.get(url).content if url else content
+    content = html.fromstring(content)
+    return content.xpath(xpath)
+
+def url_json_data(url):
+    response = requests.get(url)
+    if 200 <= response.status_code <= 300:
+        return response.json()
+    return False
