@@ -74,7 +74,6 @@ bill = (
 )
 
 payment_method = (
-    "group",
     "owner",
     "form_method",
     "date_valid",
@@ -90,10 +89,22 @@ payment_method = (
     "service_detail",
     "default",
     "need_to_valid_backend",
+    "status",
+)
+
+method = payment_method + (
+    "group",
 )
 
 subscription_group = (
-    'last_subscription',
-    'valid_method',
-    'one_use_count',
+    'subscription',
+    'valid_payment_methods',
+    'valid_subscription',
+)
+
+subscription_request = payment_method + (
+    "offer",
+    "user",
+    "frequency",
+    "data",
 )

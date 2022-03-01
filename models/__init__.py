@@ -147,6 +147,7 @@ if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     class Discount(models_shop.Discount): pass
     class Bill(models_shop.Bill): pass
     class PaymentMethod(models_shop.PaymentMethod): pass
+    class SubscriptionRequest(models_shop.SubscriptionRequest): pass
 
 from mighty.models.filesystem import MimeType
 class MimeType(MimeType): pass

@@ -535,7 +535,10 @@ def scrap_xpath(xpath, *args, **kwargs):
     return content.xpath(xpath)
 
 def url_json_data(url):
-    response = requests.get(url)
-    if 200 <= response.status_code <= 300:
-        return response.json()
+    try:
+        response = requests.get(url)
+        if 200 <= response.status_code <= 300:
+            return response.json()
+    except Exception:
+        pass
     return False
