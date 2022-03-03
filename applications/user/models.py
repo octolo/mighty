@@ -53,7 +53,7 @@ class UserEmail(Data, Base):
 
 class UserPhone(Data, Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
-    phone = PhoneNumberField(_.phone, unique=True)
+    phone = models.CharField(_.phone, unique=True, max_length=255)
     search_fields = ('phone',)
 
     def __str__(self):
@@ -115,9 +115,9 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     else:
         email = models.EmailField(_.email, blank=True, null=True, validators=[validate_email, validate_trashmail])
     if conf.Field.username == 'phone':
-        phone = PhoneNumberField(_.phone, unique=True)
+        phone = models.CharField(_.phone, unique=True, max_length=255)
     else:
-        phone = PhoneNumberField(_.phone, blank=True, null=True, db_index=True)
+        phone = models.CharField(_.phone, blank=True, null=True, db_index=True, max_length=255)
 
     def check_phone(self):
         validate_phone(self.phone, {"id": self.id, "user_phone__user__id": self.id})
