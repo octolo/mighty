@@ -193,7 +193,15 @@ class PaymentMethodAdmin(BaseAdmin):
     readonly_fields = ('backend', 'service_id', 'service_detail')
     search_fields = ('group__search',)
     list_display = ('group', 'form_method', 'date_valid')
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.payment_method}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.method}),)
+
+class SubscriptionRequestAdmin(BaseAdmin):
+    view_on_site = False
+    raw_id_fields = ('offer', 'user')
+    readonly_fields = ('backend', 'service_id', 'service_detail')
+    search_fields = ('group__search',)
+    list_display = ('user', 'offer', 'form_method',)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.subscription_request}),)
 
 class SubscriptionAdminInline(admin.StackedInline):
     raw_id_fields = ('group', 'offer')
@@ -206,9 +214,3 @@ class SubscriptionAdminInline(admin.StackedInline):
     )
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.subscription}),)
     extra = 0
-
-class SubscriptionGroupAdmin(BaseAdmin):
-    def __init__(self, model, admin_site):
-        super().__init__(model, admin_site)
-        self.add_field('Informations', fields.subscription_group)
-        self.readonly_fields += fields.subscription_group

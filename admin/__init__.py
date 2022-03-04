@@ -139,6 +139,8 @@ if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     class DiscountAdmin(admin_shop.DiscountAdmin): pass
     @admin.register(all_models.PaymentMethod)
     class PaymentMethodAdmin(admin_shop.PaymentMethodAdmin): pass
+    @admin.register(all_models.SubscriptionRequest)
+    class SubscriptionRequestAdmin(admin_shop.SubscriptionRequestAdmin): pass
 
 #if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
 #    from mighty.admin.applications import grapher

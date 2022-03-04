@@ -5,8 +5,7 @@ from django.core.exceptions import ValidationError
 
 from mighty.models.base import Base
 from mighty.apps import MightyConfig
-from mighty.applications.shop import generate_code_type, choices, translates as _
-from mighty.applications.shop.decorators import GroupOrUser
+from mighty.applications.shop import generate_code_type, choices as _c, translates as _
 
 from mighty.applications.shop.models.paymentmethod.backend import BackendModel
 from mighty.applications.shop.models.paymentmethod.iban import IbanModel
@@ -17,10 +16,9 @@ from mighty.applications.shop.models.paymentmethod.valid import PMValid
 from dateutil.relativedelta import relativedelta
 import datetime, re
 
-@GroupOrUser(related_name="payment_method", on_delete=models.SET_NULL, null=True, blank=True)
 class PaymentMethod(Base, IbanModel, CBModel, PMValid, BackendModel):
     owner = models.CharField(_.owner, max_length=255, blank=True, null=True, help_text="Owner")
-    form_method = models.CharField(_.form_method, max_length=17, choices=choices.PAYMETHOD, default="CB")
+    form_method = models.CharField(_.form_method, max_length=17, choices=_c.PAYMETHOD, default="CB")
     date_valid = models.DateField(_.date_valid, blank=True, null=True, help_text="Expire date")
     signature = models.TextField(_.signature, blank=True, null=True)
 
@@ -40,6 +38,7 @@ class PaymentMethod(Base, IbanModel, CBModel, PMValid, BackendModel):
     service_detail = models.TextField(editable=False)
     default = models.BooleanField(default=False)
     need_to_valid_backend = models.BooleanField(default=False)
+    status = models.CharField(max_length=25, choices=_c.SUB_STATUS, default=_c.READY)
 
     class Meta(Base.Meta):
         abstract = True

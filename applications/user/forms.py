@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm, UsernameField
-from phonenumber_field.widgets import PhoneNumberPrefixWidget
-from phonenumber_field.formfields import PhoneNumberField
+#from phonenumber_field.widgets import PhoneNumberPrefixWidget
+#from phonenumber_field.formfields import PhoneNumberField
 from mighty.applications.user import get_form_fields, translates as _
 from mighty.forms import ModelFormDescriptable
 
@@ -10,9 +10,9 @@ allfields = get_form_fields()
 required = get_form_fields('required')
 optional = get_form_fields('optional')
 
-if 'phone' in allfields:
-    class UserCreationForm(UserCreationForm):
-        phone = PhoneNumberField(label=_.phone, widget=PhoneNumberPrefixWidget(initial='FR'), required=False)
+#if 'phone' in allfields:
+#    class UserCreationForm(UserCreationForm):
+#        phone = PhoneNumberField(label=_.phone, widget=PhoneNumberPrefixWidget(initial='FR'), required=False)
 
 if 'password1' not in allfields:
     class UserCreationForm(UserCreationForm):
@@ -36,6 +36,9 @@ class UserCreationForm(UserCreationForm, ModelFormDescriptable):
 
     class UsernameField(UsernameField):
         pass
+
+    def prepare_descriptor(self, *args, **kwargs):
+        self.fields["phone"].icon = "mobile"
 
     class Meta:
         model = get_user_model()

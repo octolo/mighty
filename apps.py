@@ -39,6 +39,7 @@ class Config:
             'Discount',
             'Bill',
             'PaymentMethod',
+            'SubscriptionRequest',
         ],
         'user': [
             'User',

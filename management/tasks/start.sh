@@ -27,6 +27,7 @@ REDIS_CMD="redis-server"
 DJANGO_CMD="./manage.py"
 VUE_CMD="npm"
 CELERY_CMD="celery"
+NGROK_CMD="./ngrok http 8000"
 
 while true; do
     case $1 in
@@ -76,6 +77,13 @@ while true; do
             shift
             if [ ! -z $1 ] && [[ $1 != -* ]]; then
                 REDIS=$1
+            fi
+            ;;
+        -n)
+            NGROK=1
+            shift
+            if [ ! -z $1 ] && [[ $1 != -* ]]; then
+                NGROK=$1
             fi
             ;;
         -f)
@@ -151,12 +159,20 @@ if [ ! -z ${CELERY+x} ] || [ $FULLSERVICE = true ]; then
     prep_term "${CELERY_CMD} -A configuration worker --loglevel=debug  --max-tasks-per-child 50 -f ${LOGDIR}/celery.log" "celery"
 fi
 
+if [ ! -z ${NGROK+x} ] || [ $FULLSERVICE = true ]; then
+    if [[ $NGROK == 1 ]]; then 
+        NGROK_CMD="./ngrok" 
+    fi
+    prep_term "${NGROK_CMD} http 8000" "ngrok"
+fi
+
 if [ ! -z ${DJANGO+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $DJANGO == 1 ]]; then 
         DJANGO_CMD="./manage.py" 
     fi
     prep_term "${DJANGO_CMD} runserver 0.0.0.0:8000 -v3" "django"
 fi
+
 
 if [ ! -z ${VUE+x} ] || [ $FULLSERVICE = true ]; then
     if [[ $VUE == 1 ]]; then 
