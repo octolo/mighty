@@ -21,7 +21,6 @@ document = (
     "object_id",
     "backend_id",
     "status",
-    "to_sign",
     "nb_signatories",
     "nb_locations",
 )
@@ -45,7 +44,6 @@ signatory = (
     "signatory",
     "backend_id",
     "status",
-    "role",
     "mode",
     "color",
 )
@@ -77,7 +75,6 @@ location = (
     "width",
     "height",
     "page",
-    "disable",
 )
 
 location_sz = (

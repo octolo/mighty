@@ -13,7 +13,6 @@ class TransactionDocument(Base):
     content_object = GenericForeignKey('content_type', 'object_id')
     backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_DOCUMENT, default=_c.PREPARATION)
-    to_sign = models.BooleanField(default=True)
     object_signed_id = models.PositiveIntegerField(blank=True, null=True)
     nb_signatories = models.PositiveIntegerField(default=0)
     nb_locations = models.PositiveIntegerField(default=0)
@@ -32,7 +31,7 @@ class TransactionDocument(Base):
         self.transaction.save()
 
     def set_nb_signatories(self):
-        self.nb_signatories = self.transaction.transaction_to_signatory.filter(role=_c.SIGNATORY).count()
+        self.nb_signatories = self.document_to_location.distinct('signatory').count()
 
     def set_nb_locations(self):
         self.nb_locations = self.document_to_location.count()
@@ -51,7 +50,10 @@ class TransactionDocument(Base):
         return self.getattr_document("file_to_use")
     @property
     def locations(self):
-        return self.signatory_to_location.all()
+        return self.document_to_location.all()
+    @property
+    def to_sign(self):
+        return self.locations.count() > 0
 
     def getattr_document(self, attr):
         if hasattr(self.document, attr):

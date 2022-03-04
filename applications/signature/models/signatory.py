@@ -14,7 +14,6 @@ class TransactionSignatory(Base):
     signatory = models.ForeignKey(conf.signatory_relation, on_delete=models.CASCADE)
     backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_SIGNATORY, default=_c.PREPARATION)
-    role = models.CharField(max_length=20, choices=_c.ROLE_SIGNATORY, default=_c.OBSERVER)
     mode = models.CharField(max_length=20, choices=_c.MODE_SIGNATORY, default=_c.EMAIL)
     color = ColorField(format="hexa", default=generate_random_color)
 
@@ -30,9 +29,9 @@ class TransactionSignatory(Base):
     def pre_save(self):
         if not self.email: self.email = self.signatory_email
         if not self.phone: self.phone = self.signatory_phone
+        if not self.email and self.phone: self.mode = _c.SMS
     
     def post_save(self):
-        self.update_locations(self.role == _c.OBSERVER)
         self.update_documents()
         self.transaction.save()
 
@@ -42,14 +41,8 @@ class TransactionSignatory(Base):
 
     def update_documents(self):
         if self.property_change("role"):
-            for doc in self.transaction.transaction_to_document.filter(to_sign=True):
+            for doc in [doc for doc in self.transaction.transaction_to_document.all() if doc.to_sign]:
                 doc.save()
-
-    def update_locations(self, status):
-        if self.property_change("role"):
-            for location in self.transaction.transaction_to_location.filter(signatory=self):
-                location.disable = status
-                location.save()
 
     @property
     def follow_model(self):
@@ -67,6 +60,10 @@ class TransactionSignatory(Base):
     @property
     def locations(self):
         return self.signatory_to_location.all()
+
+    @property
+    def role(self):
+        return _c.SIGNATORY if self.signatory_to_location.count() else _c.OBSERVER
 
     # SIGNATORY NEEDS
     @property
