@@ -36,7 +36,7 @@ class Transaction(Base):
 
     @property
     def locations(self):
-        return self.transaction_to_location.filter(signatory__role=_c.SIGNATORY)
+        return self.transaction_to_location.all()
 
     @property
     def webhook_url(self):
@@ -73,11 +73,11 @@ class Transaction(Base):
 
     @property
     def has_signatory(self):
-        return self.transaction_to_signatory.filter(role=_c.SIGNATORY).exists()
+        return any([signatory.role ==_c.SIGNATORY for signatory in self.transaction_to_signatory.all()])
 
     @property
     def has_documents_to_sign(self):
-        return self.transaction_to_document.filter(to_sign=True).exists()
+        return any([doc.to_sign for doc in self.transaction.transaction_to_document.all()])
 
     @property
     def has_contacts(self):

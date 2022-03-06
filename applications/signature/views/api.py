@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 
 from mighty.filters import ParamFilter
 from mighty.views import ModelViewSet
@@ -39,13 +40,16 @@ class TransactionDocumentApiViewSet(ModelViewSet):
     filters = generic_filters
 
 class TransactionLocationApiViewSet(ModelViewSet):
-    queryset = LocationModel.objectsB.all()
+    queryset = LocationModel.objects.all()
     serializer_class = TransactionLocationSerializer
     pagination_class = None
     filters = signatory_filters
 
+class SignatorySetPagination(PageNumberPagination):
+    page_size = 10
+
 class TransactionSignatoryApiViewSet(ModelViewSet):
     queryset = SignatoryModel.objects.all()
     serializer_class = TransactionSignatorySerializer
-    pagination_class = None
     filters = generic_filters
+    pagination_class = SignatorySetPagination
