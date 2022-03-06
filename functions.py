@@ -99,6 +99,10 @@ Return a key
 def key(size=32, generator=string.hexdigits):
     return "".join(random.choice(generator) for x in range(size))
 
+def hex_color_rand():
+    r = lambda: random.randint(0,255)
+    return '#%02X%02X%02X' % (r(),r(),r())
+
 # Generate unique code for model
 def generate_code(obj, *args, **kwargs):
     number = kwargs.get('number', '')

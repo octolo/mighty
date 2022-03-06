@@ -47,7 +47,7 @@ class TenantAccess:
         if named_id: 
             return self.group_model.objects.get(named_id=named_id)
         elif group_uid:
-            self.group_model.objects.get(uid=group_uid)
+            return self.group_model.objects.get(uid=group_uid)
         return self.current_tenant_group
 
     @property
