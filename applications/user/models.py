@@ -11,7 +11,7 @@ from mighty.apps import MightyConfig
 from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.models.image import Image
-from mighty.functions import masking_email, masking_phone
+from mighty.functions import masking_email, masking_phone, url_domain
 from mighty.applications.logger.models import ChangeLog
 from mighty.applications.address.models import Address, AddressNoBase
 from mighty.applications.user.apps import UserConfig as conf
@@ -184,26 +184,6 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         return self
 
     @property
-    def admin_list_url(self):
-        return reverse('admin:auth_proxyuser_changelist')
-
-    @property
-    def admin_add_url(self):
-        return reverse('admin:auth_proxyuser_add')
-
-    @property
-    def admin_change_url(self):
-        return reverse('admin:auth_proxyuser_change', kwargs={"object_id": self.pk})
-
-    @property
-    def admin_disable_url(self):
-        return reverse('admin:auth_proxyuser_disable', kwargs={"object_id": self.pk})
-
-    @property
-    def admin_enable_url(self):
-        return reverse('admin:auth_proxyuser_enable', kwargs={"object_id": self.pk})
-    
-    @property
     def fullname(self):
         return "%s %s" % (self.first_name, self.last_name) if all([self.last_name, self.first_name]) else ''
 
@@ -289,6 +269,11 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     def in_address(self):
         pass
     
+    @property
+    def slack_notify(self):
+        from mighty.applications.user.notify.slack import SlackUser
+        return SlackUser(self)
+
     def clean(self):
         #self.check_phone()
         super().clean()

@@ -6,7 +6,13 @@
 <li><a href="{{ create_url }}">Create transaction</a></li>
 {% url opts|admin_urlname:'starttransaction' original.pk|admin_urlquote as start_url %}
 <li><a href="{{ start_url }}">Start transaction</a></li>
+{% url opts|admin_urlname:'canceltransaction' original.pk|admin_urlquote as cancel_url %}
+<li><a href="{{ cancel_url }}">Cancel transaction</a></li>
+{% url opts|admin_urlname:'endtransaction' original.pk|admin_urlquote as end_url %}
+<li><a href="{{ end_url }}">End transaction</a></li>
 {% url opts|admin_urlname:'fulltransaction' original.pk|admin_urlquote as full_url %}
 <li><a href="{{ full_url }}">Generate full transaction</a></li>
+{% url opts|admin_urlname:'statustransaction' original.pk|admin_urlquote as status_url %}
+<li><a href="{{ status_url }}">Status transaction</a></li>
 {{ block.super }}
 {% endblock %}

@@ -15,7 +15,7 @@ from mighty.applications.shop.models.bill.charge import ChargeModel
 class Bill(Base, PDFModel, ChargeModel):
     # Related
     subscription = models.ForeignKey('mighty.Subscription', on_delete=models.SET_NULL, blank=True, null=True, related_name='subscription_bill', editable=False)
-    service = models.ManyToManyField('mighty.Service', blank=True, related_name='service_bill')
+    service = models.ManyToManyField('mighty.ShopService', blank=True, related_name='service_bill')
     discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_bill')
     method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_bill', editable=False)
 

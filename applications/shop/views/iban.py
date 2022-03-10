@@ -39,12 +39,11 @@ class IbanFormDescView(FormDescView):
 
 class CheckIban(CheckData):
     def get_data(self):
-        data = self.request.POST
-        data["form_method"] = "IBAN"
-        return data
+        return self.get_request_type()
 
     def check_data(self):
         pm = PaymentMethod(**self.get_data())
+        pm.form_method = "IBAN"
         try:
             pm.check_validity()
         except ValidationError as e:

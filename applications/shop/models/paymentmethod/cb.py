@@ -56,7 +56,7 @@ class CBModel:
     @property
     def is_valid_cb(self):
         if not self.cb:
-            raise ValidationError(code='invalid_iban', message='invalid CB')
+            raise ValidationError(code='invalid_cb', message='invalid CB')
         self.cb = re.sub(r"\s+", "", self.cb, flags=re.UNICODE)
         if not self.is_valid_date:
             raise ValidationError(code='invalid_date', message='invalid date')

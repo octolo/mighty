@@ -23,6 +23,8 @@ document = (
     "status",
     "nb_signatories",
     "nb_locations",
+    "is_proof",
+    "hash_doc",
 )
 
 document_sz = (
@@ -35,6 +37,7 @@ document_sz = (
     "name",
     "document_sign",
     "object_uid",
+    "is_proof",
 )
 
 signatory = (

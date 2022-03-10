@@ -7,10 +7,15 @@ FREE = 'FREE'
 CUSTOM = 'CUSTOM'
 FREQUENCIES = (
     (ONEUSE, _('Par utilisation')),
-    (MONTH, _('Mensuel')),
-    (YEAR, _('Annuel')),
+    (MONTH, _('Paiement mensuel')),
+    (YEAR, _('Paiement annuel')),
     (FREE, _('Gratuite')),
     (CUSTOM, _('Custom')),
+)
+
+FREQUENCIES_USABLE = (
+    (MONTH, _('Paiement mensuel')),
+    (YEAR, _('Paiement annuel')),
 )
 
 CB = "CB"

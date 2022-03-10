@@ -11,6 +11,7 @@ service = (
     "price",
     "tax",
     "number",
+    "charge_at",
 )
 
 item = (
@@ -19,10 +20,10 @@ item = (
     "price",
     "tax",
     "number",
+    "service",
 )
 
 offer = (
-    "service",
     "name",
     "named_id",
     "frequency",
@@ -31,6 +32,9 @@ offer = (
     "price",
     "tax",
     "number",
+    "service",
+    "service_tenant",
+    "need_quotation",
 )
 
 

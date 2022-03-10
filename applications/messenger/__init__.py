@@ -4,6 +4,7 @@ from django.conf import settings
 from mighty.functions import get_backends
 from mighty.applications.messenger.choices import MODE_EMAIL, MODE_SMS, MODE_POSTAL, MODE_EMAILAR, MODE_POSTALAR
 from mighty.applications.messenger.apps import MessengerConfig as conf
+import json, requests
 
 def send_missive(missive):
     for backend, backend_path in get_backends([missive.backend], return_tuples=True, path_extend='.MissiveBackend', missive=missive):
@@ -85,3 +86,13 @@ def missive_backend_web():
 
 def missive_backend_app():
     return settings.MISSIVE_BACKEND_APP if hasattr(settings, 'MISSIVE_BACKEND_APP') else conf.missive_backends
+
+def notify_slack(hook, **kwargs):
+    data = {}
+    if kwargs.get("text"):
+        data["text"] = kwargs.get("text")
+    if kwargs.get("blocks"):
+        data["blocks"] = kwargs.get("blocks")
+    headers = {'Content-Type': 'application/json'}
+    request = requests.post(hook, headers=headers, data=json.dumps(data))
+    print(request.content)

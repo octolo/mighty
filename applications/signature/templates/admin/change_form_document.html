@@ -4,5 +4,7 @@
 {% block object-tools-items %}
 {% url opts|admin_urlname:'addtransaction' original.pk|admin_urlquote as add_url %}
 <li><a href="{{ add_url }}">Add to transaction</a></li>
+{% url opts|admin_urlname:'removetransaction' original.pk|admin_urlquote as remove_url %}
+<li><a href="{{ remove_url }}">Remove to transaction</a></li>
 {{ block.super }}
 {% endblock %}

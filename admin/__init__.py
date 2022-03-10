@@ -127,8 +127,10 @@ if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
 # Shop
 if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     from mighty.applications.shop import admin as admin_shop
-    @admin.register(all_models.Service)
-    class ServiceAdmin(admin_shop.ServiceAdmin): pass
+    @admin.register(all_models.ShopService)
+    class ShopServiceAdmin(admin_shop.ServiceAdmin): pass
+    @admin.register(all_models.ShopItem)
+    class ShopItemAdmin(admin_shop.ItemAdmin): pass
     @admin.register(all_models.Offer)
     class OfferAdmin(admin_shop.OfferAdmin): pass
     @admin.register(all_models.Subscription)

@@ -16,6 +16,8 @@ class TransactionDocument(Base):
     object_signed_id = models.PositiveIntegerField(blank=True, null=True)
     nb_signatories = models.PositiveIntegerField(default=0)
     nb_locations = models.PositiveIntegerField(default=0)
+    is_proof = models.BooleanField(default=False)
+    hash_doc = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return "%s(%s)" % (str(self.content_object), str(self.transaction))
@@ -31,7 +33,9 @@ class TransactionDocument(Base):
         self.transaction.save()
 
     def set_nb_signatories(self):
-        self.nb_signatories = self.document_to_location.distinct('signatory').count()
+        self.nb_signatories = self.transaction.transaction_to_signatory.annotate(
+            nb_location=models.Count("signatory_to_location"),
+        ).filter(nb_location__gt=0).count()
 
     def set_nb_locations(self):
         self.nb_locations = self.document_to_location.count()
@@ -53,7 +57,7 @@ class TransactionDocument(Base):
         return self.document_to_location.all()
     @property
     def to_sign(self):
-        return self.locations.count() > 0
+        return self.locations.exists() > 0
 
     def getattr_document(self, attr):
         if hasattr(self.document, attr):
@@ -72,3 +76,6 @@ class TransactionDocument(Base):
 
     def add_to_transaction(self):
         self.transaction.signature_backend.add_document(self)
+
+    def remove_to_transaction(self):
+        self.transaction.signature_backend.remove_document(self)

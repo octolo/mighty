@@ -1,9 +1,9 @@
 from mighty.applications.shop.models.items.discount import Discount
-from mighty.applications.shop.models.items.service import Service
-from mighty.applications.shop.models.items.item import Item
+from mighty.applications.shop.models.items.service import ShopService
+from mighty.applications.shop.models.items.item import ShopItem
 
 __all__ = (
     Discount,
-    Service,
-    Item,
+    ShopService,
+    ShopItem,
 )

@@ -18,6 +18,7 @@ api_urlpatterns = [
             path('cb/', views.CBFormDescView.as_view(), name="form-cb"),
             path('iban/', views.IbanFormDescView.as_view(), name="form-iban"),
             path('paymentmethod/', views.PaymentMethodFormDescView.as_view(), name="pm-form"),
+            path('frequency/', views.FrequencyFormDescView.as_view(), name="pm-form"),
         ])),
         path('check/', include([
             path('cb/', views.CheckCB.as_view(), name="check-cb"),

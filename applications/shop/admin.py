@@ -22,6 +22,7 @@ class ServiceAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.service}),)
 
 class OfferAdmin(BaseAdmin):
+    raw_id_fields = ("service_tenant",)
     view_on_site = False
     readonly_fields = ('duration', 'named_id')
     search_fields = ('name',)
@@ -30,10 +31,11 @@ class OfferAdmin(BaseAdmin):
     filter_horizontal = ('service',)
 
 class ItemAdmin(BaseAdmin):
+    raw_id_fields = ("service",)
     view_on_site = False
-    search_fields = ('code',)
-    list_display = ('code', 'amount', 'is_percent', 'date_end')
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.discount}),)
+    search_fields = ('name',)
+    list_display = ('name', 'key')
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.item}),)
 
 class SubscriptionAdmin(BaseAdmin):
     change_list_template = "admin/change_list_subscription.html"

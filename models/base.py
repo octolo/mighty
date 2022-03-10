@@ -145,7 +145,7 @@ class Base(models.Model):
     @property
     def admin_url_args(self): return {"object_id": self.pk}
     @property
-    def app_admin(self, reverse=None): return reverse if reverse else 'admin:%s_%s_%s'
+    def app_admin(self): return 'admin:%s_%s_%s'
     @property
     def admin_list_url(self): return self.get_url('changelist', self.app_admin)
     @property

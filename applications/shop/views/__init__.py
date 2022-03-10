@@ -3,7 +3,7 @@ from mighty.applications.shop.views.bill import BillPDF, BillList
 from mighty.applications.shop.views.iban import BicCalculJSON
 from mighty.applications.shop.views.cb import CBFormDescView, CheckCB
 from mighty.applications.shop.views.iban import IbanFormDescView, CheckIban
-from mighty.applications.shop.views.paymentmethod import PaymentMethodFormDescView
+from mighty.applications.shop.views.paymentmethod import PaymentMethodFormDescView, FrequencyFormDescView
 
 from mighty.applications.shop.views.webhooks.stripe import StripeCheckStatus
 
@@ -13,6 +13,6 @@ __all__ = (
     BicCalculJSON,
     CBFormDescView, CheckCB,
     IbanFormDescView, CheckIban,
-    PaymentMethodFormDescView,
+    PaymentMethodFormDescView, FrequencyFormDescView,
     StripeCheckStatus,
 )

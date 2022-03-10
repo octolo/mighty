@@ -65,6 +65,10 @@ class TransactionSignatory(Base):
     def role(self):
         return _c.SIGNATORY if self.signatory_to_location.count() else _c.OBSERVER
 
+    @property
+    def need_to_sign(self):
+        return (self.role == _c.SIGNATORY)
+
     # SIGNATORY NEEDS
     @property
     def fullname(self):

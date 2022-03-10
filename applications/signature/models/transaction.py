@@ -7,12 +7,16 @@ from mighty.applications.signature import choices as _c, get_signature_backend
 
 class Transaction(Base):
     name = models.CharField(max_length=255)
-    backend = models.CharField(max_length=255)
+    backend = models.CharField(max_length=255, blank=True, null=True)
     backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_TRANSACTION, default=_c.PREPARATION)
 
     class Meta:
         abstract = True
+
+    @property
+    def is_immutable(self):
+        return self.status in (_c.SIGNED, _c.CANCELLED)
 
     @property
     def document_model(self):
@@ -58,6 +62,12 @@ class Transaction(Base):
 
     def start_transaction(self):
         self.signature_backend.start_transaction()
+
+    def end_transaction(self):
+        self.signature_backend.end_transaction()
+
+    def status_transaction(self):
+        self.signature_backend.status_transaction()
 
     @transaction.atomic
     def make_transaction_one_shot(self):

@@ -546,3 +546,18 @@ def url_json_data(url):
     except Exception:
         pass
     return False
+
+import math
+def refn(*args, **kwargs):
+    sept = kwargs.get("separator", ":")
+    nfields = len(args)
+    size = kwargs.get("size", 16)-(nfields-1)
+    flsize = math.floor(size/nfields)
+    lastsize = flsize if size % 2 == 0 else flsize+1
+    to_join = [str(field)[:flsize] for field in args[:len(args)-1]]
+    to_join.append(str(args[-1])[:lastsize])
+    return sept.join(to_join)
+
+def url_domain(url):
+    domain = conf.domain
+    return "https://%s%s" % (domain, url)

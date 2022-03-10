@@ -1,8 +1,15 @@
 from mighty.apps import MightyConfig
+from mighty.functions import url_domain, setting
 from mighty.applications.logger import EnableLogger
 
 class Backend(EnableLogger):
     in_error = False
+    
+    def setting(self, data):
+        return setting(data)
+
+    def url_domain(self, url):
+        return url_domain(url)
 
     @property
     def domain(self):

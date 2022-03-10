@@ -7,13 +7,16 @@ from mighty.applications.shop import choices
 from mighty.applications.shop.models.realprice import RealPrice
 
 class Offer(RealPrice, Image):
-    service = models.ManyToManyField('mighty.Service', blank=True, related_name='service_offer')
     name = models.CharField(max_length=255)
     named_id = models.CharField(max_length=255, db_index=True, null=True, editable=False)
     frequency = models.CharField(max_length=255, choices=choices.FREQUENCIES, default=choices.MONTH)
     duration = models.DurationField(blank=True, null=True, editable=False)
     is_custom = models.BooleanField(default=False)
     price_tenant = models.PositiveIntegerField(default=0)
+    service = models.ManyToManyField('mighty.ShopService', blank=True, related_name='service_offer')
+    service_tenant = models.ForeignKey("mighty.ShopService", on_delete=models.SET_NULL, blank=True, null=True)
+    need_quotation = models.BooleanField(default=False)
+    
 
     class Meta(RealPrice.Meta):
         abstract = True
