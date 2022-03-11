@@ -26,8 +26,14 @@ class Role(Base, Image):
     def count(self):
         return self.sql_count if hasattr(self, 'sql_count') else self.number
 
-    def pre_save(self):
+    def set_number(self):
+        self.number = self.roles_tenant.count()
+
+    def set_name(self):
         self.name = self.name.lower()
 
+    def pre_save(self):
+        self.set_name()
+
     def pre_update(self):
-        self.number = self.roles_tenant.count()
+        self.set_number()
