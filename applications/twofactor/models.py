@@ -34,3 +34,8 @@ class Twofactor(Base):
     def get_backend(self):
         backend = import_string(self.backend)()
         return backend
+
+    @property
+    def slack_notify(self):
+        from mighty.applications.twofactor.notify.slack import SlackTwoFactor
+        return SlackTwoFactor(self)

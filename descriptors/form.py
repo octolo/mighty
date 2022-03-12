@@ -19,6 +19,8 @@ class FormDescriptor:
         self.form = form(request=request, *args, **kwargs)
 
     def input_type_field(self, field):
+        if hasattr(field, "input_type"):
+            return field.input_type
         if hasattr(field.widget, 'format_key'):
             if field.widget.format_key in self.formats_input:
                 return self.formats_input[field.widget.format_key]

@@ -1,8 +1,8 @@
 
-from ckeditor.widgets import CKEditorWidget
+from django.forms.widgets import Textarea
 
-class Document(CKEditorWidget):
+class Document(Textarea):
     input_type = 'document'
 
-class Classic(CKEditorWidget):
+class Classic(Textarea):
     input_type = 'classic'

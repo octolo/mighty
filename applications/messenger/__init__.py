@@ -94,5 +94,5 @@ def notify_slack(hook, **kwargs):
     if kwargs.get("blocks"):
         data["blocks"] = kwargs.get("blocks")
     headers = {'Content-Type': 'application/json'}
+    print(data)
     request = requests.post(hook, headers=headers, data=json.dumps(data))
-    print(request.content)
