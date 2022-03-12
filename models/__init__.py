@@ -2,13 +2,12 @@ from django.conf import settings
 from django.db import  models
 from django.utils.text import get_valid_filename
 
-from mighty.fields import JSONField
+from mighty.fields import JSONField, RichTextField
 from mighty.models.base import Base
 from mighty.models.keyword import Keyword
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 from mighty.functions import make_searchable
 
-from django_ckeditor_5.fields import CKEditor5Field
 
 ###########################
 # Models in mighty
@@ -73,7 +72,7 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 class News(Base, Keyword):
     keywords_fields = ['title',]
     title = models.CharField(max_length=255)
-    news = CKEditor5Field(blank=True, null=True)
+    news = RichTextField(blank=True, null=True)
     date_news = models.DateField(blank=True, null=True)
 
     class Meta(Base.Meta):

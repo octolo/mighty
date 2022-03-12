@@ -178,7 +178,7 @@ class AdminSite(admin.AdminSite):
             ], context)
 
 
-    @never_cache
+    #@never_cache
     def index(self, request, extra_context=None):
         """
         Display the main admin index page, which lists all of the installed
@@ -200,7 +200,7 @@ class AdminSite(admin.AdminSite):
         request.current_app = self.name
         return TemplateResponse(request, self.index_template or 'admin/index.html', context)
 
-    @never_cache
+    #@never_cache
     def stepsearch(self, request, extra_context=None):
         current_url = resolve(request.path_info).url_name
 
@@ -231,7 +231,7 @@ class AdminSite(admin.AdminSite):
         from mighty.applications.twofactor.views import LoginStepSearch
         return LoginStepSearch.as_view(**defaults)(request)
 
-    @never_cache
+    #@never_cache
     def stepchoices(self, request, extra_context=None):
         current_url = resolve(request.path_info).url_name
 
@@ -262,7 +262,7 @@ class AdminSite(admin.AdminSite):
         from mighty.applications.twofactor.views import LoginStepChoices
         return LoginStepChoices.as_view(**defaults)(request)
 
-    @never_cache
+    #@never_cache
     def stepcode(self, request, extra_context=None):
         current_url = resolve(request.path_info).url_name
 

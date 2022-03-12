@@ -1,8 +1,8 @@
 
-from django_ckeditor_5.widgets import CKEditor5Widget
+from ckeditor.widgets import CKEditorWidget
 
-class Document(CKEditor5Widget):
+class Document(CKEditorWidget):
     input_type = 'document'
 
-class Classic(CKEditor5Widget):
+class Classic(CKEditorWidget):
     input_type = 'classic'

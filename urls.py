@@ -1,13 +1,24 @@
 from django.conf import settings
-from django.urls import path, include
+from django.urls import path, re_path, include
 from mighty.apps import MightyConfig as conf
 from mighty.views import Widget, Config, ConfigListView, ConfigDetailView, GenericSuccess, SearchFormDesc
 
 app_name = "mighty"
+
 urlpatterns = [
     path('success/', GenericSuccess.as_view(), name="generic-success"),
     path('widgets/<str:widget>/<str:id>/', Widget.as_view(), name="mighty-widget"),
 ]
+
+if "ckeditor" in settings.INSTALLED_APPS and hasattr(settings, "CKEDITOR_UPLOAD_PATH"):
+    tools_urlpatterns = [
+        re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
+    ]
+elif "django_ckeditor_5" in settings.INSTALLED_APPS:
+    tools_urlpatterns = [
+        path("ckeditor5/", include('django_ckeditor_5.urls')),
+    ]
+
 
 api_urlpatterns = [
     path('config/', include([

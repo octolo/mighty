@@ -23,7 +23,7 @@ class TranslatorAdmin(BaseAdmin):
     list_display = ('name',)
     fieldsets = ((None, {'classes': ('wide',), 'fields': ('name',)}),)
 
-    @never_cache
+    #@never_cache
     def csv_view(self, request, object_id=None, extra_context=None):
         from mighty.models import TranslateDict
         from mighty.filegenerator import FileGenerator

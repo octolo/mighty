@@ -15,8 +15,7 @@ from mighty.applications.messenger import (
 from mighty.applications.messenger.apps import MessengerConfig as conf
 from mighty.functions import masking_email, masking_phone, get_model
 from mighty.models.base import Base
-
-from django_ckeditor_5.fields import CKEditor5Field
+from mighty.fields import RichTextField
 from html2text import html2text
 
 class MessengerModel(Base):
@@ -31,11 +30,11 @@ class MessengerModel(Base):
     last_name = models.CharField(max_length=255, blank=True, null=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
 
-    header_html = CKEditor5Field(blank=True, null=True)
-    footer_html = CKEditor5Field(blank=True, null=True)
+    header_html = RichTextField(blank=True, null=True)
+    footer_html = RichTextField(blank=True, null=True)
 
     subject = models.CharField(max_length=255)
-    html = CKEditor5Field()
+    html = RichTextField()
     txt = models.TextField()
 
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
