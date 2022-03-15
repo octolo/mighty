@@ -39,3 +39,9 @@ class Twofactor(Base):
     def slack_notify(self):
         from mighty.applications.twofactor.notify.slack import SlackTwoFactor
         return SlackTwoFactor(self)
+
+    @property
+    def discord_notify(self):
+        from mighty.applications.twofactor.notify.discord import DiscordTwoFactor
+        return DiscordTwoFactor(self)
+        

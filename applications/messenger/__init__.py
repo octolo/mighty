@@ -94,5 +94,17 @@ def notify_slack(hook, **kwargs):
     if kwargs.get("blocks"):
         data["blocks"] = kwargs.get("blocks")
     headers = {'Content-Type': 'application/json'}
-    print(data)
+    request = requests.post(hook, headers=headers, data=json.dumps(data))
+
+def notify_discord(hook, **kwargs):
+    data = {}
+    if kwargs.get("username"):
+        data["username"] = kwargs.get("text")
+    if kwargs.get("avatar_url"):
+        data["avatar_url"] = kwargs.get("avatar_url")
+    if kwargs.get("content"):
+        data["content"] = kwargs.get("content")        
+    if kwargs.get("embeds"):
+        data["embeds"] = kwargs.get("embeds")
+    headers = {'Content-Type': 'application/json'}
     request = requests.post(hook, headers=headers, data=json.dumps(data))
