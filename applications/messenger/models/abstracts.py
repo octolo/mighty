@@ -24,6 +24,7 @@ class MessengerModel(Base):
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=8)
     priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
     
+    sender = models.CharField(max_length=255, blank=True, null=True)
     target = models.CharField(max_length=255)
     service = models.CharField(max_length=255, blank=True, null=True)
     denomination = models.CharField(max_length=255, blank=True, null=True)
@@ -69,7 +70,6 @@ class MessengerModel(Base):
         self.set_backend()
         self.prepare_mode()
         self.need_to_send()
-        getattr(self, 'prepare_%s' % self.mode.lower())
 
     def __str__(self):
         return '%s (%s)' % (self.masking, self.subject)
@@ -84,10 +84,12 @@ class MessengerModel(Base):
         self.txt = 'not used for postal'
 
     def prepare_email(self):
-        pass
+        if not self.sender:
+            self.sender = conf.sender_email
 
     def prepare_emailar(self):
-        pass
+        if not self.sender:
+            self.sender = conf.sender_email
 
     def prepare_web(self):
         pass

@@ -17,5 +17,10 @@ api_urlpatterns = [
             path('<uuid:uid>/', views.RoleDetail.as_view(), name="api-role-detail"),
             path('exist/',  views.RoleCheckData.as_view(), name="api-role-exist"),
         ])),
+        path('setting/', include([
+            path('', views.TenantSettingList.as_view(), name="api-tenant-setting-list"),
+            path('<uuid:uid>/', views.TenantSettingDetail.as_view(), name="api-tenant-setting-detail"),
+            path('exist/',  views.TenantSettingCheckData.as_view(), name="api-tenant-setting-exist"),
+        ])),
     ])),
 ]

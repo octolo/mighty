@@ -67,7 +67,7 @@ class MissiveBackend(EnableLogger):
             self.email = EmailMultiAlternatives(
                 self.missive.subject,
                 html_content,
-                conf.sender_email,
+                self.missive.sender,
                 [self.missive.target],
                 headers={'Message-Id': self.missive.msg_id}
             )

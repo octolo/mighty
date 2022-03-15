@@ -1,8 +1,13 @@
 from rest_framework.generics import RetrieveAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
+
 from mighty.views import ModelViewSet
 from mighty.applications.tenant.views.tenant.base import TenantBase
 from mighty.applications.tenant.access import TenantAccess
+from mighty.applications.tenant.serializers import TenantSerializer
+
+class TenantBase(TenantBase):
+    serializer_class = TenantSerializer
 
 class TenantList(TenantBase, ListAPIView):
     def get(self, request, format=None):

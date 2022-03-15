@@ -6,18 +6,18 @@ from mighty.views import FoxidView
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.tenant import get_tenant_model, filters as tenant_filters, fields as tenant_fields
 
-RoleModel = get_tenant_model(TenantConfig.ForeignKey.role)
 TenantGroup = get_tenant_model(TenantConfig.ForeignKey.group)
+TenantSetting = get_tenant_model(TenantConfig.ForeignKey.fksetting)
 
-class RoleBase(FoxidView):
-    model = RoleModel
+class TenantSettingBase(FoxidView):
+    model = TenantSetting
     group_model = TenantGroup
-    queryset = RoleModel.objectsB.all()
+    queryset = TenantSetting.objects.all()
     group_way = "group"
     filters = [
         filters.SearchFilter(),
         tenant_filters.SearchByGroupUid(),
-        tenant_filters.SearchByRoleUid(id='uid', field='uid')
+        tenant_filters.SearchBySettingUid(id='uid', field='uid')
     ]
 
     @property
@@ -33,5 +33,5 @@ class RoleBase(FoxidView):
     def get_object(self, uid):
         return self.get_queryset().get(uid=uid)
 
-    def get_fields(self, role):
-        return {field: str(getattr(role, field)) for field in ('uid',) + tenant_fields.role}
+    def get_fields(self, setting):
+        return {field: str(getattr(setting, field)) for field in ('uid',) + tenant_fields.setting}

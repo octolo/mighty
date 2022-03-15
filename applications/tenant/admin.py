@@ -40,3 +40,9 @@ class TenantInvitationAdmin(BaseAdmin):
         link = reverse("admin:mighty_missive_change", args=[obj.missive.id])
         return format_html('<a href="{}">{}</a>', link, obj.missive) if obj.missive else None
     missive_link.short_description = 'Missive'
+
+class TenantSettingAdmin(BaseAdmin):
+    raw_id_fields = ('group',)
+    search_fields = ('name', 'group__search')
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.tenant_setting}),)

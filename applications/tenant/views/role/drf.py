@@ -1,6 +1,10 @@
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from mighty.applications.tenant.views.role.base import RoleBase
+from mighty.applications.tenant.serializers import RoleSerializer
+    
+class RoleBase(RoleBase):
+    serializer_class = RoleSerializer
 
 class RoleList(RoleBase, ListAPIView):
     mandatories = ('group',)

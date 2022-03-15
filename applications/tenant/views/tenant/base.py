@@ -2,12 +2,10 @@ from django.shortcuts import get_object_or_404
 from mighty.functions import get_descendant_value
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.tenant import get_tenant_model
-from mighty.applications.tenant.serializers import TenantSerializer
 
 TenantModel = get_tenant_model(TenantConfig.ForeignKey.tenant)
 
 class TenantBase:
-    serializer_class = TenantSerializer
     model = TenantModel
     queryset = TenantModel.objectsB.all()
     slug_field = 'uid'

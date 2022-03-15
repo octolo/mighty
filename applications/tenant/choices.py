@@ -25,3 +25,15 @@ ALTERNATE = (
     (ALTERNATE_DEFAULT, _('alternate')),
     (ALTERNATE_DEPUTY, _('deputy')),
 )
+
+DOMAIN = "DOMAIN"
+EMAILPREFIX = "EMAILPREFIX"
+SITEWEB = "SITEWEB"
+DOMAIN_TR = _("Domaine principal de votre société")
+EMAILPREFIX_TR = _("Préfixe pour les emails envoyé par la plateforme prefix@domain.com")
+SITEWEB_TR = _("https://domain.com")
+CONFIG_NAME = (
+    (DOMAIN, DOMAIN_TR),
+    (EMAILPREFIX, EMAILPREFIX_TR),
+    (SITEWEB, SITEWEB_TR),
+)

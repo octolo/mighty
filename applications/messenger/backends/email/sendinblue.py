@@ -65,8 +65,8 @@ class MissiveBackend(MissiveBackend):
         api_instance = self.api_email
         send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
             to=[{"email": self.missive.target}],
-            reply_to={"email": conf.reply_email, "name": conf.reply_name},
-            sender={"email": conf.sender_email, "name": conf.sender_name},
+            reply_to={"email": self.missive.sender, "name": conf.reply_name},
+            sender={"email": self.missive.sender, "name": conf.sender_name},
             subject= self.missive.subject
             html_content=self.missive.html,
             text_content=self.missive.txt,
