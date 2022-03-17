@@ -4,7 +4,9 @@ from django.conf import settings
 from mighty.functions import get_backends
 from mighty.applications.messenger.choices import MODE_EMAIL, MODE_SMS, MODE_POSTAL, MODE_EMAILAR, MODE_POSTALAR
 from mighty.applications.messenger.apps import MessengerConfig as conf
-import json, requests
+import json, requests, logging
+
+logger = logging.getLogger(__name__)
 
 def send_missive(missive):
     for backend, backend_path in get_backends([missive.backend], return_tuples=True, path_extend='.MissiveBackend', missive=missive):
@@ -13,12 +15,14 @@ def send_missive(missive):
 
 def send_missive_type(**kwargs):
     from mighty.models import Missive
+    logger.warning(kwargs)
     missive = Missive(
         header_html=kwargs.get('header_html'),
         footer_html=kwargs.get('footer_html'),
         content_type=kwargs.get('content_type'),
         object_id=kwargs.get('object_id'),
         mode=kwargs.get('mode'),
+        sender=kwargs.get('sender'),
         target=kwargs.get('target'),
         subject=kwargs.get('subject'),
         last_name=kwargs.get('last_name'),

@@ -14,6 +14,9 @@ class FormDescriptor:
         "file": "file-upload",
         "phone": "mobile-alt",
     }
+    validators = {
+        "regexvalidator": ("code", "message", "pattern")
+    }
 
     def __init__(self, form, request, *args, **kwargs):
         self.form = form(request=request, *args, **kwargs)
@@ -53,6 +56,30 @@ class FormDescriptor:
     def name_field(self, name): return self.fusion_field(name)
     def help_text_field(self, field): return field.help_text if field.help_text else field.label
     def hasIcon_field(self, field): return field.icon if hasattr(field, "icon") else self.defaultIcon_field(field)
+
+    def regexvalidator_pattern(self, field, validator):
+        return validator.regex.pattern
+
+    def get_config_validator(self, val, field, validator):
+        name = "%s_%s" % (validator.__class__.__name__.lower(), val)
+        if hasattr(self, name):
+            return getattr(self, name)(field, validator)
+        return getattr(validator, val)
+
+    def config_validator(self, field, validator):
+        name = validator.__class__.__name__.lower()
+        if name in self.validators:
+            config = {"name": name}
+            config.update({val: self.get_config_validator(val, field, validator) 
+                for val in self.validators[name]})
+            return config
+        return False
+
+    def validators_fields(self, field):
+        if len(field.validators):
+            validators = [self.config_validator(field, validator)
+                for validator in field.validators]
+            return [val for val in validators if val]
 
     def dependencies_field(self, name):
         return getattr(self.form, "%s_dependencies" % name) if hasattr(self.form, "%s_dependencies" % name) else None
@@ -114,6 +141,7 @@ class FormDescriptor:
             "type": self.input_type_field(field),
             "errors": self.errors_field(field),
             "placeholder": self.help_text_field(field),
+            "validators": self.validators_fields(field),
             "label": field.label,
             "dependencies": self.dependencies_field(name),
             "choice_dependencies": self.choice_dependencies_field(name),
