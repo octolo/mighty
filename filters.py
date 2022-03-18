@@ -341,7 +341,7 @@ class Foxid:
     order = None
     distinct = None
     order_enable = True
-    order_base = None
+    order_base = []
 
     class Param:
         _filters = 'f'
@@ -369,7 +369,7 @@ class Foxid:
         self.include = self.execute(request.GET.get(self.Param._include, False))
         self.exclude = self.execute(request.GET.get(self.Param._exclude, False))
         self.order = self.method_request.get(self.Param._order, kwargs.get('order', False))
-        self.order_base = kwargs.get('order_base', False)
+        self.order_base = kwargs.get('order_base', [])
         self.distinct = kwargs.get('distinct', False)
 
     def execute(self, input_str):
@@ -470,12 +470,13 @@ class Foxid:
 
     def order_by(self):
         args = []
-        args += self.order.replace('.', '__').split(SEPARATOR)
+        if self.order:
+            args += [o.replace('.', '__') for o in self.order.split(SEPARATOR)]
         args_base = [arg.replace("-", "") for arg in args]
-        if self.order_base:
-            ord_base = self.order_base.replace("-", "")
-            if ord_base not in args_base:
-                args.append(self.order_base)
+        if len(self.order_base):
+            for ord_base in self.order_base:
+                if ord_base.replace("-", "") not in args_base:
+                    args.append(ord_base)
         return args
 
     def ready(self):
@@ -490,8 +491,6 @@ class Foxid:
                 self.queryset = self.queryset.distinct()
             elif type(self.distinct) == list:
                 self.queryset = self.queryset.distinct(*self.distinct)
-        if self.order and self.order_enable:
-            print(self.order_by())
+        if self.order_enable:
             self.queryset = self.queryset.order_by(*self.order_by())
         return self.queryset
-        #return [value for value in super().get_value().split(SEPARATOR)]

@@ -8,6 +8,7 @@ class ModelViewSet(ModelViewSet):
     cache_manager = None
     filters = []
     user_way = "user__id"
+    order_base = []
 
     # Filter query
     def Q_is_me(self, prefix=""):
@@ -19,7 +20,8 @@ class ModelViewSet(ModelViewSet):
 
     @property
     def foxid(self):
-        return Foxid(self.queryset, self.request, f=self.manager.flts).ready()
+        print(self.order_base)
+        return Foxid(self.queryset, self.request, f=self.manager.flts, order_base=self.order_base).ready()
 
     @property
     def manager(self):
