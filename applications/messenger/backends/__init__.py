@@ -66,11 +66,12 @@ class MissiveBackend(EnableLogger):
     @property
     def reply_email(self):
         return [self.missive.reply] if self.missive.reply else [self.missive.sender]
-            
 
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
+        self.logger.info("Email - from : %s, to : %s, reply : %s" % 
+            (self.sender_email, self.missive.target, self.reply_email))
         if setting('MISSIVE_SERVICE', False):
             self.missive.msg_id = make_msgid()
             text_content = str(self.missive.txt)
