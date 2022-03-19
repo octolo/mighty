@@ -57,6 +57,17 @@ class MissiveBackend(EnableLogger):
         if setting('MISSIVE_SERVICE', False):
             self.email.send()
 
+    @property
+    def sender_email(self):
+        if self.missive.name:
+            return "%s <%s>" % (self.missive.name, self.missive.sender)
+        return self.missive.sender
+
+    @property
+    def reply_email(self):
+        return [self.missive.reply] if self.missive.reply else [self.missive.sender]
+            
+
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
@@ -67,8 +78,9 @@ class MissiveBackend(EnableLogger):
             self.email = EmailMultiAlternatives(
                 self.missive.subject,
                 html_content,
-                self.missive.sender,
+                self.sender_email,
                 [self.missive.target],
+                reply_to=self.reply_email,
                 headers={'Message-Id': self.missive.msg_id}
             )
             self.email.attach_alternative(html_content, "text/html")

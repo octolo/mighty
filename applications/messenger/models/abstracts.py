@@ -24,7 +24,9 @@ class MessengerModel(Base):
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=8)
     priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
     
+    name = models.CharField(max_length=255, blank=True, null=True)
     sender = models.CharField(max_length=255, blank=True, null=True)
+    reply = models.CharField(max_length=255, blank=True, null=True)
     target = models.CharField(max_length=255)
     service = models.CharField(max_length=255, blank=True, null=True)
     denomination = models.CharField(max_length=255, blank=True, null=True)

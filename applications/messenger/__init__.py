@@ -23,6 +23,8 @@ def send_missive_type(**kwargs):
         object_id=kwargs.get('object_id'),
         mode=kwargs.get('mode'),
         sender=kwargs.get('sender'),
+        name=kwargs.get('name'),
+        reply=kwargs.get('reply'),
         target=kwargs.get('target'),
         subject=kwargs.get('subject'),
         last_name=kwargs.get('last_name'),
