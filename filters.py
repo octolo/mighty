@@ -233,7 +233,9 @@ class BooleanParamFilter(ParamFilter):
         return self.mask
 
     def get_value(self):
-        value = super().get_value()[0]
+        value = super().get_value()
+        if type(value).__name__ == "str":
+            return True if value == "true" else False
         return bool(int(value))
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
