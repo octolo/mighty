@@ -20,7 +20,6 @@ class ModelViewSet(ModelViewSet):
 
     @property
     def foxid(self):
-        print(self.order_base)
         return Foxid(self.queryset, self.request, f=self.manager.flts, order_base=self.order_base).ready()
 
     @property
