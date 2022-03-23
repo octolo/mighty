@@ -8,6 +8,7 @@ django-json-widget==1.1.1
 python-magic==0.4.24
 python-dateutil==2.8.2
 pdfkit==1.0.0
+openpyxl==3.0.9
 -r applications/address/requirements.txt
 -r applications/user/requirements.txt
 -r applications/messenger/requirements.txt
