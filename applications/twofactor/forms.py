@@ -24,8 +24,8 @@ class TwoFactorSearchForm(FormDescriptable):
     username = forms.CharField(label=_.search, required=True)
     error_messages = { 'invalid_search': _.invalid_search, 'inactive': _.inactive }
 
-    def __init__(self, *args, **kwargs): 
-        super().__init__(*args, **kwargs) 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.user_cache = None
 
     def set_session_with_uid(self, uid):
@@ -50,8 +50,8 @@ class TwoFactorChoicesForm(FormDescriptable):
     receiver = forms.CharField(widget=forms.HiddenInput)
     error_messages = { 'inactive': _.inactive, 'cant_send': _.cant_send, 'method_not_allowed': _.method_not_allowed }
 
-    def __init__(self, *args, **kwargs): 
-        super().__init__(*args, **kwargs) 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.uid = self.request.session['login_uid']
         self.user_cache = UserModel.objects.get(uid=self.uid)
         self.emails, self.phones = [], []
@@ -104,8 +104,9 @@ class TwoFactorChoicesForm(FormDescriptable):
 class TwoFactorCodeForm(AuthenticationForm):
     uid = None
     error_messages = { 'cant_found': _.cant_found, }
+    password = forms.fields.CharField(label="Code d'authentification")
 
-    def __init__(self, *args, **kwargs): 
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_cache = None
         self.fields.pop('username')
@@ -136,7 +137,7 @@ class TwoFactorCodeForm(AuthenticationForm):
         return self.cleaned_data
 
 class SignUpForm(UserCreationForm):
-    def __init__(self, use_password=True, *args, **kwargs): 
+    def __init__(self, use_password=True, *args, **kwargs):
         super(SignUpForm, self).__init__(*args, **kwargs)
         self.use_password = use_password
         if not use_password:
