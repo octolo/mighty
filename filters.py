@@ -229,6 +229,8 @@ class SearchFilter(ParamFilter):
         return Q()
 
 class BooleanParamFilter(ParamFilter):
+    enable_false = False
+
     def get_mask(self):
         return self.mask
 
@@ -237,6 +239,11 @@ class BooleanParamFilter(ParamFilter):
         if type(value).__name__ == "str":
             return True if value in ("true", "1") else False
         return bool(int(value))
+
+    def get_Q(self):
+        if self.enable_false or self.get_value():
+            return super().get_Q()
+
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
     def __init__(self, id='gtelte', request=None, *args, **kwargs):
