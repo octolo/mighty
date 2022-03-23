@@ -5,16 +5,17 @@ from django.core.exceptions import MultipleObjectsReturned
 from mighty import functions
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
-import datetime, sys, logging, csv, os.path
-logger = logging.getLogger(__name__)
+import datetime, sys, csv, os.path
 
 class BaseCommand(BaseCommand, EnableLogger):
+    total = 0
     help = 'Command Base override by Mighty'
     position = 0
     prefix_bar = 'Percent'
     current_info = ''
     errors = []
     in_test = False
+    loader = False
 
     def get_total(self):
         return self.total if self.total else 0
@@ -26,7 +27,7 @@ class BaseCommand(BaseCommand, EnableLogger):
         return self.current_info
 
     def progress_bar(self, bar_length=20):
-        if self.verbosity > 0:
+        if self.verbosity > 0 and self.total:
             percent = self.position / self.get_total()
             if self.progressbar:
                 arrow = '-' * int(round(percent * bar_length)-1) + '>'
@@ -58,6 +59,7 @@ class BaseCommand(BaseCommand, EnableLogger):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
+        parser.add_argument('--loader', action="store_true")
         parser.add_argument('--test', action="store_true")
         parser.add_argument('--total', default=0)
         parser.add_argument('--encoding', default='utf8')
@@ -68,12 +70,13 @@ class BaseCommand(BaseCommand, EnableLogger):
         self.in_test = options.get('test')
         self.encoding = options.get('encoding')
         self.logfile = options.get('logfile')
+        self.loader = options.get('loader')
         self.progressbar = options.get('progressbar')
         self.verbosity = options.get('verbosity', 0)
-        logger.debug('start')
+        self.logger.debug('start')
         self.makeJob()
         self.showErrors()
-        logger.debug('end')
+        self.logger.debug('end')
 
     def makeJob(self):
         self.before_job()
@@ -85,8 +88,7 @@ class BaseCommand(BaseCommand, EnableLogger):
 
     def showErrors(self):
         for error in self.errors:
-            print(error)
-            logger.info(error)
+            self.logger.info(error)
 
     def do(self):
         raise NotImplementedError("Command should implement method do(self)")
@@ -136,15 +138,84 @@ class ModelBaseCommand(BaseCommand):
         for obj in qs:
             self.current_object = obj
             self.set_position()
-            self.progress_bar()
+            if self.loader or self.progressbar:
+                self.progress_bar()
             self.on_object(obj)
 
     def on_object(self, object):
         raise NotImplementedError("Command should implement method on_object(self, obj)")
 
-class CSVModelCommand(ModelBaseCommand):
+class ImportModelCommand(ModelBaseCommand):
+    _reader = None
+    _total = None
+    current_row = None
     column_for_current = None
+    fields = {}
+    reverse = None
+    real_values = {}
 
+    def field(self, name):
+        return self.current_row[self.reverse[name]]
+
+    def real_value(self, value):
+        if value and value.lower() in self.real_values:
+            return self.real_values[value.lower()]
+        self.logger.info(value)
+        return value
+
+    @property
+    def reader(self):
+        raise NotImplementedError("Command should implement property reader")
+
+    @property
+    def total(self):
+        raise NotImplementedError("Command should implement property total")
+
+    def prepare_fields(self, fields):
+        if hasattr(self, 'fields'):
+            ofields = self.fields
+            self.fields = {}
+            for field in fields:
+                self.fields[field] = ofields[field] if field in ofields else field
+            self.reverse = {v: k for k,v in self.fields.items()}
+        else:
+            self.fields = self.reverse = {field: field for field in fields}
+
+    def do(self):
+        self.prepare_fields(self.reader.fieldnames)
+        for row in self.reader:
+            self.set_position()
+            if self.loader or self.progressbar:
+                self.progress_bar()
+            self.current_row = row
+            self.on_row(row)
+
+    def on_row(self, row):
+        raise NotImplementedError("Command should implement method on_object(self, obj)")
+
+from mighty.readers import ReaderXLS
+class XLSModelCommand(ImportModelCommand):
+    @property
+    def reader(self):
+        if not self._reader:
+            self._reader = ReaderXLS(self.xlsfile)
+        return self._reader
+
+    @property
+    def total(self):
+        return self.reader.total-1
+
+    def add_arguments(self, parser):
+        parser.add_argument('--xls')
+        super().add_arguments(parser)
+
+    def handle(self, *args, **options):
+        self.xlsfile = options.get('xls')
+        if not os.path.isfile(self.xlsfile):
+            raise CommandError('XLS "%s" does not exist' % self.csv)
+        super().handle(*args, **options)
+
+class CSVModelCommand(ImportModelCommand):
     def add_arguments(self, parser):
         parser.add_argument('--csv')
         parser.add_argument('--delimiter', default=',')
@@ -161,34 +232,15 @@ class CSVModelCommand(ModelBaseCommand):
             raise CommandError('CSV "%s" does not exist' % self.csv)
         super().handle(*args, **options)
 
+    @property
+    def reader(self):
+        if not self._reader:
+            csvfile = open(self.csvfile, encoding=self.encoding)
+            self._reader = csv.DictReader(csvfile, delimiter=self.delimiter)
+        return self._reader
 
-    def prepare_fields(self, fields):
-        if hasattr(self, 'fields'):
-            ofields = self.fields
-            rfields = {value: key for key, value in self.fields.items()}
-            self.fields = {}
-            self.reverse = {}
-            for field in fields:
-                self.fields[field] = ofields[field] if field in ofields else field
-                if field in rfields:
-                    self.reverse[rfields[field]] = field
-                else:
-                    self.reverse[field] = field
-            self.fields = {field: field for field in fields}
-        else:
-            self.fields = self.reverse = {field: field for field in fields}
-
-    def do(self):
-        self.total = len(open(self.csvfile).readlines())-1
-        with open(self.csvfile, encoding=self.encoding) as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=self.delimiter)
-            self.prepare_fields(reader.fieldnames)
-            for row in reader:
-                self.set_position()
-                if self.column_for_current:
-                    self.current_info = row[self.reverse['extension']]
-                self.progress_bar()
-                self.on_row(row)
-
-    def on_row(self, row):
-        raise NotImplementedError("Command should implement method on_object(self, obj)")
+    @property
+    def total(self):
+        if not self._total:
+            self._total = len(open(self.csvfile).readlines())-1
+        return self._total

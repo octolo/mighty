@@ -1,0 +1,1 @@
+from mighty.readers.xls import ReaderXLS
