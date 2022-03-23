@@ -94,6 +94,7 @@ def missive_backend_app():
     return settings.MISSIVE_BACKEND_APP if hasattr(settings, 'MISSIVE_BACKEND_APP') else conf.missive_backends
 
 def notify_slack(hook, **kwargs):
+    hook = settings.SLACK_HOOK_DEBUG if settings.DEBUG else hook
     data = {}
     if kwargs.get("text"):
         data["text"] = kwargs.get("text")
@@ -103,6 +104,7 @@ def notify_slack(hook, **kwargs):
     request = requests.post(hook, headers=headers, data=json.dumps(data))
 
 def notify_discord(hook, **kwargs):
+    hook = settings.DISCORD_HOOK_DEBUG if settings.DEBUG else hook
     data = {}
     if kwargs.get("username"):
         data["username"] = kwargs.get("text")

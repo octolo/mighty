@@ -235,7 +235,7 @@ class BooleanParamFilter(ParamFilter):
     def get_value(self):
         value = super().get_value()
         if type(value).__name__ == "str":
-            return True if value == "true" else False
+            return True if value in ("true", "1") else False
         return bool(int(value))
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
@@ -286,10 +286,12 @@ class FiltersManager:
     cache_filters = None
     request = None
     data_load = None
+    filter_post_enable = True
 
     def __init__(self, *args, **kwargs):
         self.flts = kwargs.get('flts', [])
         self.mandatories = kwargs.get('mandatories', [])
+        self.filter_post_enable = kwargs.get("filter_post_enable", True)
 
     def check_mandatories(self, request):
         return all(k in self.get_data(request) for k in self.mandatories)
@@ -300,7 +302,7 @@ class FiltersManager:
             self.request = request
             if hasattr(request, 'GET'):
                 self.data_load.update(request.GET)
-            if hasattr(request, 'POST'):
+            if hasattr(request, 'POST') and self.filter_post_enable:
                 if request.POST:
                     self.data_load.update(request.POST)
                 elif hasattr(request, 'data'):
