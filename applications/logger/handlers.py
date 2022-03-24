@@ -35,7 +35,18 @@ def log_in_db(record, msg):
         dblog.object_id = record.log_in_db.id
         dblog.save()
 
-class ConsoleHandler(logging.StreamHandler):
+class NotifySlackDiscord:
+    def slack_notify(self, record):
+        from mighty.applications.logger.notify.slack import SlackLogger
+        slack = SlackLogger(record)
+        slack.send_error()
+
+    def discord_notify(self, record):
+        from mighty.applications.logger.notify.discord import DiscordLogger
+        discord = DiscordLogger(record)
+        discord.send_error()
+
+class ConsoleHandler(logging.StreamHandler, NotifySlackDiscord):
     def format(self, record):
         msg = super().format(record)
         if hasattr(record, 'user'):
@@ -45,13 +56,23 @@ class ConsoleHandler(logging.StreamHandler):
         msg = "%s%s%s" % (getattr(conf.Color, record.levelname.lower()), msg, conf.Color.default)
         return msg
 
-class FileHandler(logging.FileHandler):
+    def emit(self, record):
+        self.slack_notify(record)
+        self.discord_notify(record)
+        super().emit(record)
+
+class FileHandler(logging.FileHandler, NotifySlackDiscord):
     def format(self, record):
         msg = super().format(record)
         msg = conf.Log.format_user.format(record.user.logname, msg) if hasattr(record, 'user') and hasattr(record.user, 'logname') else msg
         if getattr(record, 'log_in_db', False):
             log_in_db(record, msg)
         return msg
+
+    def emit(self, record):
+        self.slack_notify(record)
+        self.discord_notify(record)
+        super().emit(record)
 
 class DatabaseHander(logging.StreamHandler):
     pass

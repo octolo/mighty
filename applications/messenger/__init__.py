@@ -93,26 +93,42 @@ def missive_backend_web():
 def missive_backend_app():
     return settings.MISSIVE_BACKEND_APP if hasattr(settings, 'MISSIVE_BACKEND_APP') else conf.missive_backends
 
-def notify_slack(hook, **kwargs):
-    hook = settings.SLACK_HOOK_DEBUG if settings.DEBUG else hook
-    data = {}
-    if kwargs.get("text"):
-        data["text"] = kwargs.get("text")
-    if kwargs.get("blocks"):
-        data["blocks"] = kwargs.get("blocks")
-    headers = {'Content-Type': 'application/json'}
-    request = requests.post(hook, headers=headers, data=json.dumps(data))
+def notify_slack(hookname, **kwargs):
+    hook = False
+    if settings.DEBUG and hasattr(settings, "SLACK_HOOK_DEBUG"):
+        hook = settings.SLACK_HOOK_DEBUG
+    elif hasattr(settings, "SLACK_HOOK") and hookname in settings.SLACK_HOOK:
+       hook = settings.DISCORD_HOOK[hookname]
 
-def notify_discord(hook, **kwargs):
-    hook = settings.DISCORD_HOOK_DEBUG if settings.DEBUG else hook
-    data = {}
-    if kwargs.get("username"):
-        data["username"] = kwargs.get("text")
-    if kwargs.get("avatar_url"):
-        data["avatar_url"] = kwargs.get("avatar_url")
-    if kwargs.get("content"):
-        data["content"] = kwargs.get("content")        
-    if kwargs.get("embeds"):
-        data["embeds"] = kwargs.get("embeds")
-    headers = {'Content-Type': 'application/json'}
-    request = requests.post(hook, headers=headers, data=json.dumps(data))
+    print(hookname, hook)
+
+    if hook:
+        data = {}
+        if kwargs.get("text"):
+            data["text"] = kwargs.get("text")
+        if kwargs.get("blocks"):
+            data["blocks"] = kwargs.get("blocks")
+        headers = {'Content-Type': 'application/json'}
+        request = requests.post(hook, headers=headers, data=json.dumps(data))
+
+def notify_discord(hookname, **kwargs):
+    hook = False
+    if settings.DEBUG and hasattr(settings, "DISCORD_HOOK_DEBUG"):
+        hook = settings.DISCORD_HOOK_DEBUG
+    elif hasattr(settings, "DISCORD_HOOK") and hookname in settings.DISCORD_HOOK:
+       hook = settings.DISCORD_HOOK[hookname]
+
+    print("hook", hook)
+
+    if hook:
+        data = {}
+        if kwargs.get("username"):
+            data["username"] = kwargs.get("text")
+        if kwargs.get("avatar_url"):
+            data["avatar_url"] = kwargs.get("avatar_url")
+        if kwargs.get("content"):
+            data["content"] = kwargs.get("content")        
+        if kwargs.get("embeds"):
+            data["embeds"] = kwargs.get("embeds")
+        headers = {'Content-Type': 'application/json'}
+        request = requests.post(hook, headers=headers, data=json.dumps(data))

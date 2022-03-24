@@ -24,8 +24,7 @@ class DiscordTwoFactor(NotifyBackend):
         }]}
 
     def send_msg_create(self):
-        hook = self.setting("DISCORD_HOOK")["notifications"]
-        notify_discord(hook, **self.discord_msg_creation)
+        notify_discord("notifications", **self.discord_msg_creation)
 
     @property
     def discord_msg_connection(self):
@@ -38,5 +37,4 @@ class DiscordTwoFactor(NotifyBackend):
 		}
 
     def send_msg_connection(self):
-        hook = self.setting("DISCORD_HOOK")["notifications"]
-        notify_discord(hook, **self.discord_msg_connection)
+        notify_discord("notifications", **self.discord_msg_connection)

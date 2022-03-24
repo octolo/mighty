@@ -32,9 +32,8 @@ class SlackTwoFactor(NotifyBackend):
 		{ "type": "divider" }]
 
     def send_msg_create(self):
-        hook = self.setting("SLACK_HOOK")["notifications"]
         text = "New code send : %s" % self.date_send.strftime('%Y-%m-%d %H:%M')
-        notify_slack(hook, text=text, blocks=self.slack_msg_creation)
+        notify_slack("notifications", text=text, blocks=self.slack_msg_creation)
 
     @property
     def slack_msg_connection(self):
@@ -54,6 +53,5 @@ class SlackTwoFactor(NotifyBackend):
 		{ "type": "divider" }]
 
     def send_msg_connection(self):
-        hook = self.setting("SLACK_HOOK")["notifications"]
         text = "New connexion : %s" % self.date_send.strftime('%Y-%m-%d %H:%M')
-        notify_slack(hook, text=text, blocks=self.slack_msg_connection)
+        notify_slack("notifications", text=text, blocks=self.slack_msg_connection)
