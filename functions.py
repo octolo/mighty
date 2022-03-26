@@ -104,6 +104,26 @@ def hex_color_rand():
     r = lambda: random.randint(0,255)
     return '#%02X%02X%02X' % (r(),r(),r())
 
+def hex_to_rgb(hex):
+    return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
+
+def rgb_to_hex(rgb):
+    return '#%02x%02x%02x' %rgb
+
+def hex_darker_color(hex, step):
+    r, g, b = hex_to_rgb(hex)
+    rstep = r/step
+    gstep = g/step
+    bstep = b/step
+    return [rgb_to_hex((round(r-rstep*i), round(g-gstep*i), round(b-bstep*i))) for i in range(1, step)]
+
+def hex_lighter_color(hex, step):
+    r, g, b = hex_to_rgb(hex)
+    rstep = (255-r)/step
+    gstep = (255-g)/step
+    bstep = (255-b)/step
+    return [rgb_to_hex((round(r+rstep*i), round(g+gstep*i), round(b+bstep*i))) for i in range(1, step+1)]
+
 # Generate unique code for model
 def generate_code(obj, *args, **kwargs):
     number = kwargs.get('number', '')
