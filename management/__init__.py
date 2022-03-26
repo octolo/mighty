@@ -5,6 +5,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from mighty import functions
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
+from mighty.readers import ReaderXLS
 import datetime, sys, csv, os.path
 
 class BaseCommand(BaseCommand, EnableLogger):
@@ -153,14 +154,30 @@ class ImportModelCommand(ModelBaseCommand):
     fields = {}
     reverse = None
     real_values = {}
+    required_fields = []
+    need_reset_reader = False
+
+    def reset_reader(self):
+        self.position = 0
+        self.need_reset_reader = True
+
+    def is_required(self, name):
+        return (name in self.required_fields)
 
     def field(self, name):
-        return self.current_row[self.reverse[name]]
+        try:
+            return self.current_row[self.reverse[name]]
+        except KeyError:
+            for key,value in self.current_row.items():
+                if key and key.lower() == name:
+                    return self.current_row[key]
+        if self.is_required(name):
+            raise KeyError(name + " not found")
+        return None
 
     def real_value(self, value):
         if value and value.lower() in self.real_values:
             return self.real_values[value.lower()]
-        self.logger.info(value)
         return value
 
     @property
@@ -182,23 +199,27 @@ class ImportModelCommand(ModelBaseCommand):
             self.fields = self.reverse = {field: field for field in fields}
 
     def do(self):
+        self.loop_qs("on_row")
+
+    def loop_qs(self, do):
         self.prepare_fields(self.reader.fieldnames)
         for row in self.reader:
+            self.current_row = row
             self.set_position()
             if self.loader or self.progressbar:
                 self.progress_bar()
-            self.current_row = row
-            self.on_row(row)
+            getattr(self, do)(row)
 
     def on_row(self, row):
         raise NotImplementedError("Command should implement method on_object(self, obj)")
 
-from mighty.readers import ReaderXLS
+
 class XLSModelCommand(ImportModelCommand):
     @property
     def reader(self):
-        if not self._reader:
-            self._reader = ReaderXLS(self.xlsfile)
+        if not self._reader or self.need_reset_reader:
+            self._reader = ReaderXLS(self.xlsfile, self.sheet)
+            self.need_reset_reader = False
         return self._reader
 
     @property
@@ -206,11 +227,14 @@ class XLSModelCommand(ImportModelCommand):
         return self.reader.total-1
 
     def add_arguments(self, parser):
+        parser.add_argument('--sheet')
         parser.add_argument('--xls')
         super().add_arguments(parser)
 
     def handle(self, *args, **options):
         self.xlsfile = options.get('xls')
+        print(self.xlsfile)
+        self.sheet = options.get('sheet')
         if not os.path.isfile(self.xlsfile):
             raise CommandError('XLS "%s" does not exist' % self.csv)
         super().handle(*args, **options)
@@ -234,9 +258,10 @@ class CSVModelCommand(ImportModelCommand):
 
     @property
     def reader(self):
-        if not self._reader:
+        if not self._reader or self.need_reset_reader:
             csvfile = open(self.csvfile, encoding=self.encoding)
             self._reader = csv.DictReader(csvfile, delimiter=self.delimiter)
+            self.need_reset_reader = False
         return self._reader
 
     @property
