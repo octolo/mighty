@@ -14,7 +14,7 @@ from mighty.applications.messenger import (
     missive_backend_app,
 )
 from mighty.applications.messenger.apps import MessengerConfig as conf
-from mighty.functions import masking_email, masking_phone, get_model
+from mighty.functions import masking_email, masking_phone, get_model, url_domain
 from mighty.models.base import Base
 from mighty.fields import RichTextField
 from html2text import html2text
@@ -152,4 +152,4 @@ class MessengerModel(Base):
 
     @property
     def html_format(self):
-        return render_to_string(self.template, {"object": self }) if self.template else self.html
+        return render_to_string(self.template, {"object": self, domain_url: url_domain("") }) if self.template else self.html
