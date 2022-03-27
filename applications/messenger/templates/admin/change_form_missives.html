@@ -2,6 +2,7 @@
 {% load admin_urls mighty %}
 
 {% block object-tools-items %}
+<li><a href="{{ original.url_viewer }}">viewer</a></li>
 {% url opts|admin_urlname:'html' original.pk|admin_urlquote as html_url %}
 <li><a href="{{ html_url }}">html</a></li>
 {{ block.super }}

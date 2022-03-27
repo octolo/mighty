@@ -1,4 +1,5 @@
 missive = (
+    "template",
     "name",
     "sender",
     "reply",
@@ -24,6 +25,7 @@ missive = (
 )
 
 notification = (
+    "template",
     "content_type",
     "object_id",
     "is_read",

@@ -105,7 +105,7 @@ class TwoFactorBackend(ModelBackend):
         if minutes:
             missive = Missive.objects.filter(
                 target=target,
-                subject=subject, 
+                subject=subject,
                 date_update__gte=self.get_date_protect(minutes)
             ).order_by('-date_update').last()
             if missive:
@@ -120,6 +120,10 @@ class TwoFactorBackend(ModelBackend):
             "txt": _.tpl_txt % {'domain': MightyConfig.domain, 'code': str(obj.code)},
         }
 
+    @property
+    def email_template(self):
+        return conf.email_template
+
     def send_sms(self, obj, user, target):
         data = self.get_data_missive(user, obj)
         data.update({"target": target, "mode": choices.MODE_SMS})
@@ -130,7 +134,7 @@ class TwoFactorBackend(ModelBackend):
 
     def send_email(self, obj, user, target):
         data = self.get_data_missive(user, obj)
-        data.update({"target": target})
+        data.update({"target": target, "template": self.email_template})
         self.check_protect(target, data["subject"], conf.mail_protect_spam)
         missive = Missive(**data)
         missive.save()

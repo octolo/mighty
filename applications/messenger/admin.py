@@ -9,11 +9,44 @@ from mighty.applications.address import fields as addr_fields
 class MissiveAdmin(BaseAdmin):
     change_form_template  = 'admin/change_form_missives.html'
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.missive + addr_fields}),)
     list_display = ('target', 'subject', 'mode', 'status')
     search_fields = ('target',)
     list_filter = ('mode', 'status')
     readonly_fields = ('backend', 'response', 'partner_id', 'code_error', 'trace')
+    fieldsets = (
+        (None, {"classes": ("wide",), "fields": (
+            "mode",
+            "status",
+            "name",
+            "sender",
+            "reply",
+            "subject",
+            "target",
+            "denomination",
+            "last_name",
+            "first_name",
+        )}),
+        ("Content", {"classes": ("wide",), "fields": (
+            "html",
+            "txt",
+
+        )}),
+        ("Template", {"classes": ("wide",), "fields": (
+            "template",
+            "header_html",
+            "footer_html",
+        )}),
+        ("Follow", {"classes": ("wide",), "fields": (
+            "content_type",
+            "object_id",
+            "backend",
+            "response",
+            "msg_id",
+            "partner_id",
+            "trace",
+            "code_error",
+        )}),
+    )
 
     def html_view(self, request, object_id, extra_context=None):
         opts = self.model._meta

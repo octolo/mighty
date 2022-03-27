@@ -45,19 +45,8 @@ class Missive(MessengerModel, AddressNoBase):
     def check_status(self):
         backend = self.get_backend()
         return getattr(backend, 'check_%s' % self.mode.lower())(self)
-#
-#    def email(self):
-#        return self.user.email
-#    email.short_description = _.email
-#    email.admin_order_field = 'user__email'
-#
-#    def phone(self):
-#        return self.user.phone
-#    phone.short_description = _.phone
-#    phone.admin_order_field = 'user__phone'
-#
-#    def postal(self):
-#        return self.user.address
-#    postal.short_description = _.postal
-#    postal.admin_order_field = 'user__address'
-#
+
+    @property
+    def url_viewer(self):
+        from django.urls import reverse
+        return reverse('messenger-email-viewer', args=[self.uid])

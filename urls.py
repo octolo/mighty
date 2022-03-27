@@ -46,6 +46,12 @@ if "mighty.applications.user" in settings.INSTALLED_APPS:
     if hasattr(urls_user, 'api_urlpatterns'):
         api_urlpatterns += urls_user.api_urlpatterns
 
+if "mighty.applications.messenger" in settings.INSTALLED_APPS:
+    from mighty.applications.messenger import urls as urls_messenger
+    urlpatterns += urls_messenger.urlpatterns
+    if hasattr(urls_messenger, 'api_urlpatterns'):
+        api_urlpatterns += urls_user.api_urlpatterns
+
 # Enable app tenant
 if "mighty.applications.tenant" in settings.INSTALLED_APPS:
     from mighty.applications.tenant import urls as urls_tenant

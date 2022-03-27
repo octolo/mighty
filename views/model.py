@@ -1,6 +1,6 @@
 from mighty.views.base import BaseView
 from mighty.apps import MightyConfig as conf
-from mighty.functions import get_logger
+from mighty.functions import get_logger, tpl
 
 class ModelView(BaseView):
     is_ajax = False

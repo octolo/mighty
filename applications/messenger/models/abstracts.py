@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.template.loader import render_to_string
 
 from mighty.applications.messenger import (
     choices, translates as _,
@@ -37,6 +38,8 @@ class MessengerModel(Base):
     footer_html = RichTextField(blank=True, null=True)
 
     subject = models.CharField(max_length=255)
+    template = models.CharField(max_length=255, blank=True, null=True)
+
     html = RichTextField()
     txt = models.TextField()
 
@@ -114,6 +117,14 @@ class MessengerModel(Base):
             self.backend = missive_backend_app()
 
     @property
+    def preheader(self):
+        return self.txt
+
+    @property
+    def content(self):
+        return self.html if self.html else self.txt
+
+    @property
     def masking_email(self):
         return masking_email(self.target)
     
@@ -139,3 +150,6 @@ class MessengerModel(Base):
     def model_notification(self):
         return get_model('mighty', 'Notification')
 
+    @property
+    def html_format(self):
+        return render_to_string(self.template, {"object": self }) if self.template else self.html

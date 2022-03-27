@@ -9,6 +9,7 @@ class Config:
     minutes_allowed = 5
     code_size = 6
     email_code = 'twofactor/email_code.html'
+    email_template = None
 
     class method:
         email = True
