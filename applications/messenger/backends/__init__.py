@@ -75,7 +75,7 @@ class MissiveBackend(EnableLogger):
         if setting('MISSIVE_SERVICE', False):
             self.missive.msg_id = make_msgid()
             text_content = str(self.missive.txt)
-            html_content = self.html_format
+            html_content = self.missive.html_format
             self.email = EmailMultiAlternatives(
                 self.missive.subject,
                 html_content,
