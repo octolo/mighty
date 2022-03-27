@@ -12,7 +12,7 @@ class EmailViewer(DetailView):
 
     def get_context_data(self, **kwargs):
         ct = super().get_context_data(**kwargs)
-        ct["domain_url"] = url_domain("")
+        ct["domain_url"] = url_domain("", http=True)
         return ct
 
     def get_template_names(self):

@@ -579,6 +579,6 @@ def refn(*args, **kwargs):
     to_join.append(str(args[-1])[:lastsize])
     return sept.join(to_join)
 
-def url_domain(url, https=False):
+def url_domain(url, http=False):
     domain = conf.domain
-    return "%s://%s%s" % ("https" if https else "http", domain, url)
+    return "%s://%s%s" % ("http" if http else "https", domain, url)

@@ -152,4 +152,4 @@ class MessengerModel(Base):
 
     @property
     def html_format(self):
-        return render_to_string(self.template, {"object": self, domain_url: url_domain("") }) if self.template else self.html
+        return render_to_string(self.template, {"object": self, domain_url: url_domain("", http=True) }) if self.template else self.html
