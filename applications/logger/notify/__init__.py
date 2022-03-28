@@ -41,7 +41,8 @@ class NotifyBackend(Backend):
         for data in self.data_ok:
             if hasattr(self.record, data):
                 list_data.append("%s: %s" % (data, getattr(self.record, data)))
-        list_data += ('ip: ' + self.retrieve_ip, 'user_agent: ' + self.retrieve_agent)
+        if hasattr(self.record, "request"):
+            list_data += ('ip: ' + self.retrieve_ip, 'user_agent: ' + self.retrieve_agent)
         return list_data
 
     def __init__(self, record):
