@@ -21,7 +21,9 @@ import secrets, string
 UserModel = get_user_model()
 
 class TwoFactorSearchForm(FormDescriptable):
-    username = forms.CharField(label=_.search, required=True)
+    # A corriger
+    #username = forms.CharField(label=_.search, required=True)
+    username = forms.CharField(label="Votre email", required=True)
     error_messages = { 'invalid_search': _.invalid_search, 'inactive': _.inactive }
 
     def __init__(self, *args, **kwargs):
