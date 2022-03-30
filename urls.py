@@ -22,6 +22,7 @@ elif "django_ckeditor_5" in settings.INSTALLED_APPS:
 
 api_urlpatterns = [
     path('config/', include([
+        path('', Config.as_view(), name="api-config-full"),
         path('base/', Config.as_view(), name="api-config-base"),
         path('full/', ConfigListView.as_view(), name="api-config-full"),
         path('<str:name>/', ConfigDetailView.as_view(), name="api-config-name"),
