@@ -5,6 +5,7 @@ urlpatterns = []
 
 api_urlpatterns = [
     path('dataprotect/', include([
+        path('', views.ServiceDataView.as_view(), name="api-dataprotect-list"),
         path('list/', views.ServiceDataView.as_view(), name="api-dataprotect-list"),
     ]))
 ]
