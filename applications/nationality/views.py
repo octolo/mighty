@@ -48,6 +48,8 @@ from mighty.applications.nationality.apps import NationalityConfig as conf
 
 class TrLoad(CreateAPIView):
     queryset = Translator.objects.all()
+    authentication_classes = [] #disables authentication
+    permission_classes = []
 
     def post(self, request, format=None):
         path = request.data.get("path")
@@ -60,12 +62,22 @@ class TrLoad(CreateAPIView):
             language=default_nationality
         )
         cnt = len(path)-1
-        if not translatedict.translates: translatedict.translates = {}
-        ntr = translatedict.translates
-        pos = 0
-        for p in path[1:]:
-            pos+=1
-            ntr[p] = trans if pos == cnt else {}
-            ntr = ntr[p]
+        if not translatedict.translates: translatedict.translates = {}       
+        if(len(path) == 3):
+            if path[1] in translatedict.translates:
+                translatedict.translates[path[1]][path[2]] = trans
+            else:
+                translatedict.translates[path[1]] = {path[2]: trans}
+        elif(len(path) == 4):
+            if path[1] in translatedict.translates:
+                if path[2] in translatedict.translates[path[1]]:
+                    translatedict.translates[path[1]][path[2]][path[3]] = trans
+                else:
+                    translatedict.translates[path[1]][path[2]] = {path[3]: trans}
+            else:
+                translatedict.translates[path[1]] = {path[2]: {path[3]: trans}}
+        else:
+            translatedict.translates[path[1]] = trans
+
         translatedict.save()
         return Response({"translator": created1, "translatedict": created2 })
