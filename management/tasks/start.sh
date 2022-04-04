@@ -15,7 +15,7 @@ HTEXT="usage:\n
 \t         -h (show help)\n
 "
 
-usage() 
+usage()
 {
     echo -e $HTEXT
 }
@@ -28,6 +28,23 @@ DJANGO_CMD="./manage.py"
 VUE_CMD="npm"
 CELERY_CMD="celery"
 NGROK_CMD="./ngrok http 8000"
+
+# If multiple env with DEV_PORT, set different DJANGO_PORT per env"
+if [[ -z "${DEV_PORT}" ]]; then
+    DJANGO_PORT="8000"
+else
+    case $DEV_PORT in
+        "8081")
+            DJANGO_PORT="8001"
+            ;;
+        "8082")
+            DJANGO_PORT="8002"
+            ;;
+        "8083")
+            DJANGO_PORT="8003"
+            ;;
+    esac
+fi
 
 while true; do
     case $1 in
@@ -104,7 +121,7 @@ done
 prep_term()
 {
     LOGFILE=$LOGDIR/$2.log
-    if [ $INIT ]; then 
+    if [ $INIT ]; then
         `rm -f $LOGFILE`
     fi
     $1 >> $LOGFILE &
@@ -146,37 +163,37 @@ if [ ! -d "/path/to/dir" ]; then
 fi
 
 if [ ! -z ${REDIS+x} ] || [ $FULLSERVICE = true ]; then
-    if [[ $REDIS == 1 ]]; then 
-        REDIS_CMD="redis-server" 
-    fi   
+    if [[ $REDIS == 1 ]]; then
+        REDIS_CMD="redis-server"
+    fi
     prep_term "${REDIS_CMD} --save '' --appendonly no" "redis"
 fi
 
 if [ ! -z ${CELERY+x} ] || [ $FULLSERVICE = true ]; then
-    if [[ $CELERY == 1 ]]; then 
-        CELERY_CMD="celery" 
-    fi   
+    if [[ $CELERY == 1 ]]; then
+        CELERY_CMD="celery"
+    fi
     prep_term "${CELERY_CMD} -A configuration worker --loglevel=debug  --max-tasks-per-child 50 -f ${LOGDIR}/celery.log" "celery"
 fi
 
 if [ ! -z ${NGROK+x} ] || [ $FULLSERVICE = true ]; then
-    if [[ $NGROK == 1 ]]; then 
-        NGROK_CMD="./ngrok" 
+    if [[ $NGROK == 1 ]]; then
+        NGROK_CMD="./ngrok"
     fi
     prep_term "${NGROK_CMD} http 8000" "ngrok"
 fi
 
 if [ ! -z ${DJANGO+x} ] || [ $FULLSERVICE = true ]; then
-    if [[ $DJANGO == 1 ]]; then 
-        DJANGO_CMD="./manage.py" 
+    if [[ $DJANGO == 1 ]]; then
+        DJANGO_CMD="./manage.py"
     fi
-    prep_term "${DJANGO_CMD} runserver 0.0.0.0:8000 -v3" "django"
+    prep_term "${DJANGO_CMD} runserver 0.0.0.0:$DJANGO_PORT -v3" "django"
 fi
 
 
 if [ ! -z ${VUE+x} ] || [ $FULLSERVICE = true ]; then
-    if [[ $VUE == 1 ]]; then 
-        VUE_CMD="npm" 
+    if [[ $VUE == 1 ]]; then
+        VUE_CMD="npm"
     fi
     #export NODE_OPTIONS=--openssl-legacy-provider
     prep_term "${VUE_CMD} run serve --prefix ${VUETPL}" "vuejs"
