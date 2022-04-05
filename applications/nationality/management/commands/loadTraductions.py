@@ -25,7 +25,7 @@ class Command(CSVModelCommand):
         if len(trad_path) == 1:
             self.curr_translator.translates[trad_path[0]] = trad_en
         elif len(trad_path) == 2:
-            if not self.curr_translator.translates[trad_path[0]]:
+            if trad_path[0] not in self.curr_translator.translates:
                 self.curr_translator.translates[trad_path[0]] = {}
             self.curr_translator.translates[trad_path[0]][trad_path[1]] = trad_en
         elif len(trad_path) == 3:
