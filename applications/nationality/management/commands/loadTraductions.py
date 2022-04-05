@@ -29,17 +29,17 @@ class Command(CSVModelCommand):
                 self.curr_translator.translates[trad_path[0]] = {}
             self.curr_translator.translates[trad_path[0]][trad_path[1]] = trad_en
         elif len(trad_path) == 3:
-            if not self.curr_translator.translates[trad_path[0]]:
+            if trad_path[0] not in self.curr_translator.translates:
                 self.curr_translator.translates[trad_path[0]] = {}
-            if not  self.curr_translator.translates[trad_path[0]][trad_path[1]]:
+            if trad_path[1] not in self.curr_translator.translates[trad_path[0]]:
                 self.curr_translator.translates[trad_path[0]][trad_path[1]] = {}
             self.curr_translator.translates[trad_path[0]][trad_path[1]][trad_path[2]] = trad_en
         elif len(trad_path) == 4:
-            if not self.curr_translator.translates[trad_path[0]]:
+            if trad_path[0] not in self.curr_translator.translates:
                 self.curr_translator.translates[trad_path[0]] = {}
-            if not  self.curr_translator.translates[trad_path[0]][trad_path[1]]:
+            if trad_path[1] not in self.curr_translator.translates[trad_path[0]]:
                 self.curr_translator.translates[trad_path[0]][trad_path[1]] = {}
-            if not  self.curr_translator.translates[trad_path[0]][trad_path[1]][trad_path[2]]:
+            if trad_path[2] not in self.curr_translator.translates[trad_path[0]][trad_path[1]]:
                 self.curr_translator.translates[trad_path[0]][trad_path[1]][trad_path[2]] = {}
             self.curr_translator.translates[trad_path[0]][trad_path[1]][trad_path[2]][trad_path[3]] = trad_en
 
