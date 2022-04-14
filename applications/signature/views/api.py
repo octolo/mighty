@@ -13,13 +13,11 @@ DocumentModel = TransactionModel().document_model
 LocationModel = TransactionModel().location_model
 SignatoryModel = TransactionModel().signatory_model
 
-generic_filters = [
+transaction_filters = [
     ParamFilter(id="transaction", field="transaction__uid")
 ]
 
-signatory_filters = [
-    ParamFilter(id="signatory", field="signatory__uid"),
-    ParamFilter(id="transaction", field="transaction__uid"),
+document_filters = [
     ParamFilter(id="document", field="document__uid")
 ]
 
@@ -28,7 +26,7 @@ class TransactionApiViewSet(ModelViewSet):
     serializer_class = TransactionSerializer
 
     @action(detail=True, methods=["get"])
-    def launch(self, request, uid, group_named_id, pk=None):
+    def launch(self, request, **kwargs):
         transaction = self.get_object()
         data = transaction.make_transaction_one_shot()
         return Response(data)
@@ -37,19 +35,15 @@ class TransactionDocumentApiViewSet(ModelViewSet):
     queryset = DocumentModel.objects.all()
     serializer_class = TransactionDocumentSerializer
     pagination_class = None
-    filters = generic_filters
+    filters = transaction_filters
 
 class TransactionLocationApiViewSet(ModelViewSet):
     queryset = LocationModel.objects.all()
     serializer_class = TransactionLocationSerializer
     pagination_class = None
-    filters = signatory_filters
-
-class SignatorySetPagination(PageNumberPagination):
-    page_size = 10
+    filters = transaction_filters+document_filters
 
 class TransactionSignatoryApiViewSet(ModelViewSet):
     queryset = SignatoryModel.objects.all()
     serializer_class = TransactionSignatorySerializer
-    filters = generic_filters
-    pagination_class = SignatorySetPagination
+    filters = transaction_filters+document_filters

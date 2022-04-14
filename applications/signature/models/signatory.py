@@ -11,11 +11,16 @@ def generate_random_color():
 
 class TransactionSignatory(Base):
     transaction = models.ForeignKey(conf.transaction_relation, on_delete=models.CASCADE, related_name="transaction_to_signatory")
-    signatory = models.ForeignKey(conf.signatory_relation, on_delete=models.CASCADE)
+    signatory = models.ForeignKey(conf.signatory_relation, on_delete=models.SET_NULL, blank=True, null=True)
     backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_SIGNATORY, default=_c.PREPARATION)
     mode = models.CharField(max_length=20, choices=_c.MODE_SIGNATORY, default=_c.EMAIL)
     color = ColorField(format="hexa", default=generate_random_color)
+
+    full_name = models.CharField(max_length=255, blank=True, null=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    denomination = models.CharField(max_length=255, blank=True, null=True)
 
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
@@ -27,6 +32,10 @@ class TransactionSignatory(Base):
         abstract = True
 
     def pre_save(self):
+        if not self.full_name: self.full_name = self.signatory_fullname
+        if not self.first_name: self.first_name = self.signatory_first_name
+        if not self.last_name: self.last_name = self.signatory_last_name
+        if not self.denomination: self.denomination = self.signatory_denomination
         if not self.email: self.email = self.signatory_email
         if not self.phone: self.phone = self.signatory_phone
         if not self.email and self.phone: self.mode = _c.SMS
@@ -85,6 +94,9 @@ class TransactionSignatory(Base):
     @property
     def signatory_last_name(self):
         return self.getattr_signatory("signatory_last_name")
+    @property
+    def signatory_denomination(self):
+        return self.getattr_signatory("signatory_denomination")
     @property
     def signatory_picture(self):
         return self.getattr_signatory("signatory_picture")

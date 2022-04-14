@@ -5,6 +5,7 @@ from . import over_config
 import os, logging
 
 class Config:
+    enable_mimetype = False
     named_tpl = "%(named)s-%(id)s"
     logo = "/static/img/logo.png"
     domain = "localhost:8000"

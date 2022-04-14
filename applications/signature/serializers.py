@@ -11,14 +11,9 @@ SignatoryFollow = SignatoryModel().follow_model
 
 
 class TransactionSerializer(ModelSerializer):
-    documents = SlugRelatedField(slug_field='uid', many=True, queryset=DocumentModel.objects.all(), 
-        allow_null=True, required=False, source="transaction_to_document")
-    signatories = SlugRelatedField(slug_field='uid', many=True, queryset=SignatoryModel.objects.all(), 
-        allow_null=True, required=False, source="transaction_to_signatory")
-
     class Meta:
         model = TransactionModel
-        fields = fields.transaction_sz + ("documents", "signatories")
+        fields = fields.transaction_sz
 
 class TransactionDocumentSerializer(ModelSerializer):
     transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all())

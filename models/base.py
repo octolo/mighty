@@ -65,12 +65,20 @@ class Base(models.Model):
     _hfirst = None
     _hlast = None
 
+    def queryset(self):
+        return type(self).objects.all()
+
     def history_queryset(self):
-        return type(self).objects.all().order_by('-date_create')
+        return self.queryset().order_by('-date_create')
 
     @property
     def logger(self):
         return self._logger
+
+    @property
+    def qs_not_self(self):
+        if self.pk: return self.queryset().exclude(pk=self.pk)
+        return self.queryset().all()
 
     @property
     def history(self):
@@ -89,6 +97,11 @@ class Base(models.Model):
         if not self._hfirst:
             self._hfirst = self.history.first()
         return self._hfirst
+
+    @property
+    def history_not_self(self):
+        if self.pk: return self.history.exclude(pk=self.pk)
+        return self.history
 
     @property
     def _user(self):

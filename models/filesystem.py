@@ -53,6 +53,13 @@ class MimeType(Base, Image):
     def x128(self):
         return self.image if self.is_vector else self.get_file('128')
 
+    @property
+    def short_ext(self):
+        return self.extension[1:]
+
+    def __str__(self):
+        return "%s (%s)" % (self.mime, self.extension)
+
     class Meta:
         abstract = True
         unique_together = ('mime', 'extension')

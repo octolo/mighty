@@ -502,6 +502,6 @@ class Foxid:
                 self.queryset = self.queryset.distinct()
             elif type(self.distinct) == list:
                 self.queryset = self.queryset.distinct(*self.distinct)
-        if self.order_enable and self.order_by():
-            self.queryset = self.queryset.order_by(*self.order_by())
+        #if self.order_enable and self.order_by():
+        #    self.queryset = self.queryset.order_by(*self.order_by())
         return self.queryset

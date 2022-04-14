@@ -10,6 +10,7 @@ class Transaction(Base):
     backend = models.CharField(max_length=255, blank=True, null=True)
     backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_TRANSACTION, default=_c.PREPARATION)
+    date_end = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         abstract = True

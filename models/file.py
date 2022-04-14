@@ -38,6 +38,11 @@ class File(models.Model):
     object_id = models.PositiveBigIntegerField(blank=True, null=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
+    thumbnail = models.TextField(null=True, blank=True)
+    hashid = models.CharField(max_length=40, db_index=True, blank=True, null=True)
+
+    enable_hashid = False
+    enable_thumbnail = False
     proxy_cloud_streaming = False
     chunk_size = 1024
 
@@ -71,19 +76,42 @@ class File(models.Model):
             return self.get_url('pdf', arguments={'uid': self.uid})
         return self.get_url('pdf', arguments={'pk': self.pk})
 
-    def save(self, *args, **kwargs):
-        import boto3
-        print("SAVING FILE TO CLOUD")
-        if self.file._file:
-            self.filemimetype = self.file._file.content_type
-            self.size = self.file._file.size
-            self.charset = self.file._file.charset
-            self.extracontenttype = self.file._file.content_type_extra
-            if not self.filename:
-                self.filename = self.file_name
-        boto3.set_stream_logger(name='botocore')
-        super(File, self).save(*args, **kwargs)
+    @property
+    def name(self):
+        return self.filename
 
+    def set_thumbnail(self):
+        if self.enable_thumbnail:
+            from mighty.thumbnail import Thumbnail
+            bck = Thumbnail(self.file, self.mime_or_ext)
+            self.thumbnail = bck.base64
+
+    def get_extra_data(self, _file):
+        if not self.filename:
+            self.filename = self.file_name
+        self.filemimetype = _file.content_type
+        self.size = _file.size
+        self.charset = _file.charset
+        self.extracontenttype = _file.content_type_extra
+
+    def set_hashid(self):
+        if self.enable_hashid:
+            import hashlib
+            hashid = hashlib.sha1(self.file.read())
+            self.hashid = hashid.hexdigest()
+
+    @property
+    def mime_or_ext(self):
+        return self.filemimetype if self.filemimetype else self.file_extension[1:]
+
+    def some_extra_system(self):
+        self.set_thumbnail()
+        self.set_hashid()
+
+    def make_data(self):
+        if self.file._file:
+            self.get_extra_data(self.file._file)
+        self.some_extra_system()
 
     def size_long(self, unit=None):
         return pretty_size_long(self.size, unit) if self.size else None

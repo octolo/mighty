@@ -22,11 +22,17 @@ class ModelViewSet(ModelViewSet):
     def foxid(self):
         return Foxid(self.queryset, self.request, f=self.manager.flts, order_base=self.order_base).ready()
 
+    def foxid_qs(self, qs, flts):
+        return Foxid(qs, self.request, f=flts, order_base=self.order_base).ready()
+
     @property
     def manager(self):
         if not self.cache_manager:
             self.cache_manager = FiltersManager(flts=self.filters)
         return self.cache_manager
+
+    def manager_flts(self, flts):
+        return FiltersManager(flts=flts)
 
     # Properties
     @property

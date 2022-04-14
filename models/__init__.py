@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import  models
 from django.utils.text import get_valid_filename
 
+from mighty.apps import MightyConfig as conf
 from mighty.fields import JSONField, RichTextField
 from mighty.models.base import Base
 from mighty.models.keyword import Keyword
@@ -149,5 +150,6 @@ if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     class PaymentMethod(models_shop.PaymentMethod): pass
     class SubscriptionRequest(models_shop.SubscriptionRequest): pass
 
-from mighty.models.filesystem import MimeType
-class MimeType(MimeType): pass
+if conf.enable_mimetype:
+    from mighty.models.filesystem import MimeType
+    class MimeType(MimeType): pass

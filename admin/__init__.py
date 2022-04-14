@@ -3,6 +3,8 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.sessions.models import Session
+
+from mighty.apps import MightyConfig as conf
 from mighty.admin.site import AdminSite
 from mighty import fields, models as all_models
 from mighty.admin.models import BaseAdmin
@@ -143,6 +145,12 @@ if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     class PaymentMethodAdmin(admin_shop.PaymentMethodAdmin): pass
     @admin.register(all_models.SubscriptionRequest)
     class SubscriptionRequestAdmin(admin_shop.SubscriptionRequestAdmin): pass
+
+if conf.enable_mimetype:
+    from mighty.models import MimeType
+    @admin.register(MimeType)
+    class MimeTypeAdmin(BaseAdmin):
+        view_on_site = False
 
 #if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
 #    from mighty.admin.applications import grapher
