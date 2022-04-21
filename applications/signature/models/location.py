@@ -7,7 +7,7 @@ class TransactionLocation(Base):
     signatory = models.ForeignKey(conf.location_relation,
         on_delete=models.CASCADE, related_name="signatory_to_location")
     document = models.ForeignKey(conf.document_relation, on_delete=models.CASCADE, related_name="document_to_location")
-    backend_id = models.CharField(max_length=255, blank=True, null=True)
+    loc_backend_id = models.CharField(max_length=255, blank=True, null=True)
     height = models.PositiveIntegerField(default=80)
     width = models.PositiveIntegerField(default=120)
     x = models.PositiveIntegerField(default=0)

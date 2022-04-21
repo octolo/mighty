@@ -8,7 +8,7 @@ from mighty.applications.signature.apps import SignatureConfig as conf
 
 class TransactionDocument(Base):
     transaction = models.ForeignKey(conf.transaction_relation, on_delete=models.CASCADE, related_name="transaction_to_document")
-    backend_id = models.CharField(max_length=255, blank=True, null=True)
+    doc_backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_DOCUMENT, default=_c.PREPARATION)
     nb_signatories = models.PositiveIntegerField(default=0)
     nb_locations = models.PositiveIntegerField(default=0)

@@ -7,7 +7,7 @@ address_backend = get_address_backend()
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
 class AddressNoBase(models.Model):
-    backend_id = models.CharField(_.address, max_length=255, null=True, blank=True)
+    addr_backend_id = models.CharField(_.address, max_length=255, null=True, blank=True)
     address = models.CharField(_.address, max_length=255, null=True, blank=True)
     complement = models.CharField(_.complement, max_length=255, null=True, blank=True)
     locality = models.CharField(_.locality, max_length=255, null=True, blank=True)
@@ -34,7 +34,7 @@ class AddressNoBase(models.Model):
     def fill_from_raw(self):
         address = address_backend.get_location(self.raw)
         if address:
-            self.backend_id = address["id"]
+            self.addr_backend_id = address["id"]
             self.source = address["source"]
             for field in fields:
                 setattr(self, field, address[field])
@@ -48,7 +48,7 @@ class AddressNoBase(models.Model):
                 self.raw = self.format_universal()
 
     def erase_to_new(self, *args, **kwargs):
-        self.backend_id = kwargs.get('backend_id', None)
+        self.addr_backend_id = kwargs.get('backend_id', None)
         self.source = kwargs.get('source', 'FROMUSER')
         self.raw = None
         for field in fields:

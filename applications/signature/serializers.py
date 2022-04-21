@@ -13,22 +13,22 @@ SignatoryFollow = SignatoryModel().follow_model
 class TransactionSerializer(ModelSerializer):
     class Meta:
         model = TransactionModel
-        fields = fields.transaction_sz
+        fields = ("uid",) + fields.transaction
 
 class TransactionDocumentSerializer(ModelSerializer):
     transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all())
 
     class Meta:
         model = DocumentModel
-        fields = fields.document_sz
+        fields = ("uid",) + fields.document
 
 class TransactionSignatorySerializer(ModelSerializer):
-    transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all(), required=False)
-    signatory = SlugRelatedField(slug_field="uid", queryset=SignatoryFollow.objects.all(), required=False)
+    transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all())
+    signatory = SlugRelatedField(slug_field="uid", queryset=SignatoryFollow.objects.all())
 
     class Meta:
         model = SignatoryModel
-        fields = ("uid",) + fields.signatory_sz
+        fields = ("uid",) + fields.signatory
 
 class TransactionLocationSerializer(ModelSerializer):
     transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all())
@@ -37,4 +37,4 @@ class TransactionLocationSerializer(ModelSerializer):
 
     class Meta:
         model = LocationModel
-        fields = fields.location_sz
+        fields = ("uid",) + fields.location

@@ -90,11 +90,11 @@ class SignatureBackend(SignatureBackend):
         transaction = self.generate_post_request(url, data)
         transaction = etree.fromstring(transaction.content)
         self.logger.info("ID: %s" % transaction.get("id"))
-        self.transaction.backend_id = transaction.get("id")
+        self.transaction.trans_backend_id = transaction.get("id")
         self.transaction.add_log("info", {"id": transaction.get("id")}, "create")
 
     def status_transaction(self):
-        url = self.get_url("status", self.transaction.backend_id)
+        url = self.get_url("status", self.transaction.trans_backend_id)
         data = {
             "format": "json",
             "abortReason": "Octolo abort",
@@ -106,12 +106,12 @@ class SignatureBackend(SignatureBackend):
         self.transaction.save()
 
     def create_transaction(self):
-        self.new_transaction() if not self.transaction.backend_id else self.status_transaction()
+        self.new_transaction() if not self.transaction.trans_backend_id else self.status_transaction()
         self.transaction.save()
 
     def cancel_transaction(self):
         if not self.transaction.is_immutable:
-            url = self.get_url("abort", self.transaction.backend_id)
+            url = self.get_url("abort", self.transaction.trans_backend_id)
             data = {
                 "abortReason": "Octolo abort",
                 "requestReference": self.requestRef("abort"),
@@ -127,7 +127,7 @@ class SignatureBackend(SignatureBackend):
 
     def end_transaction(self):
         if not self.transaction.is_immutable:
-            url = self.get_url("terminate", self.transaction.backend_id)
+            url = self.get_url("terminate", self.transaction.trans_backend_id)
             data = { "requestReference": self.requestRef("terminate") }
             transaction = self.generate_post_request(url, data)
             transaction = etree.fromstring(transaction.content)
@@ -153,7 +153,7 @@ class SignatureBackend(SignatureBackend):
 
     def add_document(self, document):
         self.logger.info("Add doc: %s" % document.name)
-        if not document.backend_id:
+        if not document.doc_backend_id:
             return self.create_document(document)
 
     def add_all_documents(self):
@@ -171,7 +171,7 @@ class SignatureBackend(SignatureBackend):
             "requestReference": self.requestRef(base_name),
         }
         files = {"file": document_file.read()}
-        url = self.get_url("upload", self.transaction.backend_id)
+        url = self.get_url("upload", self.transaction.trans_backend_id)
         return self.files_post_request(url, data, files)
 
     def add_annex_doc(self, document):
@@ -184,7 +184,7 @@ class SignatureBackend(SignatureBackend):
             "requestReference": self.requestRef(base_name),
         }
         files = {"file": document_file.read()}
-        url = self.get_url("attachment", (self.transaction.backend_id, document.uid))
+        url = self.get_url("attachment", (self.transaction.trans_backend_id, document.uid))
         return self.files_post_request(url, data, files)
 
     def add_document(self, document):
@@ -199,7 +199,7 @@ class SignatureBackend(SignatureBackend):
 
     def remove_sign_doc(self, document):
         document_file = document.file_to_use
-        url = self.get_url("remove", self.transaction.backend_id)
+        url = self.get_url("remove", self.transaction.trans_backend_id)
         data = {
             "name": document.name,
             "requestReference": self.requestRef("docRmv"),
@@ -210,7 +210,7 @@ class SignatureBackend(SignatureBackend):
 
     def remove_annex_doc(self, document):
         document_file = document.file_to_use
-        url = self.get_url("attachment", (self.transaction.backend_id, document.uid))
+        url = self.get_url("attachment", (self.transaction.trans_backend_id, document.uid))
         data = { "requestReference": self.requestRef("anxRmv") }
         transaction = self.generate_delete_request(url, data)
         transaction = etree.fromstring(transaction.content)
@@ -222,7 +222,7 @@ class SignatureBackend(SignatureBackend):
     # SIGNATORY
     def add_signatory(self, signatory):
         if signatory.need_to_sign:
-            url = self.get_url("signatory", (self.transaction.backend_id, signatory.id))
+            url = self.get_url("signatory", (self.transaction.trans_backend_id, signatory.id))
             data = {
                 #"signatureLevel": "SIMPLE_LCP",
                 "civility": 0 if signatory.getattr_signatory("is_man", False) else 1,
@@ -238,7 +238,7 @@ class SignatureBackend(SignatureBackend):
             response = self.generate_post_request(url, data)
             response = etree.fromstring(response.content)
             self.logger.info("ID: %s" % response.get("id"))
-            signatory.backend_id = response.get("id")
+            signatory.sign_backend_id = response.get("id")
             signatory.add_log("info", {"id": response.get("id")}, "create")
             signatory.save()
 

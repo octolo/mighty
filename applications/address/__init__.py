@@ -7,6 +7,7 @@ def get_address_backend():
     return import_string(AddressConfig.backend)()
 
 fields = (
+    'addr_backend_id',
     'address',
     'complement',
     'locality',

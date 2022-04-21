@@ -8,7 +8,7 @@ from mighty.applications.signature import choices as _c, get_signature_backend
 class Transaction(Base):
     name = models.CharField(max_length=255)
     backend = models.CharField(max_length=255, blank=True, null=True)
-    backend_id = models.CharField(max_length=255, blank=True, null=True)
+    trans_backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_TRANSACTION, default=_c.PREPARATION)
     date_end = models.DateTimeField(blank=True, null=True)
 

@@ -1,29 +1,24 @@
 from django.db import models
+
 from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.applications.signature.apps import SignatureConfig as conf
 from mighty.applications.signature import choices as _c
+from mighty.applications.user import translates as u_, choices as u_choices
+
 from colorfield.fields import ColorField
 import random
 
 def generate_random_color():
     return "#%06x" % random.randint(0, 0xFFFFFF)
 
-class TransactionSignatory(Base):
+class TransactionSignatoryWithoutInfo(models.Model):
     transaction = models.ForeignKey(conf.transaction_relation, on_delete=models.CASCADE, related_name="transaction_to_signatory")
     signatory = models.ForeignKey(conf.signatory_relation, on_delete=models.SET_NULL, blank=True, null=True)
-    backend_id = models.CharField(max_length=255, blank=True, null=True)
+    sign_backend_id = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=_c.STATUS_SIGNATORY, default=_c.PREPARATION)
     mode = models.CharField(max_length=20, choices=_c.MODE_SIGNATORY, default=_c.EMAIL)
     color = ColorField(format="hexa", default=generate_random_color)
-
-    full_name = models.CharField(max_length=255, blank=True, null=True)
-    first_name = models.CharField(max_length=255, blank=True, null=True)
-    last_name = models.CharField(max_length=255, blank=True, null=True)
-    denomination = models.CharField(max_length=255, blank=True, null=True)
-
-    email = models.EmailField(blank=True, null=True)
-    phone = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return "%s(%s)" % (str(self.signatory), str(self.transaction))
@@ -31,15 +26,6 @@ class TransactionSignatory(Base):
     class Meta:
         abstract = True
 
-    def pre_save(self):
-        if not self.full_name: self.full_name = self.signatory_fullname
-        if not self.first_name: self.first_name = self.signatory_first_name
-        if not self.last_name: self.last_name = self.signatory_last_name
-        if not self.denomination: self.denomination = self.signatory_denomination
-        if not self.email: self.email = self.signatory_email
-        if not self.phone: self.phone = self.signatory_phone
-        if not self.email and self.phone: self.mode = _c.SMS
-    
     def post_save(self):
         self.update_documents()
         self.transaction.save()
@@ -62,8 +48,6 @@ class TransactionSignatory(Base):
     def getattr_signatory(self, attr, raise_error=True):
         if hasattr(self.signatory, attr):
             return getattr(self.signatory, attr)
-        if raise_error:
-            raise NotImplementedError("Signatory need attribute : %s" % attr)
         return None
 
     @property
@@ -118,3 +102,24 @@ class TransactionSignatory(Base):
 
     def add_to_transaction(self):
         self.transaction.signature_backend.add_signatory(self)
+
+class TransactionSignatoryWithInfo(TransactionSignatoryWithoutInfo):
+    fullname = models.CharField(max_length=255, blank=True, null=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    denomination = models.CharField(max_length=255, blank=True, null=True)
+    gender = models.CharField(u_.gender, max_length=1, choices=u_choices.GENDER, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+    def pre_save(self):
+        if not self.fullname: self.fullname = self.signatory_fullname
+        if not self.first_name: self.first_name = self.signatory_first_name
+        if not self.last_name: self.last_name = self.signatory_last_name
+        if not self.denomination: self.denomination = self.signatory_denomination
+        if not self.email: self.email = self.signatory_email
+        if not self.phone: self.phone = self.signatory_phone
+        if not self.email and self.phone: self.mode = _c.SMS
