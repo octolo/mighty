@@ -24,7 +24,7 @@ class TransactionDocumentSerializer(ModelSerializer):
 
 class TransactionSignatorySerializer(ModelSerializer):
     transaction = SlugRelatedField(slug_field="uid", queryset=TransactionModel.objects.all())
-    signatory = SlugRelatedField(slug_field="uid", queryset=SignatoryFollow.objects.all())
+    signatory = SlugRelatedField(slug_field="uid", queryset=SignatoryFollow.objects.all(), required=False)
 
     class Meta:
         model = SignatoryModel

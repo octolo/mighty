@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 from mighty import over_config
 from mighty.functions import setting
+
 class Config:
     pdf_options = {
         'encoding': 'UTF-8',

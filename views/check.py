@@ -1,8 +1,13 @@
 from django.http import JsonResponse
+from django.utils import timezone
+from django.core.exceptions import MultipleObjectsReturned
+
 from mighty.views.template import TemplateView
 from mighty import translates as _
 from mighty.functions import setting
-from django.core.exceptions import MultipleObjectsReturned
+
+import zoneinfo, datetime
+
 # Check data side server
 class CheckData(TemplateView):
     test_field = None
@@ -44,11 +49,38 @@ class CheckData(TemplateView):
         return JsonResponse(self.check_data(), 
             safe=False, status=self.http_status, **response_kwargs)
 
+
+
+class CheckSynchro(CheckData):
+    def check_data(self):
+        return {
+            "timezone": {
+                "now": str(timezone.now()),
+                "datetime": str(datetime.datetime.now()),
+                "today": str(datetime.date.today()),
+                "list": zoneinfo.available_timezones(),
+            }
+        }
+
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from rest_framework.views import APIView
     from rest_framework.response import Response
     
     class CheckData(CheckData, APIView):
+        def get_request_type(self):
+            return self.request.data
+
+        def get_data(self):
+            return self.request.data.get('check')
+
+        def get(self, request, format=None):
+            msg = self.check_data()
+            return Response(msg, status=self.http_status)
+
+        def post(self, request, format=None):
+            return Response(self.check_data(), status=self.http_status)
+
+    class CheckSynchro(CheckSynchro, APIView):
         def get_request_type(self):
             return self.request.data
 

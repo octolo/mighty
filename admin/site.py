@@ -60,7 +60,6 @@ class AdminSite(admin.AdminSite):
         for model, model_admin in models.items():
             app_label = model._meta.app_label
             app_config = apps.get_app_config(app_label)
-            logger.info(app_config)    
             if hasattr(app_config, 'multi_apps'):    
                 has_module_perms = model_admin.has_module_permission(request)
                 if not has_module_perms:
@@ -177,6 +176,25 @@ class AdminSite(admin.AdminSite):
                 'admin/app_index.html'
             ], context)
 
+    def search_app(self, request):
+        app_list = []
+        search = request.GET.get("s")
+        if search:
+            from django.contrib.contenttypes.models import ContentType
+            from django.urls import reverse
+            for ct in ContentType.objects.filter(model__icontains=search):
+                inactive = ct.model_class()
+                active = inactive()
+                try:
+                    app_list.append({
+                        "name": ct.app_labeled_name,
+                        "url": reverse("admin:%s_%s_changelist" % (ct.app_label, ct.model)) 
+                    })
+                except Exception:
+                    pass
+                
+        return app_list
+        #for app in self.get_app_list(request)
 
     #@never_cache
     def index(self, request, extra_context=None):
@@ -195,6 +213,7 @@ class AdminSite(admin.AdminSite):
             'title': self.index_title,
             'app_list': app_list,
             'multi_app_list': multi_app_list,
+            'search_app_list': self.search_app(request),
             **(extra_context or {}),
         }
         request.current_app = self.name

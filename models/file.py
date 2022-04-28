@@ -22,7 +22,7 @@ from django.contrib.contenttypes.models import ContentType
 from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
 from mighty.fields import JSONField
 
-import os, magic, logging, requests, tempfile
+import os, magic, logging, requests, tempfile, hashlib
 logger = logging.getLogger(__name__)
 
 class File(models.Model):
@@ -94,11 +94,12 @@ class File(models.Model):
         self.charset = _file.charset
         self.extracontenttype = _file.content_type_extra
 
+    def get_hashid(self):
+        return hashlib.sha1(self.file.read()).hexdigest()
+
     def set_hashid(self):
         if self.enable_hashid:
-            import hashlib
-            hashid = hashlib.sha1(self.file.read())
-            self.hashid = hashid.hexdigest()
+            self.hashid = self.get_hashid()
 
     @property
     def mime_or_ext(self):

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path, re_path, include
 from mighty.apps import MightyConfig as conf
-from mighty.views import Widget, Config, ConfigListView, ConfigDetailView, GenericSuccess, SearchFormDesc
+from mighty.views import (Widget, Config, ConfigListView, ConfigDetailView, GenericSuccess, SearchFormDesc, CheckSynchro)
 
 app_name = "mighty"
 
@@ -23,6 +23,7 @@ elif "django_ckeditor_5" in settings.INSTALLED_APPS:
 api_urlpatterns = [
     path('config/', include([
         path('', Config.as_view(), name="api-config-full"),
+        path('synchro/', CheckSynchro.as_view(), name="api-config-synchro"),
         path('base/', Config.as_view(), name="api-config-base"),
         path('full/', ConfigListView.as_view(), name="api-config-full"),
         path('<str:name>/', ConfigDetailView.as_view(), name="api-config-name"),

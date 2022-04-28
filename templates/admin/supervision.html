@@ -19,7 +19,7 @@ article * { vertical-align: middle;}
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
 &rsaquo; {{ supervision|title }}
 </div>
 {% endblock %}
@@ -71,7 +71,7 @@ article * { vertical-align: middle;}
             </ul>
             {% else %}
             <div class="progress">
-                <div class="state" style="width: {{ commands.cpu.1 }}%">{{ commands.cpu.1 }}%</div>
+                <div class="state" style="width: {{ commands.cpu.1|stringformat:'f' }}%">{{ commands.cpu.1 }}%</div>
             </div>
             {% endif %}
         </article>
@@ -85,7 +85,7 @@ article * { vertical-align: middle;}
             </ul>
             {% else %}
             <div class="progress">
-                <div class="state" style="width: {{ commands.memory.1 }}%">{{ commands.memory.1 }}%</div>
+                <div class="state" style="width: {{ commands.memory.1|stringformat:'f' }}%">{{ commands.memory.1 }}%</div>
             </div>
             {% endif %}
         </article>

@@ -1,4 +1,39 @@
 {% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+
+{{ block.super }}
+<style>
+.search-in-app {
+  display: flex;
+  align-items: stretch;
+}
+.search-in-app > input[type=text] {
+  margin: 0;
+  border: 1px solid #79aec8;
+  border-radius: 0;
+  flex: 1;
+}
+.search-in-app > input[type=submit] {
+  border-radius: 0;
+  margin: 0;
+}
+
+#content-main > a.search-app {
+  display: block;
+  margin: 5px;
+}
+
+#content-main > a.search-button {
+  padding: 10px;
+  background-color: red;
+  color: #FFFFFF;
+  margin: 5px;
+  display: inline-block;
+}
+</style>
+{% endblock %}
 
 {% block content %}
 <ul class="object-tools">
@@ -9,14 +44,28 @@
 </ul>
 {% now "jS F Y H:i" %}
 <div id="content-main">
-  {% if request.GET.view == 'simple' or not request.GET.view %}
-  <h2>Simple App</h2>
-  {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
-  {% endif %}
 
-  {% if request.GET.view == 'multi' or not request.GET.view %}
-  <h2>Multi App</h2>
-  {% include "admin/multi_app_list.html" with multi_app_list=multi_app_list show_changelinks=True %}
+  <form class="search-in-app">
+    <input type="text" placeholder="Rechercher" name="s" />
+    <input type="submit">
+  </form>
+
+  {% if search_app_list %}
+    {% for app in search_app_list %}
+      <a class="search-app" href="{{ app.url }}">{{ app.name }}</a>
+    {% endfor %}
+    <a class="deletelink" href="/admin/">{% translate 'Clear search' %}</a>
+     
+  {% else %}
+    {% if request.GET.view == 'simple' or not request.GET.view %}
+    <h2>Simple App</h2>
+    {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+    {% endif %}
+
+    {% if request.GET.view == 'multi' or not request.GET.view %}
+    <h2>Multi App</h2>
+    {% include "admin/multi_app_list.html" with multi_app_list=multi_app_list show_changelinks=True %}
+    {% endif %}
   {% endif %}
 </div>
 {% endblock %}
