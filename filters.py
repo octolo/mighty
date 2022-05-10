@@ -26,6 +26,7 @@ class Filter(Verify):
         self.operator = kwargs.get('operator', operator.and_)
         self.dependencies = kwargs.get('dependencies', [])
         self.mask = kwargs.get('mask', '')
+        self.rmask = kwargs.get('rmask', '')
         self.param = kwargs.get('param', self.id)
         self.prefix = kwargs.get('prefix', '')
         self.field = kwargs.get('field', self.id)
@@ -52,6 +53,9 @@ class Filter(Verify):
 
     def get_mask(self):
         return '__in' if self.is_array and not self.mask else self.mask
+
+    def get_rmask(self):
+        return '__in' if self.is_array and not self.rmask else self.rmask
 
     #################
     # Param
@@ -133,6 +137,9 @@ class Filter(Verify):
 
     def format_value(self):
         return self.get_value()
+
+    def get_rfield(self):
+        return self.prefix+self.field+self.get_rmask()
 
     def get_field(self):
         return self.prefix+self.field+self.get_mask()

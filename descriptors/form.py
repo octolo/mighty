@@ -105,10 +105,8 @@ class FormDescriptor:
             return getattr(obj, cfg['value'])
 
     def disable_choice(self, obj, field, choice):
-        print(self.current_field+"_disable")
         if hasattr(self.form, self.current_field+"_disable"):
             cfg = getattr(self.form, self.current_field+"_disable")
-            print(cfg)
             return (choice in cfg)
 
     def choices_field(self, field):

@@ -5,8 +5,7 @@ from django.db.models.options import Options
 from django.contrib.contenttypes.models import ContentType
 
 from mighty.fields import JSONField
-from mighty.functions import make_searchable, get_request_kept, get_logger
-from mighty.functions import get_request_kept
+from mighty.functions import make_searchable, get_request_kept, get_logger, get_model
 
 from mighty import translates as _
 from uuid import uuid4
@@ -64,6 +63,10 @@ class Base(models.Model):
     _history = []
     _hfirst = None
     _hlast = None
+
+    @property
+    def model(self):
+        return type(self)
 
     def queryset(self):
         return type(self).objects.all()
@@ -315,10 +318,12 @@ class Base(models.Model):
     def property_change(self, prop):
         return (not self._old_self or getattr(self._old_self, prop) != getattr(self, prop))
 
+    def get_model(self, label, app):
+        return get_model(label, app)
+
     """
     Actions
     """
-
     def disable(self, *args, **kwargs):
         self.is_disable = True
         self.save()
