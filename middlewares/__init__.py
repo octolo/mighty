@@ -1,0 +1,1 @@
+from mighty.middlewares.token import TokenAuthMiddleware

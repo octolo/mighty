@@ -1,8 +1,6 @@
-from mighty.functions import get_logger
 from functools import reduce
 import operator
 
-logger = get_logger()
 class RequestManager:
     queryset = None
     request = None
@@ -19,8 +17,6 @@ class RequestManager:
         self.Config.method = kwargs.get('method', self.Config.method)
         self.Config.filters = kwargs.get('filters', self.Config.filters)
         self.Config.url_filters = kwargs.get('url_filters', self.Config.url_filters)
-        logger.info(args)
-        logger.info(kwargs)
 
     def add_filter(self, filtr):
         self.filters.append(filtr)

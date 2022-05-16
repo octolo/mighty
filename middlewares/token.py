@@ -5,8 +5,7 @@ from jwt import decode as jwt_decode
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from urllib.parse import parse_qs
- 
- 
+  
 class TokenAuthMiddleware:
     """
     Custom token auth middleware

@@ -39,6 +39,7 @@ class ThumbnailBackend(ThumbnailBackend):
     @property
     def base64(self):
         import time
+        print(self.command)
         process = subprocess.Popen([self.command],
             shell=True,
             stdout=subprocess.PIPE, 
