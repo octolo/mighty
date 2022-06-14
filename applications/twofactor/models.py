@@ -35,6 +35,11 @@ class Twofactor(Base):
         backend = import_string(self.backend)()
         return backend
 
+    def post_update(self):
+        if self.is_consumed:
+            self.slack_notify.send_msg_connection()
+            self.discord_notify.send_msg_connection()        
+
     @property
     def slack_notify(self):
         from mighty.applications.twofactor.notify.slack import SlackTwoFactor

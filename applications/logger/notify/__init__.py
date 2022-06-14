@@ -4,7 +4,9 @@ from mighty.applications.logger.apps import LoggerConfig as conf
 class NotifyBackend(Backend):
     record = None
     msg = None
+    lvl = "info"
     data_ok = (
+        "exc_text",
         "levelname",
         "levelno",
         "pathname",
@@ -22,12 +24,12 @@ class NotifyBackend(Backend):
         x_forwarded_for = self.record.request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             return x_forwarded_for.split(',')[0]
-        return self.record.request.META.get('REMOTE_ADDR')
+        return self.record.request.META.get('REMOTE_ADDR', "NOT FOUND")
 
 
     @property
     def retrieve_agent(self):
-        return self.record.request.META.get('HTTP_USER_AGENT')
+        return self.record.request.META.get('HTTP_USER_AGENT', "NOT FOUND")
 
     @property
     def exc_text(self):
@@ -43,10 +45,21 @@ class NotifyBackend(Backend):
                 list_data.append("%s: %s" % (data, getattr(self.record, data)))
         if hasattr(self.record, "request"):
             list_data += ('ip: ' + self.retrieve_ip, 'user_agent: ' + self.retrieve_agent)
+            list_data += (
+                'post: '+str(self.record.request.POST), 
+                'get: '+str(self.record.request.GET),
+            )
+            if hasattr(self.record.request, "data"):
+                list_data += ('data: '+str(self.record.request.data),)
         return list_data
 
-    def __init__(self, record):
-        self.record = record
+    def __init__(self, *args, **kwargs):
+        self.record = kwargs.get("record")
+        self.lvl = kwargs.get("lvl", "info")
+
+    @property
+    def level(self):
+        return self.record.levelname.lower() if self.record else self.lvl
 
     @property
     def msg(self):
@@ -56,9 +69,15 @@ class NotifyBackend(Backend):
             return self.record.msg % self.record.args
         return self.record.msg
 
+    def send(self):
+        self.send_msg(self.msg)
+
     def send_error(self):
         if self.record.levelno >= 30:
             self.send_msg_error()
+
+    def send_msg(self, msg, blocks=None):
+        raise NotImplementedError("Subclasses should implement send_msg(msg)")
 
     def send_msg_error(self):
         raise NotImplementedError("Subclasses should implement send_msg_error()")

@@ -38,12 +38,12 @@ def log_in_db(record, msg):
 class NotifySlackDiscord:
     def slack_notify(self, record):
         from mighty.applications.logger.notify.slack import SlackLogger
-        slack = SlackLogger(record)
+        slack = SlackLogger(record=record)
         slack.send_error()
 
     def discord_notify(self, record):
         from mighty.applications.logger.notify.discord import DiscordLogger
-        discord = DiscordLogger(record)
+        discord = DiscordLogger(record=record)
         discord.send_error()
 
 class ConsoleHandler(logging.StreamHandler, NotifySlackDiscord):
@@ -57,8 +57,8 @@ class ConsoleHandler(logging.StreamHandler, NotifySlackDiscord):
         return msg
 
     def emit(self, record):
-        self.slack_notify(record)
-        self.discord_notify(record)
+        self.slack_notify(record=record)
+        self.discord_notify(record=record)
         super().emit(record)
 
 class FileHandler(logging.FileHandler, NotifySlackDiscord):
@@ -70,8 +70,8 @@ class FileHandler(logging.FileHandler, NotifySlackDiscord):
         return msg
 
     def emit(self, record):
-        self.slack_notify(record)
-        self.discord_notify(record)
+        self.slack_notify(record=record)
+        self.discord_notify(record=record)
         super().emit(record)
 
 class DatabaseHander(logging.StreamHandler):

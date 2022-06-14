@@ -6,6 +6,7 @@ from mighty.applications.messenger.decorators import MissiveFollower
 from mighty.applications.logger import choices
 
 fields_shared = (
+    "name",
     "mode",
     "status",
     "priority",

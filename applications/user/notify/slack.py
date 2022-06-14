@@ -28,4 +28,4 @@ class SlackUser(NotifyBackend):
 
     def send_msg_create(self):
         text = "New user on the platform : %s" % self.user.date_create.strftime('%Y-%m-%d %H:%M')
-        notify_slack("notifications", text=text, blocks=self.slack_msg_creation)
+        notify_slack("info", text=text, blocks=self.slack_msg_creation)

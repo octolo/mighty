@@ -1,7 +1,6 @@
-from mighty.applications.user.notify import NotifyBackend
-from mighty.applications.messenger import notify_discord
+from mighty.applications.logger.notify.discord import DiscordLogger
 
-class DiscordTwoFactor(NotifyBackend):
+class DiscordTwoFactor(DiscordLogger):
     def __init__(self, twofactor):
         self.twofactor = twofactor
         self.user = twofactor.user
@@ -24,7 +23,7 @@ class DiscordTwoFactor(NotifyBackend):
         }]}
 
     def send_msg_create(self):
-        notify_discord("notifications", **self.discord_msg_creation)
+        self.send_msg(self.discord_msg_creation)
 
     @property
     def discord_msg_connection(self):
@@ -37,4 +36,4 @@ class DiscordTwoFactor(NotifyBackend):
 		}
 
     def send_msg_connection(self):
-        notify_discord("notifications", **self.discord_msg_connection)
+        self.send_msg(self.discord_msg_connection)

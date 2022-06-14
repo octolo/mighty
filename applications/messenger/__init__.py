@@ -95,13 +95,9 @@ def missive_backend_app():
 
 def notify_slack(hookname, **kwargs):
     hook = False
-    if settings.DEBUG and hasattr(settings, "SLACK_HOOK_DEBUG"):
-        hook = settings.SLACK_HOOK_DEBUG
-    elif hasattr(settings, "SLACK_HOOK") and hookname in settings.SLACK_HOOK:
-       hook = settings.DISCORD_HOOK[hookname]
-
-    print(hookname, hook)
-
+    if settings.SLACK_NOTIFY:
+        if hasattr(settings, "SLACK_HOOK") and hookname in settings.SLACK_HOOK:
+            hook = settings.SLACK_HOOK[hookname]
     if hook:
         data = {}
         if kwargs.get("text"):
@@ -113,13 +109,9 @@ def notify_slack(hookname, **kwargs):
 
 def notify_discord(hookname, **kwargs):
     hook = False
-    if settings.DEBUG and hasattr(settings, "DISCORD_HOOK_DEBUG"):
-        hook = settings.DISCORD_HOOK_DEBUG
-    elif hasattr(settings, "DISCORD_HOOK") and hookname in settings.DISCORD_HOOK:
-       hook = settings.DISCORD_HOOK[hookname]
-
-    print("hook", hook)
-
+    if settings.DISCORD_NOTIFY:
+        if hasattr(settings, "DISCORD_HOOK") and hookname in settings.DISCORD_HOOK:
+            hook = settings.DISCORD_HOOK[hookname]
     if hook:
         data = {}
         if kwargs.get("username"):

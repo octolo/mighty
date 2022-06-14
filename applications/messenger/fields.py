@@ -26,6 +26,7 @@ missive = (
 
 notification = (
     "template",
+    "name",
     "content_type",
     "object_id",
     "is_read",

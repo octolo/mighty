@@ -40,5 +40,7 @@ class SlackLogger(NotifyBackend):
         { "type": "divider" }]
 
     def send_msg_error(self):
-        slack_hook = self.setting("SLACK_HOOK")
-        notify_slack("alerts", text=self.msg, blocks=self.slack_msg_error)
+        self.send_msg(self.msg, self.slack_msg_error)
+
+    def send_msg(self, msg, blocks=None):
+        notify_slack(self.level, text=msg, blocks=blocks)

@@ -1,7 +1,6 @@
-from mighty.applications.user.notify import NotifyBackend
-from mighty.applications.messenger import notify_slack
+from mighty.applications.logger.notify.slack import SlackLogger
 
-class SlackTwoFactor(NotifyBackend):
+class SlackTwoFactor(SlackLogger):
     def __init__(self, twofactor):
         self.twofactor = twofactor
         self.user = twofactor.user
@@ -32,8 +31,8 @@ class SlackTwoFactor(NotifyBackend):
 		{ "type": "divider" }]
 
     def send_msg_create(self):
-        text = "New code send : %s" % self.date_send.strftime('%Y-%m-%d %H:%M')
-        notify_slack("notifications", text=text, blocks=self.slack_msg_creation)
+        msg = "New code send : %s" % self.date_send.strftime('%Y-%m-%d %H:%M')
+        self.send_msg(msg, self.slack_msg_creation)
 
     @property
     def slack_msg_connection(self):
@@ -53,5 +52,5 @@ class SlackTwoFactor(NotifyBackend):
 		{ "type": "divider" }]
 
     def send_msg_connection(self):
-        text = "New connexion : %s" % self.date_send.strftime('%Y-%m-%d %H:%M')
-        notify_slack("notifications", text=text, blocks=self.slack_msg_connection)
+        msg = "New connexion : %s" % self.date_send.strftime('%Y-%m-%d %H:%M')
+        self.send_msg(msg, self.slack_msg_creation)

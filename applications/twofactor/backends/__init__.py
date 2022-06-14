@@ -82,6 +82,8 @@ class TwoFactorBackend(ModelBackend):
                 mode = choices.MODE_SMS
 
             twofactor, created = self.get_object(user, target, mode, backend_path)
+            twofactor.slack_notify.send_msg_create()
+            twofactor.discord_notify.send_msg_create()
             logger.info("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
             if mode == choices.MODE_EMAIL:
                 return self.send_email(twofactor, user, target)

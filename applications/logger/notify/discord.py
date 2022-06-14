@@ -3,17 +3,9 @@ from mighty.applications.messenger import notify_discord
 
 class DiscordLogger(NotifyBackend):
     @property
-    def slack_self(self):
-        pass
-
-    @property
     def text_data_help(self):
         base = [{
             "title": self.msg,
-            "description": self.exc_text
-        },
-        {
-            "title": "help",
             "description": "\n".join([":warning: "+data for data in self.help_data])
         }]
         return base
@@ -26,4 +18,7 @@ class DiscordLogger(NotifyBackend):
 		}
 
     def send_msg_error(self):
-        notify_discord("alerts", **self.discord_msg_error)
+        self.send_msg(self.discord_msg_error)
+
+    def send_msg(self, msg, blocks=None):
+        notify_discord(self.level, **msg)
