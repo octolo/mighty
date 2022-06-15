@@ -29,6 +29,7 @@ class TwoFactorBackend(ModelBackend):
             if field_type == 'uid' and hasattr(UserModel, 'uid'):
                 user = UserModel.objects.get(uid=username)
             else:
+                username = self.clean_target(username)
                 user = UserModel.objects.get(Q(user_email__email__iexact=username)|Q(user_phone__phone=username)|Q(username=username))
                 #user = UserModel._default_manager.get_by_natural_key(username)
         except UserModel.DoesNotExist:
@@ -47,8 +48,11 @@ class TwoFactorBackend(ModelBackend):
                 except Exception as e:
                     UserModel().set_password(password)
     
+    def clean_target(self, target):
+        return target = "".join(filter(lambda c: c not in string.whitespace, target))
+
     def get_user_target(self, target):
-        target = "".join(filter(lambda c: c not in string.whitespace, target))
+        target = clean_target(target)
         return UserModel.objects.get(Q(user_email__email=target)|Q(user_phone__phone=target)|Q(username=target))
 
     @property
@@ -58,6 +62,7 @@ class TwoFactorBackend(ModelBackend):
         return earlier, now
 
     def get_object(self, user, target, mode, backend, **kwargs):
+        target = self.clean_target(target)
         earlier, now = self.earlier
         prepare = {
             "mode": mode,
@@ -71,6 +76,7 @@ class TwoFactorBackend(ModelBackend):
         return Twofactor.objects.get_or_create(**prepare)
 
     def by(self, target, backend_path):
+        target = self.clean_target(target)
         try:
             validator = EmailValidator()
             user = self.get_user_target(target)
@@ -104,6 +110,7 @@ class TwoFactorBackend(ModelBackend):
         raise SpamException(date)
         
     def check_protect(self, target, subject, minutes):
+        target = self.clean_target(target)
         if minutes:
             missive = Missive.objects.filter(
                 target=target,
