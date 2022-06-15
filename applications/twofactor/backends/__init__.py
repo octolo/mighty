@@ -49,10 +49,10 @@ class TwoFactorBackend(ModelBackend):
                     UserModel().set_password(password)
     
     def clean_target(self, target):
-        return target = "".join(filter(lambda c: c not in string.whitespace, target))
+        return "".join(filter(lambda c: c not in string.whitespace, target))
 
     def get_user_target(self, target):
-        target = clean_target(target)
+        target = self.clean_target(target)
         return UserModel.objects.get(Q(user_email__email=target)|Q(user_phone__phone=target)|Q(username=target))
 
     @property
