@@ -13,7 +13,7 @@ from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.messenger import choices
 
 from phonenumber_field.validators import validate_international_phonenumber
-import datetime, logging
+import datetime, logging, string
 
 logger = logging.getLogger(__name__)
 UserModel = get_user_model()
@@ -48,6 +48,7 @@ class TwoFactorBackend(ModelBackend):
                     UserModel().set_password(password)
     
     def get_user_target(self, target):
+        target = "".join(filter(lambda c: c not in string.whitespace, target))
         return UserModel.objects.get(Q(user_email__email=target)|Q(user_phone__phone=target)|Q(username=target))
 
     @property
@@ -95,7 +96,6 @@ class TwoFactorBackend(ModelBackend):
             pass
         return CantIdentifyError()
         
-
     def get_date_protect(self, minutes):
         return timezone.now()-timezone.timedelta(minutes=minutes)
 
