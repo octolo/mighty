@@ -14,11 +14,16 @@ METHOD = (
 GENDER_MAN = 'M'
 GENDER_WOMAN = 'W'
 GENDER_COMPANY = 'C'
+GENDER_ENTITY = 'E'
+GENDER_UNDIVIDED = 'U'
 GENDER = (
     (GENDER_MAN, _('man')),
     (GENDER_WOMAN, _('woman')),
     (GENDER_COMPANY, _('company')),
+    (GENDER_ENTITY, _("Entity")),
+    (GENDER_UNDIVIDED, _("Undivided")),
 )
+
 
 STATUS_NOTSEND = 'NOTSEND'
 STATUS_TOSEND = 'TOSEND'

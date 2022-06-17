@@ -124,7 +124,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
-    gender = models.CharField(_.gender, max_length=1, choices=choices.GENDER, blank=True, null=True)
+    gender = fields.GenderField(blank=True, null=True)
     style = models.CharField(max_length=255, default="clear")
     channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
     first_connection = models.DateTimeField(blank=True, null=True)

@@ -16,7 +16,12 @@ STATUS_EXPIRED = _("expired")
 
 GENDER_MAN = _("Homme")
 GENDER_WOMAN = _("Femme")
+GENDER_COMPANY = _("Company")
+GENDER_ENTITY = _("Entity")
+GENDER_UNDIVIDED = _("Undivided")
 
+gender_desc = _("Gender of user")
+gender = _("Gender")
 username = _("Username")
 email = _("Email")
 phone = _("Phone")
