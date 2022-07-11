@@ -13,6 +13,7 @@ fields_shared = (
     "target",
     "service",
     "denomination",
+    "template",
     "header_html",
     "footer_html",
     "subject",
