@@ -26,6 +26,7 @@ Vous venez de demander un code d'authentification afin de vous connecter sur %(d
 Afin de vous authentifier et accéder à votre espace, veuillez copier le code suivant : %(code)s.
 A tout de suite sur %(domain)s !
 """)
+tpl_sms = _("Bonjour, Votre code de connexion %(domain)s est %(code)s.")
 
 
 help_login = _("Don't have an account? Register")

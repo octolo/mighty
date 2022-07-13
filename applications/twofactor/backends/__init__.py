@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 
 from mighty.apps import MightyConfig
 from mighty.models import Twofactor, Missive
-from mighty.applications.twofactor import translates as _, SpamException, CantIdentifyError
+from mighty.applications.twofactor import translates as _, SpamException, CantIdentifyError, PhoneValidator
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.messenger import choices
 
@@ -75,18 +75,37 @@ class TwoFactorBackend(ModelBackend):
         prepare.update(**kwargs)
         return Twofactor.objects.get_or_create(**prepare)
 
+    def is_email(self, target):
+        validator = EmailValidator()
+        try:
+            validator(target)
+        except ValidationError:
+            return False
+        return True
+
+    def is_phone(self, target):
+        try:
+            PhoneValidator(target)
+        except ValidationError:
+            return False
+        return True
+
     def by(self, target, backend_path):
         target = self.clean_target(target)
-        try:
-            validator = EmailValidator()
-            user = self.get_user_target(target)
+        if self.is_email(target):
+            mode = choices.MODE_EMAIL
+        elif self.is_phone(target):
+            mode = choices.MODE_SMS
 
-            try:
-                validator(target)
-                mode = choices.MODE_EMAIL
-            except ValidationError:
-                validate_international_phonenumber(target)
-                mode = choices.MODE_SMS
+        try:
+            #validator = EmailValidator()
+            user = self.get_user_target(target)
+            #try:
+            #    validator(target)
+            #    mode = choices.MODE_EMAIL
+            #except ValidationError:
+            #    validate_international_phonenumber(target)
+            #    mode = choices.MODE_SMS
 
             twofactor, created = self.get_object(user, target, mode, backend_path)
             twofactor.slack_notify.send_msg_create()
@@ -135,6 +154,9 @@ class TwoFactorBackend(ModelBackend):
 
     def send_sms(self, obj, user, target):
         data = self.get_data_missive(user, obj)
+        print(data["txt"])
+        data["txt"] = _.tpl_sms % {'domain': MightyConfig.domain, 'code': str(obj.code)}
+        print(data["txt"])
         data.update({"target": target, "mode": choices.MODE_SMS})
         self.check_protect(target, data["subject"], conf.sms_protect_spam)
         missive = Missive(**data)

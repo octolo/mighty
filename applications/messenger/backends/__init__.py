@@ -39,6 +39,8 @@ class MissiveBackend(EnableLogger):
     def send_sms(self):
         over_target = setting('MISSIVE_PHONE', False)
         self.missive.target = over_target if over_target else self.missive.target
+        self.logger.info("SMS - from : %s, to : %s" % 
+            (self.sender_sms, self.missive.target))
         if setting('MISSIVE_SERVICE', False):
             pass
         self.missive.status = choices.STATUS_SENT

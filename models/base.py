@@ -3,6 +3,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.db.models.options import Options
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
+from django.template import Context, Template
 
 from mighty.fields import JSONField
 from mighty.functions import make_searchable, get_request_kept, get_logger, get_model
@@ -11,6 +13,9 @@ from mighty import translates as _
 from uuid import uuid4
 from sys import getsizeof
 import copy, json
+
+if "mighty.applications.messenger" in settings.INSTALLED_APPS:
+    from mighty.applications.messenger import notify, notify_discord, notify_slack
 
 lvl_priority = ["alert", "warning", "notify", "info", "debug"]
 def default_logfield_dict():
@@ -77,6 +82,21 @@ class Base(models.Model):
     @property
     def logger(self):
         return self._logger
+
+    def make_template(self, template, context={}):
+        tpl = Template(template)
+        context = Context(context)
+        return tpl.render(context)
+
+    if "mighty.applications.messenger" in settings.INSTALLED_APPS:
+        def notify(subject, content_type, object_id, **kwargs):
+            return notify(subject, content_type, object_id, **kwargs)
+
+        def notify_slack(hookname, **kwargs):
+            return notify_slack(hookname, **kwargs)
+
+        def notify_discord(hookname, **kwargs):
+            return notify_discord(hookname, **kwargs)
 
     @property
     def qs_not_self(self):

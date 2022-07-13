@@ -80,7 +80,7 @@ class TwoFactorChoicesForm(FormDescriptable):
         return [masking_email(email) for email in self.emails]
 
     def get_phones(self):
-        if self.user_cache.phone: self.phones.append(self.user_cache.phone.raw_input)
+        if self.user_cache.phone: self.phones.append(self.user_cache.phone)
 
     @property
     def phones_masking(self):
