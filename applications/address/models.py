@@ -7,7 +7,7 @@ address_backend = get_address_backend()
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
 class AddressNoBase(models.Model):
-    addr_backend_id = models.CharField(_.address, max_length=255, null=True, blank=True)
+    addr_backend_id = models.CharField(max_length=255, null=True, blank=True, editable=False)
     address = models.CharField(_.address, max_length=255, null=True, blank=True)
     complement = models.CharField(_.complement, max_length=255, null=True, blank=True)
     locality = models.CharField(_.locality, max_length=255, null=True, blank=True)

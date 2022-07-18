@@ -19,6 +19,7 @@ class MissiveBackend(MissiveBackend):
             "sender": self.APIFROM,
             "phoneNumbers": self.missive.target, 
             "message": self.missive.txt,
+            "isStopSms": 0,
         }
 
     def valid_response(self, response):
