@@ -1,5 +1,2 @@
-from mighty.descriptors.form import FormDescriptor
+from mighty.descriptors.form import FormDescriptor, FormJsonDescriptor
 
-__all__ = (
-    FormDescriptor,
-)

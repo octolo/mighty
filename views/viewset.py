@@ -1,14 +1,26 @@
 from django.db.models import Q
+from django.http import Http404
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from mighty.filters import Foxid, FiltersManager
+from mighty.descriptors import FormJsonDescriptor
 
 class ModelViewSet(ModelViewSet):
     cache_manager = None
     filters = []
     user_way = "user__id"
     order_base = []
+    forms_desc = []
+
+    @action(detail=False, methods=["get"], url_path=r"form/(?P<form>\w+)")
+    def form_desc(self, request, form=None, *args, **kwargs):
+        desc = next((f for f in self.forms_desc if f.url == form), None)
+        if desc:
+            formdesc = FormJsonDescriptor(desc, request, **kwargs).as_json()
+            return Response(formdesc)
+        raise Http404
+        
 
     # Filter query
     def Q_is_me(self, prefix=""):
