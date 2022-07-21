@@ -12,6 +12,7 @@ logger = get_logger()
 
 class MissiveBackend(MissiveBackend):
     api_sandbox = {
+        "webhook": "https://api.sandbox.maileva.net/notification_center/v2/subscriptions",
         "auth": "https://connexion.sandbox.maileva.net/auth/realms/services/protocol/openid-connect/token",
         "sendings": "https://api.sandbox.maileva.net/registered_mail/v2/sendings",
         "documents": "https://api.sandbox.maileva.net/registered_mail/v2/sendings/%s/documents",
@@ -19,12 +20,19 @@ class MissiveBackend(MissiveBackend):
         "submit": "https://api.sandbox.maileva.net/registered_mail/v2/sendings/%s/submit",
     }
     api_official = {
+        "webhook": "https://api.maileva.com/notification_center/v2/subscriptions",
         "auth": "https://connexion.maileva.com/auth/realms/services/protocol/openid-connect/token",
         "sendings": "https://api.maileva.com/registered_mail/v2/sendings",
         "documents": "https://api.maileva.com/registered_mail/v2/sendings/%s/documents",
         "recipients": "https://api.maileva.com/registered_mail/v2/sendings/%s/recipients",
         "submit": "https://api.maileva.com/registered_mail/v2/sendings/%s/submit",
     }
+    webhook_status = [
+        "ON_STATUS_ACCEPTED",
+        "ON_STATUS_REJECTED",
+        "ON_STATUS_PROCESSED",
+        "ON_DEPOSIT_PROOF_RECEIVED",
+    ]
     sending_id = None
     access_token = None
     priority = 1
@@ -34,11 +42,11 @@ class MissiveBackend(MissiveBackend):
     @property
     def auth_data(self):
         return {
-            "username": setting("LAPOSTE_USERNAME"),
-            "password": setting("LAPOSTE_PASSWORD"),
+            "username": setting("MAILEVA_USERNAME"),
+            "password": setting("MAILEVA_PASSWORD"),
             "grant_type": "password",
-            "client_id": setting("LAPOSTE_CLIENTID"),
-            "client_secret": setting("LAPOSTE_SECRET"),
+            "client_id": setting("MAILEVA_CLIENTID"),
+            "client_secret": setting("MAILEVA_SECRET"),
         }
 
     @property
@@ -47,13 +55,24 @@ class MissiveBackend(MissiveBackend):
             "name": self.missive.subject,
             "custom_id": self.missive.msg_id,
             "custom_data": self.missive.msg_id,
+            "acknowledgement_of_receipt": True,
+            "acknowledgement_of_receipt_scanning": False,
             "color_printing": True,
             "duplex_printing": True,
             "optional_address_sheet": False,
             "notification_email": setting("LAPOST_NOTIFICATION"),
-            "archiving_duration": 0,
+            "archiving_duration": 3,
             "envelope_windows_type": "SIMPLE",
             "postage_type": "ECONOMIC",
+            #"return_envelope": None
+        }
+
+    @property
+    def webhook_data(self):
+        return {
+            "event_type": "ON_STATUS_ACCEPTED",
+            "resource_type": "mail/v2/sendings",
+            "callback_url": "https://api.mycompany.com/callback",
         }
 
     @property
@@ -64,15 +83,10 @@ class MissiveBackend(MissiveBackend):
             "address_line_6": self.missive.city,
             "country_code": self.missive.country_code.upper(),
         }
-        i = 0
-        for field in self.fields:
+        for i, field in enumerate(self.fields):
             attr = getattr(self.missive, field)
-            print(i)
-            print(attr)
             if attr:
-                i+=1
                 data["address_line_"+str(i)] = attr
-        print(data)
         return data
 
     @property
@@ -99,7 +113,6 @@ class MissiveBackend(MissiveBackend):
 
     def authentication(self):
         response = requests.post(self.api_url["auth"], data=self.auth_data)
-        print(response)
         self.access_token = response.json()["access_token"]
         return self.valid_response(response)
 
@@ -135,6 +148,17 @@ class MissiveBackend(MissiveBackend):
         response = requests.post(api, headers=self.api_headers)
         return self.valid_response(response)
 
+    def enable_webhooks(self):
+        for status in self.webhook_status:
+            api = self.api_url["webhook"]
+            response = requests.post(api, headers=self.api_headers)
+            return self.valid_response(response)
+
+    def check_postal(self):
+        url = self.api_url["sendings"] + "/" + self.missive.partner_id
+        response = requests.post(, headers=self.api_headers)
+        return response
+
     def send_postal(self):
         self.missive.msg_id = str(uuid4())
         self.authentication()
@@ -148,6 +172,7 @@ class MissiveBackend(MissiveBackend):
             os.remove(self.path_base_doc)
         if not self.in_error and self.submit():
             self.missive.to_sent()
+            #self.enable_webhooks()
         else:
             self.missive.to_error()
         self.missive.save()

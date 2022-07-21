@@ -34,11 +34,11 @@ class MissiveBackend(MissiveBackend):
     @property
     def auth_data(self):
         return {
-            "username": setting("LAPOSTE_USERNAME"),
-            "password": setting("LAPOSTE_PASSWORD"),
+            "username": setting("MAILEVA_USERNAME"),
+            "password": setting("MAILEVA_PASSWORD"),
             "grant_type": "password",
-            "client_id": setting("LAPOSTE_CLIENTID"),
-            "client_secret": setting("LAPOSTE_SECRET"),
+            "client_id": setting("MAILEVA_CLIENTID"),
+            "client_secret": setting("MAILEVA_SECRET"),
         }
 
     @property
@@ -50,8 +50,8 @@ class MissiveBackend(MissiveBackend):
             "color_printing": True,
             "duplex_printing": True,
             "optional_address_sheet": False,
-            "notification_email": setting("LAPOSTE_NOTIFICATION"),
-            "archiving_duration": 0,
+            "notification_email": setting("MAILEVA_NOTIFICATION"),
+            "archiving_duration": 3,
             "envelope_windows_type": "SIMPLE",
             "postage_type": "ECONOMIC",
         }
