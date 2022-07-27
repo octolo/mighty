@@ -103,8 +103,12 @@ class AddressNoBase(models.Model):
         if self.address_is_empty and self.raw:
             self.fill_from_raw()
 
+    def on_raw_ready(self):
+        pass
+
     def save(self, *args, **kwargs):
         self.fill_raw()
+        self.on_raw_ready()
         self.clean_address_fields()
         super().save(*args, **kwargs)
 

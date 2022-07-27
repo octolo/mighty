@@ -32,7 +32,7 @@ api_urlpatterns = [
         path('search/', SearchFormDesc.as_view(), name="api-form-search"),
     ]))
 ]
-webhooks_urlpatterns = []
+wbh_urlpatterns = []
 
 # Enable app nationality
 if "mighty.applications.nationality" in settings.INSTALLED_APPS:
@@ -52,7 +52,9 @@ if "mighty.applications.messenger" in settings.INSTALLED_APPS:
     from mighty.applications.messenger import urls as urls_messenger
     urlpatterns += urls_messenger.urlpatterns
     if hasattr(urls_messenger, 'api_urlpatterns'):
-        api_urlpatterns += urls_user.api_urlpatterns
+        api_urlpatterns += urls_messenger.api_urlpatterns
+    if hasattr(urls_messenger, 'wbh_urlpatterns'):
+        wbh_urlpatterns += urls_messenger.wbh_urlpatterns
 
 # Enable app tenant
 if "mighty.applications.tenant" in settings.INSTALLED_APPS:

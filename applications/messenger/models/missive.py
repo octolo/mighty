@@ -44,10 +44,14 @@ class Missive(MessengerModel, AddressNoBase):
 
     def check_status(self):
         backend = self.get_backend()
-        print('check_%s' % self.mode.lower())
         return getattr(backend, 'check_%s' % self.mode.lower())()
 
     @property
     def url_viewer(self):
         from django.urls import reverse
         return reverse('messenger-email-viewer', args=[self.uid])
+
+    def on_raw_ready(self):
+        if not self.target:
+            if self.raw_address: 
+                self.target = self.raw_address

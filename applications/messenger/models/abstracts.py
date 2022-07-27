@@ -22,13 +22,13 @@ from html2text import html2text
 class MessengerModel(Base):
     in_test = False
     mode = models.CharField(max_length=8, choices=choices.MODE, default=choices.MODE_EMAIL)
-    status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=8)
+    status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=9)
     priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
     
     name = models.CharField(max_length=255, blank=True, null=True)
     sender = models.CharField(max_length=255, blank=True, null=True)
     reply = models.CharField(max_length=255, blank=True, null=True)
-    target = models.CharField(max_length=255)
+    target = models.CharField(max_length=255, blank=True, null=True)
     service = models.CharField(max_length=255, blank=True, null=True)
     denomination = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
@@ -61,8 +61,6 @@ class MessengerModel(Base):
         elif self.last_name or self.first_name:
             return self.first_name if self.first_name else self.last_name
         return None
-            
-
 
     def need_to_send(self):
         raise NotImplementedError("Subclasses should implement need_to_send()")

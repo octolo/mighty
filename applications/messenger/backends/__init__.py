@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 from mighty.applications.logger import EnableLogger
 
 class MissiveBackend(EnableLogger):
+    in_error = False
     email = None
     sms = None
     postal = None
@@ -175,3 +176,6 @@ class MissiveBackend(EnableLogger):
 
     def check(self, missive):
         return True
+
+    def on_webhook(self, request):
+        pass

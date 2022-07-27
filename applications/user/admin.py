@@ -43,7 +43,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
     add_fieldsets = ((None, {
         'classes': ('wide',),
         'fields': get_form_fields()}),)
-    readonly_fields = ('method', 'channel')
+    readonly_fields = ('method', 'channel', "addr_backend_id", )
     list_display = ('username', 'email', 'date_create')
 
     def __init__(self, model, admin_site):

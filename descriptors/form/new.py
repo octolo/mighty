@@ -52,6 +52,10 @@ class FormJsonDescriptor:
         elif hasattr(field.widget, 'input_type'):
             return field.widget.input_type
 
+    def get_dependencies(self, field):
+        if field.name in self.form:
+            pass
+
     def get_field_desc(self, field, name):
         desc = {
             "name": name,
@@ -61,6 +65,7 @@ class FormJsonDescriptor:
             "many": getattr(field, "many", False),
             "dict": getattr(field, "dict", None),
             "attrs": getattr(field.widget, "attrs", {}),
+            "dependencies": self.get_dependencies(field),
             #"type": self.get_input_type(field),
         }
         for attr in self.default_attrs: 

@@ -9,6 +9,7 @@ class Config:
     named_tpl = "%(named)s-%(id)s"
     logo = "/static/img/logo.png"
     domain = "localhost:8000"
+    webhook = "localhost:8000"
     site_header = "Back office"
     index_title = "Home"
     paginate_by = 100

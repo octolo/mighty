@@ -1,7 +1,21 @@
 from django.shortcuts import render
+from django.utils.module_loading import import_string
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from mighty.functions import url_domain
-from mighty.views import DetailView
+from mighty.views import DetailView, JsonView
 from mighty.models import Missive
+from mighty.functions import setting
+from mighty.applications.messenger import (
+    choices, translates as _,
+    missive_backend_email,
+    missive_backend_emailar,
+    missive_backend_postal,
+    missive_backend_postalar,
+    missive_backend_sms,
+    missive_backend_web,
+    missive_backend_app,
+)
 
 # Create your views here.
 class EmailViewer(DetailView):
@@ -18,3 +32,39 @@ class EmailViewer(DetailView):
     def get_template_names(self):
         obj = self.get_object()
         return obj.template if obj.template else super().get_template_names()
+
+
+if 'oauth2_provider' in setting('INSTALLED_APPS'):
+    @method_decorator(csrf_exempt, name='dispatch')
+    class WebhookMessenger(JsonView):
+        backend_path = missive_backend_email()
+
+        @property
+        def backend(self):
+            return import_string(self.backend_path + ".MissiveBackend")(missive={})
+
+        def do_post(self, request, *args, **kwargs):
+            self.backend.on_webhook(request)
+            return {"status": "ok"}
+    
+        def do_get(self, request, *args, **kwargs):
+            self.backend.on_webhook(request)
+            return {"status": "ok"}
+
+    class WebhookEmailAR(WebhookMessenger):
+        backend_path = missive_backend_emailar()
+
+    class WebhookPostal(WebhookMessenger):
+        backend_path = missive_backend_postal()
+    
+    class WebhookPostalAR(WebhookMessenger):
+        backend_path = missive_backend_postalar()
+
+    class WebhookSMS(WebhookMessenger):
+        backend_path = missive_backend_sms()
+
+    class WebhookWeb(WebhookMessenger):
+        backend_path = missive_backend_web()
+
+    class WebhookApp(WebhookMessenger):
+        backend_path = missive_backend_app()

@@ -13,6 +13,7 @@ from mighty.views.config import Config, ConfigListView, ConfigDetailView
 from mighty.views.check import CheckData, CheckSynchro
 from mighty.views.widget import Widget
 from mighty.views.foxid import FoxidView
+from mighty.views.json import JsonView
 
 # Generic response
 class GenericSuccess(View):

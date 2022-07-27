@@ -44,6 +44,8 @@ ERROR_SMTP_554 = _("This means that the transaction has failed. It’s a permane
 
 STATUS_PREPARE = 'PREPARE'
 STATUS_SENT = 'SENT'
+STATUS_PENDING = 'PENDING'
+STATUS_PROCESSED = 'PROCESSED'
 STATUS_RECEIVED = 'RECEIVED'
 STATUS_ACCEPTED = 'ACCEPTED'
 STATUS_REJECTED = 'REJECTED'
@@ -52,6 +54,8 @@ STATUS_ERROR = 'ERROR'
 STATUS = (
     (STATUS_PREPARE, _("prepare")),
     (STATUS_SENT, _("sent")),
+    (STATUS_PENDING, _("pending")),
+    (STATUS_PROCESSED, _("processed")),
     (STATUS_RECEIVED, _("received")),
     (STATUS_ACCEPTED, _("Accepted")),
     (STATUS_REJECTED, _("Rejected")),
