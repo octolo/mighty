@@ -13,7 +13,7 @@ class ModelViewSet(ModelViewSet):
     order_base = []
     forms_desc = []
 
-    @action(detail=False, methods=["get"], url_path=r"form/(?P<form>\w+)")
+    @action(detail=False, methods=["get"], url_path=r"forms/(?P<form>\w+)")
     def form_desc(self, request, form=None, *args, **kwargs):
         desc = next((f for f in self.forms_desc if f.url == form), None)
         if desc:

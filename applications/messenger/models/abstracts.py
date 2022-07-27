@@ -54,6 +54,16 @@ class MessengerModel(Base):
         abstract = True
         ordering = ['-date_create',]
 
+    @property
+    def fullname(self):
+        if self.last_name and self.first_name:
+            return self.first_name+" "+self.last_name
+        elif self.last_name or self.first_name:
+            return self.first_name if self.first_name else self.last_name
+        return None
+            
+
+
     def need_to_send(self):
         raise NotImplementedError("Subclasses should implement need_to_send()")
 

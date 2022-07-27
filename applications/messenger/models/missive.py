@@ -39,12 +39,13 @@ class Missive(MessengerModel, AddressNoBase):
         self.status = choices.STATUS_SENT
 
     def get_backend(self):
-        backend = import_string(self.backend)()
+        backend = import_string("%s.MissiveBackend" % self.backend)(missive=self)
         return backend
 
     def check_status(self):
         backend = self.get_backend()
-        return getattr(backend, 'check_%s' % self.mode.lower())(self)
+        print('check_%s' % self.mode.lower())
+        return getattr(backend, 'check_%s' % self.mode.lower())()
 
     @property
     def url_viewer(self):

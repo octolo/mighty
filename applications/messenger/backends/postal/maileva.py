@@ -29,7 +29,7 @@ class MissiveBackend(MissiveBackend):
     access_token = None
     priority = 1
     in_error = False
-    fields = ["denomination", "target", "complement", "address"]
+    fields = ["denomination", "fullname", "complement", "address"]
 
     @property
     def auth_data(self):
@@ -134,6 +134,12 @@ class MissiveBackend(MissiveBackend):
         api = self.api_url["submit"] % self.sending_id
         response = requests.post(api, headers=self.api_headers)
         return self.valid_response(response)
+
+    def check_postal(self):
+        self.authentication()
+        url = self.api_url["sendings"] + "/" + self.missive.partner_id
+        response = requests.get(url, headers=self.api_headers)
+        return response.json()
 
     def send_postal(self):
         self.missive.msg_id = str(uuid4())

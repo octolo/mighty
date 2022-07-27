@@ -12,7 +12,7 @@ class MissiveAdmin(BaseAdmin):
     list_display = ('target', 'subject', 'mode', 'status')
     search_fields = ('target',)
     list_filter = ('mode', 'status')
-    readonly_fields = ('backend', 'response', 'partner_id', 'code_error', 'trace')
+    readonly_fields = ('backend', 'addr_backend_id', 'response', 'partner_id', 'code_error', 'trace')
     fieldsets = (
         (None, {"classes": ("wide",), "fields": (
             "mode",
@@ -20,20 +20,19 @@ class MissiveAdmin(BaseAdmin):
             "name",
             "sender",
             "reply",
-            "subject",
             "target",
             "denomination",
             "last_name",
             "first_name",
         )}),
-        ("Content", {"classes": ("wide",), "fields": (
+        ("Address", {"classes": ("wide",), "fields": addr_fields}),
+        ("Content", {"classes": ("collapse",), "fields": (
+            "subject",
+            "header_html",
+            "template",
+            "footer_html",
             "html",
             "txt",
-        )}),
-        ("Template", {"classes": ("wide",), "fields": (
-            "template",
-            "header_html",
-            "footer_html",
         )}),
         ("Follow", {"classes": ("wide",), "fields": (
             "content_type",
@@ -73,6 +72,7 @@ class MissiveAdmin(BaseAdmin):
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media,
+            'callback': obj.check_status(),
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/missive_check.html', context)
@@ -83,7 +83,7 @@ class MissiveAdmin(BaseAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
             path('<path:object_id>/html/', self.wrap(self.html_view), name='%s_%s_html' % info),
-            path('<path:object_id>/check/', self.wrap(self.check_view), name='%s_%s_html' % info),
+            path('<path:object_id>/check/', self.wrap(self.check_view), name='%s_%s_check' % info),
         ]
         return my_urls + urls 
 

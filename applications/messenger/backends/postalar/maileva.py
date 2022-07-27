@@ -37,7 +37,7 @@ class MissiveBackend(MissiveBackend):
     access_token = None
     priority = 1
     in_error = False
-    fields = ["denomination", "target", "complement", "address"]
+    fields = ["denomination", "fullname", "complement", "address"]
 
     @property
     def auth_data(self):
@@ -60,10 +60,17 @@ class MissiveBackend(MissiveBackend):
             "color_printing": True,
             "duplex_printing": True,
             "optional_address_sheet": False,
-            "notification_email": setting("LAPOST_NOTIFICATION"),
+            "notification_email": setting("MAILEVA_NOTIFICATION"),
             "archiving_duration": 3,
-            "envelope_windows_type": "SIMPLE",
-            "postage_type": "ECONOMIC",
+            "sender_address_line_1": setting("MAILEVA_SENDER1"),
+            "sender_address_line_2": setting("MAILEVA_SENDER2"),
+            "sender_address_line_3": setting("MAILEVA_SENDER3"),
+            "sender_address_line_4": setting("MAILEVA_SENDER4"),
+            "sender_address_line_5": setting("MAILEVA_SENDER5"),
+            "sender_address_line_6": setting("MAILEVA_SENDER6"),
+            "sender_country_code": setting("MAILEVA_SENDERC"),
+            #"envelope_windows_type": "SIMPLE",
+            #"postage_type": "ECONOMIC",
             #"return_envelope": None
         }
 
@@ -154,10 +161,11 @@ class MissiveBackend(MissiveBackend):
             response = requests.post(api, headers=self.api_headers)
             return self.valid_response(response)
 
-    def check_postal(self):
+    def check_postalar(self):
+        self.authentication()
         url = self.api_url["sendings"] + "/" + self.missive.partner_id
-        response = requests.post(, headers=self.api_headers)
-        return response
+        response = requests.get(url, headers=self.api_headers)
+        return response.json()
 
     def send_postal(self):
         self.missive.msg_id = str(uuid4())
