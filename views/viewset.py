@@ -15,7 +15,7 @@ class ModelViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path=r"forms/(?P<form>\w+)")
     def form_desc(self, request, form=None, *args, **kwargs):
-        desc = next((f for f in self.forms_desc if f.Meta.url == form), None)
+        desc = next((f for f in self.forms_desc if f.Options.url == form), None)
         if desc:
             formdesc = FormJsonDescriptor(desc, request, **kwargs).as_json()
             return Response(formdesc)

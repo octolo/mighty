@@ -140,6 +140,11 @@ form_init_fields = (
 class FormDescriptable(forms.Form):
     request = None
 
+    class Options:
+        url = None
+        dependencies = {}
+        blocks = None
+
     def form_init(self, kwargs):
         list_fields = form_init_fields + ("field_order",)
         return {f: kwargs[f] for f in kwargs if f in list_fields}
@@ -153,6 +158,11 @@ class FormDescriptable(forms.Form):
 
 class ModelFormDescriptable(forms.ModelForm):
     request = None
+
+    class Options:
+        url = None
+        dependencies = {}
+        blocks = None
 
     def form_init(self, kwargs):
         list_fields = form_init_fields + ("instance",)
