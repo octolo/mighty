@@ -82,9 +82,10 @@ class FormJsonDescriptor:
                 }
                 for choice in field.choices]
 
-    def get_dependencies(self, field):
-        if field.name in self.form:
-            pass
+    def get_dependencies(self, name):
+        if name in self.form.Options.dependencies:
+            return self.form.Options.dependencies[name]
+        return None
 
     def get_field_desc(self, field, name):
         desc = {
@@ -96,7 +97,7 @@ class FormJsonDescriptor:
             "dict": getattr(field, "dict", None),
             "attrs": getattr(field.widget, "attrs", {}),
             "choices": self.get_choices(field),
-            #"dependencies": self.get_dependencies(field),
+            "dependencies": self.get_dependencies(name),
             #"type": self.get_input_type(field),
         }
         for attr in self.default_attrs: 
