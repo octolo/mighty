@@ -141,8 +141,9 @@ class FormDescriptable(forms.Form):
     request = None
 
     class Options:
-        url = None
         dependencies = {}
+        fields = {}
+        url = None
         blocks = None
 
     def form_init(self, kwargs):
@@ -156,12 +157,13 @@ class FormDescriptable(forms.Form):
         super(forms.Form, self).__init__(*args, **{f: kwargs[f] for f in self.form_init(kwargs)})
         self.prepare_descriptor(*args, **kwargs)
 
-class ModelFormDescriptable(forms.ModelForm):
+class ModelFormDescriptable(forms.ModelForm, FormDescriptable):
     request = None
 
     class Options:
-        url = None
         dependencies = {}
+        fields = {}
+        url = None
         blocks = None
 
     def form_init(self, kwargs):

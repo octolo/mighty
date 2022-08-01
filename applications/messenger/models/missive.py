@@ -27,7 +27,7 @@ class Missive(MessengerModel, AddressNoBase):
         return '%s (%s)' % (self.masking, self.subject)
 
     def need_to_send(self):
-        if self.status == choices.STATUS_PREPARE and self.mode != choices.MODE_WEB:
+        if self.status in (choices.STATUS_PREPARE, choices.STATUS_FILETEST):
             send_missive(self)
 
     def clear_errors(self):

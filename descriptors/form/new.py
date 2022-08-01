@@ -47,45 +47,47 @@ class FormJsonDescriptor:
         return errors
 
     def get_input_type(self, field):
+        print(field)
+        print(field.widget.input_type)
         if hasattr(field, 'input_type'):
             return field.input_type
         elif hasattr(field.widget, 'input_type'):
             return field.widget.input_type
 
-
-    def choice_label(self, obj, field):
-        if hasattr(self.form, self.current_field+"_choices"):
-            cfg = getattr(self.form, self.current_field+"_choices")
-            return getattr(obj, cfg['option'])
-
-    def choice_value(self, obj, field):
-        if hasattr(self.form, self.current_field+"_choices"):
-            cfg = getattr(self.form, self.current_field+"_choices")
-            return getattr(obj, cfg['value'])
+    def option(self, field, name, key):
+        if hasattr(field, "Options") and hasattr(field.Options, key):
+            return getattr(field.Options, key)
+        elif name in self.form.Options.fields:
+            return self.form.Options.fields[name][key]
+        raise Exception("toto")
 
     def disable_choice(self, obj, field, choice):
         if hasattr(self.form, self.current_field+"_disable"):
             cfg = getattr(self.form, self.current_field+"_disable")
             return (choice in cfg)
 
-    def get_choices(self, field):
+    def get_options(self, field, name):
         if hasattr(field, 'choices'):
-            #if hasattr(field.choices, 'queryset'):
-            #    return [{
-            #        "label": self.choice_label(obj, field),
-            #        "value": self.choice_value(obj, field),
-            #    }
-            #    for obj in field.choices.queryset]
+            if hasattr(field.choices, 'queryset'):
+                print(field.choices.queryset)
+                return [{
+                    "label": getattr(obj, self.option(field, name, "label")),
+                    "value": getattr(obj, self.option(field, name, "value")),
+                } for obj in field.choices.queryset]
             return [{
                     "label": choice[1],
                     "value": choice[0],
-                }
-                for choice in field.choices]
+                } for choice in field.choices]
 
     def get_dependencies(self, name):
         if name in self.form.Options.dependencies:
             return self.form.Options.dependencies[name]
         return None
+
+    def get_multiple(self, field):
+        if hasattr(field, "widget"):
+            return getattr(field.widget, "allow_multiple_selected", False)
+        return getattr(field, "many", False)
 
     def get_field_desc(self, field, name):
         desc = {
@@ -93,12 +95,11 @@ class FormJsonDescriptor:
             "type": self.get_input_type(field),
             "errors": self.get_error_messages(field),
             "icon": getattr(field, "icon", None),
-            "many": getattr(field, "many", False),
+            "multiple": self.get_multiple(field),
             "dict": getattr(field, "dict", None),
             "attrs": getattr(field.widget, "attrs", {}),
-            "choices": self.get_choices(field),
+            "options": self.get_options(field, name),
             "dependencies": self.get_dependencies(name),
-            #"type": self.get_input_type(field),
         }
         for attr in self.default_attrs: 
             if hasattr(field, attr):

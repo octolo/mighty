@@ -1,12 +1,16 @@
 from django import forms
 
-new_fields = ("icon", "dict", "array", "many", "type")
+new_fields = ("icon", "dict", "array", "many", "type", "default")
 
 class MightyFormField(forms.Field):
     def __init__(self, **kwargs):
         for field in new_fields:
-            setattr(self, field, kwargs.pop("icon") if "icon" in kwargs else False)
+            setattr(self, field, kwargs.pop(field, False))
         super().__init__(**kwargs)
+
+    class Options:
+        label = None
+        value = None
 
 class BooleanField(forms.BooleanField, MightyFormField):
     pass

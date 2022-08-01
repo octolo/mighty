@@ -7,7 +7,7 @@ from django.core.mail.message import make_msgid
 from django.template import Context, Template
 
 from mighty.apps import MightyConfig
-from mighty.functions import setting
+from mighty.functions import setting, searchable
 from mighty.models import Missive
 from mighty.applications.messenger import choices
 from mighty.applications.messenger.apps import MessengerConfig as conf
@@ -103,6 +103,9 @@ class MissiveBackend(EnableLogger):
                 logs.append(os.path.basename(document.name))
             self.missive.logs['attachments'] = logs
 
+    def postal_template(self, context):
+        return Template(self.missive.html).render(context)
+
     def postal_base(self):
         options = MightyConfig.pdf_options
         context = Context()
@@ -121,7 +124,7 @@ class MissiveBackend(EnableLogger):
 
         # file
         tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
-        content_html = Template(self.missive.html).render(context)
+        content_html = self.postal_template(context)
         pdf = pdfkit.from_string(content_html, tmp_pdf.name, options={
             'encoding': "UTF-8",
             '--header-html': header_html.name,
@@ -136,12 +139,11 @@ class MissiveBackend(EnableLogger):
             ]
         })
         path_tmp = tmp_pdf.name
-        valid_file_name = get_valid_filename('%s.pdf' % self.missive.subject)
+        valid_file_name = searchable(get_valid_filename('%s.pdf' % self.missive.subject))
         path_basedoc = tempfile.gettempdir() + '/' + valid_file_name
         shutil.copyfile(path_tmp, path_basedoc)
         doc_name = os.path.basename(path_basedoc)
         #headers = self.api_headers
-
 
         logger.warning(path_basedoc)
         self.path_base_doc = path_basedoc
@@ -153,7 +155,8 @@ class MissiveBackend(EnableLogger):
 
         os.remove(footer_html.name)
         os.remove(header_html.name)
-        tmp_pdf.close()
+        if self.missive.status != choices.STATUS_FILETEST:
+            tmp_pdf.close()
         #os.remove(path_basedoc)
         #return self.valid_response(response)
 

@@ -1,5 +1,6 @@
 from django.core.files import File
 from django.shortcuts import get_object_or_404
+from django.template import Template
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.applications.messenger import choices as _c
 from mighty.apps import MightyConfig
@@ -32,6 +33,27 @@ class Maileva(MissiveBackend):
     sending_id = None
     access_token = None
     priority = 1
+    header_offset = 72
+
+    @property
+    def sender_height(self):
+        return 145-self.header_offset
+
+    @property
+    def address_block(self):
+        sender_style = "height:%spx;" % (str(self.sender_height))
+        target_style = "height:171px;padding-bottom:35px;"
+        sender_content = ""
+        target_content = ""
+        if self.missive.status == _c.STATUS_FILETEST:
+            sender_style += "background-color:gray;color: white;"
+            target_style += "background-color:blue;color: white;"
+            sender_content = "SENDER"
+            target_content = "TARGET"
+        return """<div style="%s">%s</div><div style="%s">%s</div>""" % (sender_style, sender_content, target_style, target_content)
+
+    def postal_template(self, context):
+        return Template(self.address_block+self.missive.html).render(context)
 
     @property
     def auth_data(self):
@@ -185,19 +207,24 @@ class Maileva(MissiveBackend):
 
     def send_postal(self):
         self.missive.msg_id = str(uuid4())
-        self.authentication()
-        if not self.in_error:
-            self.create_sending()
-        if not self.in_error:
-            self.add_recipients()
-        if not self.in_error:
+        print("okkkkkk")
+        print(self.missive.mode)
+        if self.missive.status == _c.STATUS_FILETEST:
             self.postal_base()
-            self.postal_attachments()
-            os.remove(self.path_base_doc)
-        if not self.in_error and self.submit():
-            self.missive.to_sent()
-            self.enable_webhooks()
         else:
-            self.missive.to_error()
-        getattr(self, "check_%s" % self.missive.mode.lower())()
-        return self.missive.status
+            self.authentication()
+            if not self.in_error:
+                self.create_sending()
+            if not self.in_error:
+                self.add_recipients()
+            if not self.in_error:
+                self.postal_base()
+                self.postal_attachments()
+                os.remove(self.path_base_doc)
+            if not self.in_error and self.submit():
+                self.missive.to_sent()
+                self.enable_webhooks()
+            else:
+                self.missive.to_error()
+            getattr(self, "check_%s" % self.missive.mode.lower())()
+            return self.missive.status
