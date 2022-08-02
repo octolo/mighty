@@ -31,6 +31,12 @@ class FormJsonDescriptor:
         "fields": [],
     }
 
+    enctypes = {
+        "url": "application/x-www-form-urlencoded",
+        "file": "multipart/form-data",
+        "text": "text/plain",
+    }
+
     def __init__(self, form, request, *args, **kwargs):
         self.form = form(request=request, *args, **kwargs)
         self.form_desc["name"] = self.form.__class__.__name__
@@ -47,8 +53,6 @@ class FormJsonDescriptor:
         return errors
 
     def get_input_type(self, field):
-        print(field)
-        print(field.widget.input_type)
         if hasattr(field, 'input_type'):
             return field.input_type
         elif hasattr(field.widget, 'input_type'):
@@ -105,13 +109,6 @@ class FormJsonDescriptor:
             if hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})
         return desc
-        #config = self.config_field(field)
-        #config.update({
-        #    "type": self.input_type_field(field),
-        #    "dependencies": self.dependencies_field(name),
-        #    "choice_dependencies": self.choice_dependencies_field(name),
-        #})
-        #return config
 
     def as_json(self):
         return self.form_desc
