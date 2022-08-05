@@ -1,4 +1,4 @@
-from mighty.applications.messenger.partners.maileva import Maileva
+from mighty.applications.messenger.backends.partners.maileva import Maileva
 from mighty.apps import MightyConfig
 import os, requests
 

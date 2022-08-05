@@ -190,10 +190,8 @@ class Maileva(MissiveBackend):
         for event in self.events:
             wdata = self.webhook_data
             wdata["event_type"] = event
-            print(wdata)
             api = self.api_url["webhook"]
             response = requests.post(api, headers=self.api_headers, json=wdata)
-            print(response.json())
             self.valid_response(response)
 
     def on_webhook(self, request):
@@ -223,7 +221,8 @@ class Maileva(MissiveBackend):
                 os.remove(self.path_base_doc)
             if not self.in_error and self.submit():
                 self.missive.to_sent()
-                self.enable_webhooks()
+                if setting("MAILEVA_WEBHOOK"):
+                    self.enable_webhooks()
             else:
                 self.missive.to_error()
             getattr(self, "check_%s" % self.missive.mode.lower())()
