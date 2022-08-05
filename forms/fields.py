@@ -1,5 +1,5 @@
 from django import forms
-
+from mighty.forms import widgets
 new_fields = ("icon", "dict", "array", "many", "type", "default")
 
 class MightyFormField(forms.Field):
@@ -25,9 +25,15 @@ class TypedChoiceField(forms.TypedChoiceField, MightyFormField):
     icon = "check-square"
 
 class DateField(forms.DateField, MightyFormField):
+    widget = widgets.DateInput
+    icon = "calendar"
+
+class TimeField(forms.TimeField, MightyFormField):
+    widget = widgets.TimeInput
     icon = "calendar"
 
 class DateTimeField(forms.DateTimeField, MightyFormField):
+    widget = widgets.DateTimeInput
     icon = "calendar"
 
 class DecimalField(forms.DecimalField, MightyFormField):

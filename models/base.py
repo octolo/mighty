@@ -58,6 +58,7 @@ class Base(models.Model):
     update_count = models.PositiveBigIntegerField(default=0)
     note = models.TextField(blank=True, null=True)
     cache = JSONField(blank=True, null=True, default=dict)
+    comment = models.TextField(blank=True, null=True)
     use_create_by = True
     use_update_by = True
     can_notify = True

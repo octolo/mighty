@@ -40,7 +40,7 @@ class FormJsonDescriptor:
     def __init__(self, form, request, *args, **kwargs):
         self.form = form(request=request, *args, **kwargs)
         self.form_desc["name"] = self.form.__class__.__name__
-        self.form_desc["blocks"] = self.form.Options.blocks
+        self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
         self.generate_desc()
 
     def generate_desc(self):
@@ -57,13 +57,14 @@ class FormJsonDescriptor:
             return field.input_type
         elif hasattr(field.widget, 'input_type'):
             return field.widget.input_type
+        return field.widget.__class__.__name__.lower()
 
     def option(self, field, name, key):
         if hasattr(field, "Options") and hasattr(field.Options, key):
             return getattr(field.Options, key)
         elif name in self.form.Options.fields:
             return self.form.Options.fields[name][key]
-        raise Exception("toto")
+        raise Exception("%s option in error" % name)
 
     def disable_choice(self, obj, field, choice):
         if hasattr(self.form, self.current_field+"_disable"):
@@ -89,9 +90,10 @@ class FormJsonDescriptor:
         return None
 
     def get_multiple(self, field):
+        default = getattr(field, "many", False)
         if hasattr(field, "widget"):
-            return getattr(field.widget, "allow_multiple_selected", False)
-        return getattr(field, "many", False)
+            return getattr(field.widget, "allow_multiple_selected", default)
+        return default
 
     def get_field_desc(self, field, name):
         desc = {
