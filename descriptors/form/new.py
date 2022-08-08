@@ -15,6 +15,7 @@ class FormJsonDescriptor:
         "max_digits",
         "decimal_places",
         "allow_empty_file",
+        "create_if_not_exist",
     ]
 
     form_desc = {
@@ -94,6 +95,9 @@ class FormJsonDescriptor:
         if hasattr(field, "widget"):
             return getattr(field.widget, "allow_multiple_selected", default)
         return default
+
+    def create_if_not_exist(self, field):
+        re
 
     def get_field_desc(self, field, name):
         desc = {

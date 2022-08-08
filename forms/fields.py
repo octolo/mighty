@@ -1,6 +1,6 @@
 from django import forms
 from mighty.forms import widgets
-new_fields = ("icon", "dict", "array", "many", "type", "default")
+new_fields = ("icon", "dict", "array", "many", "type", "default", "create_if_not_exist")
 
 class MightyFormField(forms.Field):
     def __init__(self, **kwargs):
@@ -65,6 +65,9 @@ class JSONField(forms.JSONField, MightyFormField):
 
 class GenericIPAddressField(forms.GenericIPAddressField, MightyFormField):
     icon = "network-wired"
+
+class ModelChoiceField(forms.ModelChoiceField, MightyFormField):
+    pass
 
 class MultipleChoiceField(forms.MultipleChoiceField, MightyFormField):
     pass
