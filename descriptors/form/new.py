@@ -16,6 +16,7 @@ class FormJsonDescriptor:
         "decimal_places",
         "allow_empty_file",
         "create_if_not_exist",
+        "api",
     ]
 
     form_desc = {
@@ -75,7 +76,6 @@ class FormJsonDescriptor:
     def get_options(self, field, name):
         if hasattr(field, 'choices'):
             if hasattr(field.choices, 'queryset'):
-                print(field.choices.queryset)
                 return [{
                     "label": getattr(obj, self.option(field, name, "label")),
                     "value": getattr(obj, self.option(field, name, "value")),
@@ -96,9 +96,6 @@ class FormJsonDescriptor:
             return getattr(field.widget, "allow_multiple_selected", default)
         return default
 
-    def create_if_not_exist(self, field):
-        re
-
     def get_field_desc(self, field, name):
         desc = {
             "name": name,
@@ -111,6 +108,11 @@ class FormJsonDescriptor:
             "options": self.get_options(field, name),
             "dependencies": self.get_dependencies(name),
         }
+        if hasattr(field, 'choices') and hasattr(field.choices, 'queryset'):
+            desc.update({
+                "opt_label": self.option(field, name, "label"),
+                "opt_value": self.option(field, name, "value"),
+            })
         for attr in self.default_attrs: 
             if hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})

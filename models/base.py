@@ -7,6 +7,7 @@ from django.conf import settings
 from django.template import Context, Template
 
 from mighty.fields import JSONField
+from mighty.models import fields
 from mighty.functions import make_searchable, get_request_kept, get_logger, get_model
 
 from mighty import translates as _
@@ -58,7 +59,7 @@ class Base(models.Model):
     update_count = models.PositiveBigIntegerField(default=0)
     note = models.TextField(blank=True, null=True)
     cache = JSONField(blank=True, null=True, default=dict)
-    comment = models.TextField(blank=True, null=True)
+    comment = fields.CommentField(blank=True, null=True)
     use_create_by = True
     use_update_by = True
     can_notify = True
