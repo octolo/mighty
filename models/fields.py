@@ -21,9 +21,7 @@ class ForeignKey(models.ForeignKey):
         super().__init__(to, on_delete, **kwargs)
 
     def formfield(self, *, using=None, **kwargs):
-        ff = super().formfield(**{
-            "form_class": fields.ModelChoiceField,
-            **kwargs,})
+        ff = super().formfield(**{"form_class": fields.ModelChoiceField, **kwargs})
         ff.create_if_not_exist = self.create_if_not_exist
         return ff
 

@@ -1,11 +1,17 @@
 from django import forms
 from mighty.forms import widgets
-new_fields = ("icon", "dict", "array", "many", "type", "default", "create_if_not_exist")
+
+self_fields = ("icon", "dict", "array", "many", "type", "default", "create_if_not_exist")
+options_fields = ("label", "value")
 
 class MightyFormField(forms.Field):
+    api = None
+
     def __init__(self, **kwargs):
-        for field in new_fields:
+        for field in self_fields:
             setattr(self, field, kwargs.pop(field, False))
+        for field in options_fields:
+            setattr(self.Options, field, kwargs.pop(field, False))
         super().__init__(**kwargs)
 
     class Options:

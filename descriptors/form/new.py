@@ -54,6 +54,10 @@ class FormJsonDescriptor:
             errors.update({val.code: val.message})
         return errors
 
+    def check_enctype(self, desc):
+        if desc["type"] in ("file", "image"):
+            self.form_desc["enctype"] = self.enctypes["file"]
+
     def get_input_type(self, field):
         if hasattr(field, 'input_type'):
             return field.input_type
@@ -62,10 +66,15 @@ class FormJsonDescriptor:
         return field.widget.__class__.__name__.lower()
 
     def option(self, field, name, key):
-        if hasattr(field, "Options") and hasattr(field.Options, key):
-            return getattr(field.Options, key)
-        elif name in self.form.Options.fields:
+        if all([
+            name in self.form.Options.fields,
+            key in self.form.Options.fields[name]]):
             return self.form.Options.fields[name][key]
+        elif all([
+            hasattr(field, "Options"),
+            hasattr(field.Options, key),
+            getattr(field.Options, key)]):
+            return getattr(field.Options, key)
         raise Exception("%s option in error" % name)
 
     def disable_choice(self, obj, field, choice):
@@ -75,7 +84,9 @@ class FormJsonDescriptor:
 
     def get_options(self, field, name):
         if hasattr(field, 'choices'):
-            if hasattr(field.choices, 'queryset'):
+            if hasattr(field, "api") and getattr(field, "api"):
+                return []
+            elif hasattr(field.choices, 'queryset'):
                 return [{
                     "label": getattr(obj, self.option(field, name, "label")),
                     "value": getattr(obj, self.option(field, name, "value")),
@@ -116,6 +127,7 @@ class FormJsonDescriptor:
         for attr in self.default_attrs: 
             if hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})
+        self.check_enctype(desc)
         return desc
 
     def as_json(self):
