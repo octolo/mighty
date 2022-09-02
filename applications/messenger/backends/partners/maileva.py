@@ -130,8 +130,8 @@ class Maileva(MissiveBackend):
     @property
     def api_url(self):
         if setting('MISSIVE_SERVICE', False):
-            return self.api_sandbox
-        return self.api_sandbox
+            return self.api_official
+        return self.api_official
 
     @property
     def api_headers(self):
@@ -151,6 +151,7 @@ class Maileva(MissiveBackend):
 
     def authentication(self):
         response = requests.post(self.api_url["auth"], data=self.auth_data)
+        print(response.json())
         self.access_token = response.json()["access_token"]
         return self.valid_response(response)
 
