@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.core.exceptions import MultipleObjectsReturned
+from django.contrib.auth import get_user_model
 
-from mighty import functions
+from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
 from mighty.readers import ReaderXLS
@@ -17,6 +18,17 @@ class BaseCommand(BaseCommand, EnableLogger):
     errors = []
     in_test = False
     loader = False
+    userlog_cache = None
+
+    @property
+    def user_model(self):
+        return get_user_model()
+
+    def get_user(self, info, forlog=False):
+        try: 
+            return self.user_model.objects.get()
+        except self.user_model.DoesNotExist:
+            return self.user_model.objects.filter(is_superuser=True).first() if forlog else None
 
     def get_total(self):
         return self.total if self.total else 0
@@ -66,6 +78,7 @@ class BaseCommand(BaseCommand, EnableLogger):
         parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--logfile', default="%s_%s.log" % (str(self.subcommand).lower(), f"{datetime.datetime.now():%Y%m%d_%H%M%S_%f}"))
         parser.add_argument('--progressbar', action="store_true")
+        parser.add_argument('--userlog', default=None)
 
     def handle(self, *args, **options):
         self.in_test = options.get('test')
@@ -74,12 +87,19 @@ class BaseCommand(BaseCommand, EnableLogger):
         self.loader = options.get('loader')
         self.progressbar = options.get('progressbar')
         self.verbosity = options.get('verbosity', 0)
+        self.userlog_cache = self.get_user(options.get('userlog'))
         self.logger.debug('start')
         self.makeJob()
         self.showErrors()
         self.logger.debug('end')
 
+    def prepare_request(self):
+        class request:
+            user = self.userlog_cache
+        request_kept.request = request
+
     def makeJob(self):
+        self.prepare_request()
         self.before_job()
         self.do()
         self.after_job()
@@ -123,7 +143,7 @@ class ModelBaseCommand(BaseCommand):
     def model_use(self, *args, **kwargs):
         label = kwargs.get('label', self.label)
         model = kwargs.get('model', self.model)
-        return functions.get_model(label, model)
+        return get_model(label, model)
 
     def get_queryset(self, *args, **kwargs):
         manager = kwargs.get('manager', self.manager)
