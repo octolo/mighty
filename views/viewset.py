@@ -4,7 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from mighty.filters import Foxid, FiltersManager
-from mighty.descriptors import FormJsonDescriptor
+from mighty.forms.descriptors import FormDescriptor
+from mighty.tables.descriptors import TableDescriptor
 
 class ModelViewSet(ModelViewSet):
     cache_manager = None
@@ -18,7 +19,7 @@ class ModelViewSet(ModelViewSet):
     def form_desc(self, request, form=None, *args, **kwargs):
         desc = next((f for f in self.forms_desc if f.Options.url == form), None)
         if desc:
-            formdesc = FormJsonDescriptor(desc, request, **kwargs).as_json()
+            formdesc = FormDescriptor(desc, request, **kwargs).as_json()
             return Response(formdesc)
         raise Http404
         
@@ -26,7 +27,7 @@ class ModelViewSet(ModelViewSet):
     def table_desc(self, request, table=None, *args, **kwargs):
         desc = next((f for t in self.tables_desc if t.Options.url == table), None)
         if desc:
-            formdesc = FormJsonDescriptor(desc, request, **kwargs).as_json()
+            formdesc = TableDescriptor(desc, request, **kwargs).as_json()
             return Response(formdesc)
         raise Http404
 
