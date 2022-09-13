@@ -12,7 +12,7 @@ class ModelViewSet(ModelViewSet):
     user_way = "user__id"
     order_base = []
     forms_desc = []
-    config_desc = []
+    tables_desc = []
 
     @action(detail=False, methods=["get"], url_path=r"forms/(?P<form>\w+)")
     def form_desc(self, request, form=None, *args, **kwargs):
@@ -22,12 +22,12 @@ class ModelViewSet(ModelViewSet):
             return Response(formdesc)
         raise Http404
         
-    @action(detail=False, methods=["get"], url_path=r"config/(?P<form>\w+)")
-    def config_desc(self, request, config=None, *args, **kwargs):
-        #desc = next((f for f in self.forms_desc if f.Options.url == form), None)
-        #if desc:
-        #    formdesc = FormJsonDescriptor(desc, request, **kwargs).as_json()
-        #    return Response(formdesc)
+    @action(detail=False, methods=["get"], url_path=r"table/(?P<table>\w+)")
+    def table_desc(self, request, table=None, *args, **kwargs):
+        desc = next((f for t in self.tables_desc if t.Options.url == table), None)
+        if desc:
+            formdesc = FormJsonDescriptor(desc, request, **kwargs).as_json()
+            return Response(formdesc)
         raise Http404
 
     # Filter query

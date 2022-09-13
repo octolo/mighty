@@ -1,5 +1,6 @@
 from django import forms
 from mighty import translates as _
+from mighty.forms.descriptors import FormDescriptor
 from mighty.forms.fields import (
     BooleanField,
     CharField,
