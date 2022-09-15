@@ -11,3 +11,4 @@ from mighty.filters.filters import (
 )
 from mighty.filters.manager import FiltersManager
 from mighty.filters.foxid import Foxid
+from mighty.filters.descriptors import FilterDescriptor

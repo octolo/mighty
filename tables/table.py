@@ -45,8 +45,8 @@ class TableDescriptable:
         ordering = ()
         templates = {}
 
-class TableModelDescriptor(TableDescriptor):
-    class Meta(TableDescriptor.Meta):
+class TableModelDescriptor(TableDescriptable):
+    class Meta(TableDescriptable.Meta):
         model = None
 
     def __new__(mcs, name, bases, attrs):
