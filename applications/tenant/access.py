@@ -42,9 +42,7 @@ class TenantAccess:
     # Properties
     @property
     def current_group(self):
-        import pprint
-        pprint.pprint(self.request.__dict__)
-        named_id = self.request.kwargs.get('group_named_id')
+        named_id = self.request.parser_context['kwargs'].get('group_named_id')
         group_uid = self.request.data.get('group')
         if named_id: 
             return self.group_model.objects.get(named_id=named_id)
