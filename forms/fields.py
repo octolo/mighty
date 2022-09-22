@@ -2,7 +2,7 @@ from django import forms
 from mighty.forms import widgets
 
 self_fields = ("icon", "dict", "array", "many", "type", "default", "create_if_not_exist")
-options_fields = ("label", "value")
+options_fields = ("value",)
 
 class MightyFormField(forms.Field):
     api = None
@@ -15,7 +15,6 @@ class MightyFormField(forms.Field):
         super().__init__(**kwargs)
 
     class Options:
-        label = None
         value = None
 
 class BooleanField(forms.BooleanField, MightyFormField):

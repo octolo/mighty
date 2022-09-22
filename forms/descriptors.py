@@ -124,8 +124,10 @@ class FormDescriptor:
                 "opt_label": self.option(field, name, "label"),
                 "opt_value": self.option(field, name, "value"),
             })
-        for attr in self.default_attrs: 
-            if hasattr(field, attr):
+        for attr in self.default_attrs:
+            if hasattr(self, "get_%s"%attr):
+                desc.update({attr: getattr(self, "get_%s"%attr)(field)})
+            elif hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})
         self.check_enctype(desc)
         return desc

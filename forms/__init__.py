@@ -175,7 +175,8 @@ class ModelFormDescriptable(forms.ModelForm, FormDescriptable):
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request") if "request" in kwargs else None
-        super().__init__(*args, **{f: kwargs.get(f) for f in self.form_init(kwargs)})
+        super(forms.Form, self).__init__(*args, **{f: kwargs.get(f) for f in self.form_init(kwargs)})
+        print(kwargs)
         self.prepare_descriptor(*args, **kwargs)
 
 class SearchForm(FormDescriptable):
