@@ -15,6 +15,7 @@ class BaseCommand(BaseCommand, EnableLogger):
     position = 0
     prefix_bar = 'Percent'
     current_info = ''
+    splitter = ','
     errors = []
     in_test = False
     loader = False
@@ -25,10 +26,16 @@ class BaseCommand(BaseCommand, EnableLogger):
         return get_user_model()
 
     def get_user(self, info, forlog=False):
-        try: 
-            return self.user_model.objects.get()
-        except self.user_model.DoesNotExist:
-            return self.user_model.objects.filter(is_superuser=True).first() if forlog else None
+        if info:
+            try:
+                Qparams = Q(id=int(info))
+            except ValueError:
+                Qparams = Q(user_email__email=info)|Q(user_phone__phone=info)|Q(username=info)
+            try: 
+                return self.user_model.objects.get(Qparams)
+            except self.user_model.DoesNotExist:
+                pass
+        return self.user_model.objects.filter(is_superuser=True).first() if forlog else None
 
     def get_total(self):
         return self.total if self.total else 0
