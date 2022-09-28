@@ -130,7 +130,7 @@ class Maileva(MissiveBackend):
     @property
     def api_url(self):
         if setting('MISSIVE_SERVICE', False):
-            return self.api_official
+            return self.api_sandbox
         return self.api_official
 
     @property
