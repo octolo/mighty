@@ -8,7 +8,7 @@ class SearchBackend(SearchBackend):
 
     def get_address(self, data):
         address = self.get_dict('mapbox')
-        address['id'] = data.get('id')
+        address['addr_backend_id'] = data.get('id')
         address['raw'] = data.get('place_name')
         address['address'] = ' '.join([data.get('address', ''), data.get('text', '')])
         geometry = data.get('geometry')

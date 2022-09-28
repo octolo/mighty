@@ -9,7 +9,7 @@ class SearchBackend(SearchBackend):
     def get_address(self, data):
         address = self.get_dict('google')
         address['raw'] = data.get('formatted_address')
-        address['id'] = data.get('place_id')
+        address['addr_backend_id'] = data.get('place_id')
         geometry = data.get('geometry')
         if geometry:
             address['longitude'] = geometry['location']['lng']

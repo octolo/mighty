@@ -86,6 +86,8 @@ class BaseCommand(BaseCommand, EnableLogger):
         parser.add_argument('--logfile', default="%s_%s.log" % (str(self.subcommand).lower(), f"{datetime.datetime.now():%Y%m%d_%H%M%S_%f}"))
         parser.add_argument('--progressbar', action="store_true")
         parser.add_argument('--userlog', default=None)
+        parser.add_argument('--fkmodel', default=None)
+        parser.add_argument('--m2mmodel', default=None)
 
     def handle(self, *args, **options):
         self.in_test = options.get('test')
@@ -94,6 +96,8 @@ class BaseCommand(BaseCommand, EnableLogger):
         self.loader = options.get('loader')
         self.progressbar = options.get('progressbar')
         self.verbosity = options.get('verbosity', 0)
+        self.fkmodel = options.get('fkmodel')
+        self.m2mmodel = options.get('m2mmodel')
         self.userlog_cache = self.get_user(options.get('userlog'))
         self.logger.debug('start')
         self.makeJob()

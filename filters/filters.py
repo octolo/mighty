@@ -16,6 +16,7 @@ class Filter(Verify):
     delimiter = None
     regex_delimiter = None
     user = None
+    extend = ()
 
     def __init__(self, id, *args, **kwargs):
         self.id = id if id else str(uuid.uuid4())
@@ -28,6 +29,7 @@ class Filter(Verify):
         self.field = kwargs.get('field', self.id)
         self.value = kwargs.get('value')
         self.choices = kwargs.get('choices')
+        self.extend = kwargs.get('extend', self.extend)
         self.params_choices = [
             self.param,
             self.negative_param,
@@ -140,6 +142,9 @@ class Filter(Verify):
     def get_field(self):
         return self.prefix+self.field+self.get_mask()
 
+    def get_field_extend(self, ext):
+        return self.prefix+ext+self.get_mask()
+
     ###############
     # Sql
     ##############
@@ -225,11 +230,32 @@ class SearchFilter(ParamFilter):
 
     def get_Q(self):
         values = self.get_value()
+        baseQ = Q()
+        extendQ = []
         if len(values):
-            if self.is_negative or self.is_array_negative:
-                return reduce(self.operator, [~Q(**{self.get_field(): value }) for value in values])
-            return reduce(self.operator, [Q(**{self.get_field(): value }) for value in values])
-        return Q()
+            usedQ = ~Q if self.is_negative or self.is_array_negative else Q
+            baseQ = reduce(self.operator, [usedQ(**{self.get_field(): value }) for value in values])
+            for ext in self.extend:
+                extendQ.append(reduce(self.operator, [usedQ(**{self.get_field_extend(ext): value }) for value in values]))
+            extendQ.append(baseQ)
+            baseQ = reduce(operator.or_, extendQ)
+        print(baseQ)
+        return baseQ
+            #    baseQ = reduce(self.operator, [~Q(**{self.get_field(): value }) for value in values])
+            #    if len(self.extend):
+            #        print("ok")
+            #        extendQ = []
+            #        for ext in self.extend:
+            #            extendQ.append(reduce(self.operator, [~Q(**{ext: value }) for value in values]))
+            #        baseQ = baseQ|reduce(self.operator, extendQ)
+            #else:
+            #    baseQ = reduce(self.operator, [Q(**{self.get_field(): value }) for value in values])
+            #    if len(self.extend):
+            #        print("ok")
+            #        extendQ = []
+            #        for ext in self.extend:
+            #            extendQ.append(reduce(self.operator, [Q(**{ext: value }) for value in values]))
+            #        baseQ = baseQ|reduce(self.operator, extendQ)
 
 class BooleanParamFilter(ParamFilter):
     enable_false = False
