@@ -18,7 +18,7 @@ cant_send = _("unable to send message")
 method_not_allowed = _("This authentication method is not allowed")
 cant_found = _("Can't found user")
 
-tpl_subject = _("%(domain)s - Connection code")
+tpl_subject = _("%(domain)s - Code de connexion")
 tpl_html = _("%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s")
 tpl_txt = _("""%(domain)s  - Code de connexion
 Cher utilisateur,
