@@ -151,7 +151,6 @@ class Maileva(MissiveBackend):
 
     def authentication(self):
         response = requests.post(self.api_url["auth"], data=self.auth_data)
-        print(response.json())
         self.access_token = response.json()["access_token"]
         return self.valid_response(response)
 
