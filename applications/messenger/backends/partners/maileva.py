@@ -129,7 +129,7 @@ class Maileva(MissiveBackend):
 
     @property
     def api_url(self):
-        if setting('MISSIVE_SERVICE', False):
+        if setting('MISSIVE_SERVICE', False) or setting("DEBUG"):
             return self.api_sandbox
         return self.api_official
 
@@ -206,8 +206,6 @@ class Maileva(MissiveBackend):
 
     def send_postal(self):
         self.missive.msg_id = str(uuid4())
-        print("okkkkkk")
-        print(self.missive.mode)
         if self.missive.status == _c.STATUS_FILETEST:
             self.postal_base()
         else:
