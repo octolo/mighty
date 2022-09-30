@@ -10,7 +10,10 @@ from mighty.readers import ReaderXLS
 import datetime, sys, csv, os.path
 
 class BaseCommand(BaseCommand, EnableLogger):
-    total = 0
+    default_string_arguments = ("fkmodel", "m2mmodel")
+    default_boolean_arguments = ("loader", "test", "progressbar")
+    string_arguments = ()
+    boolean_arguments = ()
     help = 'Command Base override by Mighty'
     position = 0
     prefix_bar = 'Percent'
@@ -79,25 +82,25 @@ class BaseCommand(BaseCommand, EnableLogger):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument('--loader', action="store_true")
-        parser.add_argument('--test', action="store_true")
-        parser.add_argument('--total', default=0)
-        parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--logfile', default="%s_%s.log" % (str(self.subcommand).lower(), f"{datetime.datetime.now():%Y%m%d_%H%M%S_%f}"))
-        parser.add_argument('--progressbar', action="store_true")
+        parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--userlog', default=None)
-        parser.add_argument('--fkmodel', default=None)
-        parser.add_argument('--m2mmodel', default=None)
+        for field in self.string_arguments+self.default_string_arguments:
+            parser.add_argument('--%s'%field, default=None)
+        for field in self.boolean_arguments+self.default_boolean_arguments:
+            parser.add_argument('--%s'%field, action="store_true")
+
+    @property
+    def auto_fields(self):
+        auto_fields = ("logfile", "encoding")
+        auto_fields += self.string_arguments+self.default_string_arguments
+        auto_fields += self.boolean_arguments+self.default_boolean_arguments
+        return auto_fields
 
     def handle(self, *args, **options):
-        self.in_test = options.get('test')
-        self.encoding = options.get('encoding')
-        self.logfile = options.get('logfile')
-        self.loader = options.get('loader')
-        self.progressbar = options.get('progressbar')
+        for field in self.auto_fields:
+            setattr(self, field, options.get(field))
         self.verbosity = options.get('verbosity', 0)
-        self.fkmodel = options.get('fkmodel')
-        self.m2mmodel = options.get('m2mmodel')
         self.userlog_cache = self.get_user(options.get('userlog'))
         self.logger.debug('start')
         self.makeJob()
