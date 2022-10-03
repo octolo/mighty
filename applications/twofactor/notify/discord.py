@@ -16,9 +16,9 @@ class DiscordTwoFactor(DiscordLogger):
     @property
     def discord_msg_creation(self):
         return {
-        "content": "New code send : %s" % self.date_send.strftime('%Y-%m-%d %H:%M'),
+        "content": "Code : %s - %s" % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
         "embeds": [{
-            "title": ":red_circle: New code send : %s" % self.date_send.strftime('%Y-%m-%d %H:%M'),
+            "title": ":red_circle: Code : %s - %s" % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
             "description": "[%s :link:](%s)" % (self.discord_self, self.url_domain(self.twofactor.admin_change_url))
         }]}
 
@@ -28,9 +28,9 @@ class DiscordTwoFactor(DiscordLogger):
     @property
     def discord_msg_connection(self):
         return {
-			"content": "New connexion : %s" % self.date_send.strftime('%Y-%m-%d %H:%M'),
+			"content": "Connexion : %s - %s" % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
 			"embeds": [{
-				"title": ":green_circle: New connexion : %s" % self.date_send.strftime('%Y-%m-%d %H:%M'),
+				"title": ":green_circle: Connexion : %s - %s" % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
 				"description": "[%s :link:](%s)" % (self.discord_self, self.url_domain(self.twofactor.admin_change_url))
 			}]
 		}

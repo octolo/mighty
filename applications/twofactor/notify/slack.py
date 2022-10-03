@@ -19,7 +19,7 @@ class SlackTwoFactor(SlackLogger):
 			"type": "section",
 			"text": {
 				"type": "plain_text",
-				"text": ":red_circle: New code send : %s" % self.date_send.strftime('%Y-%m-%d %H:%M'),
+				"text": ":red_circle: Code : %s - %s" % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
 				"emoji": True
 		}},
 		{
@@ -40,7 +40,7 @@ class SlackTwoFactor(SlackLogger):
 			"type": "section",
 			"text": {
 				"type": "plain_text",
-				"text": ":large_green_circle: New connexion : %s" % self.date_send.strftime('%Y-%m-%d %H:%M'),
+				"text": ":large_green_circle: Connexion : %s - %s" % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
 				"emoji": True
 		}},
 		{
@@ -53,4 +53,4 @@ class SlackTwoFactor(SlackLogger):
 
     def send_msg_connection(self):
         msg = "New connexion : %s" % self.date_send.strftime('%Y-%m-%d %H:%M')
-        self.send_msg(msg, self.slack_msg_creation)
+        self.send_msg(msg, self.slack_msg_connection)

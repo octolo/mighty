@@ -9,7 +9,7 @@ from mighty.admin.models import BaseAdmin
 from mighty.applications.user.choices import METHOD_BACKEND
 from mighty.applications.user import fields
 from mighty.applications.address.admin import AddressAdminInline
-from mighty.applications.address import fields as fields_address
+from mighty.applications.address import fields as address_fields
 from mighty.applications.user.apps import UserConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
@@ -35,10 +35,14 @@ class UserAgentAdmin(admin.TabularInline):
     readonly_fields = ('useragent',)
     extra = 0
 
-class UserAddressAdminInline(AddressAdminInline): pass
+class UserAddressAdminInline(admin.StackedInline):
+    fieldsets = ((None, {'classes': ('wide',), 'fields': ('default',)+address_fields}),)
+    extra = 0
+    readonly_fields = ("addr_backend_id",)
+
 
 class UserAdmin(UserAdmin, BaseAdmin):
-    formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
+    #formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
     add_form = UserCreationForm
     add_fieldsets = ((None, {
         'classes': ('wide',),
@@ -48,7 +52,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender') + fields_address
+        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender') + address_fields
         if UserConfig.ForeignKey.optional:
             self.fieldsets[1][1]['fields'] += ('optional',)
         self.add_field(_.informations, ('method', 'channel'))

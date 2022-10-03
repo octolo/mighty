@@ -14,6 +14,7 @@ from mighty.models.image import Image
 from mighty.functions import masking_email, masking_phone, url_domain
 from mighty.applications.logger.models import ChangeLog
 from mighty.applications.address.models import Address, AddressNoBase
+from mighty.applications.address import fields as address_fields
 from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.user.manager import UserManager
 from mighty.applications.user import translates as _, fields, choices, validators
@@ -35,6 +36,23 @@ class Data(models.Model):
 
     class Meta:
         abstract = True
+
+    def many_or_default(self):
+        qs = self.qs_not_self.filter(user=self.user, default=True)
+        self.default = self.default if len(qs) else True
+
+    def set_default_data(self):
+        data = self.search_fields[0]
+        udata = getattr(self.user, data)
+        if (self.default or not udata) and udata != getattr(self, data):
+            setattr(self.user, data, getattr(self, data))
+            self.user.save()
+
+    def pre_save(self):
+        self.many_or_default()
+
+    def post_save(self):
+        self.set_default_data()
 
 class UserEmail(Data, Base):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_email')
@@ -79,6 +97,14 @@ class UserAddress(Data, Address):
     @property
     def masking(self):
         return "**"
+
+    def set_default_data(self):
+        data = "raw"
+        udata = getattr(self.user, data)
+        if (self.default or not udata) and udata != getattr(self, data):
+            for field in address_fields:
+                setattr(self.user, field, getattr(self, field))
+            self.user.save()
 
 class InternetProtocol(models.Model):
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_ip')
@@ -222,7 +248,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         logger.info('usereagent: %s' % request.META['HTTP_USER_AGENT'], extra={'user': self})
 
     def gen_username(self):
-        prefix = "".join([l for l in getattr(self, conf.Field.username) if l.isalpha()])
+        prefix = "".join([f for f in [self.first_name, self.last_name, self.email] if f.isalpha()])
         prefix = prefix[:3] if len(prefix) >= 3 else prefix
         exist = True
         while exist:
@@ -246,7 +272,6 @@ class User(AbstractUser, Base, Image, AddressNoBase):
             except ObjectDoesNotExist:
                 self.user_email.create(email=self.email, default=True)
             self.user_email.exclude(email=self.email).update(default=False)
-
 
     def get_phones(self, flat=True):
         if flat:
@@ -281,8 +306,12 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     def pre_save(self):
         if not self.first_connection: self.first_connection = self.last_login
         if self.email is not None: self.email = self.email.lower()
-        if self.username is not None: self.username = self.username.lower()
-        else: self.username = self.gen_username()
+        if self.username is not None: 
+            print("not none")
+            self.username = self.username.lower()
+        else: 
+            print("gen username")
+            self.username = self.gen_username()
         #self.check_phone()
 
     def post_save(self, *args, **kwargs):

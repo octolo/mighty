@@ -12,14 +12,15 @@ if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     pre_save.connect(signals.pre_change_log, UserModel)
     post_save.connect(signals.post_change_log, UserModel)
 
-def AfterAddAnEmail(sender, instance, **kwargs):
-    post_save.disconnect(AfterAddAnEmail, UserEmail)
-    if instance.default or instance.user.email is None:
-        UserEmail.objects.filter(user=instance.user).first()
-        instance.user.email = instance.email
-        instance.user.save()
-    post_save.connect(AfterAddAnEmail, UserEmail)
-post_save.connect(AfterAddAnEmail, UserEmail)
+#def AfterAddAnEmail(sender, instance, **kwargs):
+#    post_save.disconnect(AfterAddAnEmail, UserEmail)
+#    print("tata")
+#    if instance.default or instance.user.email is None:
+#        UserEmail.objects.filter(user=instance.user).first()
+#        instance.user.email = instance.email
+#        instance.user.save()
+#    post_save.connect(AfterAddAnEmail, UserEmail)
+#post_save.connect(AfterAddAnEmail, UserEmail)
 
 def AfterDeleteAnEmail(sender, instance, **kwargs):
     if not UserEmail.objects.filter(user=instance.user, default=True).count():
@@ -29,14 +30,14 @@ def AfterDeleteAnEmail(sender, instance, **kwargs):
             email.save()
 post_delete.connect(AfterDeleteAnEmail, UserEmail)
 
-def AfterAddAPhone(sender, instance, **kwargs):
-    post_save.disconnect(AfterAddAPhone, UserPhone)
-    if instance.default or instance.user.phone is None:
-        UserPhone.objects.filter(user=instance.user).exclude(id=instance.id).update(default=False)
-        instance.user.phone = instance.phone
-        instance.user.save()
-    post_save.connect(AfterAddAPhone, UserPhone)
-post_save.connect(AfterAddAPhone, UserPhone)
+#def AfterAddAPhone(sender, instance, **kwargs):
+#    post_save.disconnect(AfterAddAPhone, UserPhone)
+#    if instance.default or instance.user.phone is None:
+#        UserPhone.objects.filter(user=instance.user).exclude(id=instance.id).update(default=False)
+#        instance.user.phone = instance.phone
+#        instance.user.save()
+#    post_save.connect(AfterAddAPhone, UserPhone)
+#post_save.connect(AfterAddAPhone, UserPhone)
 
 def AfterDeleteAPhone(sender, instance, **kwargs):
     if not UserPhone.objects.filter(user=instance.user, default=True).count():
