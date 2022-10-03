@@ -19,6 +19,7 @@ class Config:
     user_or_invitation = 'auth.UserOrInvitation'
     jwt_enable = False
     days_in_year = 365.25
+    backend_task = 'mighty.backends'
     consumers = {'chat': 'mighty.applications.messenger.consumers.ChatConsumer'}
     auth_consumer = 'channels.auth.AuthMiddlewareStack'
     config_simple = {

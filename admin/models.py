@@ -48,6 +48,9 @@ class BaseAdmin(admin.ModelAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
+        for field in fields.task:
+            if hasattr(model, field):
+                self.add_field(_.tasks, (field,))
         for field in fields.image:
             if hasattr(model, field):
                 self.add_field(_.more, (field,))

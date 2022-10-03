@@ -33,6 +33,7 @@ source = ('sources',)
 keywords = ('keywords',)
 file = ('file',)
 file_name = ('filename',)
+task = ('task_list', 'task_status')
 
 base = (
     'uid',
