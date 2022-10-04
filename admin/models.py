@@ -18,6 +18,7 @@ from mighty.admin.actions import disable_selected, enable_selected
 from mighty.admin.filters import InAlertListFilter, InErrorListFilter
 from mighty.functions import get_form_model
 from mighty.models.source import CHOICES_TYPE
+from mighty.forms import TaskForm
 
 from functools import update_wrapper
 
@@ -48,9 +49,6 @@ class BaseAdmin(admin.ModelAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        for field in fields.task:
-            if hasattr(model, field):
-                self.add_field(_.tasks, (field,))
         for field in fields.image:
             if hasattr(model, field):
                 self.add_field(_.more, (field,))
@@ -64,8 +62,22 @@ class BaseAdmin(admin.ModelAdmin):
         for field in fields.keywords:
             if hasattr(model, field):
                 self.add_field(_.more, (field,))
+        if hasattr(model, "task_list"):
+            self.add_field(_.more, ("task_status",))
         if hasattr(model, 'alerts'): self.list_filter += (InAlertListFilter,)
         if hasattr(model, 'errors'): self.list_filter += (InErrorListFilter,)
+
+    def task_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        task = request.POST.get("task_list")
+        if task:
+            obj.start_task(task)
+            messages.success(request, 'Task start: %s' % task)
+        else:
+            messages.warning(request, 'No task start')
+        return redirect(obj.admin_change_url)
 
     #def save_model(self, request, obj, form, change):
     #    #if not obj.create_by:
@@ -282,6 +294,7 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/enable/', self.wrap(self.enable_view), name='%s_%s_enable' % info),
             path('<path:object_id>/cachefield/', self.wrap(self.cachefield_view), name='%s_%s_cache_field' % info),
             path('<path:object_id>/logsfield/', self.wrap(self.logsfield_view), name='%s_%s_logs_field' % info),
+            path('<path:object_id>/task/', self.wrap(self.task_view), name='%s_%s_task' % info),
         ]
         if hasattr(self.model, 'timeline_model'):
             my_urls += [

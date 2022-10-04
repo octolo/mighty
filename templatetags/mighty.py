@@ -15,7 +15,6 @@ if 'guardian' in settings.INSTALLED_APPS:
 """
 Simple tag
 """
-
 @register.simple_tag(name='has_perm')
 def has_perm(obj, user, perm):
     if hasattr(obj, 'perm'):

@@ -182,3 +182,7 @@ class ModelFormDescriptable(forms.ModelForm):
 
 class SearchForm(FormDescriptable):
     search = CharField(label=_.search, icon="search")
+
+class TaskForm(ModelFormDescriptable):
+    class Meta:
+        fields = ("task_list",)
