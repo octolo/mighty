@@ -1,7 +1,19 @@
 from django import forms
 from mighty.forms import widgets
 
-self_fields = ("icon", "dict", "array", "many", "type", "default", "create_if_not_exist")
+self_fields = (
+    "icon",
+    "dict",
+    "isobj",
+    "array",
+    "many",
+    "type",
+    "default",
+    "fclass",
+    "mode",
+    "create_if_not_exist",
+    "preference",
+)
 options_fields = ("value",)
 
 class MightyFormField(forms.Field):

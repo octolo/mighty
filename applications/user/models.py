@@ -307,10 +307,8 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         if not self.first_connection: self.first_connection = self.last_login
         if self.email is not None: self.email = self.email.lower()
         if self.username is not None: 
-            print("not none")
             self.username = self.username.lower()
         else: 
-            print("gen username")
             self.username = self.gen_username()
         #self.check_phone()
 

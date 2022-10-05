@@ -1,6 +1,10 @@
 class FormDescriptor:
     url = None
     form = None
+    as_type = {
+        "datefield": "date",
+        "datetimefield": "datetime",
+    }
     default_attrs = [
         "label",
         "label_suffix",
@@ -15,8 +19,11 @@ class FormDescriptor:
         "max_digits",
         "decimal_places",
         "allow_empty_file",
+        "fclass",
+        "mode",
         "create_if_not_exist",
         "api",
+        "preference",
     ]
 
     form_desc = {
@@ -61,9 +68,20 @@ class FormDescriptor:
     def get_input_type(self, field):
         if hasattr(field, 'input_type'):
             return field.input_type
-        elif hasattr(field.widget, 'input_type'):
-            return field.widget.input_type
-        return field.widget.__class__.__name__.lower()
+        elif hasattr(field, "widget"): 
+            if hasattr(field.widget, 'input_type'):
+                return field.widget.input_type
+            wtype = field.widget.__class__.__name__.lower()
+            return self.as_type[wtype] if wtype in self.as_type else wtype
+        ftype = field.__class__.__name__.lower()
+        return self.as_type[ftype] if ftype in self.as_type else ftype
+
+    def get_input_type_text(self, field):
+        base_type = self.get_input_type(field)
+        if base_type == "text":
+            ftype = field.__class__.__name__.lower()
+            return self.as_type[ftype] if ftype in self.as_type else base_type
+        return base_type
 
     def option(self, field, name, key):
         if all([
@@ -111,10 +129,11 @@ class FormDescriptor:
         desc = {
             "name": name,
             "type": self.get_input_type(field),
+            "type_text": self.get_input_type_text(field),
             "errors": self.get_error_messages(field),
             "icon": getattr(field, "icon", None),
             "multiple": self.get_multiple(field),
-            "dict": getattr(field, "dict", None),
+            "isobj": getattr(field, "isobj", None),
             "attrs": getattr(field.widget, "attrs", {}),
             "options": self.get_options(field, name),
             "dependencies": self.get_dependencies(name),

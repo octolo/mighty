@@ -108,6 +108,7 @@ class FormJsonDescriptor:
         return default
 
     def get_field_desc(self, field, name):
+        print("ouuuiii")
         desc = {
             "name": name,
             "type": self.get_input_type(field),
