@@ -13,6 +13,8 @@ self_fields = (
     "mode",
     "create_if_not_exist",
     "preference",
+    "fast_create",
+    "form_create",
 )
 options_fields = ("value",)
 

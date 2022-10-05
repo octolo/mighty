@@ -24,6 +24,8 @@ class FormDescriptor:
         "create_if_not_exist",
         "api",
         "preference",
+        "fast_create",
+        "form_create",
     ]
 
     form_desc = {
