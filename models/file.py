@@ -18,6 +18,7 @@ from django.http import FileResponse
 from django.core.exceptions import  PermissionDenied
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
 from mighty.fields import JSONField
@@ -26,6 +27,13 @@ import os, magic, logging, requests, tempfile, hashlib
 logger = logging.getLogger(__name__)
 
 class File(models.Model):
+    auto_complete_fields = [
+        "filemimetype",
+        "size",
+        "charset",
+        "extracontenttype",
+    ]
+
     file = models.FileField(upload_to=file_directory_path, blank=True, null=True)
     filename = models.CharField(max_length=255, blank=True, null=True)
     filemimetype = models.CharField(max_length=255, blank=True, null=True, editable=False)
@@ -51,34 +59,35 @@ class File(models.Model):
 
     @property
     def file_url(self): return self.file.url
-
     @property
-    def file_name(self):
-        return self.filename if self.filename else os.path.basename(self.file.name)
-
+    def file_name(self): return self.filename if self.filename else os.path.basename(self.file.name)
     @property
-    def valid_file_name(self):
-        logger.warning('test: %s' % self.file)
-        return get_valid_filename(self.file.name)
-
+    def valid_file_name(self): return get_valid_filename(self.file.name)
     @property
     def file_extension(self): return os.path.splitext(self.file_name)[-1]
-
     @property
-    def download_url(self):
-        if hastattr(self, 'uid'):
-            return self.get_url('download', arguments={'uid': self.uid})
-        return self.get_url('download', arguments={'pk': self.pk})
-
+    def download_url(self): return self.get_url('download', arguments={self.uid_or_pk_arg:self.uid_or_pk})
     @property
-    def pdf_url(self):
-        if hastattr(self, 'uid'):
-            return self.get_url('pdf', arguments={'uid': self.uid})
-        return self.get_url('pdf', arguments={'pk': self.pk})
-
+    def pdf_url(self): return self.get_url('pdf', arguments={self.uid_or_pk_arg:self.uid_or_pk})
     @property
-    def name(self):
-        return self.filename
+    def name(self): return self.filename
+    @property
+    def mime_or_ext(self): return self.filemimetype if self.filemimetype else self.file_extension[1:]
+
+
+    def InMemoryUploadedFile_filemimetype(self): return self.file._file.content_type
+    def InMemoryUploadedFile_size(self): return self.file._file.size
+    def InMemoryUploadedFile_charset(self): return self.file._file.charset
+    def InMemoryUploadedFile_extracontenttype(self): return self.file._file.content_type_extra
+
+    def size_long(self, unit=None): return pretty_size_long(self.size, unit) if self.size else None
+    def size_short(self, unit=None): return pretty_size_short(self.size, unit) if self.size else None
+
+    def get_hashid(self):
+        return hashlib.sha1(self.file.read()).hexdigest()
+    def set_hashid(self):
+        if self.enable_hashid:
+            self.hashid = self.get_hashid()
 
     def set_thumbnail(self):
         if self.enable_thumbnail:
@@ -86,39 +95,14 @@ class File(models.Model):
             bck = Thumbnail(self.file, self.mime_or_ext)
             self.thumbnail = bck.base64
 
-    def get_extra_data(self, _file):
-        if not self.filename:
-            self.filename = self.file_name
-        self.filemimetype = _file.content_type
-        self.size = _file.size
-        self.charset = _file.charset
-        self.extracontenttype = _file.content_type_extra
-
-    def get_hashid(self):
-        return hashlib.sha1(self.file.read()).hexdigest()
-
-    def set_hashid(self):
-        if self.enable_hashid:
-            self.hashid = self.get_hashid()
-
-    @property
-    def mime_or_ext(self):
-        return self.filemimetype if self.filemimetype else self.file_extension[1:]
-
-    def some_extra_system(self):
+    def make_data(self):
+        self.filename = self.file.name
+        tmp_file_class = self.file._file.__class__.__name__
+        for field in self.auto_complete_fields:
+            if hasattr(self, tmp_file_class+"_"+field):
+                setattr(self, field, getattr(self, tmp_file_class+"_"+field)())
         self.set_thumbnail()
         self.set_hashid()
-
-    def make_data(self):
-        if self.file._file:
-            self.get_extra_data(self.file._file)
-        self.some_extra_system()
-
-    def size_long(self, unit=None):
-        return pretty_size_long(self.size, unit) if self.size else None
-
-    def size_short(self, unit=None):
-        return pretty_size_short(self.size, unit) if self.size else None
 
     @property
     def cloud_file(self):
@@ -137,3 +121,7 @@ class File(models.Model):
         response = FileResponse(todl_file)
         response['Content-Disposition'] = 'attachment; filename="%s"' % self.file_name
         return response
+
+    def save(self, *args, **kwargs):
+        self.make_data()
+        super().save(*args, **kwargs)

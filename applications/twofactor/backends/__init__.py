@@ -38,7 +38,12 @@ class TwoFactorBackend(ModelBackend):
             if self.user_can_authenticate(user):
                 try:
                     earlier, now = self.earlier
-                    code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now), is_consumed=False)
+                    if user.email in conf.accounts_market:
+                        code = Twofactor.objects.get(user=user, date_create__range=(earlier,now), is_consumed=False)
+                        if not user.check_password(password) or not self.user_can_authenticate(user):
+                            raise UserModel.DoesNotExist()
+                    else:
+                        code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now), is_consumed=False)
                     code.is_consumed = True
                     code.save()
                     if hasattr(request, 'META'):

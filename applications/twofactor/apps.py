@@ -10,6 +10,7 @@ class Config:
     code_size = 6
     email_code = 'twofactor/email_code.html'
     email_template = None
+    accounts_market = []
 
     class method:
         email = True

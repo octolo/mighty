@@ -167,6 +167,10 @@ class Base(models.Model):
     """
     # Model
     @property
+    def uid_or_pk_arg(self): return 'uid' if hastattr(self, 'uid') else 'pk'
+    @property
+    def uid_or_pk(self): return getattr(self, self.uid_or_pk_arg)
+    @property
     def app_label(self): return str(self._meta.app_label)
     @property
     def model_name(self): return str(self.__class__.__name__)
