@@ -66,9 +66,15 @@ class MessengerModel(Base):
     def need_to_send(self):
         raise NotImplementedError("Subclasses should implement need_to_send()")
 
+    def textify(self, html):
+        from django.utils.html import strip_tags
+        import re
+        text_only = re.sub('[ \t]+', ' ', strip_tags(html))
+        return text_only.replace('\n ', '\n').strip()
+
     def set_txt(self):
-        if self.html and not self.txt:
-            self.txt = html2text(self.html)
+        if self.html:
+            self.txt = self.textify(self.html)
 
     def prepare(self):
         self.status = choices.STATUS_PREPARE
