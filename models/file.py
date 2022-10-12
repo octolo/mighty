@@ -21,6 +21,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
+from mighty.thumbnail import Thumbnail
 from mighty.fields import JSONField
 
 import os, magic, logging, requests, tempfile, hashlib
@@ -75,28 +76,20 @@ class File(models.Model):
     @property
     def mime_or_ext(self): return self.filemimetype if self.filemimetype else self.file_extension[1:]
 
-
     def InMemoryUploadedFile_filemimetype(self): return self.file._file.content_type
     def InMemoryUploadedFile_size(self): return self.file._file.size
     def InMemoryUploadedFile_charset(self): return self.file._file.charset
     def InMemoryUploadedFile_extracontenttype(self): return self.file._file.content_type_extra
     def InMemoryUploadedFile_filename(self): return os.path.basename(self.file._file.name)
-    
 
     def size_long(self, unit=None): return pretty_size_long(self.size, unit) if self.size else None
     def size_short(self, unit=None): return pretty_size_short(self.size, unit) if self.size else None
 
-    def get_hashid(self):
-        return hashlib.sha1(self.file.read()).hexdigest()
-    def set_hashid(self):
-        if self.enable_hashid:
-            self.hashid = self.get_hashid()
+    def get_hashid(self): return hashlib.sha1(self.file.read()).hexdigest()
+    def set_hashid(self): self.hashid = self.get_hashid()
 
-    def set_thumbnail(self):
-        if self.enable_thumbnail:
-            from mighty.thumbnail import Thumbnail
-            bck = Thumbnail(self.file, self.mime_or_ext)
-            self.thumbnail = bck.base64
+    def get_thumbnail(self): return Thumbnail(self.file, self.mime_or_ext)
+    def set_thumbnail(self): self.thumbnail = self.get_thumbnail().base64
 
     def make_data(self):
         if self.file._file:
@@ -104,8 +97,10 @@ class File(models.Model):
             for field in self.auto_complete_fields:
                 if hasattr(self, tmp_file_class+"_"+field):
                     setattr(self, field, getattr(self, tmp_file_class+"_"+field)())
-        self.set_thumbnail()
-        self.set_hashid()
+        if self.enable_thumbnail:
+            self.set_thumbnail()
+        if self.enable_hashid:
+            self.set_hashid()
 
     @property
     def cloud_file(self):

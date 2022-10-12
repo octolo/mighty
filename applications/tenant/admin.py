@@ -3,6 +3,7 @@ from mighty.admin.models import BaseAdmin
 from mighty.applications.tenant import fields
 
 class RoleAdmin(BaseAdmin):
+    raw_id_fields = ('group', )
     view_on_site = False
     search_fields = ('name', 'group__search')
     list_display = ('name', 'is_immutable', 'group')
