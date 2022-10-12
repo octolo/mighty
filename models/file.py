@@ -32,6 +32,7 @@ class File(models.Model):
         "size",
         "charset",
         "extracontenttype",
+        "filename",
     ]
 
     file = models.FileField(upload_to=file_directory_path, blank=True, null=True)
@@ -79,6 +80,8 @@ class File(models.Model):
     def InMemoryUploadedFile_size(self): return self.file._file.size
     def InMemoryUploadedFile_charset(self): return self.file._file.charset
     def InMemoryUploadedFile_extracontenttype(self): return self.file._file.content_type_extra
+    def InMemoryUploadedFile_filename(self): return os.path.basename(self.file._file.name)
+    
 
     def size_long(self, unit=None): return pretty_size_long(self.size, unit) if self.size else None
     def size_short(self, unit=None): return pretty_size_short(self.size, unit) if self.size else None
@@ -96,11 +99,11 @@ class File(models.Model):
             self.thumbnail = bck.base64
 
     def make_data(self):
-        self.filename = self.file.name
-        tmp_file_class = self.file._file.__class__.__name__
-        for field in self.auto_complete_fields:
-            if hasattr(self, tmp_file_class+"_"+field):
-                setattr(self, field, getattr(self, tmp_file_class+"_"+field)())
+        if self.file._file:
+            tmp_file_class = self.file._file.__class__.__name__
+            for field in self.auto_complete_fields:
+                if hasattr(self, tmp_file_class+"_"+field):
+                    setattr(self, field, getattr(self, tmp_file_class+"_"+field)())
         self.set_thumbnail()
         self.set_hashid()
 
