@@ -79,15 +79,17 @@ class MissiveBackend(EnableLogger):
             self.missive.msg_id = make_msgid()
             text_content = str(self.missive.txt)
             html_content = self.missive.html_format
-            self.email = EmailMultiAlternatives(
+            if html_content:
+            self.email = EmailMessage(
                 self.missive.subject,
-                html_content,
+                html_content if html_content else text_content,
                 self.sender_email,
                 [self.missive.target],
                 reply_to=self.reply_email,
                 headers={'Message-Id': self.missive.msg_id}
             )
-            self.email.attach_alternative(html_content, "text/html")
+            self.email.content_subtype = "html"
+            #self.email.attach_alternative(html_content, "text/html")
         self.email_attachments()
         self.missive.to_sent()
         self.missive.save()
