@@ -28,9 +28,10 @@ class MissiveAdmin(BaseAdmin):
         ("Address", {"classes": ("wide",), "fields": addr_fields}),
         ("Content", {"classes": ("collapse",), "fields": (
             "subject",
-            "header_html",
             "template",
+            "header_html",
             "footer_html",
+            "preheader",
             "html",
             "txt",
         )}),

@@ -41,9 +41,9 @@ class MessengerModel(Base):
     subject = models.CharField(max_length=255)
     template = models.CharField(max_length=255, blank=True, null=True)
 
-    html = RichTextField()
-    txt = models.TextField()
-    preheader = models.TextField()
+    html = RichTextField(blank=True, null=True)
+    txt = models.TextField(blank=True, null=True)
+    preheader = models.TextField(blank=True, null=True)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
@@ -136,10 +136,6 @@ class MessengerModel(Base):
             self.backend = missive_backend_web()
         if self.mode == choices.MODE_APP:
             self.backend = missive_backend_app()
-
-    @property
-    def preheader(self):
-        return self.txt
 
     @property
     def content(self):

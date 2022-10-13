@@ -20,6 +20,7 @@ cant_found = _("Can't found user")
 
 tpl_subject = _("%(domain)s - Code de connexion")
 tpl_html = _("%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s")
+tpl_preheader = _("Afin de vous authentifier et accéder à votre espace  %(domain)s, veuillez copier le code suivant : %(code)s")
 tpl_txt = _("""%(domain)s  - Code de connexion
 Cher utilisateur,
 Vous venez de demander un code d'authentification afin de vous connecter sur %(domain)s.

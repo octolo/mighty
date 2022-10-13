@@ -17,6 +17,7 @@ missive = (
     "header_html",
     "footer_html",
     "html",
+    "preheader",
     "txt",
     "msg_id",
     "partner_id",

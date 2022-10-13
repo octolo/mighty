@@ -150,6 +150,7 @@ class TwoFactorBackend(ModelBackend):
             "object_id": user.id,
             "subject": _.tpl_subject % {'domain': MightyConfig.domain.upper()},
             "html": render_to_string(conf.email_code, {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)}),
+            "preheader": _.tpl_preheader % {'domain': MightyConfig.domain, 'code': str(obj.code)},
             "txt": _.tpl_txt % {'domain': MightyConfig.domain, 'code': str(obj.code)},
         }
 
