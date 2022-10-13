@@ -43,6 +43,7 @@ class MessengerModel(Base):
 
     html = RichTextField()
     txt = models.TextField()
+    preheader = models.TextField()
 
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
@@ -66,15 +67,20 @@ class MessengerModel(Base):
     def need_to_send(self):
         raise NotImplementedError("Subclasses should implement need_to_send()")
 
-    def textify(self, html):
-        from django.utils.html import strip_tags
-        import re
-        text_only = re.sub('[ \t]+', ' ', strip_tags(html))
-        return text_only.replace('\n ', '\n').strip()
-
-    def set_txt(self):
-        if self.html:
-            self.txt = self.textify(self.html)
+    #def textify(self, html):
+    #    from django.utils.html import strip_tags
+    #    import re
+    #    if self.template:
+    #        html = re.findall('<body.*</body>', html, re.DOTALL)
+    #        html = html[0]
+    #    text_only = re.sub('[ \t]+', ' ', html)
+    #    text_only = text_only.replace('\n ', '\n').strip()
+    #    text_only = '\n'.join((txt for txt in text_only.splitlines() if txt.strip() != ""))
+    #    return text_only
+#
+    #def set_txt(self):
+    #    if self.html_format:
+    #        self.txt = self.textify(self.html_format)
 
     def prepare(self):
         self.status = choices.STATUS_PREPARE
@@ -86,7 +92,7 @@ class MessengerModel(Base):
         getattr(self, 'prepare_%s' % self.mode.lower())()
 
     def pre_save(self):
-        self.set_txt()
+        #self.set_txt()
         self.set_backend()
         self.prepare_mode()
         self.need_to_send()

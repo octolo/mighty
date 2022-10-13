@@ -159,9 +159,7 @@ class TwoFactorBackend(ModelBackend):
 
     def send_sms(self, obj, user, target):
         data = self.get_data_missive(user, obj)
-        print(data["txt"])
         data["txt"] = _.tpl_sms % {'domain': MightyConfig.domain, 'code': str(obj.code)}
-        print(data["txt"])
         data.update({"target": target, "mode": choices.MODE_SMS})
         self.check_protect(target, data["subject"], conf.sms_protect_spam)
         missive = Missive(**data)
