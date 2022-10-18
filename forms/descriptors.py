@@ -104,7 +104,7 @@ class FormDescriptor:
 
     def get_options(self, field, name):
         if hasattr(field, 'choices'):
-            if hasattr(field, "api") and getattr(field, "api"):
+            if self.get_api(field, name):
                 return []
             elif hasattr(field.choices, 'queryset'):
                 return [{
@@ -127,6 +127,12 @@ class FormDescriptor:
             return getattr(field.widget, "allow_multiple_selected", default)
         return default
 
+    def get_api(self, field, name):
+        try:
+            return self.option(field, name, "api")
+        except Exception:
+            return None
+        
     def get_field_desc(self, field, name):
         desc = {
             "name": name,
@@ -140,14 +146,14 @@ class FormDescriptor:
             "options": self.get_options(field, name),
             "dependencies": self.get_dependencies(name),
         }
-        if hasattr(field, 'choices') and hasattr(field.choices, 'queryset'):
+        if (hasattr(field, 'choices') and hasattr(field.choices, 'queryset')) or self.get_api(field, name):
             desc.update({
                 "opt_label": self.option(field, name, "label"),
                 "opt_value": self.option(field, name, "value"),
             })
         for attr in self.default_attrs:
             if hasattr(self, "get_%s"%attr):
-                desc.update({attr: getattr(self, "get_%s"%attr)(field)})
+                desc.update({attr: getattr(self, "get_%s"%attr)(field, name)})
             elif hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})
         self.check_enctype(desc)
