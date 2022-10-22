@@ -132,7 +132,7 @@ class FormDescriptor:
             return self.option(field, name, "api")
         except Exception:
             return None
-        
+
     def get_field_desc(self, field, name):
         desc = {
             "name": name,
@@ -156,6 +156,11 @@ class FormDescriptor:
                 desc.update({attr: getattr(self, "get_%s"%attr)(field, name)})
             elif hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})
+            else:
+                try:
+                    desc.update({attr: self.option(field, name, attr)})
+                except Exception:
+                    pass
         self.check_enctype(desc)
         return desc
 

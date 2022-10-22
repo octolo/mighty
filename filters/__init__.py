@@ -8,6 +8,8 @@ from mighty.filters.filters import (
     BooleanParamFilter,
     FilterByGTEorLTE,
     FilterByYearDelta,
+    DateComingFilter,
+    DatePastFilter
 )
 from mighty.filters.manager import FiltersManager
 from mighty.filters.foxid import Foxid

@@ -12,8 +12,10 @@ import datetime, sys, csv, os.path
 class BaseCommand(BaseCommand, EnableLogger):
     default_string_arguments = ("fkmodel", "m2mmodel")
     default_boolean_arguments = ("loader", "test", "progressbar")
+    default_integer_arguments = ()
     string_arguments = ()
     boolean_arguments = ()
+    integer_arguments = ()
     help = 'Command Base override by Mighty'
     position = 0
     prefix_bar = 'Percent'
@@ -87,15 +89,22 @@ class BaseCommand(BaseCommand, EnableLogger):
         parser.add_argument('--userlog', default=None)
         for field in self.string_arguments+self.default_string_arguments:
             parser.add_argument('--%s'%field, default=None)
+        for field in self.integer_arguments+self.default_integer_arguments:
+            parser.add_argument('--%s'%field, default=0)
         for field in self.boolean_arguments+self.default_boolean_arguments:
             parser.add_argument('--%s'%field, action="store_true")
 
     @property
+    def default_fields(self):
+        return self.default_string_arguments+self.default_integer_arguments+self.default_boolean_arguments
+
+    @property
+    def working_fields(self):
+        return self.string_arguments+self.integer_arguments+self.boolean_arguments
+
+    @property
     def auto_fields(self):
-        auto_fields = ("logfile", "encoding")
-        auto_fields += self.string_arguments+self.default_string_arguments
-        auto_fields += self.boolean_arguments+self.default_boolean_arguments
-        return auto_fields
+        return self.default_fields+self.working_fields+("logfile", "encoding")
 
     def handle(self, *args, **options):
         for field in self.auto_fields:

@@ -4,7 +4,7 @@ from mighty.functions import make_float, make_int
 from mighty.apps import MightyConfig
 
 from functools import reduce
-from datetime import timedelta
+from datetime import timedelta, datetime
 import operator, uuid, re
 
 SEPARATOR = MightyConfig.Interpreter._split
@@ -316,3 +316,28 @@ class FilterByYearDelta(FilterByGTEorLTE):
 
     def format_value(self, value):
         return timedelta(days=make_float(value)*MightyConfig.days_in_year)
+
+class DatePastFilter(BooleanParamFilter):
+    def __init__(self, id='coming', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.field = kwargs.get('field', 'date')
+        self.mask = kwargs.get('mask', '__gte')
+
+    def get_Q(self):
+        value = self.get_value()
+        return Q(**{self.get_field(): datetime.today()})
+
+class DateComingFilter(BooleanParamFilter):
+    def __init__(self, id='coming', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.field = kwargs.get('field', 'date')
+        self.mask = kwargs.get('mask', '__gte')
+
+    def get_Q(self):
+        value = self.get_value()
+        return Q(**{self.get_field(): datetime.today()})
+
+class DatePastFilter(DateComingFilter):
+    def __init__(self, id='past', request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.mask = kwargs.get('mask', '__lt')
