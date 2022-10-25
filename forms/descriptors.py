@@ -4,6 +4,7 @@ class FormDescriptor:
     as_type = {
         "datefield": "date",
         "datetimefield": "datetime",
+        "colorwidget": "color",
     }
     default_attrs = [
         "label",
@@ -82,7 +83,12 @@ class FormDescriptor:
         base_type = self.get_input_type(field)
         if base_type == "text":
             ftype = field.__class__.__name__.lower()
-            return self.as_type[ftype] if ftype in self.as_type else base_type
+            if ftype in self.as_type:
+                return self.as_type[ftype]
+            if field.widget:
+                ftype = field.widget.__class__.__name__.lower()
+                if ftype in self.as_type:
+                    return self.as_type[ftype]
         return base_type
 
     def option(self, field, name, key):
