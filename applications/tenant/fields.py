@@ -1,6 +1,6 @@
 tenant = ('group', 'user', 'sync', 'invitation', 'roles')
 #tenant_alternate = ('tenant', 'alternate', 'position')
-role = ('group', 'name', 'is_immutable', 'number',)
+role = ('group', 'name', 'is_immutable', 'number', 'three_first')
 tenant_invitation = ('group', 'email', 'by', 'roles', 'tenant', 'status', 'token')
 
 tenant_setting = (

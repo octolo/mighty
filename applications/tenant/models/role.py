@@ -12,6 +12,7 @@ class Role(Base, Image):
     name = models.CharField(max_length=255)
     is_immutable = models.BooleanField(default=False)
     number = models.PositiveIntegerField(default=0, editable=False)
+    three_first = models.CharField(max_length=255, editable=False)
 
     objects = models.Manager()
     objectsB = models.Manager()
@@ -29,6 +30,9 @@ class Role(Base, Image):
     def set_number(self):
         self.number = self.roles_tenant.count()
 
+    def set_three_first(self):
+        self.three_first = ", ".join((t.user.username for t in self.roles_tenant.all()[0:2]))
+
     def set_name(self):
         self.name = self.name.lower()
 
@@ -36,4 +40,5 @@ class Role(Base, Image):
         self.set_name()
 
     def pre_update(self):
+        self.set_three_first()
         self.set_number()
