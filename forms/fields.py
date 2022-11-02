@@ -15,6 +15,8 @@ self_fields = (
     "preference",
     "fast_create",
     "form_create",
+    "field_detail",
+    "discriminant",
 )
 options_fields = ("value",)
 

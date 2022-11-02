@@ -27,6 +27,8 @@ class FormDescriptor:
         "preference",
         "fast_create",
         "form_create",
+        "field_detail",
+        "discriminant",
     ]
 
     form_desc = {
@@ -51,7 +53,7 @@ class FormDescriptor:
 
     def __init__(self, form, request, *args, **kwargs):
         self.form = form(request=request, *args, **kwargs)
-        self.form_desc["name"] = self.form.__class__.__name__
+        self.form_desc["name"] = str(self.form.__class__.__name__).lower()
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
         self.generate_desc()
 
@@ -91,16 +93,12 @@ class FormDescriptor:
                     return self.as_type[ftype]
         return base_type
 
-    def option(self, field, name, key):
-        if all([
-            name in self.form.Options.fields,
-            key in self.form.Options.fields[name]]):
+    def option(self, field, name, key, default=None):
+        if name in self.form.Options.fields and key in self.form.Options.fields[name]:
             return self.form.Options.fields[name][key]
-        elif all([
-            hasattr(field, "Options"),
-            hasattr(field.Options, key),
-            getattr(field.Options, key)]):
+        elif hasattr(field, "Options") and hasattr(field.Options, key) and getattr(field.Options, key):
             return getattr(field.Options, key)
+        if default: return default
         raise Exception("%s option in error" % name)
 
     def disable_choice(self, obj, field, choice):
@@ -138,6 +136,9 @@ class FormDescriptor:
             return self.option(field, name, "api")
         except Exception:
             return None
+
+    def get_field_detail(self, field, name):
+        return self.option(field, name, "field_detail", name+"_detail")
 
     def get_field_desc(self, field, name):
         desc = {
