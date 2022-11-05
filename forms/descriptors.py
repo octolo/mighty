@@ -63,7 +63,10 @@ class FormDescriptor:
     def get_error_messages(self, field):
         errors = field.error_messages
         for val in field.validators:
-            errors.update({val.code: val.message})
+            if hasattr(val, "code"):
+                errors.update({val.code: val.message})
+            else:
+                errors.update({"nocode": val.messages})
         return errors
 
     def check_enctype(self, desc):

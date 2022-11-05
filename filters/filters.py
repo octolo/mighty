@@ -239,7 +239,6 @@ class SearchFilter(ParamFilter):
                 extendQ.append(reduce(self.operator, [usedQ(**{self.get_field_extend(ext): value }) for value in values]))
             extendQ.append(baseQ)
             baseQ = reduce(operator.or_, extendQ)
-        print(baseQ)
         return baseQ
             #    baseQ = reduce(self.operator, [~Q(**{self.get_field(): value }) for value in values])
             #    if len(self.extend):
