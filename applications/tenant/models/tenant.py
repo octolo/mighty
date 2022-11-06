@@ -22,6 +22,7 @@ class Tenant(Base, Image):
 
     class Meta(Base.Meta):
         abstract = True
+        ordering = conf.ordering
         verbose_name = _.v_tenant
         verbose_name_plural = _.vp_tenant
         unique_together = ('user', 'group',)

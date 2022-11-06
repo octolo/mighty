@@ -5,6 +5,7 @@ from mighty.functions import setting
 from django.contrib.auth import get_user_model
 
 class Config:
+    ordering = ("id",)
     invitation_enable = False
     invitation_days = 7
     invitation_url = 'http://%(domain)s/user/tenant/%(uid)s/?token=%(token)s'
