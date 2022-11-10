@@ -12,7 +12,7 @@ class Role(Base, Image):
     name = models.CharField(max_length=255)
     is_immutable = models.BooleanField(default=False)
     number = models.PositiveIntegerField(default=0, editable=False)
-    three_first = models.CharField(max_length=255, editable=False)
+    three_first = models.CharField(max_length=255, editable=False, blank=True, null=True)
 
     objects = models.Manager()
     objectsB = models.Manager()
