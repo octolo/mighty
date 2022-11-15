@@ -30,12 +30,21 @@ class FileGenerator:
     def get_by_format(self, ct="csv", response="http"):
         return getattr(self, "response_%s" % response)(ct)
 
-    def response_http(self, ct):
+    def get_filename(self, ct):
+        return "%s.%s" % (get_valid_filename(make_searchable(self.filename)), ct)
+
+    def get_content(self, ct, buffer):
         items_method = "iter_items_%s" % ct
+        getattr(self, items_method)(self.items, buffer)
+
+    def response_file(self, ct):
+        items_method = "iter_items_%s" % ct
+        getattr(self, items_method)(self.items, open(self.get_filename(ct), 'w'))
+        
+    def response_http(self, ct):
         ct_fmt = {v: k for k, v in self.ct_list.items()}[ct]
         response = StreamingHttpResponse(
-            streaming_content=(getattr(self, items_method)(self.items, StreamingBuffer())),
+            streaming_content=(self.get_content(ct, StreamingBuffer())),
             content_type=ct_fmt)
-        response['Content-Disposition'] = 'attachment;filename=%s.%s' % (
-            get_valid_filename(make_searchable(self.filename)), ct)
+        response['Content-Disposition'] = 'attachment;filename='+self.get_filename(ct)
         return response

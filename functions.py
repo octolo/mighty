@@ -582,3 +582,11 @@ def refn(*args, **kwargs):
 def url_domain(url, http=False):
     domain = conf.domain
     return "%s://%s%s" % ("http" if http else "https", domain, url)
+
+def is_uid(uid):
+    import uuid
+    try:
+        uuid.UUID(str(uid))
+        return True
+    except ValueError:
+        return False
