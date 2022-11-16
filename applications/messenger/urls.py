@@ -6,6 +6,7 @@ app_name = 'messenger'
 urlpatterns = [
     path('messenger/', include([
         path('email/viewer/<uuid:uid>/', views.EmailViewer.as_view(), name="messenger-email-viewer"),
+        path('email/confirm/<uuid:uid>/', views.EmailService.confirm_email_read, name="messenger-email-confirm-read")
     ])),
 ]
 

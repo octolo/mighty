@@ -61,7 +61,8 @@ STATUS = (
     (STATUS_ACCEPTED, _("Accepted")),
     (STATUS_REJECTED, _("Rejected")),
     (STATUS_ERROR, _("error")),
-    (STATUS_FILETEST, _("file test"))
+    (STATUS_FILETEST, _("file test")),
+    (STATUS_OPEN, _("open"))
 )
 
 MODE_EMAIL = 'EMAIL'

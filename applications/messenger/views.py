@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.http import HttpResponse
 from mighty.functions import url_domain
 from mighty.views import DetailView, JsonView
 from mighty.models import Missive
@@ -68,3 +69,14 @@ if 'oauth2_provider' in setting('INSTALLED_APPS'):
 
     class WebhookApp(WebhookMessenger):
         backend_path = missive_backend_app()
+
+
+class EmailService(DetailView):
+    model = Missive
+    slug_url_kwarg = "uid"
+    slug_field = "uid"
+
+    def confirm_email_read(self, request):
+        obj = self.get_object()
+        print('--------------------', obj)
+        return HttpResponse('email open')
