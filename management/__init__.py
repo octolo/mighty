@@ -25,6 +25,8 @@ class BaseCommand(BaseCommand, EnableLogger):
     in_test = False
     loader = False
     userlog_cache = None
+    ftotal = "total"
+    total = 0
 
     @property
     def user_model(self):
@@ -42,9 +44,6 @@ class BaseCommand(BaseCommand, EnableLogger):
                 pass
         return self.user_model.objects.filter(is_superuser=True).first() if forlog else None
 
-    def get_total(self):
-        return self.total if self.total else 0
-    
     def set_position(self, pos=1):
         self.position+=pos
 
@@ -52,8 +51,9 @@ class BaseCommand(BaseCommand, EnableLogger):
         return self.current_info
 
     def progress_bar(self, bar_length=20):
-        if self.verbosity > 0 and self.total:
-            percent = self.position / self.get_total()
+        total = getattr(self, self.ftotal)
+        if self.verbosity > 0 and total:
+            percent = self.position / total
             if self.progressbar:
                 arrow = '-' * int(round(percent * bar_length)-1) + '>'
                 spaces = ' ' * (bar_length - len(arrow))
@@ -62,7 +62,7 @@ class BaseCommand(BaseCommand, EnableLogger):
                     arrow + spaces,
                     int(round(percent * 100)),
                     self.position,
-                    self.get_total(),
+                    total,
                     self.get_current_info(),
                     )
                 )
@@ -72,11 +72,11 @@ class BaseCommand(BaseCommand, EnableLogger):
                     self.prefix_bar,
                     int(round(percent * 100)),
                     self.position,
-                    self.get_total(),
+                    total,
                     self.get_current_info())
                 )
                 print()
-            if self.position == self.get_total(): print()
+            if self.position == total: print()
 
     def create_parser(self, prog_name, subcommand, **kwargs):
         self.subcommand = subcommand
@@ -173,18 +173,21 @@ class ModelBaseCommand(BaseCommand):
         model = self.model_use
         return getattr(model, manager).filter(**dict(x.split(',') for x in self.filter.split(';')) if self.filter else {})
 
-    def do(self):
-        self.each_objects()
+    def get_current_info(self):
+        return self.current_object
 
-    def each_objects(self):
-        qs = self.get_queryset()
+    def do(self):
+        self.each_objects(self.get_queryset())
+
+    def each_objects(self, qs, do="on_object"):
+        self.position = 0
         self.total = len(qs)
         for obj in qs:
             self.current_object = obj
             self.set_position()
             if self.loader or self.progressbar:
                 self.progress_bar()
-            self.on_object(obj)
+            getattr(self, do)(obj)
 
     def on_object(self, object):
         raise NotImplementedError("Command should implement method on_object(self, obj)")
@@ -199,6 +202,7 @@ class ImportModelCommand(ModelBaseCommand):
     real_values = {}
     required_fields = []
     need_reset_reader = False
+    ftotal = "import_total"
 
     def reset_reader(self):
         self.position = 0
@@ -228,7 +232,7 @@ class ImportModelCommand(ModelBaseCommand):
         raise NotImplementedError("Command should implement property reader")
 
     @property
-    def total(self):
+    def import_total(self):
         raise NotImplementedError("Command should implement property total")
 
     def prepare_fields(self, fields):
@@ -241,10 +245,15 @@ class ImportModelCommand(ModelBaseCommand):
         else:
             self.fields = self.reverse = {field: field for field in fields}
 
+
     def do(self):
         self.loop_qs("on_row")
 
+    def get_current_info(self):
+        return self.current_row
+
     def loop_qs(self, do):
+        self.position = 0
         self.prepare_fields(self.reader.fieldnames)
         for row in self.reader:
             self.current_row = row
@@ -266,7 +275,7 @@ class XLSModelCommand(ImportModelCommand):
         return self._reader
 
     @property
-    def total(self):
+    def import_total(self):
         return self.reader.total-1
 
     def add_arguments(self, parser):
@@ -276,7 +285,6 @@ class XLSModelCommand(ImportModelCommand):
 
     def handle(self, *args, **options):
         self.xlsfile = options.get('xls')
-        print(self.xlsfile)
         self.sheet = options.get('sheet')
         if not os.path.isfile(self.xlsfile):
             raise CommandError('XLS "%s" does not exist' % self.csv)
@@ -284,7 +292,7 @@ class XLSModelCommand(ImportModelCommand):
 
 class CSVModelCommand(ImportModelCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--csv')
+        parser.add_argument('--csv', default=None)
         parser.add_argument('--delimiter', default=',')
         parser.add_argument('--quotechar', default='"')
         parser.add_argument('--quoting', default=csv.QUOTE_ALL)
@@ -308,7 +316,7 @@ class CSVModelCommand(ImportModelCommand):
         return self._reader
 
     @property
-    def total(self):
+    def import_total(self):
         if not self._total:
             self._total = len(open(self.csvfile).readlines())-1
         return self._total
