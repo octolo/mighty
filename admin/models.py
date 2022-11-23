@@ -79,6 +79,17 @@ class BaseAdmin(admin.ModelAdmin):
             messages.warning(request, 'No task start')
         return redirect(obj.admin_change_url)
 
+    def reporting_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        reporting = request.POST.get("reporting_list")
+        file_type = request.POST.get("file_type")
+        response = obj.do_reporting(reporting, file_type)
+        if response: return response
+        messages.warning(request, 'No reporting to do')
+        return redirect(obj.admin_change_url)
+
     #def save_model(self, request, obj, form, change):
     #    #if not obj.create_by:
     #    #    if hasattr(obj, 'create_by'): obj.set_create_by(request.user)
@@ -295,6 +306,7 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/cachefield/', self.wrap(self.cachefield_view), name='%s_%s_cache_field' % info),
             path('<path:object_id>/logsfield/', self.wrap(self.logsfield_view), name='%s_%s_logs_field' % info),
             path('<path:object_id>/task/', self.wrap(self.task_view), name='%s_%s_task' % info),
+            path('<path:object_id>/reporting/', self.wrap(self.reporting_view), name='%s_%s_reporting' % info),
         ]
         if hasattr(self.model, 'timeline_model'):
             my_urls += [

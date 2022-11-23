@@ -50,6 +50,11 @@
 .sourcelink:hover {
     background-color: darkviolet!important;
 }
+
+.submit-row.form-list {
+    text-align: left;
+}
+
 </style>
 {% endblock %}
 
@@ -73,17 +78,25 @@
 {{ block.super }}
 {% endblock %}
 
-
-
-{% block content %}
+{% block object-tools %}
+{{ block.super }}
 {% if original.can_use_task %}
-<div>
+<div class="submit-row form-list">
 <form method="POST" class="task_list" action="{{ original.admin_task_url }}">
     {% csrf_token %}
-    {{ original.form_task }}
-    <input type="submit">
+    {{ original.form_task.as_table }}
+    <input type="submit" value="Start">
 </form>
 </div>
 {% endif %}
-{{ block.super }}
+
+{% if original.can_do_reporting %}
+<div class="submit-row form-list">
+    <form method="POST" action="{{ original.admin_reporting_url }}">
+        {% csrf_token %}
+        {{ original.form_reporting }}
+        <input type="submit" value="Download">
+    </form>
+</div>
+{% endif %}
 {% endblock %}

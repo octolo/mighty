@@ -8,7 +8,7 @@ TASK_STATUS = ["running", "finish", "error"]
 def TaskedModel(**kwargs):
     def decorator(obj):
         class TaskedModel(obj):
-            task_list = models.CharField(max_length=25, blank=True, null=True, choices=kwargs.get("task_list", ()))
+            task_list = models.CharField(max_length=252, blank=True, null=True, choices=kwargs.get("task_list", ()))
             task_status = JSONField(blank=True, null=True, default=dict)
             can_use_task = True
 

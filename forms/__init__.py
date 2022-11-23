@@ -185,3 +185,14 @@ class SearchForm(FormDescriptable):
 class TaskForm(ModelFormDescriptable):
     class Meta:
         fields = ("task_list",)
+
+CONTENT_TYPE_ALLOWED = (
+    ("csv", ".csv"),
+    ("xls", ".xls"),
+    ("xlsx", ".xlsx"),
+)
+class ReportingForm(ModelFormDescriptable):
+    file_type = forms.ChoiceField(required=True, choices=CONTENT_TYPE_ALLOWED)
+
+    class Meta:
+        fields = ("reporting_list",)
