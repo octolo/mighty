@@ -4,21 +4,6 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
-.task_list{
-    padding: 12px 14px;
-    margin: 0 0 20px;
-    background: var(--darkened-bg);
-    border: 1px solid var(--hairline-color);
-    border-radius: 4px;
-    overflow: hidden;
-    display: inline-block;
-}
-@media (max-width: 767px){
-    .task_list{
-        display: flex;
-        flex-direction: column;
-    }
-}
 .disablelink {
     margin: 0 0 0 8px;
     background: coral!important;
@@ -82,7 +67,7 @@
 {{ block.super }}
 {% if original.can_use_task %}
 <div class="submit-row form-list">
-<form method="POST" class="task_list" action="{{ original.admin_task_url }}">
+<form method="POST" action="{{ original.admin_task_url }}">
     {% csrf_token %}
     {{ original.form_task.as_table }}
     <input type="submit" value="Start">
