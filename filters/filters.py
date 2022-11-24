@@ -220,9 +220,14 @@ class SearchFilter(ParamFilter):
         super().__init__(id, request, *args, **kwargs)
         self.mask = kwargs.get('mask', '__icontains')
         self.startw = kwargs.get('startw', '_')
+        self.extstartw = kwargs.get('extstartw', '')
 
     def get_mask(self):
         return self.mask
+
+    def extend_value(self):
+        values = super().get_value()
+        return [self.extstartw+value for value in values]
 
     def get_value(self):
         values = super().get_value()
@@ -235,8 +240,9 @@ class SearchFilter(ParamFilter):
         if len(values):
             usedQ = ~Q if self.is_negative or self.is_array_negative else Q
             baseQ = reduce(self.operator, [usedQ(**{self.get_field(): value }) for value in values])
+            exvalues = self.extend_value()
             for ext in self.extend:
-                extendQ.append(reduce(self.operator, [usedQ(**{self.get_field_extend(ext): value }) for value in values]))
+                extendQ.append(reduce(self.operator, [usedQ(**{self.get_field_extend(ext): value }) for value in exvalues]))
             extendQ.append(baseQ)
             baseQ = reduce(operator.or_, extendQ)
         return baseQ
