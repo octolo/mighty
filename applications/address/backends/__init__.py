@@ -1,7 +1,13 @@
+from mighty.applications.address.apps import AddressConfig
+
 class SearchBackend:
     message = None
     fields = ['address', 'complement', 'code', 'locality']
     address_format = '%(address)s %(complement)s, %(code)s %(locality)s'
+
+    @property
+    def config(self):
+        return AddressConfig
 
     def in_error(self, message):
         self.message = message

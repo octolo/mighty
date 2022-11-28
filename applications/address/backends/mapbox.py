@@ -34,7 +34,10 @@ class SearchBackend(SearchBackend):
         return requests.get(url).json()
 
     def get_url(self, input_str):
-        return self.url % (input_str, self.ACCESS_TOKEN)
+        url = self.url % (input_str, self.ACCESS_TOKEN)
+        if self.config.proximity:
+            return url+"&proximity="+self.config.proximity
+        return url
 
     def get_location(self, input_str):
         url = self.get_url(input_str)

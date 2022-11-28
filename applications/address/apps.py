@@ -5,6 +5,7 @@ from mighty.functions import setting
 
 class Config:
     backend = 'mighty.applications.address.backends.geopy.SearchBackend'
+    proximity = '2.333333,48.866667'
 
     class Default:
         country = 'France'
