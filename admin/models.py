@@ -29,12 +29,13 @@ class BaseAdmin(admin.ModelAdmin):
     enable_confirmation_template = None
     save_on_top = True
     formfield_overrides = {JSONField: {'widget': JSONEditorWidget},}
+    access_in_front = False
 
     def has_permission(self, request):
         return request.user.is_active and request.user.is_staff
 
     def view_on_site(self, obj):
-        return obj.detail_url
+        return obj.detail_url or False if self.access_in_front else False
 
     def category_exist(self, category):
         for i in [i for i,x in enumerate(self.fieldsets) if x[0] == category]:
