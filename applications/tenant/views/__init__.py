@@ -9,8 +9,6 @@ from mighty.applications.tenant.views.setting.classic import (
     TenantSettingList, TenantSettingDetail, TenantSettingCheckData
 )
 
-__all__ = ()
-
 if 'rest_framework' in settings.INSTALLED_APPS:
     from mighty.applications.tenant.views.tenant.drf import (
         TenantList, TenantDetail, CurrentTenant, TenantModelViewSet
@@ -22,10 +20,4 @@ if 'rest_framework' in settings.INSTALLED_APPS:
         TenantSettingList, TenantSettingDetail
     )
 
-    __all__ += (TenantModelViewSet,)
 
-__all__ = (
-    TenantList, TenantDetail, CurrentTenant,
-    RoleList, RoleDetail, RoleCheckData,
-    TenantSettingList, TenantSettingDetail, TenantSettingCheckData
-)

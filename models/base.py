@@ -5,6 +5,7 @@ from django.db.models.options import Options
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.template import Context, Template
+from django.core.exceptions import ValidationError
 
 from mighty.fields import JSONField
 from mighty.models import fields
@@ -51,6 +52,7 @@ class Base(models.Model):
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
     logs = JSONField(blank=True, null=True, default=dict)
     is_disable = models.BooleanField(_.is_disable, default=False, editable=False)
+    is_immutable = models.BooleanField(default=False)
     search = models.TextField(db_index=True, blank=True, null=True)
     date_create = models.DateTimeField(_.date_create, auto_now_add=True, editable=False)
     create_by = models.CharField(_.create_by, blank=True, editable=False, max_length=254, null=True)
@@ -63,6 +65,7 @@ class Base(models.Model):
     use_create_by = True
     use_update_by = True
     can_notify = True
+    fields_can_be_changed = "*"
     
     _logger = get_logger()
     _old_self = None
@@ -133,6 +136,12 @@ class Base(models.Model):
         grk = get_request_kept()
         return grk.user if grk else None
 
+    @property
+    def can_be_changed(self):
+        if self.fields_can_be_changed == "*":
+            return True
+        return all([field in self.fields_can_be_changed for field in self.fields_changed])
+
     class mighty:
         perm_title = actions
         fields_str = ('__str__',)
@@ -141,7 +150,10 @@ class Base(models.Model):
     class Meta:
         abstract = True
         default_permissions = default_permissions + permissions
-    
+
+    def raise_error(self, message, code=None):
+        raise ValidationError(message=message, code=code)
+
     def save_old_self(self):
         if self.pk and not self._old_self:
             if not self._old_fields:
@@ -333,6 +345,10 @@ class Base(models.Model):
     def update_by_username(self):
         return self.update_by.split('.')[1]
 
+    @property
+    def fields_changed(self):
+        return (field for field in self.fields if self.property_change(field))
+
     def set_create_by(self, user=None):
         if user and self.use_create_by:
             self.create_by = '%s.%s' % (user.id, user.username)
@@ -370,17 +386,23 @@ class Base(models.Model):
             self.pre_create()
 
     def save(self, *args, **kwargs):
-        do_post_create = False if self.pk else True
-        self.default_data()
-        self.pre_save()
-        super().save(*args, **kwargs)
-        self.post_create() if do_post_create else self.post_update()
-        self.post_save()
+        if self.can_be_changed:
+            do_post_create = False if self.pk else True
+            self.default_data()
+            self.pre_save()
+            super().save(*args, **kwargs)
+            self.post_create() if do_post_create else self.post_update()
+            self.post_save()
+        else:
+            raise self.raise_error(code="is_immutable", message="is immutable")
 
     def delete(self, *args, **kwargs):
-        self.pre_delete()
-        super().delete(*args, **kwargs)
-        self.post_delete()
+        if not self.is_immutable:
+            self.pre_delete()
+            super().delete(*args, **kwargs)
+            self.post_delete()
+        else:
+            raise self.raise_error(code="is_immutable", message="is immutable")
  
     def pre_save(self):
         pass

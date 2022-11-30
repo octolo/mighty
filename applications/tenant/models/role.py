@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from mighty.models.base import Base
 from mighty.models.image import Image
@@ -10,9 +12,12 @@ from mighty.applications.tenant.decorators import TenantAssociation
 class Role(Base, Image):
     search_fields = ['name']
     name = models.CharField(max_length=255)
-    is_immutable = models.BooleanField(default=False)
     number = models.PositiveIntegerField(default=0, editable=False)
     three_first = models.CharField(max_length=255, editable=False, blank=True, null=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     objects = models.Manager()
     objectsB = models.Manager()

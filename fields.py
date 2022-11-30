@@ -38,6 +38,7 @@ task = ('task_list', 'task_status')
 base = (
     'uid',
     'is_disable',
+    'is_immutable',
     'date_create',
     'create_by',
     'date_update',
