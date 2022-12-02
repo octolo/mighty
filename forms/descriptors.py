@@ -21,6 +21,7 @@ class FormDescriptor:
         "decimal_places",
         "allow_empty_file",
         "fclass",
+        "lclass",
         "mode",
         "create_if_not_exist",
         "api",
