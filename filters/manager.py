@@ -7,12 +7,12 @@ class FiltersManager(EnableLogger):
     cache_filters = None
     request = None
     data_load = None
-    filter_post_enable = True
+    filter_post_enable = False
 
     def __init__(self, *args, **kwargs):
         self.flts = kwargs.get('flts', [])
         self.mandatories = kwargs.get('mandatories', [])
-        self.filter_post_enable = kwargs.get("filter_post_enable", True)
+        self.filter_post_enable = kwargs.get("filter_post_enable", False)
 
     def check_mandatories(self, request):
         return all(k in self.get_data(request) for k in self.mandatories)
@@ -24,6 +24,7 @@ class FiltersManager(EnableLogger):
             if hasattr(request, 'GET'):
                 self.data_load.update(request.GET)
             if hasattr(request, 'POST') and self.filter_post_enable:
+                print("PPPOOOOSSSTTT")
                 if request.POST:
                     self.data_load.update(request.POST)
                 elif hasattr(request, 'data'):
