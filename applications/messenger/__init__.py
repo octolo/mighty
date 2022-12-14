@@ -95,9 +95,11 @@ def missive_backend_app():
 
 def notify_slack(hookname, **kwargs):
     hook = False
+    print("slack", settings.SLACK_NOTIFY)
     if settings.SLACK_NOTIFY:
         if hasattr(settings, "SLACK_HOOK") and hookname in settings.SLACK_HOOK:
             hook = settings.SLACK_HOOK[hookname]
+    print("OK HOOK", hook)
     if hook:
         data = {}
         if kwargs.get("text"):

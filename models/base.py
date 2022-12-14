@@ -7,6 +7,7 @@ from django.conf import settings
 from django.template import Context, Template
 from django.core.exceptions import ValidationError
 
+from mighty.functions import url_domain
 from mighty.fields import JSONField
 from mighty.models import fields
 from mighty.functions import make_searchable, get_request_kept, get_logger, get_model
@@ -18,6 +19,9 @@ import copy, json
 
 if "mighty.applications.messenger" in settings.INSTALLED_APPS:
     from mighty.applications.messenger import notify, notify_discord, notify_slack
+if "mighty.applications.logger" in settings.INSTALLED_APPS:
+    from mighty.applications.logger.notify.discord import DiscordLogger
+    from mighty.applications.logger.notify.slack import SlackLogger
 
 lvl_priority = ["alert", "warning", "notify", "info", "debug"]
 def default_logfield_dict():
@@ -75,6 +79,9 @@ class Base(models.Model):
     _history = []
     _hfirst = None
     _hlast = None
+    if "mighty.applications.logger" in settings.INSTALLED_APPS:
+        _discord_logger = DiscordLogger()
+        _slack_logger = SlackLogger()
 
     @property
     def model(self):
@@ -198,6 +205,7 @@ class Base(models.Model):
     def logs_json(self): return json.dumps(self.logs)
 
     # Admin URL
+    def url_domain(self, url): return url_domain(url)
     @property
     def admin_url_args(self): return {"object_id": self.pk}
     @property
