@@ -415,7 +415,8 @@ class Base(models.Model):
             else:
                 if "post_update" not in self.www_action_cancel:
                     self.post_update()
-            self.post_save()
+            if "post_save" not in self.www_action_cancel:
+                self.post_save()
         else:
             raise self.raise_error(code="is_immutable", message="is immutable")
 
