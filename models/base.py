@@ -48,6 +48,8 @@ actions = {
 default_permissions = Options(None).default_permissions
 permissions = tuple(sorted(list(actions), key=lambda x: x[0]))
 class Base(models.Model):
+    www_action = None
+    www_action_cancel = []
     search_fields = []
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
     logs = JSONField(blank=True, null=True, default=dict)
@@ -249,6 +251,10 @@ class Base(models.Model):
     """
     Functions
     """
+
+    def get_has(self, attr, default=None):
+        return getattr(self, attr, default) if hasattr(self, attr) else default
+
     def get_content_type(self):
         return ContentType.objects.get_for_model(self)
 
@@ -380,10 +386,14 @@ class Base(models.Model):
         self.set_update_by(get_request_kept().user if request else None)
         if self.pk:
             self.update_count+=1
-            self.pre_update()
+            self.www_action = "update"
+            if "pre_update" not in self.www_action_cancel:
+                self.pre_update()
         else:
             self.set_create_by(get_request_kept().user if request else None)
-            self.pre_create()
+            self.www_action = "create"
+            if "pre_create" not in self.www_action_cancel:
+                self.pre_create()
 
     def save(self, *args, **kwargs):
         if self.can_be_changed:
@@ -391,16 +401,24 @@ class Base(models.Model):
             self.default_data()
             self.pre_save()
             super().save(*args, **kwargs)
-            self.post_create() if do_post_create else self.post_update()
+            if do_post_create:
+                if "post_create" not in self.www_action_cancel:
+                    self.post_create()
+            else:
+                if "post_update" not in self.www_action_cancel:
+                    self.post_update()
             self.post_save()
         else:
             raise self.raise_error(code="is_immutable", message="is immutable")
 
     def delete(self, *args, **kwargs):
+        self.www_action = "delete"
         if not self.is_immutable:
-            self.pre_delete()
+            if "pre_delete" not in self.www_action_cancel:
+                self.pre_delete()
             super().delete(*args, **kwargs)
-            self.post_delete()
+            if "post_delete" not in self.www_action_cancel:
+                self.post_delete()
         else:
             raise self.raise_error(code="is_immutable", message="is immutable")
  

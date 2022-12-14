@@ -303,7 +303,7 @@ class CSVModelCommand(ImportModelCommand):
         self.delimiter = options.get('delimiter')
         self.quotechar = options.get('quotechar')
         self.quoting = options.get('quoting')
-        if not os.path.isfile(self.csvfile):
+        if self.csvfile and not os.path.isfile(self.csvfile):
             raise CommandError('CSV "%s" does not exist' % self.csv)
         super().handle(*args, **options)
 
