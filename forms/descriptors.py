@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 class FormDescriptor:
     url = None
     form = None
@@ -28,8 +30,13 @@ class FormDescriptor:
         "preference",
         "fast_create",
         "form_create",
+        "post_create",
         "field_detail",
         "discriminant",
+    ]
+    url_attrs = [
+        "form_create_url",
+        "post_create_url",
     ]
 
     form_desc = {
@@ -53,6 +60,8 @@ class FormDescriptor:
     }
 
     def __init__(self, form, request, *args, **kwargs):
+        if "drf_kwargs" in kwargs: self.drf_kwargs = kwargs.get("drf_kwargs")
+        print(self.drf_kwargs)
         self.form = form(request=request, *args, **kwargs)
         self.form_desc["name"] = str(self.form.__class__.__name__).lower()
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
@@ -141,6 +150,26 @@ class FormDescriptor:
         except Exception:
             return None
 
+    def url_arg(self, arg):
+        try:
+            return self.request.kwargs[arg]
+        except Exception:
+            return self.drf_kwargs[arg]
+
+    def kwargs_split(self, arg):
+        arg = arg.split(":")
+        if len(arg) > 1:
+            if arg[0] == "url": return self.url_arg(arg[1])
+            return None
+        return arg[0]
+
+    def get_url_attr(self, field, name, attr):
+        try:
+            config = self.option(field, name, attr)
+            return reverse(config["name"], kwargs={k: self.kwargs_split(v) for k,v in config["kwargs"].items()})
+        except Exception:
+            return None
+
     def get_field_detail(self, field, name):
         return self.option(field, name, "field_detail", name+"_detail")
 
@@ -172,6 +201,8 @@ class FormDescriptor:
                     desc.update({attr: self.option(field, name, attr)})
                 except Exception:
                     pass
+        for attr in self.url_attrs:
+            desc.update({attr: self.get_url_attr(field, name, attr)})
         self.check_enctype(desc)
         return desc
 

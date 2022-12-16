@@ -19,7 +19,7 @@ class ModelViewSet(ModelViewSet):
     def form_desc(self, request, form=None, *args, **kwargs):
         desc = next((f for f in self.forms_desc if f.Options.url == form), None)
         if desc:
-            formdesc = FormDescriptor(desc, request, **kwargs).as_json()
+            formdesc = FormDescriptor(desc, self.request, drf_kwargs=self.kwargs, **kwargs).as_json()
             return Response(formdesc)
         raise Http404
         

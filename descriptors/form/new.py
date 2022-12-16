@@ -17,6 +17,7 @@ class FormJsonDescriptor:
         "allow_empty_file",
         "create_if_not_exist",
         "api",
+        "create",
     ]
 
     form_desc = {
