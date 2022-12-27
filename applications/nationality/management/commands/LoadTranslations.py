@@ -4,6 +4,7 @@ from mighty.models import Translator, TranslateDict, Nationality
 import os, json
 
 class Command(ModelBaseCommand):
+
     def add_arguments(self, parser):
         parser.add_argument('--json', default=None)
         parser.add_argument('--folder', default=None)
@@ -41,6 +42,6 @@ class Command(ModelBaseCommand):
                 if file.endswith(".json"):
                     qs.append(os.path.join(dirpath, file))
         self.each_objects(qs)
-                    
+
     def on_object(self, obj):
         self.load_jsonfile(obj)

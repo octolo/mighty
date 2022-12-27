@@ -20,25 +20,28 @@ class Command(CSVModelCommand):
                 setattr(obj, field, row[field])
         img = '%s/flags/%s.png' % (conf.directory, obj.alpha2.lower())
         if obj.image and os.path.isfile(obj.image.path):
-            os.remove(obj.image.path) 
+            os.remove(obj.image.path)
             obj.image = None
         if os.path.isfile(img):
             f = open(img, "rb")
             flag = File(f)
             obj.image.save(img, flag, save=True)
         obj.save()
+        if self.position >= 2:
+            self.stop_loop = True
 
     def before_job(self):
         self.logger.info('Import nationalities')
 
     def after_job(self, *args, **kwargs):
-        self.logger.info('Import phone number')
-        qs = []
-        for prefix, values in _COUNTRY_CODE_TO_REGION_CODE.items():
-            for value in values:
-                qs.append({"alpha": value, "numbering": prefix})
-        self.ftotal = "total"
-        self.each_objects(qs)
+        if not self.stop_loop:
+            self.logger.info('Import phone number')
+            qs = []
+            for prefix, values in _COUNTRY_CODE_TO_REGION_CODE.items():
+                for value in values:
+                    qs.append({"alpha": value, "numbering": prefix})
+            self.ftotal = "total"
+            self.each_objects(qs)
 
     def on_object(self, obj):
         try:

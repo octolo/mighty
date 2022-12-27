@@ -7,7 +7,7 @@ from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
 from mighty.readers import ReaderXLS
-import datetime, sys, csv, os.path
+import datetime, sys, csv, os.path, os
 
 class BaseCommand(BaseCommand, EnableLogger):
     default_string_arguments = ("fkmodel", "m2mmodel")
@@ -38,7 +38,7 @@ class BaseCommand(BaseCommand, EnableLogger):
                 Qparams = Q(id=int(info))
             except ValueError:
                 Qparams = Q(user_email__email=info)|Q(user_phone__phone=info)|Q(username=info)
-            try: 
+            try:
                 return self.user_model.objects.get(Qparams)
             except self.user_model.DoesNotExist:
                 pass
@@ -203,6 +203,7 @@ class ImportModelCommand(ModelBaseCommand):
     required_fields = []
     need_reset_reader = False
     ftotal = "import_total"
+    stop_loop = False
 
     def reset_reader(self):
         self.position = 0
@@ -245,7 +246,6 @@ class ImportModelCommand(ModelBaseCommand):
         else:
             self.fields = self.reverse = {field: field for field in fields}
 
-
     def do(self):
         self.loop_qs("on_row")
 
@@ -261,10 +261,11 @@ class ImportModelCommand(ModelBaseCommand):
             if self.loader or self.progressbar:
                 self.progress_bar()
             getattr(self, do)(row)
+            if self.stop_loop and os.environ.get('CI'):
+                break
 
     def on_row(self, row):
         raise NotImplementedError("Command should implement method on_object(self, obj)")
-
 
 class XLSModelCommand(ImportModelCommand):
     @property
