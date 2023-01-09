@@ -225,15 +225,23 @@ class ParamMultiChoicesFilter(ParamFilter):
 class MultiParamFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
-        self.mask = kwargs.get('mask', '__icontains')
+        self.mask = kwargs.get('mask', '')
+        self.fields = kwargs.get('fields', [])
 
     def get_value(self):
         return super().get_value().split(SEPARATOR)
 
+    def fieldQ(self):
+        return reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in self.get_value()])
+
+    def fieldsQ(self):
+        return reduce(self.operator, [self.usedQ(**{self.get_field_extend(f): value}) for value in self.get_value()
+            for f in self.fields])
+
     def get_Q(self):
-        if self.is_negative or self.is_array_negative:
-            return reduce(self.operator, [~Q(**{self.get_field(): value }) for value in self.get_value()])
-        return reduce(self.operator, [Q(**{self.get_field(): value }) for value in self.get_value()])
+        theQ = self.fieldsQ() if len(self.fields) else self.fieldQ()
+        print(theQ)
+        return theQ
 
 class SearchFilter(ParamFilter):
     regex_delimiter = r'[;,\s]\s*'
@@ -260,7 +268,6 @@ class SearchFilter(ParamFilter):
         values = self.get_value()
         if len(values):
             searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in values])
-            print((searchQ|self.get_andQ())|self.get_orQ())
             return (searchQ|self.get_andQ())|self.get_orQ()
         return Q()
 
