@@ -82,7 +82,7 @@ class MissiveBackend(EnableLogger):
                 self.missive.html_format if self.missive.html_format else str(self.missive.txt),
                 self.sender_email,
                 [self.missive.target],
-                reply_to=list(self.reply_email)+[self.send_email],
+                reply_to=self.reply_email,
                 headers={'Message-Id': self.missive.msg_id}
             )
             if self.missive.html_format:

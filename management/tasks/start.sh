@@ -20,7 +20,7 @@ usage()
     echo -e $HTEXT
 }
 
-VUETPL="templates/frontend"
+VUETPL="frontend"
 LOGDIR="logs"
 FULLSERVICE=false
 REDIS_CMD="redis-server"
