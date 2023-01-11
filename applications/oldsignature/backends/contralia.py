@@ -162,7 +162,7 @@ class SignatureBackend(SignatureBackend):
 
     def add_sign_doc(self, document):
         document_file = document.file_to_use
-        base_name = os.path.basename(document_file.name)
+        base_name = os.path.basename(document_file.filename)
         data = {
             "name": document.name,
             "withoutProcessing": False,
@@ -217,7 +217,7 @@ class SignatureBackend(SignatureBackend):
         self.transaction.save()
 
     def remove_document(self, document):
-        response = self.remove_sign_doc(document) if document.to_sign else self.remove_annex_doc(document)
+        response = self.remove_sign_doc(document) if document.need else self.remove_annex_doc(document)
 
     # SIGNATORY
     def add_signatory(self, signatory):
