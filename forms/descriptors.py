@@ -111,8 +111,7 @@ class FormDescriptor:
             return self.form.Options.fields[name][key]
         elif hasattr(field, "Options") and hasattr(field.Options, key) and getattr(field.Options, key):
             return getattr(field.Options, key)
-        if default: return default
-        raise Exception("%s option in error" % name)
+        return default
 
     def disable_choice(self, obj, field, choice):
         if hasattr(self.form, self.current_field+"_disable"):
@@ -179,7 +178,7 @@ class FormDescriptor:
             "type": self.get_input_type(field),
             "type_text": self.get_input_type_text(field),
             "errors": self.get_error_messages(field),
-            "icon": getattr(field, "icon", None),
+            "icon": self.option(field, name, "icon"),
             "multiple": self.get_multiple(field),
             "isobj": getattr(field, "isobj", None),
             "attrs": getattr(field.widget, "attrs", {}),
