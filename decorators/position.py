@@ -21,9 +21,6 @@ def PositionModel(**kwargs):
 
             @property
             def count_position(self):
-                print(self.Qasfield)
-                for s in self.qs_not_self:
-                    print(s.id)
                 return self.qs_not_self.filter(**self.Qasfield).count()
 
             @property
@@ -33,7 +30,6 @@ def PositionModel(**kwargs):
             def set_position(self, offset=1):
                 if not self.position:
                     count = self.count_position
-                    print(count)
                     self.position = count+offset
 
         return PositionModel
