@@ -20,19 +20,22 @@ def NamedIdModel(**kwargs):
                 return {field: getattr(self, field) for field in self.Qnamedfields}
 
             @property
+            def qs_named_id(self):
+                return self.qs_not_self.filter(**self.Qasfield)
+
+            @property
             def count_named_id(self):
-                return self.qs_not_self.filter(**self.Qasfield).count()
+                return self.qs_named_id.count()
 
             @property
             def named_id_exist(self):
-                return type(self).objects.filter(**self.Qasfield, named_id=self.named_id).count()
+                return self.qs_named_id.filter(named_id=self.named_id).count()
 
             def set_named_id(self, offset=0):
                 base_name = "-".join([str(getattr(self, field)) for field in self.named_id_fields])
                 named_id = slugify(base_name)
                 count = self.count_named_id+offset
                 self.named_id = "%s-%s" % (named_id, count+1) if count > 0 else named_id
-                print(self.named_id_exist)
                 if self.named_id_exist: self.set_named_id(offset+1)
 
         return NamedIdModel
