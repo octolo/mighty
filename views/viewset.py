@@ -11,9 +11,11 @@ class ModelViewSet(ModelViewSet):
     cache_manager = None
     filters = []
     user_way = "user__id"
+    action_prefix = "action_"
     order_base = []
     forms_desc = []
     tables_desc = []
+
 
     @action(detail=False, methods=["get"], url_path=r"forms/(?P<form>\w+)")
     def form_desc(self, request, form=None, *args, **kwargs):
@@ -23,6 +25,18 @@ class ModelViewSet(ModelViewSet):
             return Response(formdesc)
         raise Http404
         
+    def call_action_model(self, obj, action, data, method):
+        return getattr(obj, action)(data, method)
+
+    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r"action/(?P<action>\w+)")
+    def actions(self, request, uid, action, *args, **kwargs):
+        obj = self.get_object()
+        action = self.action_prefix+action
+        if hasattr(obj, action):
+            infos = self.call_action_model(obj, action, self.request.data, self.request.method)
+            return Response({"infos": infos})
+        raise Http404
+
     @action(detail=False, methods=["get"], url_path=r"table/(?P<table>\w+)")
     def table_desc(self, request, table=None, *args, **kwargs):
         desc = next((f for t in self.tables_desc if t.Options.url == table), None)

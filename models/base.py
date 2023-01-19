@@ -11,8 +11,9 @@ from mighty.functions import url_domain
 from mighty.fields import JSONField
 from mighty.models import fields
 from mighty.functions import make_searchable, get_request_kept, get_logger, get_model
-
 from mighty import translates as _
+
+from types import FunctionType
 from uuid import uuid4
 from sys import getsizeof
 import copy, json
@@ -79,9 +80,23 @@ class Base(models.Model):
     _history = []
     _hfirst = None
     _hlast = None
+
     if "mighty.applications.logger" in settings.INSTALLED_APPS:
         _discord_logger = DiscordLogger()
         _slack_logger = SlackLogger()
+
+    @property
+    def method_list(self):
+        return [x for x, y in self.__dict__.items()]
+    def methods_startswith(self, prefix):
+        return self.method_list
+
+    @property
+    def property_list(self):
+        return [p for p in dir(self) if not callable(getattr(self, p)) and not p.startswith("__")]
+    def properties_startswith(self, prefix):
+        return [p for p in self.property_list if p.startswith(prefix)]
+
 
     @property
     def model(self):
@@ -150,6 +165,12 @@ class Base(models.Model):
         if self.fields_can_be_changed == "*":
             return True
         return all([field in self.fields_can_be_changed for field in self.fields_changed])
+
+    @property
+    def cant_be_changed(self):
+        if self.fields_cant_be_changed == "*":
+            return True
+        return all([field not in self.fields_cant_be_changed for field in self.fields_changed])
 
     class mighty:
         perm_title = actions
