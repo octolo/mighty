@@ -33,13 +33,14 @@ class SlackLogger(NotifyBackend):
             "type": "section",
             "text": {
                 "type": "plain_text",
-                "text": self.exc_text,
+                "text": "\n".join(self.help_data),
                 "emoji": True
             }
         },
         { "type": "divider" }]
 
     def send_msg_error(self):
+        print("ok error")
         self.send_msg(self.msg, self.slack_msg_error)
 
     def send_msg(self, msg, blocks=None):

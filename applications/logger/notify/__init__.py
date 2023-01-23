@@ -1,12 +1,13 @@
 from mighty.backend import Backend
 from mighty.applications.logger.apps import LoggerConfig as conf
+import sys, os
 
 class NotifyBackend(Backend):
     record = None
     msg = None
     lvl = "info"
     data_ok = (
-        "exc_text",
+        #"exc_text",
         "levelname",
         "levelno",
         "pathname",
@@ -37,12 +38,25 @@ class NotifyBackend(Backend):
             exc_text = getattr(self.record, "exc_text")
         return "No exc text" if exc_text in ("None", None, False, "") else exc_text
 
+
+    @property
+    def sys_info(self):
+        return sys.exc_info()
+
+    @property
+    def exc_info(self):
+        return self.record.exc_info
+
     @property
     def help_data(self):
         list_data = []
         for data in self.data_ok:
             if hasattr(self.record, data):
                 list_data.append("%s: %s" % (data, getattr(self.record, data)))
+
+        exc, msg, trc = self.exc_info
+        list_data.append("error: "+str(msg))
+        list_data.append("trace: "+str(trc))
         if hasattr(self.record, "request"):
             list_data += ('ip: ' + self.retrieve_ip, 'user_agent: ' + self.retrieve_agent)
             list_data += (
@@ -73,7 +87,9 @@ class NotifyBackend(Backend):
         self.send_msg(self.msg)
 
     def send_error(self):
+        print(self.record.levelno)
         if self.record.levelno >= 30:
+            print("ok error")
             self.send_msg_error()
 
     def send_msg(self, msg, blocks=None):

@@ -38,8 +38,10 @@ def log_in_db(record, msg):
 class NotifySlackDiscord:
     def slack_notify(self, record):
         from mighty.applications.logger.notify.slack import SlackLogger
+        print("SLACK START")
         slack = SlackLogger(record=record)
         slack.send_error()
+        print("SLACK END")
 
     def discord_notify(self, record):
         from mighty.applications.logger.notify.discord import DiscordLogger
