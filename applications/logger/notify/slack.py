@@ -19,7 +19,7 @@ class SlackLogger(NotifyBackend):
 
     @property
     def slack_msg_error(self):
-        return [
+        data = [
         {
             "type": "section",
             "text": {
@@ -37,7 +37,15 @@ class SlackLogger(NotifyBackend):
                 "emoji": True
             }
         },
-        { "type": "divider" }]
+        { "type": "divider" },]
+        if self.dblog:
+            data.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "<access error| %s :link:>" % self.url_domain(self.dblog.admin_change_url),
+            }})
+        return data
 
     def send_msg_error(self):
         print("ok error")

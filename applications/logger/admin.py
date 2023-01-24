@@ -2,8 +2,23 @@ from django.template.response import TemplateResponse
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes.models import ContentType
+from django.contrib import admin
 from mighty.admin.models import BaseAdmin
-from mighty.models import Log
+from mighty.applications.logger import fields
+
+
+class LogAdmin(BaseAdmin):
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.log}),)
+    list_display = ('msg', 'log_hash')
+    search_fields = ('msg', 'log_hash')
+    list_filter = ("content_type",)
+    readonly_fields = fields.log
+
+class ChangeLogAdmin(BaseAdmin):
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.changelog}),)
+    list_display = ('field', 'value', 'user')
+    search_fields = ('field', 'value', 'user__lastname', 'user__username', 'user__email')
+    readonly_fields = fields.changelog
 
 class ModelWithLogAdmin(BaseAdmin):
     change_form_template  = 'admin/change_form_logs.html'

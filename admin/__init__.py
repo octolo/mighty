@@ -60,6 +60,12 @@ class NewsAdmin(admin.StackedInline):
 ###########################
 
 # Nationality
+if 'mighty.applications.logger' in settings.INSTALLED_APPS:
+    from mighty.applications.logger import admin as admin_logger
+    @admin.register(all_models.Log)
+    class LogAdmin(admin_logger.LogAdmin): pass
+
+# Nationality
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality import admin as admin_nationality
     @admin.register(all_models.Nationality)

@@ -3,6 +3,7 @@ from mighty.applications.logger.apps import LoggerConfig as conf
 import sys, os
 
 class NotifyBackend(Backend):
+    dblog = None
     record = None
     msg = None
     lvl = "info"
@@ -44,8 +45,8 @@ class NotifyBackend(Backend):
         return sys.exc_info()
 
     @property
-    def exc_info(self):
-        return self.record.exc_info
+    def pathname(self):
+        return self.record.pathname
 
     @property
     def help_data(self):
@@ -54,9 +55,7 @@ class NotifyBackend(Backend):
             if hasattr(self.record, data):
                 list_data.append("%s: %s" % (data, getattr(self.record, data)))
 
-        exc, msg, trc = self.exc_info
-        list_data.append("error: "+str(msg))
-        list_data.append("trace: "+str(trc))
+        list_data.append("file error: "+str(self.pathname))
         if hasattr(self.record, "request"):
             list_data += ('ip: ' + self.retrieve_ip, 'user_agent: ' + self.retrieve_agent)
             list_data += (
@@ -70,6 +69,7 @@ class NotifyBackend(Backend):
     def __init__(self, *args, **kwargs):
         self.record = kwargs.get("record")
         self.lvl = kwargs.get("lvl", "info")
+        self.dblog = kwargs.get("dblog", None)
 
     @property
     def level(self):
@@ -87,9 +87,7 @@ class NotifyBackend(Backend):
         self.send_msg(self.msg)
 
     def send_error(self):
-        print(self.record.levelno)
         if self.record.levelno >= 30:
-            print("ok error")
             self.send_msg_error()
 
     def send_msg(self, msg, blocks=None):

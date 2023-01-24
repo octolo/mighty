@@ -2,11 +2,14 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth import get_user_model
+from mighty.models.base import Base
 from mighty.applications.logger import translates as _, choices
 from mighty import translates as _m
 from datetime import datetime
+import hashlib
 
-class Log(models.Model):
+class Log(Base):
+    fields_log_hash = ("msg", "stack_info")
     args = models.CharField(_.args, max_length=255, blank=True, null=True)
     created = models.DateTimeField(_.created, auto_now_add=True, editable=False)
     exc_info = models.CharField(_.exc_info, max_length=255, blank=True, null=True)
@@ -24,15 +27,24 @@ class Log(models.Model):
     relativeCreated = models.CharField(_.relativeCreated, max_length=255, blank=True, null=True)
     stack_info = models.TextField(_.stack_info, max_length=255, blank=True, null=True)
     thread = models.CharField(_.thread, max_length=255, blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, blank=True, null=True)
+    object_id = models.PositiveIntegerField(blank=True, null=True)
     content_object = GenericForeignKey('content_type', 'object_id')
+    log_hash = models.CharField(max_length=40, unique=True, blank=True, null=True)
 
     class Meta:
         abstract = True
         verbose_name = _.v_log
         verbose_name_plural = _.vp_log
         ordering = ['-created']
+    
+    def get_log_hash(self):
+        fields_to_hash = "".join(getattr(self, field) for field in self.fields_log_hash)
+        return hashlib.sha1(fields_to_hash.encode()).hexdigest()
+
+    def save(self, *args, **kwargs):
+        self.log_hash = self.get_log_hash()
+        super().save(*args, **kwargs)
 
 class ChangeLog(models.Model):
     #object_id = models.ForeignKey('', on_delete=models.CASCADE)
