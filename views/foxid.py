@@ -9,7 +9,6 @@ class FoxidView(ModelView):
 
     @property
     def check_mandatories(self):
-        print(self.request)
         return True
 
     def foxid(self, queryset):

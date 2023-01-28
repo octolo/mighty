@@ -12,7 +12,7 @@ class DiscordTestCase(SimpleTestCase):
     def test_channels(self):
         from django.conf import settings
         from mighty.applications.logger.notify.discord import DiscordLogger
-        HOOKS = settings.DISCORD_HOOK
+        HOOKS = if getattr(settings, "DISCORD_HOOK", []):
         for hook,url in HOOKS.items():
             discord = DiscordLogger(lvl=hook)
             discord.send_msg({

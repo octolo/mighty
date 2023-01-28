@@ -50,13 +50,13 @@ def log_in_db(record, msg, only_except=False):
 
 class NotifySlackDiscord:
     def slack_notify(self, record, dblog=None):
-        if settings.SLACK_NOTIFY:
+        if getattr(settings, "SLACK_NOTIFY", False):
             from mighty.applications.logger.notify.slack import SlackLogger
             slack = SlackLogger(record=record, dblog=dblog)
             slack.send_error()
 
     def discord_notify(self, record, dblog=None):
-        if settings.DISCORD_NOTIFY:
+        if getattr(settings, "DISCORD_NOTIFY", False):
             from mighty.applications.logger.notify.discord import DiscordLogger
             discord = DiscordLogger(record=record, dblog=dblog)
             discord.send_error()
