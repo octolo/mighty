@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.db.models.options import Options
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
-from django.template import Context, Template
+from django.template.loader import get_template
 from django.core.exceptions import ValidationError
 
 from mighty.functions import url_domain
@@ -113,8 +113,7 @@ class Base(models.Model):
         return self._logger
 
     def make_template(self, template, context={}):
-        tpl = Template(template)
-        context = Context(context)
+        tpl = get_template(template)
         return tpl.render(context)
 
     if "mighty.applications.messenger" in settings.INSTALLED_APPS:
