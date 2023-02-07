@@ -15,6 +15,7 @@ import re
 class Keyword(models.Model):
     keywords_fields = []
     keywords = models.CharField(max_length=255, blank=True, null=True)
+    model_activate_keyword = True
 
     class Meta:
         abstract = True

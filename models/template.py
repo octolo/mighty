@@ -13,6 +13,7 @@ class Template(Base):
     cfg_template = JSONField(blank=True, null=True)
     var_template = JSONField(blank=True, null=True)
     is_template = models.BooleanField(default=False)
+    model_activate_template = True
     
     class Meta:
         abstract = True

@@ -61,6 +61,7 @@ _file = (
     'filemimetype',
     'charset',
     'extracontenttype',
+    'metadata',
     'size',
 )
 

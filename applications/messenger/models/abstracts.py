@@ -29,6 +29,7 @@ class MessengerModel(Base):
     name = models.CharField(max_length=255, blank=True, null=True)
     sender = models.CharField(max_length=255, blank=True, null=True)
     reply = models.CharField(max_length=255, blank=True, null=True)
+    reply_name = models.CharField(max_length=255, blank=True, null=True)
     target = models.CharField(max_length=255, blank=True, null=True)
     service = models.CharField(max_length=255, blank=True, null=True)
     denomination = models.CharField(max_length=255, blank=True, null=True)
@@ -109,7 +110,12 @@ class MessengerModel(Base):
     def prepare_postalar(self):
         self.txt = 'not used for postal'
 
+    def prepare_name(self):
+        if not self.name:
+            self.name = conf.sender_name
+
     def prepare_email(self):
+        self.prepare_name()
         if not self.sender:
             self.sender = conf.sender_email
 

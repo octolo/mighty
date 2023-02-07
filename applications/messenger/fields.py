@@ -3,6 +3,7 @@ missive = (
     "name",
     "sender",
     "reply",
+    "reply_name",
     "content_type",
     "object_id",
     "mode",

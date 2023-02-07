@@ -12,6 +12,7 @@ class TimelineModel(Base):
     date_end = models.DateField(_.date_end, null=True, blank=True)
     user = models.CharField(max_length=255)
     to_init = False
+    model_activate_timeline = True
 
     class Meta:
         abstract = True

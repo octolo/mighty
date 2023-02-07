@@ -13,6 +13,7 @@ import re
 
 class Code(models.Model):
     code = models.CharField(max_length=50, blank=True, null=True, editable=False)
+    model_activate_code = True
 
     class Meta:
         abstract = True

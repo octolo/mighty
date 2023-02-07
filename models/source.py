@@ -38,6 +38,7 @@ class SourceModel(Base, File):
     date_begin = models.DateField(_.date_begin)
     date_end = models.DateField(_.date_end, null=True, blank=True)
     user = models.CharField(max_length=255)
+    model_activate_source = True
 
     class Meta:
         abstract = True

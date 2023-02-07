@@ -81,6 +81,9 @@ class Base(models.Model):
     _hfirst = None
     _hlast = None
 
+    def has_model_activate(self, model):
+        return getattr(self, "model_activate_%s" % model, False)
+
     if "mighty.applications.logger" in settings.INSTALLED_APPS:
         _discord_logger = DiscordLogger()
         _slack_logger = SlackLogger()
@@ -97,24 +100,32 @@ class Base(models.Model):
     def properties_startswith(self, prefix):
         return [p for p in self.property_list if p.startswith(prefix)]
 
+    # QUERYSET
+    @property
+    def model(self): return type(self)
+    def queryset(self): return type(self).objects.all()
+    def history_queryset(self): return self.queryset().order_by('-date_create')
 
     @property
-    def model(self):
-        return type(self)
-
-    def queryset(self):
-        return type(self).objects.all()
-
-    def history_queryset(self):
-        return self.queryset().order_by('-date_create')
-
+    def history(self):
+        if not len(self._history): self._history = self.history_queryset()
+        return self._history
     @property
-    def logger(self):
-        return self._logger
+    def history_last(self):
+        if not self._hlast: self._hlast = self.history.last()
+        return self._hlast
+    @property
+    def history_first(self):
+        if not self._hfirst: self._hfirst = self.history.first()
+        return self._hfirst
+    @property
+    def qs_not_self(self): return self.queryset().exclude(pk=self.pk) if self.pk else self.queryset().all()
+    @property
+    def history_not_self(self): return self.history.exclude(pk=self.pk) if self.pk else self.history
 
-    def make_template(self, template, context={}):
-        tpl = get_template(template)
-        return tpl.render(context)
+    # LOGGER
+    @property
+    def logger(self): return self._logger
 
     if "mighty.applications.messenger" in settings.INSTALLED_APPS:
         def notify(subject, content_type, object_id, **kwargs):
@@ -126,49 +137,26 @@ class Base(models.Model):
         def notify_discord(hookname, **kwargs):
             return notify_discord(hookname, **kwargs)
 
-    @property
-    def qs_not_self(self):
-        if self.pk: return self.queryset().exclude(pk=self.pk)
-        return self.queryset().all()
+    # TEMPLATE
+    def make_template(self, template, context={}):
+        tpl = get_template(template)
+        return tpl.render(context)
 
-    @property
-    def history(self):
-        if not len(self._history):
-            self._history = self.history_queryset()
-        return self._history
-
-    @property
-    def history_last(self):
-        if not self._hlast:
-            self._hlast = self.history.last()
-        return self._hlast
-
-    @property
-    def history_first(self):
-        if not self._hfirst:
-            self._hfirst = self.history.first()
-        return self._hfirst
-
-    @property
-    def history_not_self(self):
-        if self.pk: return self.history.exclude(pk=self.pk)
-        return self.history
-
+    # USER
     @property
     def _user(self):
         grk = get_request_kept()
         return grk.user if grk else None
 
+    # MODIFY
     @property
     def can_be_changed(self):
-        if self.fields_can_be_changed == "*":
-            return True
+        if self.fields_can_be_changed == "*": return True
         return all([field in self.fields_can_be_changed for field in self.fields_changed])
 
     @property
     def cant_be_changed(self):
-        if self.fields_cant_be_changed == "*":
-            return True
+        if self.fields_cant_be_changed == "*": return True
         return all([field not in self.fields_cant_be_changed for field in self.fields_changed])
 
     class mighty:

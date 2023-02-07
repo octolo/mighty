@@ -25,6 +25,7 @@ class MimeType(Base, Image):
     image64 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
     image128 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
     is_vector = models.BooleanField(default=False)
+    model_activate_filesystem = True
 
     @property
     def file16(self):
