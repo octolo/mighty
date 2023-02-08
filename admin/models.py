@@ -16,7 +16,7 @@ from mighty.fields import JSONField
 from mighty import translates as _
 from mighty.admin.actions import disable_selected, enable_selected
 from mighty.admin.filters import InAlertListFilter, InErrorListFilter
-from mighty.functions import get_form_model
+from mighty.functions import get_form_model, has_model_activate
 from mighty.models.source import CHOICES_TYPE
 from mighty.forms import TaskForm
 
@@ -341,8 +341,8 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/reporting/', self.wrap(self.reporting_view), name='%s_%s_reporting' % info),
         ]
 
-        #if self.model().has_model_activate("file"):
-        #    my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='%s_%s_filemetadata' % info))
+        if has_model_activate(self.model, "file"):
+            my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='%s_%s_filemetadata' % info))
 
         if hasattr(self.model, 'timeline_model'):
             my_urls += [

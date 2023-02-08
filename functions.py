@@ -18,6 +18,9 @@ numeric_const_pattern = "[-+]? (?: (?: \d* [\.,] \d+ ) | (?: \d+ [\.,]? ) )(?: [
 drf_enable = 'rest_framework' in settings.INSTALLED_APPS
 request_kept = threading.local()
 
+def has_model_activate(clas, mdl):
+    return getattr(clas, "model_activate_%s" % mdl, False)
+
 # Request kept
 def get_request_kept():
     return getattr(request_kept, 'request', None)
