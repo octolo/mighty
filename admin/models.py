@@ -341,8 +341,8 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/reporting/', self.wrap(self.reporting_view), name='%s_%s_reporting' % info),
         ]
 
-        if self.model().has_model_activate("file"):
-            my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='%s_%s_filemetadata' % info))
+        #if self.model().has_model_activate("file"):
+        #    my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='%s_%s_filemetadata' % info))
 
         if hasattr(self.model, 'timeline_model'):
             my_urls += [
