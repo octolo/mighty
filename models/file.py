@@ -82,7 +82,7 @@ class File(models.Model):
 
     @property
     def usable_file(self):
-        return self.tmp_file if self.tmp_file else self.cloud_file
+        return self.tmp_file if self.tmp_file else self.file._file
 
     def load_file_in_tmp(self, delete=True):
         if self.local_available:
@@ -157,6 +157,7 @@ class File(models.Model):
                     setattr(self, field, getattr(self, tmp_file_class+"_"+field)())
 
     def set_metadata(self):
+        print(self.usable_file)
         reader = self.reader(file=self.usable_file, filename=self.filename, extension=self.file_extension, reader=True)
         self.metadata = reader.get_meta_data()
 
@@ -164,8 +165,6 @@ class File(models.Model):
         self.set_autocomplete()
         self.set_thumbnail()
         self.set_hashid()
-
-    def pre_create(self):
         self.set_metadata()
 
     def save(self, *args, **kwargs):

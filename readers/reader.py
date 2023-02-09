@@ -2,6 +2,7 @@ from mighty.applications.logger import EnableLogger
 from mighty.errors import BackendError
 import os
 
+
 class Reader(EnableLogger):
     pt_to_px = 1.3333333333333333
     metadata = {}

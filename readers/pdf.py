@@ -1,5 +1,6 @@
 from PyPDF2 import PdfReader, PdfWriter
 from mighty.readers.reader import Reader
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 class ReaderPDF(Reader):
     pages = []
@@ -9,7 +10,7 @@ class ReaderPDF(Reader):
         return self.writer
 
     def prepare_reader(self):
-        self.reader = PdfReader(self.file.name)
+        self.reader = PdfReader(self.file if type(self.file) == InMemoryUploadedFile else self.file.name)
         return self.reader
 
     def get_meta_data(self):
