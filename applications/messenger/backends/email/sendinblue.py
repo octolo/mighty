@@ -38,14 +38,14 @@ class MissiveBackend(MissiveBackend):
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
-        self.logger.info("Email - from : %s, to : %s, reply : %s" % 
+        self.logger.info("Email - from : %s, to : %s, reply : %s" %
             (self.sender_email, self.missive.target, self.reply_email))
         if True:
             self.missive.msg_id = make_msgid()
             data = {
                 "to": [{"email": self.missive.target}],
                 "reply_to": {"email": self.reply_email, "name": self.reply_name},
-                "headers": {'Message-Id': self.missive.msg_id},
+                "headers": { "charset":"iso-8859-1"},
                 "sender": {"email": self.missive.sender, "name": self.missive.name},
                 "subject": self.missive.subject,
             }
