@@ -1,3 +1,4 @@
+from decimal import Decimal
 from PyPDF2 import PdfReader, PdfWriter
 from mighty.readers.reader import Reader
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -26,10 +27,10 @@ class ReaderPDF(Reader):
 
     def get_page_data(self, page):
         return {
-            "width_pt": round(page.mediabox.width, 2),
-            "height_pt": round(page.mediabox.height, 2),
-            "width_px": round(page.mediabox.width*self.pt_to_px, 2),
-            "height_px": round(page.mediabox.height*self.pt_to_px, 2),
+            #"width_pt": round(page.mediabox.width, 2),
+            #"height_pt": round(page.mediabox.height, 2),
+            #"width_px": round(page.mediabox.width*self.pt_to_px, 2),
+            #"height_px": round(page.mediabox.height*self.pt_to_px, 2),
             "images": len(page.images),
             "orientation": self.get_orientation(page),
         }

@@ -102,6 +102,10 @@ class File(models.Model):
         response['Content-Disposition'] = 'attachment; filename="%s"' % self.file_name
         return response
 
+
+    @property
+    def has_reader(self):
+        return True if self.reader_path else False
     @property
     def reader(self):
         return import_string(self.reader_path) if self.reader_path else None
@@ -157,9 +161,9 @@ class File(models.Model):
                     setattr(self, field, getattr(self, tmp_file_class+"_"+field)())
 
     def set_metadata(self):
-        print(self.usable_file)
-        reader = self.reader(file=self.usable_file, filename=self.filename, extension=self.file_extension, reader=True)
-        self.metadata = reader.get_meta_data()
+        if self.has_reader:
+            reader = self.reader(file=self.usable_file, filename=self.filename, extension=self.file_extension, reader=True)
+            self.metadata = reader.get_meta_data()
 
     def pre_save_file(self):
         self.set_autocomplete()
