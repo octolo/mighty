@@ -33,6 +33,7 @@ class FormDescriptor:
         "post_create",
         "field_detail",
         "discriminant",
+        "payload",
     ]
     url_attrs = [
         "form_create_url",
@@ -61,7 +62,6 @@ class FormDescriptor:
 
     def __init__(self, form, request, *args, **kwargs):
         if "drf_kwargs" in kwargs: self.drf_kwargs = kwargs.get("drf_kwargs")
-        print(self.drf_kwargs)
         self.form = form(request=request, *args, **kwargs)
         self.form_desc["name"] = str(self.form.__class__.__name__).lower()
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
@@ -175,7 +175,7 @@ class FormDescriptor:
     def get_field_desc(self, field, name):
         desc = {
             "name": name,
-            "type": self.get_input_type(field),
+            "type":  self.option(field, name, "input_type", self.get_input_type(field)),
             "type_text": self.get_input_type_text(field),
             "errors": self.get_error_messages(field),
             "icon": self.option(field, name, "icon"),
