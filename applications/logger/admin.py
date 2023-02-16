@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib import admin
 from mighty.admin.models import BaseAdmin
 from mighty.applications.logger import fields
+from mighty.models import Log
 
 
 class LogAdmin(BaseAdmin):

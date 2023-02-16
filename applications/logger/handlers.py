@@ -20,7 +20,7 @@ You can configure the MIGHTY config array Log:
 from django.conf import settings
 from mighty.applications.logger.apps import LoggerConfig as conf
 from mighty.applications.logger import fields
-import datetime, logging
+import datetime, logging, sys
 
 LOG_LEVEL_IN_DB = getattr(settings, 'LOG_LEVEL_IN_DB', 100)
 LOG_IN_DB = getattr(settings, 'LOG_IN_DB', False)
@@ -71,9 +71,9 @@ class ConsoleHandler(logging.StreamHandler, NotifySlackDiscord):
         elif LOG_IN_DB:
             self.dblog = log_in_db(record, msg, True)
         msg = "%s%s%s" % (getattr(conf.Color, record.levelname.lower()), msg, conf.Color.default)
-
-        self.slack_notify(record=record, dblog=self.dblog)
-        self.discord_notify(record=record, dblog=self.dblog)
+        if sys.exc_info()[1].__class__.__name__ not in conf.Log.without_notify:
+            self.slack_notify(record=record, dblog=self.dblog)
+            self.discord_notify(record=record, dblog=self.dblog)
         return msg
 
     def emit(self, record):

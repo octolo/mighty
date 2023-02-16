@@ -5,6 +5,7 @@ import logging
 
 class Config:
     class Log:
+        without_notify = ()
         logger = "logger_{}"
         log_type = "default"
         log_level = "info"
