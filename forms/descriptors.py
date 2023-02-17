@@ -33,7 +33,7 @@ class FormDescriptor:
         "post_create",
         "field_detail",
         "discriminant",
-        "payload",
+        "apipayload",
     ]
     url_attrs = [
         "form_create_url",
