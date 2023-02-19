@@ -53,15 +53,16 @@ STATUS_OPEN = 'OPEN'
 STATUS_ERROR = 'ERROR'
 STATUS_FILETEST = 'FILETEST'
 STATUS = (
-    (STATUS_PREPARE, _("prepare")),
-    (STATUS_SENT, _("sent")),
-    (STATUS_PENDING, _("pending")),
-    (STATUS_PROCESSED, _("processed")),
-    (STATUS_RECEIVED, _("received")),
+    (STATUS_PREPARE, _("Prepare")),
+    (STATUS_SENT, _("Sent")),
+    (STATUS_PENDING, _("Pending")),
+    (STATUS_PROCESSED, _("Processed")),
+    (STATUS_RECEIVED, _("Received")),
     (STATUS_ACCEPTED, _("Accepted")),
     (STATUS_REJECTED, _("Rejected")),
-    (STATUS_ERROR, _("error")),
-    (STATUS_FILETEST, _("file test"))
+    (STATUS_OPEN, _("Open")),
+    (STATUS_ERROR, _("Error")),
+    (STATUS_FILETEST, _("File test"))
 )
 
 MODE_EMAIL = 'EMAIL'

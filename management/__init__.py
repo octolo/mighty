@@ -143,30 +143,33 @@ class ModelBaseCommand(BaseCommand):
     label = None
     model = None
     filter = None
+    model = None
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument('--create', action="store_true")
-        parser.add_argument('--label', default=None)
-        parser.add_argument('--model', default=None)
+        parser.add_argument('--label', default=self.label)
+        parser.add_argument('--model', default=self.model)
         parser.add_argument('--filter', default=None)
-        parser.add_argument('--manager', default='objects')
+        parser.add_argument('--manager', default=self.manager)
         parser.add_argument('--search', action="store_true")
 
     def handle(self, *args, **options):
         self.create = options.get('create')
-        self.label = options.get('label', self.label)
-        self.model = options.get('model', self.model)
-        self.manager = options.get('manager', self.manager)
+        self.label = options.get('label')
+        self.model = options.get('model')
+        self.manager = options.get('manager')
         self.filter = options.get('filter')
         self.search = options.get('search')
         super().handle(*args, **options)
 
     @property
     def model_use(self, *args, **kwargs):
+        if self.model: return self.model
         label = kwargs.get('label', self.label)
         model = kwargs.get('model', self.model)
-        return get_model(label, model)
+        self.model = get_model(label, model)
+        return self.model
 
     def get_queryset(self, *args, **kwargs):
         manager = kwargs.get('manager', self.manager)
