@@ -12,6 +12,12 @@ class Reader(EnableLogger):
     def backend_error(self, msg):
         raise BackendError(msg)
 
+    def converter(self, fr, to):
+        return getattr(self, "%s_to_%s" % (fr, to), 1)
+
+    def convert(self, value, fr, to, rd=2):
+        return round(float(value)*self.converter(fr, to), rd)
+
     def __init__(self, file, *args, **kwargs):
         self.file = file
         self.filename = kwargs.get("filename", os.path.basename(file.name))

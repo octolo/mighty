@@ -26,11 +26,12 @@ class ReaderPDF(Reader):
         return self.metadata
 
     def get_page_data(self, page):
+        print(self.pt_to_px, page.mediabox.height)
         return {
-            #"width_pt": round(page.mediabox.width, 2),
-            #"height_pt": round(page.mediabox.height, 2),
-            #"width_px": round(page.mediabox.width*self.pt_to_px, 2),
-            #"height_px": round(page.mediabox.height*self.pt_to_px, 2),
+            "width_pt": round(float(page.mediabox.width), 2),
+            "height_pt": round(float(page.mediabox.height), 2),
+            "width_px": self.convert(page.mediabox.width, "pt", "px"),
+            "height_px": self.convert(page.mediabox.height, "pt", "px"),
             "images": len(page.images),
             "orientation": self.get_orientation(page),
         }

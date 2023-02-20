@@ -315,8 +315,8 @@ class BaseAdmin(admin.ModelAdmin):
         obj = self.get_object(request, unquote(object_id), to_field)
         obj.load_file_in_tmp(delete=False)
         obj.set_metadata()
-        obj.remove_file_in_tmp()
         obj.save()
+        obj.remove_file_in_tmp()
         context = {
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
