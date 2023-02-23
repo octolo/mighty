@@ -11,6 +11,7 @@ class Config:
     email_code = 'twofactor/email_code.html'
     email_template = None
     accounts_market = []
+    template_id = None
 
     class method:
         email = True

@@ -52,7 +52,7 @@ class TwoFactorBackend(ModelBackend):
                     return user
                 except Exception as e:
                     UserModel().set_password(password)
-    
+
     def clean_target(self, target):
         return "".join(filter(lambda c: c not in string.whitespace, target))
 
@@ -125,14 +125,14 @@ class TwoFactorBackend(ModelBackend):
         except ValidationError:
             pass
         return CantIdentifyError()
-        
+
     def get_date_protect(self, minutes):
         return timezone.now()-timezone.timedelta(minutes=minutes)
 
     def raise_date_protect(self, date, minutes):
         date = date+timezone.timedelta(minutes=minutes)
         raise SpamException(date)
-        
+
     def check_protect(self, target, subject, minutes):
         target = self.clean_target(target)
         if minutes:
@@ -152,6 +152,7 @@ class TwoFactorBackend(ModelBackend):
             "html": render_to_string(conf.email_code, {'domain': MightyConfig.domain.upper(), 'code': str(obj.code)}),
             "preheader": _.tpl_preheader % {'domain': MightyConfig.domain, 'code': str(obj.code)},
             "txt": _.tpl_txt % {'domain': MightyConfig.domain, 'code': str(obj.code)},
+            "context": {'template_id': conf.template_id, 'domain': MightyConfig.domain.upper(), 'code': str(obj.code)},
         }
 
     @property

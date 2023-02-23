@@ -2,7 +2,11 @@ from django.core.mail.message import make_msgid
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.applications.messenger import choices as _c
 from mighty.functions import setting
-import os, base64, sib_api_v3_sdk
+from mighty.apps import MightyConfig
+import os
+import base64
+import sib_api_v3_sdk
+
 
 class MissiveBackend(MissiveBackend):
     APIKEY = setting('SENDINBLUE_KEY', False)
@@ -28,14 +32,17 @@ class MissiveBackend(MissiveBackend):
     }
 
     def check_email(self):
-        data = {"message_id": self.missive.partner_id} if self.missive.partner_id else {"tag": self.missive.msg_id}    
-        print(data)
+        data = {
+            "message_id": self.missive.partner_id
+        } if self.missive.partner_id else {
+            "tag": self.missive.msg_id
+        }
         api_response = self.api_instance.get_email_event_report(**data, email=self.missive.target)
         event = api_response.events[0].event
         self.missive.status = self.STATUS[event]
-        #print(self.missive, self.missive.status)
+        # print(self.missive, self.missive.status)
         self.missive.save()
-        #print(self.missive, self.missive.status)
+        # print(self.missive, self.missive.status)
         return api_response
 
     @property
@@ -61,31 +68,52 @@ class MissiveBackend(MissiveBackend):
             self.missive.logs['attachments'] = logs
         return attachments
 
-    def send_email(self):
-        over_target = setting('MISSIVE_EMAIL', False)
-        self.missive.target = over_target if over_target else self.missive.target
-        self.logger.info("Email - from : %s, to : %s, reply : %s" %
-                         (self.sender_email, self.missive.target, self.reply_email))
-        if setting('MISSIVE_SERVICE', False):
-            self.missive.msg_id = make_msgid()
-            data = {
-                "to": [{"email": self.missive.target}],
-                "reply_to": {"email": self.reply_email, "name": self.reply_name},
-                "headers": {"charset": "iso-8859-1"},
-                "sender": {"email": self.missive.sender, "name": self.missive.name},
-                "subject": self.missive.subject,
-                "tags": [self.missive.msg_id,]
+    def setup_template_params(self, data):
+        if data["template_id"] == 1:
+            data["params"] = {
+                "code": self.missive.context["code"],
+                "domain": MightyConfig.domain.upper(),
+                "link":  "https://%s" % MightyConfig.domain,
             }
+
+    def forge_email(self, data, attachments):
+        data["to"] = [{"email": self.missive.target}]
+        data["headers"] = {"charset": "utf-8"}
+        if self.reply_email:
+            data["reply_to"] = {"email": self.reply_email, "name": self.reply_name}
+        if self.missive.sender:
+            data["sender"] = {"email": self.missive.sender, "name": self.missive.name}
+        if self.missive.subject:
+            data["subject"] = self.missive.subject
+        if 'template_id' in self.missive.context and self.missive.context["template_id"]:
+            data["template_id"] = self.missive.context["template_id"]
+            self.setup_template_params(data)
+        else:
+            # data["template_id"] = 2
+            # data["params"] = {
+            #     "html": self.missive.html_format
+            # }
             if self.missive.html_format:
                 data["html_content"] = self.missive.html_format
-            else:
+            if self.missive.txt:
                 data["text_content"] = str(self.missive.txt)
+        if len(attachments):
+            data["attachment"] = attachments
+
+    def send_email(self):
+        data = {}
+        print("Sending mail ...")
+        over_target = setting('MISSIVE_EMAIL', False)
+        self.missive.target = over_target if over_target else self.missive.target
+        self.logger.info("Email - from : %s, to : %s, reply : %s" % (self.sender_email, self.missive.target, self.reply_email))
+        if setting('MISSIVE_SERVICE', False):
+            self.missive.msg_id = make_msgid()
             attachments = self.email_attachments()
-            if len(attachments):
-                data["attachment"] = attachments
+            self.forge_email(data, attachments)
             send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(**data)
             api_response = self.api_instance.send_transac_email(send_smtp_email)
             self.missive.partner_id = api_response.message_id
         self.missive.to_sent()
         self.missive.save()
+        print(data)
         return self.missive.status

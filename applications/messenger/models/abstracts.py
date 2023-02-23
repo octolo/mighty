@@ -16,7 +16,7 @@ from mighty.applications.messenger import (
 from mighty.applications.messenger.apps import MessengerConfig as conf
 from mighty.functions import masking_email, masking_phone, get_model, url_domain
 from mighty.models.base import Base
-from mighty.fields import RichTextField
+from mighty.fields import RichTextField, JSONField
 from html2text import html2text
 
 class MessengerModel(Base):
@@ -25,7 +25,7 @@ class MessengerModel(Base):
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=9)
     priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
     #address_window = models.BooleanField(default=False)
-    
+
     name = models.CharField(max_length=255, blank=True, null=True)
     sender = models.CharField(max_length=255, blank=True, null=True)
     reply = models.CharField(max_length=255, blank=True, null=True)
@@ -49,6 +49,8 @@ class MessengerModel(Base):
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
+
+    context = JSONField(default=dict)
 
     default = ''
     attachments = []
@@ -150,7 +152,7 @@ class MessengerModel(Base):
     @property
     def masking_email(self):
         return masking_email(self.target)
-    
+
     @property
     def masking_phone(self):
         return masking_phone(self.target)
