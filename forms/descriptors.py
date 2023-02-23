@@ -143,6 +143,10 @@ class FormDescriptor:
             return getattr(field.widget, "allow_multiple_selected", default)
         return default
 
+    def get_initial_value(self, field, name):
+        return self.option(field, name, "initial", field.initial)
+
+
     def get_api(self, field, name):
         try:
             return self.option(field, name, "api")
@@ -184,6 +188,7 @@ class FormDescriptor:
             "attrs": getattr(field.widget, "attrs", {}),
             "options": self.get_options(field, name),
             "dependencies": self.get_dependencies(name),
+            "initial": self.get_initial_value(field, name),
         }
         if (hasattr(field, 'choices') and hasattr(field.choices, 'queryset')) or self.get_api(field, name):
             desc.update({
