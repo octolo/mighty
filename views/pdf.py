@@ -21,7 +21,7 @@ class PDFView(DetailView):
     footer_tpl = conf.pdf_footer
     content_html = conf.pdf_content
     tmp_pdf = None
-    config_override = {}
+    config = {}
 
     def get_object(self):
         if not self.cache_object:
@@ -34,7 +34,7 @@ class PDFView(DetailView):
     def build_header_html(self):
         if not self.header_html:
             with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as header_html:
-                header = self.get_header()
+                header = self.get_header() if self.has_option("header_enable") else ""
                 header_html.write(Template(header).render(self.get_context_data()).encode("utf-8"))
             self.header_html = header_html
         return self.header_html
@@ -45,7 +45,7 @@ class PDFView(DetailView):
     def build_footer_html(self):
         if not self.footer_html:
             with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as footer_html:
-                footer = self.get_footer()
+                footer = self.get_footer() if self.has_option("footer_enable") else ""
                 footer_html.write(Template(footer).render(self.get_context_data()).encode("utf-8"))
             self.footer_html = footer_html
         return self.footer_html
@@ -56,17 +56,17 @@ class PDFView(DetailView):
     def get_context_data(self, **kwargs):
         return Context({ "obj": self.get_object() })
 
-    def get_options(self):
-        print(self.config_override)
-        if self.config_override.get("header_enable", False):
-            self.options.update({
-                '--header-html': self.build_header_html().name,
-            })
-        if self.config_override.get("footer_enable", False):
-            self.options.update({
-                '--footer-html': self.build_footer_html().name,
-            })
-        print(self.options)
+    def get_config(self):
+        return self.config
+
+    def has_option(self, key):
+        return self.request.GET.get(key, self.get_config().get(key, False))
+
+    def prepare_options(self):
+        self.options.update({
+            '--header-html': self.build_header_html().name,
+            '--footer-html': self.build_footer_html().name,
+        })
         return self.options
 
     def get_pdf_name(self):
@@ -76,7 +76,7 @@ class PDFView(DetailView):
         self.config_override = config
         if not self.tmp_pdf:
             with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
-                pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.get_options())
+                pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.options)
                 self.tmp_pdf = tmp_pdf
         return self.tmp_pdf
 
@@ -97,13 +97,14 @@ class PDFView(DetailView):
             os.remove(self.tmp_pdf.name)
 
     def render_to_response(self, context, **response_kwargs):
+        self.prepare_options()
         if self.request.GET.get('save', False): self.save_pdf(context)
         if self.in_browser:
             with tempfile.NamedTemporaryFile(suffix='.pdf', delete=True) as tmp_pdf:
-                pdf = pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.get_options())
+                pdf = pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.options)
                 self.clean_tmp()
                 return FileResponse(open(tmp_pdf.name, 'rb'), filename=self.get_pdf_name())
-        pdf = pdfkit.from_string(self.get_template(context), False, options=self.get_options())
+        pdf = pdfkit.from_string(self.get_template(context), False, options=self.options)
         response = HttpResponse(pdf, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="%s"' % self.get_pdf_name()
         self.clean_tmp()
