@@ -98,7 +98,6 @@ def notify_slack(hookname, **kwargs):
     if getattr(settings, "SLACK_NOTIFY", False):
         if hasattr(settings, "SLACK_HOOK") and hookname in settings.SLACK_HOOK:
             hook = settings.SLACK_HOOK[hookname]
-            print("hook", hook)
     if hook:
         data = {}
         if kwargs.get("text"):
@@ -113,7 +112,6 @@ def notify_discord(hookname, **kwargs):
     if getattr(settings, "DISCORD_NOTIFY", False):
         if hasattr(settings, "DISCORD_HOOK") and hookname in settings.DISCORD_HOOK:
             hook = settings.DISCORD_HOOK[hookname]
-    print(hook)
     if hook:
         data = {}
         if kwargs.get("username"):

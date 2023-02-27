@@ -89,12 +89,12 @@ class FileHandler(logging.FileHandler, NotifySlackDiscord):
         elif LOG_IN_DB:
             self.dblog = log_in_db(record, msg, True)
         msg = "%s%s%s" % (getattr(conf.Color, record.levelname.lower()), msg, conf.Color.default)
-        self.slack_notify(record=record, dblog=self.dblog)
-        self.discord_notify(record=record, dblog=self.dblog)
+        if sys.exc_info()[1].__class__.__name__ not in conf.Log.without_notify:
+            self.slack_notify(record=record, dblog=self.dblog)
+            self.discord_notify(record=record, dblog=self.dblog)
         return msg
 
     def emit(self, record):
-
         super().emit(record)
 
 class DatabaseHander(logging.StreamHandler):

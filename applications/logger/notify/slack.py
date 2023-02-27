@@ -48,7 +48,6 @@ class SlackLogger(NotifyBackend):
         return data
 
     def send_msg_error(self):
-        print("ok error")
         self.send_msg(self.msg, self.slack_msg_error)
 
     def send_msg(self, msg, blocks=None):
