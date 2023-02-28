@@ -32,7 +32,7 @@ class ReaderPDF(Reader):
             "height_pt": round(float(page.mediabox.height), 2),
             "width_px": self.convert(page.mediabox.width, "pt", "px"),
             "height_px": self.convert(page.mediabox.height, "pt", "px"),
-            "images": len(page.images),
+            #"images": len(page.images),
             "orientation": self.get_orientation(page),
         }
 
