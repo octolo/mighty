@@ -20,6 +20,7 @@ class MissiveAdmin(BaseAdmin):
             "name",
             "sender",
             "reply",
+            "reply_name",
             "target",
             "denomination",
             "last_name",
@@ -86,7 +87,7 @@ class MissiveAdmin(BaseAdmin):
             path('<path:object_id>/html/', self.wrap(self.html_view), name='%s_%s_html' % info),
             path('<path:object_id>/check/', self.wrap(self.check_view), name='%s_%s_check' % info),
         ]
-        return my_urls + urls 
+        return my_urls + urls
 
 class NotificationAdmin(BaseAdmin):
     view_on_site = False

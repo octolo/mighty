@@ -40,7 +40,7 @@ class MissiveBackend(EnableLogger):
     def send_sms(self):
         over_target = setting('MISSIVE_PHONE', False)
         self.missive.target = over_target if over_target else self.missive.target
-        self.logger.info("SMS - from : %s, to : %s" % 
+        self.logger.info("SMS - from : %s, to : %s" %
             (self.sender_sms, self.missive.target))
         if setting('MISSIVE_SERVICE', False):
             pass
@@ -72,13 +72,13 @@ class MissiveBackend(EnableLogger):
 
     @property
     def reply_name(self):
-        return self.missive.reply_name if self.missive.reply else self.missive.name
+        return self.missive.reply_name if self.missive.reply_name else self.missive.name
 
 
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
-        self.logger.info("Email - from : %s, to : %s, reply : %s" % 
+        self.logger.info("Email - from : %s, to : %s, reply : %s" %
             (self.sender_email, self.missive.target, self.reply_email))
         if setting('MISSIVE_SERVICE', False):
             self.missive.msg_id = make_msgid()
@@ -113,7 +113,7 @@ class MissiveBackend(EnableLogger):
     def postal_base(self):
         options = MightyConfig.pdf_options
         context = Context()
-        
+
         # header
         header = self.missive.header_html
         header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
@@ -152,7 +152,7 @@ class MissiveBackend(EnableLogger):
         logger.warning(path_basedoc)
         self.path_base_doc = path_basedoc
         self.missive.attachments.insert(0, open(path_basedoc, 'rb'))
-        
+
         #files = {'document': (doc_name, )}
         #data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
         #response = requests.post(api, headers=headers, files=files, data=data)
