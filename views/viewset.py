@@ -56,8 +56,8 @@ class ModelViewSet(ModelViewSet):
     def foxid(self):
         return Foxid(self.queryset, self.request, f=self.manager.flts, order_base=self.order_base).ready()
 
-    def foxid_qs(self, qs, flts):
-        return Foxid(qs, self.request, f=flts, order_base=self.order_base).ready()
+    def foxid_qs(self, qs, flts, order_base=None):
+        return Foxid(qs, self.request, f=flts, order_base=order_base or self.order_base).ready()
 
     @property
     def manager(self):
