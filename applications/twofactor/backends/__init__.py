@@ -95,11 +95,21 @@ class TwoFactorBackend(ModelBackend):
             return False
         return True
 
-    def can_send_sms(self):
-        #try:
-        #    last = Twofactor.objects.get(user=user, date_create__lt=now+10min)
-        #    return last.missive
-        #except Twofactor.DoesNotExist:
+    def can_send_sms(self, user, twofactor, target):
+        now = datetime.datetime.now()
+        print(now)
+        try:
+            print(now - datetime.timedelta(minutes=conf.sms_code_delay))
+            last = Twofactor.objects.get(
+                user=user, 
+                mode=choices.MODE_SMS, 
+                missive__isnull=False,
+                date_create__gt = now - datetime.timedelta(minutes=conf.sms_code_delay)
+                )
+            print("############### moins de 10min ###############", last.missive)
+            return last.missive
+        except Twofactor.DoesNotExist:
+            print("############### plus de 10min ##############")
             return self.send_sms(twofactor, user, target)
 
     def by(self, target, backend_path):
@@ -118,7 +128,7 @@ class TwoFactorBackend(ModelBackend):
             if mode == choices.MODE_EMAIL:
                 return self.send_email(twofactor, user, target)
             elif mode == choices.MODE_SMS:
-                return self.can_send_sms()
+                return self.can_send_sms(user, twofactor, target)
         except UserModel.DoesNotExist:
             pass
         except ValidationError:
@@ -165,6 +175,8 @@ class TwoFactorBackend(ModelBackend):
         self.check_protect(target, data["subject"], conf.sms_protect_spam)
         missive = Missive(**data)
         missive.save()
+        obj.missive = missive
+        obj.save()
         return missive
 
     def send_email(self, obj, user, target):
@@ -173,4 +185,6 @@ class TwoFactorBackend(ModelBackend):
         self.check_protect(target, data["subject"], conf.mail_protect_spam)
         missive = Missive(**data)
         missive.save()
+        obj.missive = missive
+        obj.save()
         return missive

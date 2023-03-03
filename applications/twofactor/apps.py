@@ -6,6 +6,7 @@ class Config:
     groups_onsave = []
     mail_protect_spam = 5
     sms_protect_spam = 5
+    sms_code_delay = 1
     minutes_allowed = 5
     code_size = 6
     email_code = 'twofactor/email_code.html'
