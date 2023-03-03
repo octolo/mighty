@@ -62,7 +62,7 @@ class TwoFactorBackend(ModelBackend):
 
     @property
     def earlier(self):
-        now = datetime.datetime.now()
+        now = timezone.now()
         earlier = now - datetime.timedelta(minutes=conf.minutes_allowed)
         return earlier, now
 
@@ -95,23 +95,6 @@ class TwoFactorBackend(ModelBackend):
             return False
         return True
 
-    def can_send_sms(self, user, twofactor, target):
-        now = datetime.datetime.now()
-        print(now)
-        try:
-            print(now - datetime.timedelta(minutes=conf.sms_code_delay))
-            last = Twofactor.objects.get(
-                user=user, 
-                mode=choices.MODE_SMS, 
-                missive__isnull=False,
-                date_create__gt = now - datetime.timedelta(minutes=conf.sms_code_delay)
-                )
-            print("############### moins de 10min ###############", last.missive)
-            return last.missive
-        except Twofactor.DoesNotExist:
-            print("############### plus de 10min ##############")
-            return self.send_sms(twofactor, user, target)
-
     def by(self, target, backend_path):
         target = self.clean_target(target)
         if self.is_email(target):
@@ -128,7 +111,7 @@ class TwoFactorBackend(ModelBackend):
             if mode == choices.MODE_EMAIL:
                 return self.send_email(twofactor, user, target)
             elif mode == choices.MODE_SMS:
-                return self.can_send_sms(user, twofactor, target)
+                return self.send_sms(twofactor, user, target)
         except UserModel.DoesNotExist:
             pass
         except ValidationError:
@@ -142,16 +125,19 @@ class TwoFactorBackend(ModelBackend):
         date = date+timezone.timedelta(minutes=minutes)
         raise SpamException(date)
 
-    def check_protect(self, target, subject, minutes):
+    def check_protect(self, target, subject, minutes, mode):
         target = self.clean_target(target)
         if minutes:
+            date_test = self.get_date_protect(minutes)
             missive = Missive.objects.filter(
                 target=target,
                 subject=subject,
-                date_update__gte=self.get_date_protect(minutes)
-            ).order_by('-date_update').last()
+                mode=mode,
+                date_create__gt=date_test,
+                twofactor_missive__is_consumed=False,
+            ).order_by('-date_create').last()
             if missive:
-                self.raise_date_protect(missive.date_update, minutes)
+                self.raise_date_protect(missive.date_create, minutes)
 
     def get_data_missive(self, user, obj):
         return {
@@ -172,7 +158,7 @@ class TwoFactorBackend(ModelBackend):
         data = self.get_data_missive(user, obj)
         data["txt"] = _.tpl_sms % {'domain': MightyConfig.domain, 'code': str(obj.code)}
         data.update({"target": target, "mode": choices.MODE_SMS})
-        self.check_protect(target, data["subject"], conf.sms_protect_spam)
+        self.check_protect(target, data["subject"], conf.sms_protect_spam, choices.MODE_SMS)
         missive = Missive(**data)
         missive.save()
         obj.missive = missive
@@ -182,7 +168,7 @@ class TwoFactorBackend(ModelBackend):
     def send_email(self, obj, user, target):
         data = self.get_data_missive(user, obj)
         data.update({"target": target, "template": self.email_template})
-        self.check_protect(target, data["subject"], conf.mail_protect_spam)
+        self.check_protect(target, data["subject"], conf.mail_protect_spam, choices.MODE_EMAIL)
         missive = Missive(**data)
         missive.save()
         obj.missive = missive

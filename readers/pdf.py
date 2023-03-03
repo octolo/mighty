@@ -18,7 +18,8 @@ class ReaderPDF(Reader):
         self.metadata = {}
         for k,v in self.reader.metadata.items():
             key = k.replace("/", "").lower()
-            self.metadata[key] = v
+            if isinstance(v, (str, int)):
+                self.metadata[key] = v
         self.metadata["pages"] = []
         for page in self.reader.pages:
             self.metadata["pages"].append(self.get_page_data(page))
@@ -26,7 +27,6 @@ class ReaderPDF(Reader):
         return self.metadata
 
     def get_page_data(self, page):
-        print(self.pt_to_px, page.mediabox.height)
         return {
             "width_pt": round(float(page.mediabox.width), 2),
             "height_pt": round(float(page.mediabox.height), 2),

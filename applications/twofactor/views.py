@@ -149,7 +149,11 @@ class APISendCode(TemplateView):
     def get_context_data(self, **kwargs):
         if self.request.user.is_authenticated:
             return { 'msg': 'already authenticated' }
-        return self.send_code(self.request)
+        try:
+            return self.send_code(self.request)
+        except Exception:
+            return {}
+
         #try:
         #except Exception as e:
         #    return {e.code: str(e)}

@@ -63,6 +63,7 @@ _file = (
     'extracontenttype',
     'metadata',
     'size',
+    'thumbnail',
 )
 
 # URL
