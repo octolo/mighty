@@ -95,6 +95,13 @@ class TwoFactorBackend(ModelBackend):
             return False
         return True
 
+    def can_send_sms(self):
+        #try:
+        #    last = Twofactor.objects.get(user=user, date_create__lt=now+10min)
+        #    return last.missive
+        #except Twofactor.DoesNotExist:
+            return self.send_sms(twofactor, user, target)
+
     def by(self, target, backend_path):
         target = self.clean_target(target)
         if self.is_email(target):
@@ -103,15 +110,7 @@ class TwoFactorBackend(ModelBackend):
             mode = choices.MODE_SMS
 
         try:
-            #validator = EmailValidator()
             user = self.get_user_target(target)
-            #try:
-            #    validator(target)
-            #    mode = choices.MODE_EMAIL
-            #except ValidationError:
-            #    validate_international_phonenumber(target)
-            #    mode = choices.MODE_SMS
-
             twofactor, created = self.get_object(user, target, mode, backend_path)
             twofactor.slack_notify.send_msg_create()
             twofactor.discord_notify.send_msg_create()
@@ -119,7 +118,7 @@ class TwoFactorBackend(ModelBackend):
             if mode == choices.MODE_EMAIL:
                 return self.send_email(twofactor, user, target)
             elif mode == choices.MODE_SMS:
-                return self.send_sms(twofactor, user, target)
+                return self.can_send_sms()
         except UserModel.DoesNotExist:
             pass
         except ValidationError:

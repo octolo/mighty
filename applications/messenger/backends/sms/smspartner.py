@@ -29,13 +29,16 @@ class MissiveBackend(MissiveBackend):
             return False
         return True
 
+    def check_sms(self):
+        pass #a implementer self.missive.partner_id
+
     def send_sms(self):
         over_target = setting('MISSIVE_PHONE', False)
         self.missive.target = over_target if over_target else self.missive.target
         self.missive.status = choices.STATUS_SENT
         response = requests.post(self.APIURL, json=self.post_fields)
         if self.valid_response(response):
-            self.missive.msg_id = response.json()['message_id']
+            self.missive.partner_id = response.json()['message_id']
         if not self.in_error:
             self.missive.to_sent()
         self.missive.save()            
