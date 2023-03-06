@@ -8,8 +8,16 @@ class MissiveBackend(MissiveBackend):
     APIFROM = setting('SMSPARTNER_FROM', 'MIGHTY')
     APIKEY = setting('SMSPARTNER_KEY', False)
     APISECRET = setting('PAASOO_SECRET', False)
-    APIURL = "https://api.smspartner.fr/v1/send"
+    APIURL = "https://api.smspartner.fr/v1/"
     in_error = False
+
+    @property
+    def check_fields(self):
+        return {
+            "apiKey": self.APIKEY,
+            "phoneNumber": self.missive.target,
+            "messageId": self.missive.partner_id,
+        }
 
     @property
     def post_fields(self):
@@ -30,17 +38,34 @@ class MissiveBackend(MissiveBackend):
         return True
 
     def check_sms(self):
-        pass #a implementer self.missive.partner_id
+        url = self.APIURL + "message-status"
+        r = requests.get(url, params=self.check_fields)
+        r_json = r.json()
+        status = r_json["statut"].lower()
+
+        status_dict = {
+            "delivered": choices.STATUS_RECEIVED,
+            "not delivered": choices.STATUS_REJECTED,
+            "waiting": choices.STATUS_PENDING,
+            "ko": choices.STATUS_ERROR,
+        }
+
+        result = status_dict.get(status, choices.STATUS_ACCEPTED)
+
+        self.missive.status = result
+        self.missive.save()
+
+        return json.dumps(result)
 
     def send_sms(self):
         over_target = setting('MISSIVE_PHONE', False)
         self.missive.target = over_target if over_target else self.missive.target
         self.missive.status = choices.STATUS_SENT
         if setting('MISSIVE_SERVICE', False):
-            response = requests.post(self.APIURL, json=self.post_fields)
+            response = requests.post(self.APIURL + "send", json=self.post_fields)
             if self.valid_response(response):
                 self.missive.partner_id = response.json()['message_id']
-                
+
         if not self.in_error:
             self.missive.to_sent()
         self.missive.save()            

@@ -23,8 +23,15 @@
 {% endblock %}
 
 {% block content %}
-<div class="mail">
-    <p>{{ object }}</p>
+<div id="content-main">
+    <div class="module">
+        <pre id="log-module"></pre>
+    </div>
 </div>
-<pre>{{ callback }}</pre>
+{% autoescape off %}
+<script>
+    var data = {{ callback }};
+    document.getElementById("log-module").textContent = JSON.stringify(data, undefined, 2);
+</script>
+{% endautoescape  %}
 {% endblock %}
