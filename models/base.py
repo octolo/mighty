@@ -204,6 +204,8 @@ class Base(models.Model):
     @property
     def model_name(self): return str(self.__class__.__name__)
     @property
+    def app_model(self): return self.app_label + "." + self.model_name
+    @property
     def is_enable(self): return True if self.is_disable is False else False
     @property
     def all_permissions(self): return self._meta.default_permissions + tuple([perm[0] for perm in self._meta.permissions])

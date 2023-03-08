@@ -31,6 +31,20 @@ def EnableChangeLog(model, excludes=()):
         return cls
     return deco
 
+#def EnableChangeLogV2(**kwargs):
+#    from django.db import models
+#    import types
+#    def decorator(obj):
+#        from mighty.applications.logger.models import ChangeLog
+#        class ChangeLog(ChangeLog):
+#            object_id = models.ForeignKey(kwargs["fk"], on_delete=models.CASCADE)
+#
+#            clas
+#        #setattr(cls, "changelog_model", LogModel)
+#        #setattr(cls, "changelog_exclude", kwargs.get("excludes", ())+(str(LogModel.__name__).lower(),))
+#        return obj#, LogModel
+#    return decorator#, LogModel
+
 def EnableAccessLog(model, excludes=()):
     def deco(cls):
         setattr(cls, "accesslog_model", model)
