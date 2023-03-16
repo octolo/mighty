@@ -169,7 +169,7 @@ class File(models.Model):
         self.set_autocomplete()
         self.set_thumbnail()
         self.set_hashid()
-        self.set_metadata()
+        #self.set_metadata()
 
     def save(self, *args, **kwargs):
         self.pre_save_file()
