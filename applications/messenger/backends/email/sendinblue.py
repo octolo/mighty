@@ -89,10 +89,6 @@ class MissiveBackend(MissiveBackend):
             data["template_id"] = self.missive.context["template_id"]
             self.setup_template_params(data)
         else:
-            # data["template_id"] = 2
-            # data["params"] = {
-            #     "html": self.missive.html_format
-            # }
             if self.missive.html_format:
                 data["html_content"] = self.missive.html_format
             if self.missive.txt:
@@ -102,11 +98,11 @@ class MissiveBackend(MissiveBackend):
 
     def send_email(self):
         data = {}
-        print("Sending mail ...")
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
         self.logger.info("Email - from : %s, to : %s, reply : %s" % (self.sender_email, self.missive.target, self.reply_email))
         if setting('MISSIVE_SERVICE', False):
+            self.api_instance.smtp_blocked_contacts_email_delete(self.missive.target)
             self.missive.msg_id = make_msgid()
             attachments = self.email_attachments()
             self.forge_email(data, attachments)
@@ -115,5 +111,4 @@ class MissiveBackend(MissiveBackend):
             self.missive.partner_id = api_response.message_id
         self.missive.to_sent()
         self.missive.save()
-        print(data)
         return self.missive.status
