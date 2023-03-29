@@ -102,7 +102,10 @@ class MissiveBackend(MissiveBackend):
         self.missive.target = over_target if over_target else self.missive.target
         self.logger.info("Email - from : %s, to : %s, reply : %s" % (self.sender_email, self.missive.target, self.reply_email))
         if setting('MISSIVE_SERVICE', False):
-            self.api_instance.smtp_blocked_contacts_email_delete(self.missive.target)
+            try:
+                self.api_instance.smtp_blocked_contacts_email_delete(self.missive.target)
+            except Exception:
+                pass
             self.missive.msg_id = make_msgid()
             attachments = self.email_attachments()
             self.forge_email(data, attachments)
