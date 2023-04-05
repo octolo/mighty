@@ -19,6 +19,7 @@ from mighty.admin.filters import InAlertListFilter, InErrorListFilter
 from mighty.functions import get_form_model, has_model_activate
 from mighty.models.source import CHOICES_TYPE
 from mighty.forms import TaskForm
+from mighty import decorators as decfields
 
 from functools import update_wrapper
 
@@ -57,8 +58,7 @@ class BaseAdmin(admin.ModelAdmin):
     def custom_tasklist(self, model, admin_site): pass
     def custom_filter(self, model, admin_site): pass
 
-    def __init__(self, model, admin_site):
-        super().__init__(model, admin_site)
+    def add_some_fields(self, model, admin_site):
         for field in fields.image:
             if hasattr(model, field):
                 self.add_field(_.more, (field,))
@@ -76,9 +76,20 @@ class BaseAdmin(admin.ModelAdmin):
         if hasattr(model, "task_list"):
             self.add_field(_.more, ("task_status",))
             self.custom_tasklist(model, admin_site)
+        if hasattr(model, "reporting_list"):
+            self.add_field("reporting", decfields.reporting_fields)
         if hasattr(model, 'alerts'): self.list_filter += (InAlertListFilter,)
         if hasattr(model, 'errors'): self.list_filter += (InErrorListFilter,)
         self.custom_filter(model, admin_site)
+
+    def add_some_readonly_fields(self, model, admin_site):
+        if hasattr(model, "export_last_date"):
+            self.readonly_fields += ("export_last_date",)
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.add_some_fields(model, admin_site)
+        self.add_some_readonly_fields(model, admin_site)
 
     def task_view(self, request, object_id, extra_context=None):
         opts = self.model._meta

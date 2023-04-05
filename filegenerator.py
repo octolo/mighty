@@ -1,6 +1,8 @@
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.text import get_valid_filename
 from mighty.functions import make_searchable
+from openpyxl import Workbook
+from tempfile import NamedTemporaryFile
 import csv
 
 class StreamingBuffer:
@@ -50,12 +52,21 @@ class FileGenerator:
         for row in self.iter_rows:
             ws.append(row)
 
+    def file_xlsx(self, ext, ct):
+        return self.file_xls(ext, ct)
+
+    def file_xls(self, ext, ct):
+        wb = Workbook()
+        ws = wb.active
+        self.iter_items_xls(self.items, ws)
+        tmp = open(self.get_filename(ext), "rb")
+        wb.save(tmp.name)
+        return tmp
+
     def http_xlsx(self, ext, ct):
         return self.http_xls(ext, ct)
 
     def http_xls(self, ext, ct):
-        from openpyxl import Workbook
-        from tempfile import NamedTemporaryFile
         wb = Workbook()
         ws = wb.active
         self.iter_items_xls(self.items, ws)
@@ -68,17 +79,32 @@ class FileGenerator:
         return response
 
     # CSV
-    def iter_items_csv(self, items, pseudo_buffer):
+    def iter_stream_csv(self, items, pseudo_buffer):
         writer = csv.writer(pseudo_buffer, quoting=csv.QUOTE_ALL)
         for item in self.iter_rows:
             yield writer.writerow(item)
+            
+    def iter_items_csv(self, items, pseudo_buffer, stream=True):
+        writer = csv.writer(pseudo_buffer, quoting=csv.QUOTE_ALL)
+        for item in self.iter_rows:
+            writer.writerow(item)
+
+
+    def file_csv(self, ext, ct):
+        tmp = open(self.get_filename(ext), "w")
+        self.iter_items_csv(self.items, tmp, False)
+        tmp.close()
+        return open(self.get_filename(ext), "rb")
 
     def http_csv(self, ext, ct):
         response = StreamingHttpResponse(
-            streaming_content=self.iter_items_csv(self.items, StreamingBuffer()),
+            streaming_content=self.iter_stream_csv(self.items, StreamingBuffer()),
             content_type=ct)
         response['Content-Disposition'] = 'attachment;filename='+self.get_filename(ext)
         return response
+
+    def response_file(self, ct):
+        return getattr(self, "file_"+ct)(ct, self.reverse_ct_list[ct])
 
     def response_http(self, ct):
         return getattr(self, "http_"+ct)(ct, self.reverse_ct_list[ct])

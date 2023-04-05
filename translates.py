@@ -94,3 +94,22 @@ TYPE_OTHER = _('other')
 
 no_errors = _('no errors')
 error_already_exist = _('already exist')
+
+# export auto
+export_frequency = _("Fréquence de l'export")
+export_last_date = _("Date du dernier export")
+export_email = _("Email de l'export")
+
+FREQUENCY_DAILY = "DAILY"
+FREQUENCY_WEEKLY = "WEEKLY"
+FREQUENCY_MONTHLY = "MONTHLY"
+
+FREQUENCY_DAILY_TR = _("Quotidien")
+FREQUENCY_WEEKLY_TR = _("Hebdomadaire")
+FREQUENCY_MONTHLY_TR = _("Mensuel")
+
+FREQUENCY_EXPORT = (
+    (FREQUENCY_DAILY, FREQUENCY_DAILY_TR),
+    (FREQUENCY_WEEKLY, FREQUENCY_WEEKLY_TR),
+    (FREQUENCY_MONTHLY, FREQUENCY_MONTHLY_TR),
+)
