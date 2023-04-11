@@ -78,6 +78,18 @@ class Config:
     <meta charset="UTF-8" />
     <style type="text/css">
     body { padding-bottom: 5px; }
+    .image.image_resized {
+        display: block;
+        box-sizing: border-box;
+    }
+
+    .image.image_resized img {
+        width: 100%%;
+    }
+
+    .image.image_resized > figcaption {
+        display: block;
+    }
     </style>
     <script>
     function subst() {
