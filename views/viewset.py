@@ -12,6 +12,7 @@ class ModelViewSet(ModelViewSet):
     filters = []
     user_way = "user__id"
     action_prefix = "action_"
+    order_enable = False
     order_base = []
     forms_desc = []
     tables_desc = []
@@ -23,7 +24,7 @@ class ModelViewSet(ModelViewSet):
             formdesc = FormDescriptor(desc, self.request, drf_kwargs=self.kwargs, **kwargs).as_json()
             return Response(formdesc)
         raise Http404
-        
+
     def call_action_model(self, obj, action, data, method):
         return getattr(obj, action)(data, method)
 
@@ -54,7 +55,7 @@ class ModelViewSet(ModelViewSet):
 
     @property
     def foxid(self):
-        return Foxid(self.queryset, self.request, f=self.manager.flts, order_base=self.order_base).ready()
+        return Foxid(self.queryset, self.request, f=self.manager.flts, order_base=self.order_base, order_enable=self.order_enable).ready()
 
     def foxid_qs(self, qs, flts, order_base=None):
         return Foxid(qs, self.request, f=flts, order_base=order_base or self.order_base).ready()

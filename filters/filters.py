@@ -85,7 +85,7 @@ class Filter(Verify):
     @property
     def is_array_positive(self):
         return self.positive_array_param if self.request.get(self.positive_array_param, False) else False
-    
+
     @property
     def is_array_negative(self):
         return self.negative_array_param if self.request.get(self.negative_array_param, False) else False
@@ -312,8 +312,8 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
             if '-' in value:
                 value = value.split('-')
                 theQ.append(Q(**{
-                    self.prefix+field+'__gte': self.format_value(value[0]), 
-                    self.prefix+field+'__lte': self.format_value(value[1]) 
+                    self.prefix+field+'__gte': self.format_value(value[0]),
+                    self.prefix+field+'__lte': self.format_value(value[1])
                 }))
             else:
                 theQ.append(Q(**{self.get_field(value, field): self.format_value(value) }))

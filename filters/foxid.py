@@ -40,6 +40,7 @@ class Foxid:
         self.order = self.method_request.get(self.Param._order, kwargs.get('order', False))
         self.order_base = kwargs.get('order_base', [])
         self.distinct = kwargs.get('distinct', False)
+        self.order_enable = kwargs.get('order_enable', False)
         self.separator = self.Token._split
         self.negative = self.Token._negative
 
