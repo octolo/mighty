@@ -25,6 +25,14 @@ class ModelViewSet(ModelViewSet):
             return Response(formdesc)
         raise Http404
 
+    @action(detail=True, methods=["get"], url_path=r"formsdetail/(?P<form>\w+)")
+    def form_detail_desc(self, request, form=None, *args, **kwargs):
+        desc = next((f for f in self.forms_desc if f.Options.url == form), None)
+        if desc:
+            formdesc = FormDescriptor(desc, self.request, drf_kwargs=self.kwargs, obj=self.get_object(), **kwargs).as_json()
+            return Response(formdesc)
+        raise Http404
+
     def call_action_model(self, obj, action, data, method):
         return getattr(obj, action)(data, method)
 

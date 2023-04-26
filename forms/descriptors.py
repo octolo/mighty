@@ -3,6 +3,7 @@ from django.urls import reverse
 class FormDescriptor:
     url = None
     form = None
+    obj = None
     as_type = {
         "datefield": "date",
         "datetimefield": "datetime",
@@ -65,6 +66,7 @@ class FormDescriptor:
         self.form = form(request=request, *args, **kwargs)
         self.form_desc["name"] = str(self.form.__class__.__name__).lower()
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
+        self.obj = kwargs.get("obj")
         self.generate_desc()
 
     def generate_desc(self):
