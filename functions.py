@@ -1,5 +1,5 @@
 from django.apps import apps
-from django.db.models import F, Func
+from django.db.models import F, Func, Subquery, DecimalField
 from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
@@ -42,8 +42,17 @@ def batch_bulk_chunk(objects, chunk):
         schunk+=chunk
 
 """
-Round function for sql usage
+functions for sql usage
 """
+
+class SumSubquery(Subquery):
+    template = "(SELECT SUM(%(sum_field)s) FROM (%(subquery)s) _sum)"
+    output_field = DecimalField()
+
+    def __init__(self, queryset, output_field=None, *, sum_field, **extra):
+        extra['sum_field'] = sum_field
+        super(SumSubquery, self).__init__(queryset, output_field, **extra)
+
 class Round(Func):
   function = "ROUND"
   arity = 2
