@@ -1,5 +1,5 @@
 from django.apps import apps
-from django.db.models import F, Func, Subquery, DecimalField
+from django.db.models import F, Func, Subquery, PositiveIntegerField
 from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
@@ -47,7 +47,7 @@ functions for sql usage
 
 class SumSubquery(Subquery):
     template = "(SELECT SUM(%(sum_field)s) FROM (%(subquery)s) _sum)"
-    output_field = DecimalField()
+    output_field = PositiveIntegerField()
 
     def __init__(self, queryset, output_field=None, *, sum_field, **extra):
         extra['sum_field'] = sum_field

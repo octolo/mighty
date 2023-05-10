@@ -39,7 +39,7 @@ class MessengerModel(Base):
     header_html = RichTextField(blank=True, null=True)
     footer_html = RichTextField(blank=True, null=True)
 
-    subject = models.CharField(max_length=255)
+    subject = models.CharField(max_length=255, blank=True, null=True)
     template = models.CharField(max_length=255, blank=True, null=True)
 
     html = RichTextField(blank=True, null=True)

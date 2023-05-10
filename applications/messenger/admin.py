@@ -75,6 +75,7 @@ class MissiveAdmin(BaseAdmin):
             'app_label': opts.app_label,
             'media': self.media,
             'callback': obj.check_status(),
+            'js_admin': obj.js_admin,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/missive_check.html', context)

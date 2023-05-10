@@ -22,6 +22,7 @@ class MissiveBackend(EnableLogger):
     sms = None
     postal = None
     path_base_doc = None
+    js_admin = True
 
     def __init__(self, missive, *args, **kwargs):
         self.missive = missive

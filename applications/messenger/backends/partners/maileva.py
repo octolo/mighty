@@ -34,6 +34,7 @@ class Maileva(MissiveBackend):
     access_token = None
     priority = 1
     header_offset = 72
+    js_admin = False
 
     @property
     def sender_height(self):
@@ -68,7 +69,7 @@ class Maileva(MissiveBackend):
     @property
     def postal_data(self):
         base = {
-            "name": self.missive.subject,
+            "name": self.missive.target,
             "custom_id": self.missive.msg_id,
             "custom_data": self.missive.msg_id,
             "color_printing": True,
@@ -141,21 +142,30 @@ class Maileva(MissiveBackend):
         }
 
     def valid_response(self, response):
+        print()
+        print()
+        print(response.content)
         if response.status_code not in [200, 201]:
-            self.missive.trace = str(response.json())
+            self.missive.trace = str(response.content)
             if response.status_code in [401, 404]:
-                self.missive.code_error = response.json()["code"]
+                if "code" in response.json():
+                    self.missive.code_error = response.json()["code"]
+                else:
+                    self.missive.code_error = response.json()["error"]
             self.in_error = True
             return False
         return True
 
     def authentication(self):
         response = requests.post(self.api_url["auth"], data=self.auth_data)
-        self.access_token = response.json()["access_token"]
-        return self.valid_response(response)
+        if self.valid_response(response):
+            self.access_token = response.json()["access_token"]
+            return True
+        return False
 
     def create_sending(self):
         response = requests.post(self.api_url["sendings"], headers=self.api_headers, json=self.postal_data)
+        print(response.content)
         self.sending_id = response.json()["id"]
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)
@@ -207,8 +217,7 @@ class Maileva(MissiveBackend):
         self.missive.msg_id = str(uuid4())
         if self.missive.status == _c.STATUS_FILETEST:
             self.postal_base()
-        else:
-            self.authentication()
+        elif self.authentication():
             if not self.in_error:
                 self.create_sending()
             if not self.in_error:

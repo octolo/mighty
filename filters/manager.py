@@ -16,7 +16,7 @@ class FiltersManager(EnableLogger):
 
     def check_mandatories(self, request):
         return all(k in self.get_data(request) for k in self.mandatories)
-    
+
     def get_data(self, request, force=False):
         if not self.data_load or force:
             self.data_load = QueryDict('', mutable=True)
@@ -24,7 +24,6 @@ class FiltersManager(EnableLogger):
             if hasattr(request, 'GET'):
                 self.data_load.update(request.GET)
             if hasattr(request, 'POST') and self.filter_post_enable:
-                print("PPPOOOOSSSTTT")
                 if request.POST:
                     self.data_load.update(request.POST)
                 elif hasattr(request, 'data'):
@@ -46,13 +45,14 @@ class FiltersManager(EnableLogger):
             return None
 
     def get_filters(self, request):
-        if not self.cache_filters: 
+        if not self.cache_filters:
             self.cache_filters = []
             self.data = list(self.get_data(request).lists())
             self.logger.debug('URL data: %s' % self.data)
             for param, value in self.data:
                 flt = self.get_filter(param, value)
                 if flt: self.cache_filters.append(flt)
+        self.cache_filters += (f.sql() for f in self.flts if f.default_value)
         #self.cache_filters = [f.sql(request) for f in self.flts if f.sql(request)]
         self.logger.debug('Filter: %s' % self.cache_filters)
         return self.cache_filters

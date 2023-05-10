@@ -23,13 +23,13 @@ class MissiveBackend(Maileva):
     }
 
     def check_postal(self):
-        self.authentication()
-        url = self.api_url["sendings"] + "/" + self.missive.partner_id
-        response = requests.get(url, headers=self.api_headers)
-        rjson = response.json()
-        self.missive.trace = str(rjson)
-        if "status" in rjson:
-            self.missive.status = self.status_ref[rjson["status"]]
-        self.missive.save()
-        return response.json()
+        if self.authentication():
+            url = self.api_url["sendings"] + "/" + self.missive.partner_id
+            response = requests.get(url, headers=self.api_headers)
+            rjson = response.json()
+            self.missive.trace = str(rjson)
+            if "status" in rjson:
+                self.missive.status = self.status_ref[rjson["status"]]
+            self.missive.save()
+            return rjson
 

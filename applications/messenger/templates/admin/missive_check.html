@@ -4,7 +4,7 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
-.mail { 
+.mail {
     margin: 0 auto;
 }
 </style>
@@ -14,7 +14,7 @@
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
 &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">{{ object|truncatewords:"18" }}</a>
@@ -25,13 +25,15 @@
 {% block content %}
 <div id="content-main">
     <div class="module">
-        <pre id="log-module"></pre>
+        <pre id="log-module">{{ callback }}</pre>
     </div>
 </div>
 {% autoescape off %}
 <script>
-    var data = {{ callback }};
+    {% if js_admin %}
+    var data = "{{ callback }}";
     document.getElementById("log-module").textContent = JSON.stringify(data, undefined, 2);
+    {% endif %}
 </script>
 {% endautoescape  %}
 {% endblock %}

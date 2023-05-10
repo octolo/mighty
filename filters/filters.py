@@ -11,6 +11,7 @@ SEPARATOR = MightyConfig.Interpreter._split
 NEGATIVE = MightyConfig.Interpreter._negative
 
 class Filter(Verify):
+    default_value = False
     is_array = False
     param_used = None
     delimiter = None
@@ -76,19 +77,19 @@ class Filter(Verify):
 
     @property
     def is_positive(self):
-        return self.param if self.request.get(self.param, False) else False
+        return self.param if self.request and self.request.get(self.param, False) else False
 
     @property
     def is_negative(self):
-        return self.negative_param if self.request.get(self.negative_param, False) else False
+        return self.negative_param if self.request and self.request.get(self.negative_param, False) else False
 
     @property
     def is_array_positive(self):
-        return self.positive_array_param if self.request.get(self.positive_array_param, False) else False
+        return self.positive_array_param if self.request and self.request.get(self.positive_array_param, False) else False
 
     @property
     def is_array_negative(self):
-        return self.negative_array_param if self.request.get(self.negative_array_param, False) else False
+        return self.negative_array_param if self.request and self.request.get(self.negative_array_param, False) else False
 
     @property
     def used(self):
@@ -118,24 +119,28 @@ class Filter(Verify):
     # Value
     ################
     def get_value(self):
-        if self.delimiter:
+        if self.request:
             values = []
-            for value in self.request.get(self.param_used):
-                if self.is_array:
-                    for value in  self.request.get(self.param_used):
-                        values += value.split(self.delimiter)
-                else:
-                    values += self.request.get(self.param_used).split(self.delimiter)
-            return values
-        elif self.regex_delimiter:
-            values = []
-            for value in self.request.get(self.param_used):
-                if value:
-                    values += re.split(self.regex_delimiter, value)
-            return values
-        elif self.is_array:
-            return self.request.get(self.param_used)
-        return self.request.get(self.param_used)[0]
+            if self.delimiter:
+                for value in self.request.get(self.param_used):
+                    if self.is_array:
+                        for value in  self.request.get(self.param_used):
+                            values += value.split(self.delimiter)
+                    else:
+                        values += self.request.get(self.param_used).split(self.delimiter)
+                return values
+            elif self.regex_delimiter:
+                for value in self.request.get(self.param_used):
+                    if value:
+                        values += re.split(self.regex_delimiter, value)
+                return values
+            elif self.is_array:
+                return self.request.get(self.param_used)
+            return self.request.get(self.param_used)[0]
+        return None
+
+    def get_value_or_default(self):
+        return self.get_value() or None
 
     def format_value(self):
         return self.get_value()
@@ -179,7 +184,7 @@ class Filter(Verify):
         self.request = request
         self.data = kwargs.get('bdata')
         self.user = kwargs.get('user')
-        if self.verify() and self.used:
+        if (self.verify() and self.used) or self.default_value:
             sql = self.get_Q()
             dep = self.get_dependencies()
             return dep.add(sql, Q.AND) if dep and sql else sql

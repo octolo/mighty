@@ -65,6 +65,10 @@ class UserEmail(Data, Base):
     class Meta(Base.Meta):
         abstract = True
 
+    def pre_save(self):
+        self.email = self.email.lower()
+        super().pre_save()
+
     @property
     def masking(self):
         return masking_email(self.email)
@@ -293,7 +297,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     def in_address(self):
         pass
-    
+
     @property
     def slack_notify(self):
         from mighty.applications.user.notify.slack import SlackUser
@@ -302,13 +306,13 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     def clean(self):
         #self.check_phone()
         super().clean()
-    
+
     def pre_save(self):
         if not self.first_connection: self.first_connection = self.last_login
         if self.email is not None: self.email = self.email.lower()
-        if self.username is not None: 
+        if self.username is not None:
             self.username = self.username.lower()
-        else: 
+        else:
             self.username = self.gen_username()
         #self.check_phone()
 
@@ -359,7 +363,7 @@ class Invitation(Base):
         return conf.invitation_days <= delta.days
 
     @property
-    def logname(self): 
+    def logname(self):
         return self.user.logname if self.user else 'user_invitation.%s' % self.id
 
     @property

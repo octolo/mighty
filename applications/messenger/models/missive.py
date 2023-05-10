@@ -8,14 +8,13 @@ from mighty.applications.address.models import AddressNoBase
 
 class Missive(MessengerModel, AddressNoBase):
     backend = models.CharField(max_length=255, editable=False)
-    subject = models.CharField(max_length=255)
     msg_id = models.CharField(max_length=255, blank=True, null=True)
 
     response = models.TextField(blank=True, null=True, editable=False)
     partner_id = models.CharField(max_length=255, blank=True, null=True, editable=False)
     code_error = models.CharField(max_length=255, blank=True, null=True, editable=False)
     trace = models.TextField(blank=True, null=True, editable=False)
-    
+
     class Meta(MessengerModel.Meta):
         abstract = True
         verbose_name = "missive"
@@ -47,11 +46,16 @@ class Missive(MessengerModel, AddressNoBase):
         return getattr(backend, 'check_%s' % self.mode.lower())()
 
     @property
+    def js_admin(self):
+        backend = self.get_backend()
+        return backend.js_admin
+
+    @property
     def url_viewer(self):
         from django.urls import reverse
         return reverse('messenger-email-viewer', args=[self.uid])
 
     def on_raw_ready(self):
         if not self.target:
-            if self.raw_address: 
+            if self.raw_address:
                 self.target = self.raw_address
