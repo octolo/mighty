@@ -46,20 +46,22 @@ functions for sql usage
 """
 
 class SumSubquery(Subquery):
-    template = "(SELECT SUM(%(sum_field)s) FROM (%(subquery)s) _sum)"
+    template = "(SELECT SUM(%(sum_field)s) FROM (%(subquery)s) %(name)s)"
     output_field = PositiveIntegerField()
 
     def __init__(self, queryset, output_field=None, *, sum_field, **extra):
         extra['sum_field'] = sum_field
+        extra['name'] = extra.get("name", "_sum")
         super(SumSubquery, self).__init__(queryset, output_field, **extra)
 
 class SumGt0SubQuery(Subquery):
-    template = "(SELECT SUM(CASE WHEN %(field0)s > 0 THEN %(field0)s ELSE %(field1)s END) FROM (%(subquery)s) _sum)"
+    template = "(SELECT SUM(CASE WHEN %(field0)s > 0 THEN %(field0)s ELSE %(field1)s END) FROM (%(subquery)s) %(name)s)"
     output_field = PositiveIntegerField()
 
     def __init__(self, queryset, output_field=None, *, sum_fields, **extra):
         extra['field0'] = sum_fields[0]
         extra['field1'] = sum_fields[1]
+        extra['name'] = extra.get("name", "_sum")
         super(SumGt0SubQuery, self).__init__(queryset, output_field, **extra)
 
 class Round(Func):
