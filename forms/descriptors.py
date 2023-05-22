@@ -85,19 +85,19 @@ class FormDescriptor:
         if desc["type"] in ("file", "image"):
             self.form_desc["enctype"] = self.enctypes["file"]
 
-    def get_input_type(self, field):
+    def get_input_type(self, field, name):
         if hasattr(field, 'input_type'):
             return field.input_type
-        elif hasattr(field, "widget"): 
+        elif hasattr(field, "widget"):
             if hasattr(field.widget, 'input_type'):
-                return field.widget.input_type
+                return self.option(field, name, "input_type", field.widget.input_type)
             wtype = field.widget.__class__.__name__.lower()
-            return self.as_type[wtype] if wtype in self.as_type else wtype
+            return self.as_type[wtype] if wtype in self.as_type else self.option(field, name, "input_type", wtype)
         ftype = field.__class__.__name__.lower()
-        return self.as_type[ftype] if ftype in self.as_type else ftype
+        return self.as_type[ftype] if ftype in self.as_type else self.option(field, name, "input_type")
 
-    def get_input_type_text(self, field):
-        base_type = self.get_input_type(field)
+    def get_input_type_text(self, field, name):
+        base_type = self.get_input_type(field, name)
         if base_type == "text":
             ftype = field.__class__.__name__.lower()
             if ftype in self.as_type:
@@ -109,6 +109,7 @@ class FormDescriptor:
         return base_type
 
     def option(self, field, name, key, default=None):
+        print(field, name, key)
         if name in self.form.Options.fields and key in self.form.Options.fields[name]:
             return self.form.Options.fields[name][key]
         elif hasattr(field, "Options") and hasattr(field.Options, key) and getattr(field.Options, key):
@@ -181,8 +182,8 @@ class FormDescriptor:
     def get_field_desc(self, field, name):
         desc = {
             "name": name,
-            "type":  self.option(field, name, "input_type", self.get_input_type(field)),
-            "type_text": self.get_input_type_text(field),
+            "type":  self.option(field, name, "input_type", self.get_input_type(field, name)),
+            "type_text": self.get_input_type_text(field, name),
             "errors": self.get_error_messages(field),
             "icon": self.option(field, name, "icon"),
             "multiple": self.get_multiple(field),

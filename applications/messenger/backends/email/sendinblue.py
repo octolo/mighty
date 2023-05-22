@@ -40,9 +40,7 @@ class MissiveBackend(MissiveBackend):
         api_response = self.api_instance.get_email_event_report(**data, email=self.missive.target)
         event = api_response.events[0].event
         self.missive.status = self.STATUS[event]
-        # print(self.missive, self.missive.status)
         self.missive.save()
-        # print(self.missive, self.missive.status)
         return api_response
 
     @property
