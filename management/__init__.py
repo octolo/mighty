@@ -306,7 +306,6 @@ class CSVModelCommand(ImportModelCommand):
 
     def handle(self, *args, **options):
         self.csvfile = options.get('csv')
-        print("csv", self.csvfile)
         self.delimiter = options.get('delimiter')
         self.quotechar = options.get('quotechar')
         self.quoting = options.get('quoting')
