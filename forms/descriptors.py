@@ -109,7 +109,6 @@ class FormDescriptor:
         return base_type
 
     def option(self, field, name, key, default=None):
-        print(field, name, key)
         if name in self.form.Options.fields and key in self.form.Options.fields[name]:
             return self.form.Options.fields[name][key]
         elif hasattr(field, "Options") and hasattr(field.Options, key) and getattr(field.Options, key):
