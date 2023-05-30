@@ -78,7 +78,7 @@ class MissiveBackend(MissiveBackend):
     @property
     def signature(self):
         return self.encrypt_data(str(self.date_send))
-        
+
     @property
     def api_headers(self):
         return { 'accept': 'application/json', 'signature': self.signature }
@@ -152,7 +152,7 @@ class MissiveBackend(MissiveBackend):
     def data_ar(self):
         data = self.base_headers
         data.update({
-            "id_user": self.user["id"], 
+            "id_user": self.user["id"],
             "eidas": 1,
             "to_lastname": self.missive.last_name,
             "to_firstname": self.missive.first_name,
@@ -167,9 +167,6 @@ class MissiveBackend(MissiveBackend):
                 "attachment[%s]" % str(i): attach["file_id"]
             })
             i+=1
-        print("")
-        print(data)
-        print("")
         return data
 
     def data_attachment(self, document):
@@ -184,7 +181,7 @@ class MissiveBackend(MissiveBackend):
     def email_attachments(self):
         if self.missive.attachments:
             for document in self.missive.attachments:
-                response = requests.post(self.api_url["attachment"], 
+                response = requests.post(self.api_url["attachment"],
                     headers=self.api_headers,
                     files={'file': (os.path.basename(document.name), open(document.name, 'rb'))},
                     data=self.data_attachment(document))

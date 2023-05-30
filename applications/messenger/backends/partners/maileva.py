@@ -142,9 +142,6 @@ class Maileva(MissiveBackend):
         }
 
     def valid_response(self, response):
-        print()
-        print()
-        print(response.content)
         if response.status_code not in [200, 201]:
             self.missive.trace = str(response.content)
             if response.status_code in [401, 404]:
@@ -165,7 +162,6 @@ class Maileva(MissiveBackend):
 
     def create_sending(self):
         response = requests.post(self.api_url["sendings"], headers=self.api_headers, json=self.postal_data)
-        print(response.content)
         self.sending_id = response.json()["id"]
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)

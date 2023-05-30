@@ -245,7 +245,6 @@ class MultiParamFilter(ParamFilter):
 
     def get_Q(self):
         theQ = self.fieldsQ() if len(self.fields) else self.fieldQ()
-        print(theQ)
         return theQ
 
 class SearchFilter(ParamFilter):

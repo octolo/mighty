@@ -9,7 +9,7 @@ class PaymentBackend(PaymentBackend):
     APISECRET = setting('STRIPE_SECRET', 'sk_test_Ut8KxxgMdbQnWqfXcyYe0JiY')
     pmtypes = { "CB": "card", "IBAN": "sepa_debit" }
     api_stripe = None
-    
+
     # STRIPE
     @property
     def api(self):
@@ -34,12 +34,11 @@ class PaymentBackend(PaymentBackend):
     def data_iban(self):
         return {
             "billing_details": {"name": str(self.payment_method.uid), "email": "dev@easyshares.io"},
-            "type": "sepa_debit", 
+            "type": "sepa_debit",
             "sepa_debit": {
                 "iban": self.payment_method.iban}}
 
     def add_pm(self):
-        print("okkkkk")
         self.payment_method.cache = self.add_payment_method()
         customer = self.get_or_create_customer(self.payment_method.cache)
         self.payment_method.service_id = self.payment_method.cache["id"]
@@ -82,7 +81,7 @@ class PaymentBackend(PaymentBackend):
                     "type": "offline",
                 }
             },
-            "confirm": True, 
+            "confirm": True,
             "return_url": self.bill_return_url,
         }
 

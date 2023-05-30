@@ -13,7 +13,6 @@ from __future__ import print_function
 import time
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
-from pprint import pprint
 
 configuration = sib_api_v3_sdk.Configuration()
 configuration.api_key['api-key'] = 'YOUR API KEY'
@@ -32,7 +31,6 @@ send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(to=to, bcc=bcc, cc=cc, reply_to=r
 
 try:
     api_response = api_instance.send_transac_email(send_smtp_email)
-    pprint(api_response)
 except ApiException as e:
     print("Exception when calling SMTPApi->send_transac_email: %s\n" % e)
 
@@ -48,7 +46,7 @@ class MissiveBackend(MissiveBackend):
             configuration.api_key['api-key'] = settings.SENDINBLUE_APIKEY
             self.CONFSIB = configuration
         return self.CONFSIB
-            
+
     @property
     def api_sib(self):
         if not self.APISIB:
@@ -86,5 +84,5 @@ class MissiveBackend(MissiveBackend):
         if setting('MISSIVE_SERVICE', False):
             if not self.use_api_email(self.missive):
                 self.missive.status = choices.STATUS_ERROR
-        self.missive.save()      
+        self.missive.save()
         return self.missive.status

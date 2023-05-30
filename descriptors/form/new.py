@@ -109,7 +109,6 @@ class FormJsonDescriptor:
         return default
 
     def get_field_desc(self, field, name):
-        print("ouuuiii")
         desc = {
             "name": name,
             "type": self.get_input_type(field),
@@ -126,7 +125,7 @@ class FormJsonDescriptor:
                 "opt_label": self.option(field, name, "label"),
                 "opt_value": self.option(field, name, "value"),
             })
-        for attr in self.default_attrs: 
+        for attr in self.default_attrs:
             if hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})
         self.check_enctype(desc)

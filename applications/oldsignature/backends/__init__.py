@@ -7,7 +7,6 @@ class SignatureBackend(Backend):
     transaction = None
 
     def __init__(self, path, transaction, *args, **kwargs):
-        print(path, path.replace(".SignatureBackend", ""))
         self.transaction = transaction
         self.transaction.backend = path.replace(".SignatureBackend", "")
 
@@ -18,7 +17,7 @@ class SignatureBackend(Backend):
     @property
     def path(self):
         return self.transaction.backend
- 
+
 
     # TRANSACTIONS
     def status_transaction(self):

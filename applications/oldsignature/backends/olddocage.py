@@ -86,7 +86,7 @@ class SignatureBackend(SignatureBackend):
     # Transaction
     def new_transaction(self):
         transaction = self.generate_post_request(
-            self.get_url("create_transaction"), 
+            self.get_url("create_transaction"),
             {
                 "Name": self.transaction.name,
                 "IsTest": setting("DEBUG"),
@@ -119,12 +119,12 @@ class SignatureBackend(SignatureBackend):
         transaction = self.generate_get_request(self.get_url("remind_transaction", self.transaction.backend_id))
         transaction = json.loads(transaction.content)
         self.transaction.add_log("info", transaction, "remind")
-    
+
     def start_transaction(self):
         transaction = self.generate_post_request(self.get_url("start_transaction", self.transaction.backend_id))
         self.status_transaction()
         self.transaction.save()
-    
+
 
     # Documents
     def document_type(self, document):
@@ -259,7 +259,7 @@ class SignatureBackend(SignatureBackend):
         return requests.get(self.api_url["entity_with_id"] % instance.entity_id , auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers={}, data={})
 
 
-    
+
     def annul_transaction(self, instance):
         url = self.api_url["stop_transaction"] % instance.transaction_id
         payload={}
@@ -324,8 +324,6 @@ class SignatureBackend(SignatureBackend):
         return response
 
     def launch_transaction(self, instance, data):
-        print(instance)
-        print(data)
         # self.prepare_launch()
         # url = self.api_url["launch"] % instance.transaction_id
         # response = requests.post(url, auth=HTTPBasicAuth(self.APIUSER, self.APIKEY), headers=self.api_headers, data={})

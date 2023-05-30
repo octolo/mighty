@@ -31,11 +31,7 @@ class Command(BaseCommand):
                 backend=self.backend_path,
             )
         return self.cache_missive
-       
+
     def do(self):
-        print(self.backend_path)
-        print(self.cache_missive)
-        print(self.backend)
         self.backend.testBackend()
-        
-        
+

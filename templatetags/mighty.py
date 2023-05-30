@@ -136,7 +136,6 @@ def encode_b64(path):
     with open(file_path, "rb") as image_file:
         file_str = base64.b64encode(image_file.read()).decode()
         src = u"data:{0}/{1};{2},{3}".format("image", ext, "base64", file_str)
-        print(src)
         return src
 
 @register.simple_tag
@@ -149,7 +148,6 @@ def encode_static(path, encoding='base64', file_type='image'):
         <img src="{% encode_static 'path/to/img.png' %}">
     """
     file_path = find_static_file(path)
-    print(get_file_data(file_path))
     ext = file_path.split('.')[-1]
     file_str = get_file_data(file_path).encode(encoding)
     return u"data:{0}/{1};{2},{3}".format(file_type, ext, encoding, file_str)
