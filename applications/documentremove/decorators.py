@@ -2,7 +2,6 @@ from django.db import models
 
 def ModelTemplate(**kwargs):
     def decorator(obj):
-
         class DTModel(obj):
             sync_fields = kwargs.get('sync_fields', [])
             based_on = models.ForeignKey(kwargs.get('based_fk', 'self'),
@@ -11,9 +10,9 @@ def ModelTemplate(**kwargs):
                 blank=kwargs.get('based_blank', True),
                 null=kwargs.get('based_null', True),
             )
-            config = models.JSONField(null=True, blank=True) 
+            config = models.JSONField(null=True, blank=True)
             context = models.JSONField(null=True, blank=True)
-            
+
             if kwargs.get('can_sign', False):
                 signatory = models.ManyToManyField(kwargs.get('signatory_m2m'),
                     related_name=kwargs.get('signatory_related_name', 'signatory_set'),
@@ -21,7 +20,7 @@ def ModelTemplate(**kwargs):
                     null=kwargs.get('signatory_null', True),
                 )
                 is_signed = models.BooleanField(default=False)
-            
+
             class Meta(obj.Meta):
                 abstract = True
 
