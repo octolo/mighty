@@ -124,3 +124,7 @@ def notify_discord(hookname, **kwargs):
             data["embeds"] = kwargs.get("embeds")
         headers = {'Content-Type': 'application/json'}
         request = requests.post(hook, headers=headers, data=json.dumps(data))
+
+def generate_event_url(date, event, service=['google', 'apple', 'outlookcom', 'yahoo']):
+    url = "https://calndr.link/d/event/?service=%s&start=%s&title=%s"
+    return {s: url % (s, str(date)[:16], event) for s in service }
