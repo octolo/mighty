@@ -73,21 +73,18 @@ class Config:
         ]
     }
 
-    pdf_css_files = []
-
-
     @property
     def pdf_header(self):
         from django.template.loader import get_template
-        return get_template("document_header_template.html").render({'css_files': Config.pdf_css_files})
+        return get_template("document_header_template.html").render()
     @property
     def pdf_footer(self):
         from django.template.loader import get_template
-        return get_template("document_footer_template.html").render({'css_files': Config.pdf_css_files})
+        return get_template("document_footer_template.html").render()
     @property
     def pdf_content(self):
         from django.template.loader import get_template
-        return get_template("document_content_template.html").render({'css_files': Config.pdf_css_files})
+        return get_template("document_content_template.html").render()
 
 
     class Directory:
