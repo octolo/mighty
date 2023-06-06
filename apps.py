@@ -73,19 +73,9 @@ class Config:
         ]
     }
 
-    @property
-    def pdf_header(self):
-        from django.template.loader import get_template
-        return get_template("document_header_template.html").render()
-    @property
-    def pdf_footer(self):
-        from django.template.loader import get_template
-        return get_template("document_footer_template.html").render()
-    @property
-    def pdf_content(self):
-        from django.template.loader import get_template
-        return get_template("document_content_template.html").render()
-
+    pdf_header = "document_header_template.html"
+    pdf_footer = "document_footer_template.html"
+    pdf_content = "document_content_template.html"
 
     class Directory:
         app          = os.path.dirname(os.path.realpath(__file__))

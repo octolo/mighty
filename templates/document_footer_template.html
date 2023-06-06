@@ -6,5 +6,5 @@
     {% include "document_css_template.html" %}
     {% include "document_javascript_template.html" %}
   </head>
-  <body onload="subst()">%s</body>
+  <body onload="subst()"><div class="footer">{{ footer|safe }}</div></body>
 </html>

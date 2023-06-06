@@ -123,8 +123,6 @@ def generate_pdf(**kwargs):
     header_enable, footer_enable = False, False
     file_name = kwargs.get("file_name", False)
     options = kwargs.get("options", conf.pdf_options)
-    conf_header = kwargs.get("conf_header", conf.pdf_header)
-    conf_footer = kwargs.get("conf_footer", conf.pdf_footer)
     header = kwargs.get("header", False)
     footer = kwargs.get("footer", False)
     context = kwargs.get("context", {})
@@ -136,20 +134,25 @@ def generate_pdf(**kwargs):
         "static": os.path.abspath(settings.MEDIA_ROOT),
     })
 
+
+    header_tpl = kwargs.get("conf_header", 
+        get_template(conf.pdf_header).render({"header": header}))
+    footer_tpl = kwargs.get("conf_footer",
+        get_template(conf.pdf_footer).render({"footer": footer}))
+
     # header
     if header:
-        header = conf.pdf_header % header
         header_html = tempfile.NamedTemporaryFile(suffix=".html", delete=False)
-        header_html.write(Template(header).render(Context(context)).encode("utf-8"))
+        header_html.write(Template(header_tpl).render(Context(context)).encode("utf-8"))
         header_html.close()
         header = header_html
         options["--header-html"] = header_html.name
         header_enable = True
 
     if footer:
-        footer = conf.pdf_footer % footer
+        context.update({"footer_html": footer})
         footer_html = tempfile.NamedTemporaryFile(suffix=".html", delete=False)
-        footer_html.write(Template(footer).render(Context(context)).encode("utf-8"))
+        footer_html.write(Template(footer_tpl).render(Context(context)).encode("utf-8"))
         footer_html.close()
         footer = footer_html
         options["--footer-html"] = footer_html.name

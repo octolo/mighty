@@ -5,5 +5,5 @@
     {% include "document_ckeditor_template.html" %}
     {% include "document_css_template.html" %}
   </head>
-  <body><br/>%s</body>
+  <body><br/>{{ content| safe }}</body>
 </html>
