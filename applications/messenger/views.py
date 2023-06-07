@@ -34,37 +34,37 @@ class EmailViewer(DetailView):
         return obj.template if obj.template else super().get_template_names()
 
 
-if 'oauth2_provider' in setting('INSTALLED_APPS'):
-    @method_decorator(csrf_exempt, name='dispatch')
-    class WebhookMessenger(JsonView):
-        backend_path = missive_backend_email()
 
-        @property
-        def backend(self):
-            return import_string(self.backend_path + ".MissiveBackend")(missive={})
+@method_decorator(csrf_exempt, name='dispatch')
+class WebhookMessenger(JsonView):
+    backend_path = missive_backend_email()
 
-        def do_post(self, request, *args, **kwargs):
-            self.backend.on_webhook(request)
-            return {"status": "ok"}
-    
-        def do_get(self, request, *args, **kwargs):
-            self.backend.on_webhook(request)
-            return {"status": "ok"}
+    @property
+    def backend(self):
+        return import_string(self.backend_path + ".MissiveBackend")(missive={})
 
-    class WebhookEmailAR(WebhookMessenger):
-        backend_path = missive_backend_emailar()
+    def do_post(self, request, *args, **kwargs):
+        self.backend.on_webhook(request)
+        return {"status": "ok"}
 
-    class WebhookPostal(WebhookMessenger):
-        backend_path = missive_backend_postal()
-    
-    class WebhookPostalAR(WebhookMessenger):
-        backend_path = missive_backend_postalar()
+    def do_get(self, request, *args, **kwargs):
+        self.backend.on_webhook(request)
+        return {"status": "ok"}
 
-    class WebhookSMS(WebhookMessenger):
-        backend_path = missive_backend_sms()
+class WebhookEmailAR(WebhookMessenger):
+    backend_path = missive_backend_emailar()
 
-    class WebhookWeb(WebhookMessenger):
-        backend_path = missive_backend_web()
+class WebhookPostal(WebhookMessenger):
+    backend_path = missive_backend_postal()
 
-    class WebhookApp(WebhookMessenger):
-        backend_path = missive_backend_app()
+class WebhookPostalAR(WebhookMessenger):
+    backend_path = missive_backend_postalar()
+
+class WebhookSMS(WebhookMessenger):
+    backend_path = missive_backend_sms()
+
+class WebhookWeb(WebhookMessenger):
+    backend_path = missive_backend_web()
+
+class WebhookApp(WebhookMessenger):
+    backend_path = missive_backend_app()
