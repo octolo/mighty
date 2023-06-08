@@ -30,6 +30,7 @@ class Config:
             'Missive',
             'Notification',
             'Invitation',
+            'Template',
         ],
         'languages/translations': [
             'Nationality',

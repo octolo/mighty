@@ -97,3 +97,17 @@ class NotificationAdmin(BaseAdmin):
     search_fields = ('target',)
     list_filter = ('mode', 'status')
     readonly_fields = ('missive',)
+
+
+class NotificationAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.notification}),)
+    list_display = ('target', 'subject', 'mode',)
+    search_fields = ('target',)
+    list_filter = ('mode', 'status')
+    readonly_fields = ('missive',)
+
+class TemplateAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.template}),)
+    search_fields = ('code',)

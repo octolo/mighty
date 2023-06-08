@@ -119,7 +119,7 @@ def notify_discord(hookname, **kwargs):
         if kwargs.get("avatar_url"):
             data["avatar_url"] = kwargs.get("avatar_url")
         if kwargs.get("content"):
-            data["content"] = kwargs.get("content")        
+            data["content"] = kwargs.get("content")
         if kwargs.get("embeds"):
             data["embeds"] = kwargs.get("embeds")
         headers = {'Content-Type': 'application/json'}

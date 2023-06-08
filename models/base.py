@@ -73,7 +73,7 @@ class Base(models.Model):
     use_update_by = True
     can_notify = True
     fields_can_be_changed = "*"
-    
+
     _logger = get_logger()
     _old_self = None
     _old_fields = None
@@ -128,8 +128,12 @@ class Base(models.Model):
     def logger(self): return self._logger
 
     if "mighty.applications.messenger" in settings.INSTALLED_APPS:
-        def notify(subject, content_type, object_id, **kwargs):
+        def notify(self, subject, content_type, object_id, **kwargs):
             return notify(subject, content_type, object_id, **kwargs)
+
+        def self_notify(self, subject, **kwargs):
+            ct, pk = self.get_content_type(), self.id
+            return self.notify(subject, ct, pk, **kwargs)
 
         def notify_slack(hookname, **kwargs):
             return notify_slack(hookname, **kwargs)
@@ -190,7 +194,7 @@ class Base(models.Model):
 
     def do_not_notify(self):
         self.can_notify = False
-        
+
     """
     Properties
     """
@@ -294,7 +298,7 @@ class Base(models.Model):
 
     def m2o_fields(self, excludes=[]):
         return {field.name: field.__class__.__name__ for field in self._meta.related_objects if field.__class__.__name__ not in excludes}
-    
+
     def m2m_fields(self, excludes=[]):
         return {field.name: field.__class__.__name__ for field in self._meta.many_to_many if field.__class__.__name__ not in excludes}
 
@@ -327,7 +331,7 @@ class Base(models.Model):
     def add_log(self, lvl, msg, field=None):
         if lvl not in self.logs: self.logs[lvl] = {}
         self.logs[lvl][field] = msg
-        
+
     def del_log(self, lvl, field=None):
         del self.logs[lvl][field]
 
@@ -345,7 +349,7 @@ class Base(models.Model):
 
     def del_cache(self, field):
         del self.cache[field]
-        
+
     def res_cache(self):
         self.cache = None
 
@@ -440,7 +444,7 @@ class Base(models.Model):
                 self.post_delete()
         else:
             raise self.raise_error(code="is_immutable", message="is immutable")
- 
+
     def pre_save(self):
         pass
 

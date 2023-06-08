@@ -48,3 +48,9 @@ notification = (
     "txt",
     "level",
 )
+
+template = (
+    "name",
+    "subject",
+    "template",
+)

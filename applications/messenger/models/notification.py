@@ -21,7 +21,6 @@ fields_shared = (
     "txt",
 )
 
-
 @MissiveFollower(related_name="missive_to_notification")
 class Notification(MessengerModel):
     is_read = models.BooleanField(default=True)

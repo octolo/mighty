@@ -82,6 +82,8 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
     class NationalityAdmin(admin_messenger.MissiveAdmin): pass
     @admin.register(all_models.Notification)
     class NotificationAdmin(admin_messenger.NotificationAdmin): pass
+    @admin.register(all_models.Template)
+    class NotificationAdmin(admin_messenger.TemplateAdmin): pass
 
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
@@ -110,7 +112,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
         def change_view(self, *args, **kwargs):
             self.inlines = [UserEmailAdmin, UserPhoneAdmin, InternetProtocolAdmin, UserAgentAdmin, UserAddressAdmin]
             return super(admin_user.UserAdmin, self).change_view(*args, **kwargs)
-    
+
     @admin.register(all_models.Invitation)
     class InvitationAdmin(admin_user.InvitationAdmin): pass
 
