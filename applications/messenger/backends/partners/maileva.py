@@ -184,10 +184,8 @@ class Maileva(MissiveBackend):
         return False if self.in_error else True
 
     def add_recipients(self):
-        print("test", self.target_data)
         api = self.api_url["recipients"] % self.sending_id
         response = requests.post(api, headers=self.api_headers, json=self.target_data)
-        print(response.content)
         return self.valid_response(response)
 
     def submit(self):
