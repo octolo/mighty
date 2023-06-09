@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from mighty.models.base import Base
 from mighty.applications.address import translates as _, fields, get_address_backend
 from mighty.applications.address.apps import AddressConfig as conf
+
 address_backend = get_address_backend()
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
@@ -20,8 +21,8 @@ class AddressNoBase(models.Model):
     cedex_code = models.CharField(_.cedex_code, max_length=255, null=True, blank=True)
     special = models.CharField(max_length=255, null=True, blank=True)
     index = models.CharField(max_length=255, null=True, blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     source = models.CharField(max_length=255, null=True, blank=True)
     raw = models.CharField(max_length=255, null=True, blank=True)
     enable_clean_fields = False
@@ -57,7 +58,7 @@ class AddressNoBase(models.Model):
     @property
     def has_state_or_postal_code(self):
         return True if self.postal_code or self.state_code else False
-    
+
     def clean_state_or_postal_code(self):
         if not self.has_state_or_postal_code:
             raise ValidationError(_.validate_postal_state_code)

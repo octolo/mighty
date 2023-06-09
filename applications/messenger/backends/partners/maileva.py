@@ -120,12 +120,13 @@ class Maileva(MissiveBackend):
             "custom_id":  self.missive.msg_id,
             "custom_data": self.missive.msg_id,
             "address_line_6": self.missive.city,
+            "address_line_5": self.missive.cedex or self.missive.cedex_code or self.missive.special or "",
             "country_code": self.missive.country_code.upper(),
         }
         for i, field in enumerate(self.fields):
             attr = getattr(self.missive, field)
             if attr:
-                data["address_line_"+str(i)] = attr
+                data["address_line_"+str(i+1)] = attr
         return data
 
     @property
@@ -183,8 +184,10 @@ class Maileva(MissiveBackend):
         return False if self.in_error else True
 
     def add_recipients(self):
+        print("test", self.target_data)
         api = self.api_url["recipients"] % self.sending_id
         response = requests.post(api, headers=self.api_headers, json=self.target_data)
+        print(response.content)
         return self.valid_response(response)
 
     def submit(self):
