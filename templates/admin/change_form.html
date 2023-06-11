@@ -64,8 +64,14 @@
 {% url opts|admin_urlname:'filemetadata' original.pk|admin_urlquote as filemetadata_url %}
 <li><a href="{{ filemetadata_url }}">File meta data</a></li>
 {% endif %}
+{% if original.has_eve_variable_template %}
+{% url opts|admin_urlname:'variables' original.pk|admin_urlquote as variables_url %}
+<li><a href="{{ variables_url }}">Variables</a></li>
+{% endif %}
+{{ original.has_eve_variable_template }}
 {{ block.super }}
 {% endblock %}
+
 
 {% block object-tools %}
 {{ block.super }}

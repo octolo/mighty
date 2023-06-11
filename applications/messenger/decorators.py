@@ -41,11 +41,10 @@ def NotifyByCondition(**kwargs):
                 except TPL.DoesNotExist:
                     from django.template.loader import get_template
                     sbj = subject
-                    tpl = get_template("notify/"+name+".html").template.source
+                    tpl = get_template(self.nbc_dir_notifications_or_none+name+".html").template.source
                     tpl_tosave = TPL(name=name, subject=subject, template=tpl)
                     tpl_tosave.save()
                     tpl = Template(self.nbc_wrapper_or_none(tpl)).render(Context(self.nbc_context_or_none))
-
                 sbj = Template(self.nbc_wrapper_or_none(sbj)).render(Context(self.nbc_context_or_none))
                 return tpl, sbj
 
@@ -57,13 +56,16 @@ def NotifyByCondition(**kwargs):
                 self.nbc_notify_active = True
 
             @property
+            def nbc_dir_notifications_or_none(self):
+                return self.nbc_dir_notifications if hasattr(self, "nbc_dir_notifications") else "notifications/"
+
+            @property
             def nbc_context_or_none(self):
                 return self.nbc_context if hasattr(self, "nbc_context") else {}
 
             def nbc_wrapper_or_none(self, tpl):
                 if hasattr(self, "nbc_wrapper"):
                     wrp = self.nbc_wrapper.split("{{ content }}")
-                    print(wrp)
                     return wrp[0]+tpl+wrp[1]
                 return tpl
 

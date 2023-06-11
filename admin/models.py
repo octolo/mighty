@@ -339,6 +339,22 @@ class BaseAdmin(admin.ModelAdmin):
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/file_metadata.html', context)
 
+    def variables_view(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        obj.eve_create_template_variable()
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/template_variable.html', context)
+
     def get_urls(self):
         from django.urls import path
         urls = super(BaseAdmin, self).get_urls()
@@ -351,6 +367,9 @@ class BaseAdmin(admin.ModelAdmin):
             path('<path:object_id>/task/', self.wrap(self.task_view), name='%s_%s_task' % info),
             path('<path:object_id>/reporting/', self.wrap(self.reporting_view), name='%s_%s_reporting' % info),
         ]
+
+        if hasattr(self.model, "has_eve_variable_template") and self.model.has_eve_variable_template:
+            my_urls.append(path('<path:object_id>/variables/', self.wrap(self.variables_view), name='%s_%s_variables' % info))
 
         if has_model_activate(self.model, "file"):
             my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='%s_%s_filemetadata' % info))

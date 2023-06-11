@@ -1,30 +1,19 @@
 from django.conf import settings
 from django.db import  models
 from django.utils.text import get_valid_filename
+from django.contrib.contenttypes.models import ContentType
 
 from mighty.apps import MightyConfig as conf
-from mighty.fields import JSONField, RichTextField
+from mighty.fields import JSONField
 from mighty.models.base import Base
-from mighty.models.keyword import Keyword
+from mighty.models.news import News
+from mighty.models.config import Config
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
-from mighty.functions import make_searchable
 
 
 ###########################
 # Models in mighty
 ###########################
-class Config(Base):
-    name = models.CharField(max_length=255, unique=True)
-    url_name = models.CharField(max_length=255, null=True, blank=True, editable=False)
-
-    class Meta(Base.Meta):
-        abstract = True
-        ordering = ('date_create', 'name')
-
-    def save(self, *args, **kwargs):
-        self.url_name = get_valid_filename(make_searchable(self.name))
-        super().save(*args, **kwargs)
-
 class ConfigClient(Config):
     config = JSONField(null=True, blank=True)
 
@@ -39,6 +28,16 @@ class ConfigSimple(Config):
 
     class Meta(Base.Meta):
         ordering = ('date_create', 'name')
+
+class TemplateVariable(Base):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.CharField(max_length=255)
+    template = models.TextField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="template_variable")
+
+    def pre_save(self):
+        if not self.description:
+            self.description = self.name
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     class Channel(Base):
@@ -70,18 +69,6 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
             if not self.from_id: self.from_id = next(iter(self.objs))
             super(Channel, self).save(*args, **kwargs)
 
-class News(Base, Keyword):
-    keywords_fields = ['title',]
-    title = models.CharField(max_length=255)
-    news = RichTextField(blank=True, null=True)
-    date_news = models.DateField(blank=True, null=True)
-
-    class Meta(Base.Meta):
-        abstract = True
-        ordering = ['date_news',]
-
-    def __str__(self):
-        return "%s - %s" % (str(self.date_news), self.title)
 
 ###########################
 # Models apps mighty
