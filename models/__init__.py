@@ -30,10 +30,13 @@ class ConfigSimple(Config):
         ordering = ('date_create', 'name')
 
 class TemplateVariable(Base):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     template = models.TextField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="template_variable")
+
+    class Meta(Base.Meta):
+        unique_together = ("name", "content_type")
 
     def pre_save(self):
         if not self.description:

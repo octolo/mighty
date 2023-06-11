@@ -74,7 +74,7 @@ class BaseAdmin(admin.ModelAdmin):
                 self.add_field(_.more, (field,))
         self.custom_fieldset(model, admin_site)
         if hasattr(model, "task_list"):
-            self.add_field(_.more, ("task_status",))
+            self.add_field("tasks", ("task_status", "task_last"))
             self.custom_tasklist(model, admin_site)
         if hasattr(model, "reporting_list"):
             self.add_field("reporting", decfields.reporting_fields)

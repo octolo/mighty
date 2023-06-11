@@ -9,16 +9,18 @@ def start_task(ct, pk, task, task_id, *args, **kwargs):
     model = ContentType.objects.get(id=ct).model_class()
     logger.info("start task %s: %s -> %s" % (model, task, task_id))
     obj = model.objects.get(pk=pk)
-    obj.task_status[task] = {"status": TASK_STATUS[0], "task_id": task_id}
+    obj.task_last = task
+    obj.task_status = "RUNNING"
     obj.save()
     try:
         getattr(obj, "task_%s"%task.lower())()
     except Exception as e:
-        obj.task_status[task]["status"] = TASK_STATUS[2]
-    obj.task_status[task]["status"] = TASK_STATUS[1]
+        obj.task_status = "ERROR"
+    obj.task_status = "FINISH"
+    obj.can_use_task = False
     obj.save()
-    log_msg = "end task (%s) %s: %s -> %s" % (obj.task_status[task]["status"], model, task, task_id)
-    if obj.task_status[task]["status"] == TASK_STATUS[2]:
+    log_msg = "end task (%s) %s: %s -> %s" % (obj.task_status, model, task, task_id)
+    if obj.task_status == "ERROR":
         logger.error(log_msg)
     else:
         logger.info(log_msg)
