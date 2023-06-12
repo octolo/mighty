@@ -173,6 +173,9 @@ class MissiveBackend(EnableLogger):
         self.missive.save()
         return self.missive.status
 
+    def check_documents(self):
+        return "{}"
+
     def send_postalar(self):
         return self.send_postal()
 

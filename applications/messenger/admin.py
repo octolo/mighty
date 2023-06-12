@@ -80,6 +80,23 @@ class MissiveAdmin(BaseAdmin):
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/missive_check.html', context)
 
+    def check_documents(self, request, object_id, extra_context=None):
+        opts = self.model._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'opts': opts,
+            'app_label': opts.app_label,
+            'media': self.media,
+            'callback': obj.check_documents(),
+            'js_admin': obj.js_admin,
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/missive_check.html', context)
+
     def get_urls(self):
         from django.urls import path
         urls = super().get_urls()
@@ -87,6 +104,7 @@ class MissiveAdmin(BaseAdmin):
         my_urls = [
             path('<path:object_id>/html/', self.wrap(self.html_view), name='%s_%s_html' % info),
             path('<path:object_id>/check/', self.wrap(self.check_view), name='%s_%s_check' % info),
+            path('<path:object_id>/documents/', self.wrap(self.check_documents), name='%s_%s_documents' % info),
         ]
         return my_urls + urls
 

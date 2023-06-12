@@ -7,5 +7,7 @@
 <li><a href="{{ html_url }}">html</a></li>
 {% url opts|admin_urlname:'check' original.pk|admin_urlquote as check_url %}
 <li><a href="{{ check_url }}">check</a></li>
+{% url opts|admin_urlname:'documents' original.pk|admin_urlquote as documents_url %}
+<li><a href="{{ documents_url }}">documents</a></li>
 {{ block.super }}
 {% endblock %}

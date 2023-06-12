@@ -172,10 +172,6 @@ class Maileva(MissiveBackend):
             url = self.api_url["documents"] + "/" + self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
             rjson = response.json()
-            self.missive.trace = str(rjson)
-            if "status" in rjson:
-                self.missive.status = self.status_ref[rjson["status"]]
-            self.missive.save()
             return rjson
 
     def postal_attachments(self):
