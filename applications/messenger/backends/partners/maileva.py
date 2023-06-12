@@ -169,7 +169,7 @@ class Maileva(MissiveBackend):
 
     def check_documents(self):
         if self.authentication():
-            url = self.api_url["documents"] + "/" + self.missive.partner_id
+            url = self.api_url["documents"] % self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
             rjson = response.json()
             return rjson
