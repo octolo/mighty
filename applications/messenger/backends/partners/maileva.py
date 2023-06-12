@@ -167,6 +167,17 @@ class Maileva(MissiveBackend):
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)
 
+    def check_documents(self):
+        if self.authentication():
+            url = self.api_url["documents"] + "/" + self.missive.partner_id
+            response = requests.get(url, headers=self.api_headers)
+            rjson = response.json()
+            self.missive.trace = str(rjson)
+            if "status" in rjson:
+                self.missive.status = self.status_ref[rjson["status"]]
+            self.missive.save()
+            return rjson
+
     def postal_attachments(self):
         if self.missive.attachments:
             api = self.api_url["documents"] % self.sending_id
@@ -176,7 +187,7 @@ class Maileva(MissiveBackend):
                 self.priority+=1
                 doc_name = os.path.basename(document.name)
                 logs.append(doc_name)
-                files = {'document': (doc_name, open(document.name, 'rb'))}
+                files = {'document': (doc_name, document)}
                 data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
                 response = requests.post(api, headers=headers, files=files, data=data)
                 self.valid_response(response)
