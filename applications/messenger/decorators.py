@@ -31,6 +31,9 @@ def NotifyByCondition(**kwargs):
             nbc_notify_status = True
             nbc_notify_active = models.BooleanField(default=True)
 
+            class Meta(obj.Meta):
+                abstract = True
+
             def nbc_get_template(self, name, subject=None):
                 from mighty.models import Template as TPL
                 from django.template import Context, Template
