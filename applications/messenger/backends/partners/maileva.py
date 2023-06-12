@@ -131,7 +131,7 @@ class Maileva(MissiveBackend):
 
     @property
     def api_url(self):
-        if setting('MISSIVE_SERVICE', False) or setting("DEBUG"):
+        if setting('ENV', False) != "PRODUCTION":
             return self.api_sandbox
         return self.api_official
 

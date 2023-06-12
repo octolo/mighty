@@ -24,7 +24,7 @@ from mighty.applications.tenant.apps import TenantConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import datetime
-import uuid, logging
+import uuid, logging, re
 
 logger = logging.getLogger(__name__)
 validate_email = validators.validate_email
@@ -78,8 +78,15 @@ class UserPhone(Data, Base):
     phone = models.CharField(_.phone, unique=True, max_length=255)
     search_fields = ('phone',)
 
+    def clean_phone(self):
+        self.phone = re.sub('[^+0-9]+', '', self.phone)
+
     def __str__(self):
         return "%s - %s" % (str(self.user), self.phone)
+
+    def pre_save(self):
+        self.clean_phone()
+        super().pre_save()
 
     class Meta(Base.Meta):
         abstract = True
