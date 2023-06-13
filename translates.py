@@ -41,7 +41,7 @@ nc = _('not disclosed')
 next = _('next')
 previous = _('previous')
 
-# Descriptions 
+# Descriptions
 since = _('since')
 until = _('until')
 login = _('login')
@@ -76,6 +76,7 @@ timeline_desc = _("timeline a change")
 model_id = _('associated model')
 field = _('field')
 value = _('value')
+replace = _('replaced by')
 fmodel = _('field type')
 date_begin = _('begin')
 date_end = _('end')

@@ -126,7 +126,7 @@ class Maileva(MissiveBackend):
         for i, field in enumerate(self.fields):
             attr = getattr(self.missive, field)
             if attr:
-                data["address_line_"+str(i+1)] = attr
+                data["address_line_"+str(i+1)] = attr[:38]
         return data
 
     @property

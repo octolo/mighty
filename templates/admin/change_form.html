@@ -60,6 +60,10 @@
 {% url opts|admin_urlname:'source' original.pk|admin_urlquote as source_url %}
 <li><a href="{{ source_url }}">{% verbose_name_plural original.source_model %}</a></li>
 {% endif %}
+{% if original.enable_model_change_log %}
+{% url opts|admin_urlname:'modelchangelog' original.pk|admin_urlquote as modelchangelog_url %}
+<li><a href="{{ modelchangelog_url }}">Model change logs</a></li>
+{% endif %}
 {% if original.model_activate_file %}
 {% url opts|admin_urlname:'filemetadata' original.pk|admin_urlquote as filemetadata_url %}
 <li><a href="{{ filemetadata_url }}">File meta data</a></li>

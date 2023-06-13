@@ -37,7 +37,7 @@ class Log(Base):
         verbose_name = _.v_log
         verbose_name_plural = _.vp_log
         ordering = ['-created']
-    
+
     def get_log_hash(self):
         fields_to_hash = "".join(getattr(self, field) for field in self.fields_log_hash)
         return hashlib.sha1(fields_to_hash.encode()).hexdigest()
@@ -49,7 +49,7 @@ class Log(Base):
 class ChangeLog(models.Model):
     #object_id = models.ForeignKey('', on_delete=models.CASCADE)
     field = models.CharField(_m.field, max_length=255, db_index=True)
-    value = models.BinaryField(_m.value, )
+    value = models.BinaryField(_m.value)
     fmodel = models.CharField(_m.fmodel, max_length=255)
     date_begin = models.DateTimeField(_m.date_begin, editable=False)
     date_end = models.DateTimeField(_m.date_end, editable=False, auto_now_add=True)
@@ -60,14 +60,21 @@ class ChangeLog(models.Model):
             return self.value.decode('utf-8')
         elif hasattr(self.value, 'tobytes'):
             return self.value.tobytes().decode('utf-8')
-        else:
-            return "Can't cast/bytes/decode"
+        return "Can't cast/bytes/decode"
 
     class Meta:
         abstract = True
         verbose_name = _.v_changelog
         verbose_name_plural = _.vp_changelog
         ordering = ['-date_end']
+
+class ModelChangeLog(ChangeLog):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField(blank=True, null=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta(ChangeLog.Meta):
+        abstract = True
 
 class AccessLog(models.Model):
     object_id = models.ForeignKey('', on_delete=models.CASCADE)

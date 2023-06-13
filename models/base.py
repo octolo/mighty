@@ -75,8 +75,8 @@ class Base(models.Model):
     fields_can_be_changed = "*"
 
     _logger = get_logger()
-    _old_self = None
-    _old_fields = None
+    _unmodified = None
+    _unmodified_fields = None
     _history = []
     _hfirst = None
     _hlast = None
@@ -87,6 +87,37 @@ class Base(models.Model):
     if "mighty.applications.logger" in settings.INSTALLED_APPS:
         _discord_logger = DiscordLogger()
         _slack_logger = SlackLogger()
+        changelog_exclude = ()
+        pk_field = "pk"
+        enable_model_change_log = True
+
+        @property
+        def model_change_log(self):
+            from mighty.models import ModelChangeLog
+            return ModelChangeLog
+
+        @property
+        def model_change_logs(self):
+            return self.get_content_type().modelchangelog_set.filter(object_id=self.pk)
+
+        def save_model_change_log(self):
+            if self._unmodified and self.enable_model_change_log:
+                from mighty.functions import models_difference
+                from mighty.fields import base
+                exclude =  base + tuple(self.m2o_fields().keys()) + tuple(self.m2m_fields().keys()) + tuple(self.changelog_exclude)
+                new, old = models_difference(self, self._unmodified, exclude)
+                if len(old) > 0:
+                    self.model_change_log.objects.bulk_create([
+                        self.model_change_log(**{
+                            "content_type": self.get_content_type(),
+                            "object_id": getattr(self, self.pk_field),
+                            "field": field,
+                            "value": bytes(str(value), 'utf-8'),
+                            "fmodel": self.fields()[field],
+                            "date_begin": self._unmodified.date_update,
+                            "user": self._user,
+                        }) for field, value in old.items()])
+
 
     @property
     def method_list(self):
@@ -175,22 +206,22 @@ class Base(models.Model):
     def raise_error(self, message, code=None):
         raise ValidationError(message=message, code=code)
 
-    def save_old_self(self):
-        if self.pk and not self._old_self:
-            if not self._old_fields:
-                self._old_self = copy.deepcopy(self)
+    def save_unmodified(self):
+        if self.pk and not self._unmodified:
+            if not self._unmodified_fields:
+                self._unmodified = copy.deepcopy(self)
             else:
-                self._old_self = {
+                self._unmodified = {
                     field: getattr(self, field)
-                    for field in self._old_fields
+                    for field in self._unmodified_fields
                 }
 
-    def reset_old_self(self):
-        self.save_old_self()
+    def reset_unmodified(self):
+        self.save_unmodified()
 
     def __init__(self, *args, **kwargs):
         super(Base, self).__init__(*args, **kwargs)
-        self.save_old_self()
+        self.save_unmodified()
 
     def do_not_notify(self):
         self.can_notify = False
@@ -386,7 +417,7 @@ class Base(models.Model):
             self.update_by = '%s.%s' % (user.id, user.username)
 
     def property_change(self, prop):
-        return (not self._old_self or getattr(self._old_self, prop) != getattr(self, prop))
+        return (not self._unmodified or getattr(self._unmodified, prop) != getattr(self, prop))
 
     def get_model(self, label, app):
         return get_model(label, app)
@@ -419,7 +450,7 @@ class Base(models.Model):
 
     def save(self, *args, **kwargs):
         if self.can_be_changed:
-            do_post_create = False if self.pk else True
+            do_post_create = True if self.pk is None else False
             self.default_data()
             self.pre_save()
             super().save(*args, **kwargs)
@@ -429,6 +460,8 @@ class Base(models.Model):
             else:
                 if "post_update" not in self.www_action_cancel:
                     self.post_update()
+                if "mighty.applications.logger" in settings.INSTALLED_APPS:
+                    self.save_model_change_log()
             if "post_save" not in self.www_action_cancel:
                 self.post_save()
         else:

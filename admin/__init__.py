@@ -70,6 +70,8 @@ if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     from mighty.applications.logger import admin as admin_logger
     @admin.register(all_models.Log)
     class LogAdmin(admin_logger.LogAdmin): pass
+    @admin.register(all_models.ModelChangeLog)
+    class ModelChangeLogAdmin(admin_logger.ModelChangeLogAdmin): pass
 
 # Nationality
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:

@@ -29,3 +29,8 @@ changelog = (
     "date_end",
     "user",
 )
+
+modelchangelog = changelog + (
+    "content_type",
+    "object_id",
+)

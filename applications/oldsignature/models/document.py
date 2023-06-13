@@ -34,7 +34,7 @@ class TransactionDocument(Base):
 #    #    self.transaction.save()
 #
     def post_delete(self):
-        self._old_self.content_object.delete()
+        self._unmodified.content_object.delete()
 
     def set_nb_signatories(self):
         self.nb_signatories = self.transaction.transaction_to_signatory.annotate(

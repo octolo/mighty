@@ -31,7 +31,7 @@ class TransactionSignatoryWithoutInfo(models.Model):
         self.transaction.save()
 
     def post_delete(self):
-        for doc in self._old_self.transaction.transaction_to_document.all():
+        for doc in self._unmodified.transaction.transaction_to_document.all():
             doc.save()
 
     def update_documents(self):
@@ -91,10 +91,10 @@ class TransactionSignatoryWithoutInfo(models.Model):
     def signatory_email(self):
         return self.getattr_signatory("signatory_email")
     @property
-    def has_phone(self): 
+    def has_phone(self):
         return True if self.phone else False
     @property
-    def has_email(self): 
+    def has_email(self):
         return True if self.email else False
     @property
     def has_contact(self):

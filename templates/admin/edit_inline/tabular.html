@@ -58,7 +58,7 @@
                   {{ field.field.errors.as_ul }}
                   {{ field.field }}
               {% endif %}
-              
+
               {% if inline_admin_form.original.anticipate_model and field.field.name not in inline_admin_form.original.anticipate_exclude %}
               {% url opts|admin_urlname:'anticipate_addfield' inline_admin_form.original.pk|admin_urlquote field.field.name as anticipate_url %}
               <a class="button anticipatelink" href="{{ anticipate_url }}">
@@ -69,7 +69,7 @@
                   <a class="button sourcelink" href="{{ source_url }}">
                       <img src="{% static 'admin/img/icon-addlink.svg' %}">&nbsp;{% verbose_name inline_admin_form.original.source_model %}</a>
               {% endif %}
-            
+
               </td>
               {% endif %}
             {% endfor %}

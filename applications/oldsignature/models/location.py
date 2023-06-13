@@ -27,7 +27,7 @@ class TransactionLocation(Base):
         self.document.save()
 
     def post_delete(self):
-        self._old_self.document.save()
+        self._unmodified.document.save()
 
     @property
     def color(self):

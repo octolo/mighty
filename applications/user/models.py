@@ -310,22 +310,16 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         from mighty.applications.user.notify.slack import SlackUser
         return SlackUser(self)
 
-    def clean(self):
-        #self.check_phone()
-        super().clean()
-
     def pre_save(self):
-        if not self.first_connection: self.first_connection = self.last_login
         if self.email is not None: self.email = self.email.lower()
-        if self.username is not None:
-            self.username = self.username.lower()
-        else:
-            self.username = self.gen_username()
-        #self.check_phone()
+        self.username = self.username.lower() if self.username is not None else self.gen_username()
 
     def post_save(self, *args, **kwargs):
         self.in_emails()
         self.in_phones()
+        if not self.first_connection:
+            self.first_connection = self.last_login
+            self.save()
 
 class Invitation(Base):
     first_name = models.CharField(max_length=255)

@@ -54,9 +54,15 @@ class Config:
             'ServiceData',
             'UserDataProtect',
         ],
+        'Logger': [
+            'Log',
+            'ModelChangeLog',
+        ],
         'Configuration': [
             'ConfigSimple',
             'ConfigClient',
+            'TemplateVariable',
+            'MimeType',
         ],
         'Websocket': [
             'Channel',

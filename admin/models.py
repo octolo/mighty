@@ -371,6 +371,9 @@ class BaseAdmin(admin.ModelAdmin):
         if hasattr(self.model, "has_eve_variable_template") and self.model.has_eve_variable_template:
             my_urls.append(path('<path:object_id>/variables/', self.wrap(self.variables_view), name='%s_%s_variables' % info))
 
+        if hasattr(self.model, "enable_model_change_log") and self.model.enable_model_change_log:
+            my_urls.append(path('<path:object_id>/modelchangelog/', self.wrap(self.modelchangelog_view), name='%s_%s_modelchangelog' % info))
+
         if has_model_activate(self.model, "file"):
             my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='%s_%s_filemetadata' % info))
 
@@ -416,6 +419,30 @@ class BaseAdmin(admin.ModelAdmin):
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/logs_field.html', context)
+
+    def modelchangelog_view(self, request, object_id, extra_context=None):
+        from django.core.paginator import Paginator
+        from mighty.models import ModelChangeLog
+        opts = self.model._meta
+        fake = ModelChangeLog()
+        optslog = fake._meta
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        paginator = Paginator(obj.model_change_logs, 25)
+        page = request.GET.get('page', 1)
+        context = {
+            **self.admin_site.each_context(request),
+            'object_name': str(opts.verbose_name),
+            'object': obj,
+            'logs': paginator.get_page(page),
+            'opts': opts,
+            'optslog': optslog,
+            'app_label': opts.app_label,
+            'media': self.media,
+            'fake': fake
+        }
+        request.current_app = self.admin_site.name
+        return TemplateResponse(request, 'admin/change_logs.html', context)
 
     @csrf_protect_m
     def disable_view(self, request, object_id, extra_context=None):

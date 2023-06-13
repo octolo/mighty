@@ -8,12 +8,12 @@ def TenantAssociation(**kwargs):
         class TAModel(obj):
             group_relations = kwargs.get('group_relations', [])
             group = models.ForeignKey(conf.ForeignKey.group,
-                on_delete=kwargs.get('on_delete', models.CASCADE), 
+                on_delete=kwargs.get('on_delete', models.CASCADE),
                 related_name=kwargs.get('related_name', 'group_set'),
                 blank=kwargs.get('blank', False),
                 null=kwargs.get('null', False),
             )
-            
+
             class Meta(obj.Meta):
                 abstract = True
 
@@ -32,7 +32,7 @@ def TenantAssociation(**kwargs):
                     groups = list(dict.fromkeys(groups))
                     return True if not len(groups) or (len(groups) == 1 and groups[0] == self.group.id) else False
                 return True
-                    
+
             def check_group_coherence(self):
                 if not self.is_group_coherence:
                     raise ValidationError('groups relation are not coherent')

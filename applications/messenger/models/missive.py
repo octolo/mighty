@@ -41,6 +41,9 @@ class Missive(MessengerModel, AddressNoBase):
         backend = import_string("%s.MissiveBackend" % self.backend)(missive=self)
         return backend
 
+    def check_documents(self):
+        return self.get_backend().check_documents()
+
     def check_status(self):
         backend = self.get_backend()
         return getattr(backend, 'check_%s' % self.mode.lower())()

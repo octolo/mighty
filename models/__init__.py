@@ -80,6 +80,7 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 # Logger
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     class Log(models_logger.Log): pass
+    class ModelChangeLog(models_logger.ModelChangeLog): pass
 
 # Nationality
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:

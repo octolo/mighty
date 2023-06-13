@@ -21,6 +21,14 @@ class ChangeLogAdmin(BaseAdmin):
     search_fields = ('field', 'value', 'user__lastname', 'user__username', 'user__email')
     readonly_fields = fields.changelog
 
+class ModelChangeLogAdmin(BaseAdmin):
+    change_form_template  = 'admin/change_form_modelchangelog.html'
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.modelchangelog}),)
+    list_display = fields.modelchangelog
+    list_filter = ("content_type", "date_begin", "date_end")
+    search_fields = ('object_id', 'field', 'value')
+    readonly_fields = fields.modelchangelog
+
 class ModelWithLogAdmin(BaseAdmin):
     change_form_template  = 'admin/change_form_logs.html'
 
@@ -49,15 +57,18 @@ class ModelWithLogAdmin(BaseAdmin):
         return TemplateResponse(request, 'admin/logs.html', context)
 
     def changelogs_view(self, request, object_id, extra_context=None):
+        from django.core.paginator import Paginator
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
+        paginator = Paginator(obj.changelog_model.objects.filter(object_id=obj), 25)
+        page = request.GET.get('page', 1)
         context = {
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
             'object': obj,
             'fake': obj.changelog_model(),
-            'logs': obj.changelog_model.objects.filter(object_id=obj),
+            'logs': paginator.get_page(page),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
@@ -69,12 +80,14 @@ class ModelWithLogAdmin(BaseAdmin):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
+        paginator = Paginator(obj.accesslog_model.objects.filter(object_id=obj), 25)
+        page = request.GET.get('page', 1)
         context = {
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
             'object': obj,
             'fake': obj.accesslog_model(),
-            'logs': obj.accesslog_model.objects.filter(object_id=obj),
+            'logs': paginator.get_page(page),
             'opts': opts,
             'app_label': opts.app_label,
             'media': self.media
@@ -91,4 +104,4 @@ class ModelWithLogAdmin(BaseAdmin):
             path('<path:object_id>/changelogs/', self.wrap(self.changelogs_view), name='%s_%s_changelogs' % info),
             path('<path:object_id>/accesselogs/', self.wrap(self.accesslogs_view), name='%s_%s_accesslogs' % info),
         ]
-        return my_urls + urls 
+        return my_urls + urls

@@ -11,10 +11,11 @@ from mighty.applications.messenger import choices
 
 UserModel = get_user_model()
 
-def generate_code(): 
+def generate_code():
     return randomcode(conf.code_size)
 
 class Twofactor(Base):
+    changelog_exclude = ["missive",]
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='twofactor_user')
     missive = models.ForeignKey('mighty.Missive', on_delete=models.SET_NULL, null=True, related_name='twofactor_missive')
     email_or_phone = models.CharField(max_length=255)
@@ -38,7 +39,7 @@ class Twofactor(Base):
     def post_update(self):
         if self.is_consumed:
             self.slack_notify.send_msg_connection()
-            self.discord_notify.send_msg_connection()        
+            self.discord_notify.send_msg_connection()
 
     @property
     def slack_notify(self):
@@ -49,4 +50,3 @@ class Twofactor(Base):
     def discord_notify(self):
         from mighty.applications.twofactor.notify.discord import DiscordTwoFactor
         return DiscordTwoFactor(self)
-        

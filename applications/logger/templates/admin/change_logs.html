@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load mighty admin_urls %}
+{% load i18n mighty admin_urls %}
 
 {% block extrastyle %}
 {{ block.super }}
@@ -14,7 +14,7 @@
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{{ mighty.home }}</a>
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
 &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'change' object.pk|admin_urlquote %}">{{ object|truncatewords:"18" }}</a>
@@ -39,7 +39,7 @@
         <tbody>
             {% for log in logs %}
             <tr>
-                <th scope="row">{{ log.field }}</th>
+                <th scope="row"><a href="{% url optslog|admin_urlname:'change' log.pk|admin_urlquote %}">{{ log.field }}</a></th>
                 <td>{{ log.get_value }}</td>
                 <td>{{ log.date_begin }}</td>
                 <td>{{ log.date_end }}</td>
@@ -53,4 +53,23 @@
 {% endif %}
 </div>
 </div>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if logs.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ logs.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ logs.number }} of {{ logs.paginator.num_pages }}.
+        </span>
+
+        {% if logs.has_next %}
+            <a href="?page={{ logs.next_page_number }}">next</a>
+            <a href="?page={{ logs.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
 {% endblock %}
