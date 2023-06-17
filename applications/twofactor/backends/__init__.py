@@ -19,6 +19,43 @@ logger = logging.getLogger(__name__)
 UserModel = get_user_model()
 
 class TwoFactorBackend(ModelBackend):
+
+    def is_email(self, target):
+        validator = EmailValidator()
+        try:
+            validator(target)
+        except ValidationError:
+            return False
+        return True
+
+    def is_phone(self, target):
+        try:
+            PhoneValidator(target)
+        except ValidationError:
+            return False
+        return True
+
+    def method_twofactor(self, user, target):
+        try:
+            user.user_email.get(email=target)
+            return choices.MODE_EMAIL
+        except user.user_email.model.DoesNotExist:
+            if hasattr(user, "email") and user.email == target and self.is_email(target):
+                return choices.MODE_EMAIL
+
+        try:
+            user.user_phone.get(phone=target)
+            return choices.MODE_SMS
+        except user.user_email.model.DoesNotExist:
+            if hasattr(user, "phone") and user.phone == target and self.is_phone(target):
+                return choices.MODE_SMS
+
+        return False
+
+
+    def Qfilters(self, target):
+        return Q(user_email__email__iexact=target)|Q(user_phone__phone=target)|Q(username=target)
+
     def authenticate(self, request, username=None, password=None, **kwargs):
         field_type = kwargs.get('field_type', None)
         if username is None:
@@ -29,9 +66,7 @@ class TwoFactorBackend(ModelBackend):
             if field_type == 'uid' and hasattr(UserModel, 'uid'):
                 user = UserModel.objects.get(uid=username)
             else:
-                username = self.clean_target(username)
-                user = UserModel.objects.get(Q(user_email__email__iexact=username)|Q(user_phone__phone=username)|Q(username=username))
-                #user = UserModel._default_manager.get_by_natural_key(username)
+                user, username = self.get_user_target(username)
         except UserModel.DoesNotExist:
             UserModel().set_password(password)
         else:
@@ -58,7 +93,7 @@ class TwoFactorBackend(ModelBackend):
 
     def get_user_target(self, target):
         target = self.clean_target(target)
-        return UserModel.objects.get(Q(user_email__email=target)|Q(user_phone__phone=target)|Q(username=target))
+        return UserModel.objects.get(self.Qfilters(target)), target
 
     @property
     def earlier(self):
@@ -80,30 +115,10 @@ class TwoFactorBackend(ModelBackend):
         prepare.update(**kwargs)
         return Twofactor.objects.get_or_create(**prepare)
 
-    def is_email(self, target):
-        validator = EmailValidator()
-        try:
-            validator(target)
-        except ValidationError:
-            return False
-        return True
-
-    def is_phone(self, target):
-        try:
-            PhoneValidator(target)
-        except ValidationError:
-            return False
-        return True
-
     def by(self, target, backend_path):
-        target = self.clean_target(target)
-        if self.is_email(target):
-            mode = choices.MODE_EMAIL
-        elif self.is_phone(target):
-            mode = choices.MODE_SMS
-
         try:
-            user = self.get_user_target(target)
+            user, target = self.get_user_target(target)
+            mode = self.method_twofactor(user, target)
             twofactor, created = self.get_object(user, target, mode, backend_path)
             twofactor.slack_notify.send_msg_create()
             twofactor.discord_notify.send_msg_create()
