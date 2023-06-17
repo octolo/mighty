@@ -89,7 +89,7 @@ class Base(models.Model):
         _slack_logger = SlackLogger()
         changelog_exclude = ()
         pk_field = "pk"
-        enable_model_change_log = True
+        enable_model_change_log = False
 
         @property
         def model_change_log(self):
