@@ -31,6 +31,9 @@ class MissiveBackend(MissiveBackend):
         "loadedByProxy": _c.STATUS_SENT,
     }
 
+    def on_webhook(self, request): # sib = sendinblue
+        print("test", request.POST)
+
     def check_email(self):
         data = {
             "message_id": self.missive.partner_id

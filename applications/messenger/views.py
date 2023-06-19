@@ -42,9 +42,15 @@ class WebhookMessenger(JsonView):
     @property
     def backend(self):
         return import_string(self.backend_path + ".MissiveBackend")(missive={})
+    
+    def post(self, request, *args, **kwargs):
+        print("post", request.POST)
+        print(request.GET)
+        return {"status": "ok"}
 
     def do_post(self, request, *args, **kwargs):
         self.backend.on_webhook(request)
+        print("post", request.POST)
         return {"status": "ok"}
 
     def do_get(self, request, *args, **kwargs):
