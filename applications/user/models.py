@@ -325,7 +325,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     def post_save(self, *args, **kwargs):
         self.in_emails()
         self.in_phones()
-        if not self.first_connection:
+        if not self.first_connection and self.last_login:
             self.first_connection = self.last_login
             self.save()
 
