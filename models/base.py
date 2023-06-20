@@ -206,6 +206,15 @@ class Base(models.Model):
     def raise_error(self, message, code=None):
         raise ValidationError(message=message, code=code)
 
+    def do_a_copy(self, **kwargs):
+        new_copy = copy.deepcopy(self)
+        for prop in ("id", "uid", "named_id"):
+            if hasattr(new_copy, prop):
+                setattr(new_copy, prop, uuid4() if prop == "uid" else None)
+            for k,v in kwargs.items():
+                setattr(new_copy, k, v)
+        return new_copy
+
     def save_unmodified(self):
         if self.pk and not self._unmodified:
             if not self._unmodified_fields:

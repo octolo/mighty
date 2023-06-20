@@ -321,13 +321,12 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     def pre_save(self):
         if self.email is not None: self.email = self.email.lower()
         self.username = self.username.lower() if self.username is not None else self.gen_username()
+        if not self.first_connection and self.last_login:
+            self.first_connection = self.last_login
 
     def post_save(self, *args, **kwargs):
         self.in_emails()
         self.in_phones()
-        if not self.first_connection and self.last_login:
-            self.first_connection = self.last_login
-            self.save()
 
 class Invitation(Base):
     first_name = models.CharField(max_length=255)
