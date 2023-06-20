@@ -3,10 +3,7 @@ from mighty.applications.messenger.backends import MissiveBackend
 from mighty.applications.messenger import choices as _c
 from mighty.functions import setting
 from mighty.apps import MightyConfig
-import os
-import base64
-import sib_api_v3_sdk
-
+import os, base64, sib_api_v3_sdk, json
 
 class MissiveBackend(MissiveBackend):
     APIKEY = setting('SENDINBLUE_KEY', False)
@@ -31,8 +28,16 @@ class MissiveBackend(MissiveBackend):
         "loadedByProxy": _c.STATUS_SENT,
     }
 
-    def on_webhook(self, request): # sib = sendinblue
-        print("test", request.POST)
+    def on_webhook(self, request):
+        from mighty.models import Missive
+        data = json.loads(request.body)
+        try:
+            self.missive = Missive.objects.get(partner_id=data.get("message-id"))
+            self.missive.status = self.STATUS[data.get("event")]
+            self.missive.save()
+        except Missive.DoesNotExist:
+            pass
+        return data
 
     def check_email(self):
         data = {

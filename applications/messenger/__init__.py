@@ -73,25 +73,25 @@ def notify(subject, content_type, object_id, **kwargs):
     notif.save()
 
 def missive_backend_postal():
-    return settings.MISSIVE_BACKEND_POSTAL if hasattr(settings, 'MISSIVE_BACKEND_POSTAL') else conf.missive_backends
+    return settings.MISSIVE_BACKEND_POSTAL if hasattr(settings, 'MISSIVE_BACKEND_POSTAL') else conf.missive_backend
 
 def missive_backend_postalar():
-    return settings.MISSIVE_BACKEND_POSTALAR if hasattr(settings, 'MISSIVE_BACKEND_POSTALAR') else conf.missive_backends
+    return settings.MISSIVE_BACKEND_POSTALAR if hasattr(settings, 'MISSIVE_BACKEND_POSTALAR') else conf.missive_backend
 
 def missive_backend_email():
-    return settings.MISSIVE_BACKEND_EMAIL if hasattr(settings, 'MISSIVE_BACKEND_EMAIL') else conf.missive_backends
+    return settings.MISSIVE_BACKEND_EMAIL if hasattr(settings, 'MISSIVE_BACKEND_EMAIL') else conf.missive_backend
 
 def missive_backend_emailar():
-    return settings.MISSIVE_BACKEND_EMAILAR if hasattr(settings, 'MISSIVE_BACKEND_EMAILAR') else conf.missive_backends
+    return settings.MISSIVE_BACKEND_EMAILAR if hasattr(settings, 'MISSIVE_BACKEND_EMAILAR') else conf.missive_backend
 
 def missive_backend_sms():
-    return settings.MISSIVE_BACKEND_SMS if hasattr(settings, 'MISSIVE_BACKEND_SMS') else conf.missive_backends
+    return settings.MISSIVE_BACKEND_SMS if hasattr(settings, 'MISSIVE_BACKEND_SMS') else conf.missive_backend
 
 def missive_backend_web():
-    return settings.MISSIVE_BACKEND_WEB if hasattr(settings, 'MISSIVE_BACKEND_WEB') else conf.missive_backends
+    return settings.MISSIVE_BACKEND_WEB if hasattr(settings, 'MISSIVE_BACKEND_WEB') else conf.missive_backend
 
 def missive_backend_app():
-    return settings.MISSIVE_BACKEND_APP if hasattr(settings, 'MISSIVE_BACKEND_APP') else conf.missive_backends
+    return settings.MISSIVE_BACKEND_APP if hasattr(settings, 'MISSIVE_BACKEND_APP') else conf.missive_backend
 
 def notify_slack(hookname, **kwargs):
     hook = False

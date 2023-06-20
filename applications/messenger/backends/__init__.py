@@ -189,4 +189,4 @@ class MissiveBackend(EnableLogger):
         return True
 
     def on_webhook(self, request):
-        pass
+        return {}

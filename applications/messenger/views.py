@@ -42,20 +42,12 @@ class WebhookMessenger(JsonView):
     @property
     def backend(self):
         return import_string(self.backend_path + ".MissiveBackend")(missive={})
-    
-    def post(self, request, *args, **kwargs):
-        print("post", request.POST)
-        print(request.GET)
-        return {"status": "ok"}
 
     def do_post(self, request, *args, **kwargs):
-        self.backend.on_webhook(request)
-        print("post", request.POST)
-        return {"status": "ok"}
+        return self.backend.on_webhook(request)
 
     def do_get(self, request, *args, **kwargs):
-        self.backend.on_webhook(request)
-        return {"status": "ok"}
+        return self.backend.on_webhook(request)
 
 class WebhookEmailAR(WebhookMessenger):
     backend_path = missive_backend_emailar()
@@ -74,3 +66,18 @@ class WebhookWeb(WebhookMessenger):
 
 class WebhookApp(WebhookMessenger):
     backend_path = missive_backend_app()
+
+
+#from rest_framework.views import APIView
+#from rest_framework.response import Response
+#
+#class WebhookMessenger(APIView):
+#    permission_classes = ()
+#
+#    def get(self, request, format=None):
+#        print("get")
+#        return Response({"status": "ok"})
+#
+#    def post(self, request, format=None):
+#        print("post", request.POST)
+#        return Response({"status": "ok"})

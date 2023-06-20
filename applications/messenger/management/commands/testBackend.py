@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument("--backend_path", default=MessengerConfig.missive_backends)
+        parser.add_argument("--backend_path", default=MessengerConfig.missive_backend)
         parser.add_argument("--target", default="test@mighty-py.com")
 
     def handle(self, *args, **options):

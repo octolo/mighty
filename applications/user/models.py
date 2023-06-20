@@ -297,9 +297,17 @@ class User(AbstractUser, Base, Image, AddressNoBase):
                 self.user_phone.create(phone=self.phone, default=True)
             self.user_phone.exclude(phone=self.phone).update(default=False)
 
+    @property
+    def user_data(self):
+        emails = tuple(self.get_emails())
+        phones = tuple(self.get_phones())
+        addresses = tuple(self.get_addresses())
+        return emails+phones+addresses
+
+
     def get_addresses(self, flat=True):
         if flat:
-            return self.user_address.all().values_list('phone', flat=True)
+            return self.user_address.all().values_list('raw', flat=True)
         return self.user_address.all()
 
     def in_address(self):

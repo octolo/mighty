@@ -129,7 +129,7 @@ class MessengerModel(Base):
         pass
 
     def set_backend(self):
-        self.backend = conf.missive_backends
+        self.backend = conf.missive_backend
         if self.mode == choices.MODE_EMAIL:
             self.backend = missive_backend_email()
         if self.mode == choices.MODE_EMAILAR:
@@ -144,6 +144,7 @@ class MessengerModel(Base):
             self.backend = missive_backend_web()
         if self.mode == choices.MODE_APP:
             self.backend = missive_backend_app()
+
 
     @property
     def content(self):
