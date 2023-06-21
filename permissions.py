@@ -51,7 +51,7 @@ class MightyPermission:
 
     def is_me(self):
         raise NotImplementedError("Subclasses should implement is_me")
-        
+
     """ Permissions by action """
     def can_list(self):
         return self.check_user_permissions("list")
@@ -73,7 +73,7 @@ class MightyPermission:
 
     def can_default(self):
         return self.check_user_permissions("default")
-    
+
     def can_default_unauth(self):
         return False
 
@@ -91,7 +91,7 @@ class MightyPermission:
         if action != 'default' and hasattr(self, user_perms) and len(getattr(self, user_perms)):
             return any([getattr(self, perm)() for perm in getattr(self, user_perms)])
         elif len(self.user_perms_default):
-            return any([getattr(self, perm) for perm in self.user_perms_default])
+            return any([getattr(self, perm)() for perm in self.user_perms_default])
         return True
 
     def check_by_action(self, action):
