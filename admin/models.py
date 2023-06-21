@@ -59,9 +59,6 @@ class BaseAdmin(admin.ModelAdmin):
     def custom_filter(self, model, admin_site): pass
 
     def add_some_fields(self, model, admin_site):
-        for field in fields.image:
-            if hasattr(model, field):
-                self.add_field(_.more, (field,))
         for field in fields.base:
             if hasattr(model, field):
                 self.add_field(_.informations, (field,))
@@ -71,10 +68,10 @@ class BaseAdmin(admin.ModelAdmin):
                 self.add_field(_.source, (field,))
         for field in fields.keywords:
             if hasattr(model, field):
-                self.add_field(_.more, (field,))
+                self.add_field(_.informations, (field,))
         self.custom_fieldset(model, admin_site)
         if hasattr(model, "task_list"):
-            self.add_field("tasks", ("task_status", "task_last"))
+            self.add_field("Tasks", ("task_status", "task_last"))
             self.custom_tasklist(model, admin_site)
         if hasattr(model, "reporting_list"):
             self.add_field("reporting", decfields.reporting_fields)
