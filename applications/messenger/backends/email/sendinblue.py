@@ -28,13 +28,17 @@ class MissiveBackend(MissiveBackend):
         "loadedByProxy": _c.STATUS_SENT,
     }
 
+    def update_event(self, event):
+        if event in self.STATUS:
+            self.missive.status = self.STATUS[eve,t]
+            self.missive.save()
+
     def on_webhook(self, request):
         from mighty.models import Missive
         data = json.loads(request.body)
         try:
             self.missive = Missive.objects.get(partner_id=data.get("message-id"))
-            self.missive.status = self.STATUS[data.get("event")]
-            self.missive.save()
+            self.update_event(data.get("event"))
         except Missive.DoesNotExist:
             pass
         return data
@@ -47,8 +51,7 @@ class MissiveBackend(MissiveBackend):
         }
         api_response = self.api_instance.get_email_event_report(**data, email=self.missive.target)
         event = api_response.events[0].event
-        self.missive.status = self.STATUS[event]
-        self.missive.save()
+        self.update_event(event)
         return api_response
 
     @property
