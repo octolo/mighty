@@ -1,4 +1,56 @@
 from django.urls import reverse
+from django import forms
+
+form_init_fields = (
+    "data",
+    "files",
+    "auto_id",
+    "prefix",
+    "initial",
+    "error_class",
+    "label_suffix",
+    "empty_permitted",
+    "use_required_attribute",
+    "renderer")
+class FormDescriptable(forms.Form):
+    request = None
+
+    class Options:
+        dependencies = {}
+        fields = {}
+        url = None
+        blocks = None
+
+    def form_init(self, kwargs):
+        list_fields = form_init_fields + ("field_order",)
+        return {f: kwargs[f] for f in kwargs if f in list_fields}
+
+    def prepare_descriptor(self, *args, **kwargs): pass
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request") if "request" in kwargs else None
+        super(forms.Form, self).__init__(*args, **{f: kwargs[f] for f in self.form_init(kwargs)})
+        self.prepare_descriptor(*args, **kwargs)
+
+class ModelFormDescriptable(forms.ModelForm):
+    request = None
+
+    class Options:
+        dependencies = {}
+        fields = {}
+        url = None
+        blocks = None
+
+    def form_init(self, kwargs):
+        list_fields = form_init_fields + ("instance",)
+        return {f: kwargs[f] for f in kwargs if f in list_fields}
+
+    def prepare_descriptor(self, *args, **kwargs): pass
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request") if "request" in kwargs else None
+        super(forms.ModelForm, self).__init__(*args, **{f: kwargs.get(f) for f in self.form_init(kwargs)})
+        self.prepare_descriptor(*args, **kwargs)
 
 class FormDescriptor:
     url = None

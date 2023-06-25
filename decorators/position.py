@@ -32,5 +32,12 @@ def PositionModel(**kwargs):
                     count = self.count_position
                     self.position = count+offset
 
+            def on_delete_position(self):
+                start = self._unmodified.position-1
+                qs = type(self).objects.filter(position__gt=start)
+                for i,p in enumerate(qs):
+                    qs[i].position+=i
+                type(self).objects.bulk_update(qs, ["position"])
+
         return PositionModel
     return decorator

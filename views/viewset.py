@@ -16,6 +16,21 @@ class ModelViewSet(ModelViewSet):
     order_base = []
     forms_desc = []
     tables_desc = []
+    file_type = ("csv", "xls", "xlsx", "pdf")
+
+    @action(detail=True, methods=["get"])
+    def reportinglist(self, request, *args, **kwargs):
+        obj = self.get_object()
+        return Response(obj.reporting_json)
+
+    @action(detail=True, methods=["get"])
+    def reporting(self, request, *args, **kwargs):
+        obj = self.get_object()
+        report = request.GET.get("report")
+        filetype = request.GET.get("file")
+        if any(report, filetype) and filetype in self.file_type and report in obj.reporting_keys:
+            return obj.reporting_process(reporting, file_type)
+        raise Http404()
 
     @action(detail=False, methods=["get"], url_path=r"forms/(?P<form>\w+)")
     def form_desc(self, request, form=None, *args, **kwargs):

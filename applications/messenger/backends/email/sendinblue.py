@@ -30,7 +30,7 @@ class MissiveBackend(MissiveBackend):
 
     def update_event(self, event):
         if event in self.STATUS:
-            self.missive.status = self.STATUS[eve,t]
+            self.missive.status = self.STATUS[event]
             self.missive.save()
 
     def on_webhook(self, request):

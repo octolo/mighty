@@ -97,9 +97,9 @@ no_errors = _('no errors')
 error_already_exist = _('already exist')
 
 # export auto
-export_frequency = _("Fréquence de l'export")
-export_last_date = _("Date du dernier export")
-export_email = _("Email de l'export")
+reporting_frequency = _("Fréquence de l'export")
+reporting_last_date = _("Date du dernier export")
+reporting_email = _("Email de l'export")
 
 FREQUENCY_DAILY = "DAILY"
 FREQUENCY_WEEKLY = "WEEKLY"

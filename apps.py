@@ -22,9 +22,13 @@ class Config:
     backend_task = 'mighty.backends'
     consumers = {'chat': 'mighty.applications.messenger.consumers.ChatConsumer'}
     auth_consumer = 'channels.auth.AuthMiddlewareStack'
-    config_simple = {
-        'current_maintenance': False,
-    }
+    config_simple = { 'current_maintenance': False, }
+    reporting_content_type = (
+        ("csv", ".csv"),
+        ("xls", ".xls"),
+        ("xlsx", ".xlsx"),
+    )
+    most_used_app = ()
     multi_apps = {
         'messenger': [
             'Missive',

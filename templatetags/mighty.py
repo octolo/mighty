@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.staticfiles.finders import find as find_static_file
 from django.core.exceptions import FieldDoesNotExist
 from django.urls import reverse
+from mighty.functions import get_model
 import datetime, base64
 
 register = template.Library()
@@ -82,6 +83,18 @@ def convert_date(date, origin, convert):
 """
 Filter based templatetag
 """
+@register.simple_tag(name='get_most_used_apps')
+def get_most_used_apps(parser, limit=10):
+    from mighty.apps import MightyConfig
+    apps = []
+    for app in MightyConfig.most_used_app:
+        bm = get_model(*app.split("."))()
+        apps.append({
+            "url": bm.admin_list_url,
+            "name": bm.get_content_type().name,
+        })
+    return apps
+
 
 @register.filter(name='add_attrs')
 def add_attrs(field, css):

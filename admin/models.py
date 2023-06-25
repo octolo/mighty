@@ -80,8 +80,8 @@ class BaseAdmin(admin.ModelAdmin):
         self.custom_filter(model, admin_site)
 
     def add_some_readonly_fields(self, model, admin_site):
-        if hasattr(model, "export_last_date"):
-            self.readonly_fields += ("export_last_date",)
+        if hasattr(model, "reporting_last_date"):
+            self.readonly_fields += ("reporting_last_date",)
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
@@ -106,7 +106,7 @@ class BaseAdmin(admin.ModelAdmin):
         obj = self.get_object(request, unquote(object_id), to_field)
         reporting = request.POST.get("reporting_list")
         file_type = request.POST.get("file_type")
-        response = obj.do_reporting(reporting, file_type)
+        response = obj.reporting_process(reporting, file_type)
         if response: return response
         messages.warning(request, 'No reporting to do')
         return redirect(obj.admin_change_url)

@@ -40,6 +40,10 @@
     text-align: left;
 }
 
+.list-action-admin {
+    display: flex;
+    align-items: baseline;
+}
 </style>
 {% endblock %}
 
@@ -72,7 +76,6 @@
 {% url opts|admin_urlname:'variables' original.pk|admin_urlquote as variables_url %}
 <li><a href="{{ variables_url }}">Variables</a></li>
 {% endif %}
-{{ original.has_eve_variable_template }}
 {{ block.super }}
 {% endblock %}
 
@@ -89,11 +92,11 @@
 </div>
 {% endif %}
 
-{% if original.can_do_reporting %}
+{% if original.reporting_enable %}
 <div class="submit-row form-list">
-    <form method="POST" action="{{ original.admin_reporting_url }}">
+    <form method="POST" action="{{ original.reporting_admin_url }}">
         {% csrf_token %}
-        {{ original.form_reporting }}
+        {{ original.reporting_form }}
         <input type="submit" value="Download">
     </form>
 </div>
