@@ -55,6 +55,7 @@ class Data(models.Model):
         self.set_default_data()
 
 class UserEmail(Data, Base):
+    enable_model_change_log = True
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_email')
     email = models.EmailField(_.email, unique=True, validators=[validate_trashmail])
     search_fields = ('email',)
@@ -74,6 +75,7 @@ class UserEmail(Data, Base):
         return masking_email(self.email)
 
 class UserPhone(Data, Base):
+    enable_model_change_log = True
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
     phone = models.CharField(_.phone, unique=True, max_length=255)
     search_fields = ('phone',)
@@ -96,6 +98,7 @@ class UserPhone(Data, Base):
         return masking_phone(self.phone)
 
 class UserAddress(Data, Address):
+    enable_model_change_log = True
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_address')
     enable_clean_fields = True
 
@@ -145,6 +148,7 @@ class UserChangeLogModel(ChangeLog):
 
 
 class User(AbstractUser, Base, Image, AddressNoBase):
+    enable_model_change_log = True
     search_fields = fields.search
     username = models.CharField(_.username, max_length=254, unique=True, blank=True, null=True)
     if conf.Field.username == 'email':
