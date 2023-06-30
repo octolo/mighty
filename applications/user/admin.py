@@ -67,6 +67,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
             self.add_field(_.informations, ('cgu',))
         if UserConfig.cgv:
             self.add_field(_.informations, ('cgv',))
+        self.raw_id_fields+=UserConfig.ForeignKey.raw_id_fields
 
     def save_model(self, request, obj, form, change):
         if not change: obj.method = METHOD_BACKEND

@@ -30,6 +30,18 @@ class TwoFactorSearchForm(FormDescriptable):
         super().__init__(*args, **kwargs)
         self.user_cache = None
 
+    def clean_target(self, target):
+        return "".join(filter(lambda c: c not in string.whitespace, target))
+
+    def Qfilters(self, search):
+        return Q(username=search)|Q(user_email__email=search)|Q(user_phone__phone=search)
+
+    def get_user_target(self, target):
+        target = self.clean_target(target)
+        user = UserModel.objects.filter(self.Qfilters(target)).distinct()
+        if len(user) == 1: return user[0]
+        raise UserModel.DoesNotExist
+
     def set_session_with_uid(self, uid):
         if self.request: self.request.session['login_uid'] = uid
 
@@ -37,7 +49,7 @@ class TwoFactorSearchForm(FormDescriptable):
         search = self.cleaned_data.get('username')
         if search:
             try:
-                self.user_cache = UserModel.objects.get(Q(username=search) | Q(user_email__email=search) | Q(user_phone__phone=search))
+                self.user_cache = self.get_user_target(search)
                 self.confirm_login_allowed(self.user_cache)
             except UserModel.DoesNotExist:
                 raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search',)

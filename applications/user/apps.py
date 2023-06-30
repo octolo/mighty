@@ -24,6 +24,7 @@ class Config:
         optional3 = False
         optional4 = False
         optional5 = False
+        raw_id_fields = ()
 
     class Field:
         username = 'email'

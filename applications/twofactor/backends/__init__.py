@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 UserModel = get_user_model()
 
 class TwoFactorBackend(ModelBackend):
-
     def is_email(self, target):
         validator = EmailValidator()
         try:
@@ -93,7 +92,9 @@ class TwoFactorBackend(ModelBackend):
 
     def get_user_target(self, target):
         target = self.clean_target(target)
-        return UserModel.objects.get(self.Qfilters(target)), target
+        user = UserModel.objects.filter(self.Qfilters(target)).distinct()
+        if len(user) == 1: return user[0], target
+        raise UserModel.DoesNotExist
 
     @property
     def earlier(self):

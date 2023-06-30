@@ -17,6 +17,8 @@ self_fields = (
     "form_create",
     "field_detail",
     "discriminant",
+    "splitted",
+    "splitted_refs",
 )
 options_fields = ("value",)
 

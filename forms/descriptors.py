@@ -87,6 +87,9 @@ class FormDescriptor:
         "field_detail",
         "discriminant",
         "apipayload",
+        "filter",
+        "splitted",
+        "splitted_refs",
     ]
     url_attrs = [
         "form_create_url",
