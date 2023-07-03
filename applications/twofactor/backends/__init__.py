@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 
 from mighty.apps import MightyConfig
 from mighty.models import Twofactor, Missive
+from mighty.functions import get_backends
 from mighty.applications.twofactor import translates as _, SpamException, CantIdentifyError, PhoneValidator
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.messenger import choices
@@ -170,12 +171,17 @@ class TwoFactorBackend(ModelBackend):
     def email_template(self):
         return conf.email_template
 
+
+    def get_backend(self, mode):
+        backend = get_backends(service="twofactor_"+mode, only_string=True, silent_error=True)
+        return backend[0] if backend else None
+
     def send_sms(self, obj, user, target):
         data = self.get_data_missive(user, obj)
         data["txt"] = _.tpl_sms % {'domain': MightyConfig.domain, 'code': str(obj.code)}
         data.update({"target": target, "mode": choices.MODE_SMS})
-        #self.check_protect(target, data["subject"], conf.sms_protect_spam, choices.MODE_SMS)
         missive = Missive(**data)
+        missive.backend = self.get_backend("sms")
         missive.save()
         obj.missive = missive
         obj.save()
@@ -186,6 +192,7 @@ class TwoFactorBackend(ModelBackend):
         data.update({"target": target, "template": self.email_template})
         self.check_protect(target, data["subject"], conf.mail_protect_spam, choices.MODE_EMAIL)
         missive = Missive(**data)
+        missive.backend = self.get_backend("email")
         missive.save()
         obj.missive = missive
         obj.save()

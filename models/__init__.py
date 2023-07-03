@@ -8,12 +8,15 @@ from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.models.news import News
 from mighty.models.config import Config
+from mighty.models.backend import Backend
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 
 
 ###########################
 # Models in mighty
 ###########################
+class Backend(Backend): pass
+
 class ConfigClient(Config):
     config = JSONField(null=True, blank=True)
 

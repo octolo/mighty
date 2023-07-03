@@ -63,6 +63,7 @@ class Config:
             'ModelChangeLog',
         ],
         'Configuration': [
+            'Backend',
             'ConfigSimple',
             'ConfigClient',
             'TemplateVariable',

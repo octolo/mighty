@@ -1,5 +1,5 @@
 from django.apps import apps
-from django.db.models import F, Func, Subquery, PositiveIntegerField
+from django.db.models import F, Func, Subquery, PositiveIntegerField, Q
 from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
@@ -204,14 +204,34 @@ def split_comment(input_str):
 """
 Return a tuple of backends
 """
-def get_backends(backends_list, return_tuples=False, path_extend='', *args, **kwargs):
+def get_backends(backends_list=(), *args, **kwargs):
     backends = []
+    return_tuples = kwargs.pop("return_tuples", False)
+    path_extend = kwargs.pop("path_extend", "")
+    service_or_ct = kwargs.pop("service", None)
+    only_string = kwargs.pop("only_string", False)
+    silent_error = kwargs.pop("silent_error", False)
+
+    if service_or_ct:
+        from mighty.models import Backend
+        try:
+            backends_list = Backend.objects.get(service=service_or_ct, is_disable=False)
+            backends_list = backends_list.format_list
+        except Backend.DoesNotExist:
+            pass
+
     for backend_path in backends_list:
         backend_path = backend_path + path_extend
-        backend = import_string(backend_path)(*args, **kwargs)
-        backends.append((backend, backend_path) if return_tuples else backend)
+        if only_string:
+            backends.append(backend_path)
+        else:
+            backend = import_string(backend_path)(*args, **kwargs)
+            backends.append((backend, backend_path) if return_tuples else backend)
+
     if not backends:
-        raise ImproperlyConfigured('No backends have been defined.')
+        if not silent_error:
+            raise ImproperlyConfigured('No backends have been defined.')
+        return None
     return backends
 
 """

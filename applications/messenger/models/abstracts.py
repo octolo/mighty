@@ -129,22 +129,22 @@ class MessengerModel(Base):
         pass
 
     def set_backend(self):
-        self.backend = conf.missive_backend
-        if self.mode == choices.MODE_EMAIL:
-            self.backend = missive_backend_email()
-        if self.mode == choices.MODE_EMAILAR:
-            self.backend = missive_backend_emailar()
-        if self.mode == choices.MODE_POSTAL:
-            self.backend = missive_backend_postal()
-        if self.mode == choices.MODE_POSTALAR:
-            self.backend = missive_backend_postalar()
-        if self.mode == choices.MODE_SMS:
-            self.backend = missive_backend_sms()
-        if self.mode == choices.MODE_WEB:
-            self.backend = missive_backend_web()
-        if self.mode == choices.MODE_APP:
-            self.backend = missive_backend_app()
-
+        if not self.backend:
+            self.backend = conf.missive_backend
+            if self.mode == choices.MODE_EMAIL:
+                self.backend = missive_backend_email()
+            if self.mode == choices.MODE_EMAILAR:
+                self.backend = missive_backend_emailar()
+            if self.mode == choices.MODE_POSTAL:
+                self.backend = missive_backend_postal()
+            if self.mode == choices.MODE_POSTALAR:
+                self.backend = missive_backend_postalar()
+            if self.mode == choices.MODE_SMS:
+                self.backend = missive_backend_sms()
+            if self.mode == choices.MODE_WEB:
+                self.backend = missive_backend_web()
+            if self.mode == choices.MODE_APP:
+                self.backend = missive_backend_app()
 
     @property
     def content(self):

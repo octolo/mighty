@@ -28,6 +28,13 @@ class SessionAdmin(admin.ModelAdmin):
 ###########################
 # Models in mighty
 ###########################
+@admin.register(all_models.Backend)
+class BackendAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.backend}),)
+    list_display = ('service', 'content_type', 'is_disable')
+    search_fields = ('service',)
+
 @admin.register(all_models.ConfigClient)
 class ConfigClientAdmin(BaseAdmin):
     view_on_site = False

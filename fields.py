@@ -90,3 +90,10 @@ admin_disable_url = ('admin_disable_url'),
 admin_enable_url = ('admin_enable_url'),
 
 channels = ('channel_name', 'channel_type', 'from_id', 'objs', 'history')
+
+backend = (
+    "service",
+    "content_type",
+    "backend",
+    "backend_list",
+)
