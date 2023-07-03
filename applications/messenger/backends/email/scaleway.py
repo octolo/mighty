@@ -60,11 +60,9 @@ class MissiveBackend(MissiveBackend):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
         self.logger.info("Email - from: %s, to : %s, reply : %s" % (self.sender_email, self.missive.target, self.reply_email))
-        if True:#setting('MISSIVE_SERVICE', False):
+        if setting('MISSIVE_SERVICE', False):
             headers = {'X-Auth-Token': self.SCW_SECRET_KEY, "Content-Type": "application/json"}
-            print(self.email_data)
             response = requests.post(self.api_url, headers=headers, json=self.email_data)
-            print(response.content)
         self.missive.to_sent()
         self.missive.save()
         return self.missive.status
