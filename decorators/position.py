@@ -12,6 +12,10 @@ def PositionModel(**kwargs):
                 abstract = True
 
             @property
+            def position_qs(self):
+                return self.qs_not_self.filter(**self.Qasfield)
+
+            @property
             def Qpositionfields(self):
                 return self.Qposition or self.position_fields
 
@@ -21,11 +25,11 @@ def PositionModel(**kwargs):
 
             @property
             def count_position(self):
-                return self.qs_not_self.filter(**self.Qasfield).count()
+                return self.position_qs.filter(**self.Qasfield).count()
 
             @property
             def position_exist(self):
-                return type(self).objects.filter(**self.Qasfield, position=self.position).count()
+                return self.position_qs.filter(position=self.position).count()
 
             def set_position(self, offset=1):
                 if not self.position:
@@ -33,10 +37,8 @@ def PositionModel(**kwargs):
                     self.position = count+offset
 
             def on_delete_position(self):
-                start = self._unmodified.position-1
-                qs = type(self).objects.filter(position__gt=start)
-                for i,p in enumerate(qs):
-                    qs[i].position+=i
+                qs = self.position_qs.filter(position__gt=self._unmodified.position)
+                for i,p in enumerate(qs): qs[i].position-=1
                 type(self).objects.bulk_update(qs, ["position"])
 
         return PositionModel
