@@ -17,6 +17,13 @@ class ModelViewSet(ModelViewSet):
     forms_desc = []
     tables_desc = []
     file_type = ("csv", "xls", "xlsx", "pdf")
+    actions_authorized = ()
+    variables_related = {}
+    variables_model = []
+
+    @property
+    def model_static(self):
+        return self.serializer_class.Meta.model
 
     @action(detail=True, methods=["get"])
     def reportinglist(self, request, *args, **kwargs):
@@ -49,15 +56,27 @@ class ModelViewSet(ModelViewSet):
         raise Http404
 
     def call_action_model(self, obj, action, data, method):
-        return getattr(obj, action)(data, method)
+        return 
 
-    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r"action/(?P<action>\w+)")
-    def actions(self, request, uid, action, *args, **kwargs):
-        obj = self.get_object()
-        action = self.action_prefix+action
-        if hasattr(obj, action):
-            infos = self.call_action_model(obj, action, self.request.data, self.request.method)
-            return Response({"infos": infos})
+    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r"saction/(?P<saction>\w+)")
+    def single_action(self, *args, **kwargs):
+        saction = kwargs.get("saction")
+        if saction in self.actions_authorized:
+            obj = self.get_object()
+            if hasattr(obj, saction):
+                result = getattr(obj, saction)()
+                return Response(result)
+        raise Http404
+
+    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r"daction/(?P<daction>\w+)")
+    def data_action(self, *args, **kwargs):
+        daction = kwargs.get("daction")
+        action = self.action_prefix+daction
+        if action in self.actions_authorized:
+            obj = self.get_object()
+            if hasattr(obj, daction):
+                result = getattr(obj, daction)(self.request.data, self.request.method)
+                return Response(result)
         raise Http404
 
     @action(detail=False, methods=["get"], url_path=r"table/(?P<table>\w+)")
@@ -67,6 +86,15 @@ class ModelViewSet(ModelViewSet):
             formdesc = TableDescriptor(desc, request, **kwargs).as_json()
             return Response(formdesc)
         raise Http404
+
+    @action(detail=False, methods=["get"])
+    def variables(self, request, group_named_id, *args, **kwargs):
+        model = self.model_static
+        if hasattr(self.model_static, 'eve_variable_prefixed_list'):
+            var = self.model_static().eve_variable_prefixed_list(related=self.variables_related)
+            var += list(itertools.chain(*(v().eve_variable_prefixed_list() for v in self.variables_model)))
+            return Response(var)
+        return Response([])
 
     # Filter query
     def Q_is_me(self, prefix=""):

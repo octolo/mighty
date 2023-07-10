@@ -125,6 +125,18 @@ def notify_discord(hookname, **kwargs):
         headers = {'Content-Type': 'application/json'}
         request = requests.post(hook, headers=headers, data=json.dumps(data))
 
-def generate_event_url(date, event, service=['google', 'apple', 'outlookcom', 'yahoo']):
+def generate_event_url(date, event, service=['google', 'apple', 'outlook', 'yahoo']):
+    import base64
+
+    def svg_to_base64(service):
+        from django.contrib.staticfiles.finders import find
+        svg = find("logo/%s_simple.svg" % service)
+        with open(svg, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode()
+        
     url = "https://calndr.link/d/event/?service=%s&start=%s&title=%s"
-    return {s: url % (s, str(date)[:16], event) for s in service }
+    return [{
+        "name": s,
+        "link": url % (s, str(date)[:16], event),
+        "b64img": svg_to_base64(s),
+    } for s in service]

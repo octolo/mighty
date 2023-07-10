@@ -3,6 +3,8 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 from mighty.applications.user.apps import UserConfig as user_conf
 from mighty.applications.messenger import choices
+from mighty.applications.messenger import notify, notify_discord, notify_slack
+import hashlib
 
 def MissiveFollower(**kwargs):
     def decorator(obj):
@@ -25,14 +27,31 @@ def MissiveFollower(**kwargs):
 def NotifyByCondition(**kwargs):
     def decorator(obj):
         class NBCModel(obj):
+            nbc_fields_compare = ("subject", "html", "txt", "mode", "target")
             nbc_startswith = "nbc_"
             nbc_prefix = "trigger_"
             nbc_notify = "notify_"
             nbc_notify_status = True
             nbc_notify_active = models.BooleanField(default=True)
+            nbc_last_notify = models.ForeignKey("mighty.Missive", on_delete=models.SET_NULL, blank=True, null=True)
 
             class Meta(obj.Meta):
                 abstract = True
+    
+            @property
+            def nbc_last_notify_hash(self):
+                if self.nbc_last_notify:
+                    last_md5 = "".join([getattr(self.nbc_last_notify, field, "") for field in self.nbc_fields_compare])
+                    last_md5 = hashlib.md5(last_md5).hexdigest()
+                return None
+
+            def nbc_notify_if_different(self, **kwargs):
+                last_md5 = self.nbc_last_notify_hash
+                new_md5 = "".join([getattr(kwargs, field, "") for field in self.nbc_fields_compare])
+                new_md5 = hashlib.md5(new_md5).hexdigest()
+                if last_md5 != new_md5:
+                    ct, pk = self.get_content_type(), self.id
+                    return notify(kwargs.pop("subject"), ct, pk, **kwargs)
 
             def nbc_get_template(self, name, subject=None):
                 from mighty.models import Template as TPL
@@ -84,7 +103,6 @@ def NotifyByCondition(**kwargs):
             def nbc_trigger(self):
                 if self.nbc_notify_status:
                     for nbc in self.nbc_list_trigger:
-                        print(nbc)
                         nbc_notify = self.nbc_startswith + self.nbc_notify
                         nbc_notify = nbc.replace(self.nbc_startswith + self.nbc_prefix, nbc_notify)
                         if hasattr(self, nbc_notify) and getattr(self, nbc)():

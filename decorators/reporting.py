@@ -4,7 +4,6 @@ from mighty.fields import JSONField
 from mighty.apps import MightyConfig
 from mighty.filegenerator import FileGenerator
 from mighty import translates as _
-from mighty.forms import ReportingForm
 
 reporting_fields = ("reporting_frequency", "reporting_last_date", "reporting_email")
 
@@ -47,6 +46,7 @@ def ReportingModel(**kwargs):
 
             @property
             def reporting_form(self):
+                from mighty.forms import ReportingForm
                 class ReportingForm(ReportingForm):
                     class Meta:
                         model = type(self)

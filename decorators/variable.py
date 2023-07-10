@@ -19,7 +19,7 @@ def EnableVariableEditorModel(**kwargs):
 
             @property
             def eve_dir_variables_or_none(self):
-                return self.nbc_dir_variables if hasattr(self, "nbc_dir_variables") else "variables/"
+                return self.eve_dir_variables if hasattr(self, "eve_dir_variables") else "variables/"
 
             @property
             def eve_context_or_none(self):
