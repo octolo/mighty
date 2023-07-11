@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from mighty.models.base import Base
 from mighty.functions import make_searchable
 from mighty.fields import JSONField
+from mighty.filegenerator import FileGenerator
 
 class Reporting(Base):
     name = models.CharField(max_length=255)
@@ -20,12 +21,15 @@ class Reporting(Base):
         abstract = True
         ordering = ('name', 'content_type', 'target')
 
+    def __str__(self):
+        return self.name
+
     @property
     def reporting_filter(self):
         Qfilter = {}
-        if self.filter_config: 
+        if self.filter_config:
             Qfilter.update(self.filter_config)
-        if self.filter_config: 
+        if self.filter_config:
             Qfilter.update({k: self.reporting_data_obj(self.related_obj, v) for k,v in self.filter_related.items()})
         return Qfilter
 
@@ -35,15 +39,28 @@ class Reporting(Base):
 
     @property
     def reporting_header(self):
-        return (field.title for field in self.file_config)
+        return [f["title"] for f in self.config]
 
     @property
     def reporting_fields(self):
-        return (field.data for field in self.file_config)
-    
-    def reporting_data_obj(self, field, obj):
-        return getattr(obj, field)() if callable(obj, field) else getattr(obj, field)
+        return [f["data"] for f in self.config]
 
-    def reporting_items(self, objs):
+    def reporting_data_obj(self, field, obj):
+        return getattr(obj, field)() if isinstance(getattr(type(obj), field), property) else getattr(obj, field)
+
+    @property
+    def reporting_items(self):
         return [(self.reporting_data_obj(field, obj) for field in self.reporting_fields) for obj in self.reporting_queryset]
 
+    @property
+    def reporting_file_generator(self):
+        print("start")
+        print("header", self.reporting_header)
+        print("fields", self.reporting_fields)
+        print("data", self.reporting_items)
+        return FileGenerator(filename=self.file_name, items=self.reporting_items, fields=self.reporting_fields)
+
+    def reporting_file_response(self, response, file_type):
+        if response == "http":
+            return self.reporting_file_generator.response_http(file_type)
+        return self.reporting_file_generator.response_file(file_type)

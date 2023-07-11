@@ -21,13 +21,6 @@ def ReportingModel(**kwargs):
             class Meta(obj.Meta):
                 abstract = True
 
-            def reporting_file_generator(self, name, fields, items):
-                return FileGenerator(filename=name, items=items, fields=fields)
-
-            def reporting_process(self, reporting, file_type, response="http", *args, **kwargs):
-                name = "reporting_%s_%s" % (reporting.lower(), file_type.lower())
-                return getattr(self, name)(response) if hasattr(self, name) else False
-
             @property
             def reporting_keys(self):
                 return dict(self.reporting_detail).keys()
@@ -50,9 +43,40 @@ def ReportingModel(**kwargs):
                 class ReportingForm(ReportingForm):
                     class Meta:
                         model = type(self)
-                        fields = ("reporting_list",)
+                        fields = ()
                 return ReportingForm()
 
+            @property
+            def reporting_qs(self):
+                ct = self.get_content_type()
+                return ct.ct_to_reporting.all()
+
+            @property
+            def reporting_choices(self):
+                rc = [("std:"+k, v) for k,v in dict(self.reporting_detail).items()]
+                rc += [("cfg:"+str(rpg.uid), rpg.name) for rpg in self.reporting_qs]
+                return rc
+
+            def reporting_file_generator(self, name, fields, items):
+                return FileGenerator(filename=name, items=items, fields=fields)
+
+            def reporting_process_cfg(self, reporting, file_type, response="http", *args, **kwargs):
+                reporting = self.reporting_qs.get(uid=reporting)
+                return reporting.reporting_file_response(response, file_type)
+
+            def reporting_process_std(self, reporting, file_type, response="http", *args, **kwargs):
+                name = "reporting_%s_%s" % (reporting.lower(), file_type.lower())
+                return getattr(self, name)(response) if hasattr(self, name) else False
+
+            def reporting_process(self, spec, reporting, file_type, *args, **kwargs):
+                return getattr(self, "reporting_process_"+spec)(reporting, file_type, *args, **kwargs)
+
+            def reporting_execute(self, request, *args, **kwargs):
+                reporting = request.POST.get("reporting")
+                file_type = request.POST.get("file_type", "csv")
+                if reporting:
+                    spec, reporting = reporting.split(":")
+                    return self.reporting_process(spec, reporting, file_type, *args, **kwargs)
 
         return ReportingModel
     return decorator

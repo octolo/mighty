@@ -104,9 +104,11 @@ class BaseAdmin(admin.ModelAdmin):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
-        reporting = request.POST.get("reporting_list")
-        file_type = request.POST.get("file_type")
-        response = obj.reporting_process(reporting, file_type)
+        response = obj.reporting_execute(request)
+
+        #reporting = request.POST.get("reporting_list")
+        #file_type = request.POST.get("file_type")
+        #response = obj.reporting_process(reporting, file_type)
         if response: return response
         messages.warning(request, 'No reporting to do')
         return redirect(obj.admin_change_url)
