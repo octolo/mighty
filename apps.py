@@ -64,6 +64,7 @@ class Config:
         ],
         'Configuration': [
             'Backend',
+            'Reporting',
             'ConfigSimple',
             'ConfigClient',
             'TemplateVariable',

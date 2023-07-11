@@ -34,6 +34,13 @@ class BackendAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.backend}),)
     list_display = ('service', 'content_type', 'is_disable')
     search_fields = ('service',)
+@admin.register(all_models.Reporting)
+class ReportingAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.reporting}),)
+    list_display = ('name', 'content_type', 'target')
+    search_fields = ('service',)
+
 
 @admin.register(all_models.ConfigClient)
 class ConfigClientAdmin(BaseAdmin):

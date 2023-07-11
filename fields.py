@@ -97,3 +97,14 @@ backend = (
     "backend",
     "backend_list",
 )
+
+reporting = (
+    "name",
+    "file_name",
+    "content_type",
+    "target",
+    "manager",
+    "config",
+    "filter_config",
+    "filter_related",
+)

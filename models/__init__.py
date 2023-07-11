@@ -9,6 +9,7 @@ from mighty.models.base import Base
 from mighty.models.news import News
 from mighty.models.config import Config
 from mighty.models.backend import Backend
+from mighty.models.reporting import Reporting
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 
 
@@ -16,6 +17,7 @@ from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models 
 # Models in mighty
 ###########################
 class Backend(Backend): pass
+class Reporting(Reporting): pass
 
 class ConfigClient(Config):
     config = JSONField(null=True, blank=True)
