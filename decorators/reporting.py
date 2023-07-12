@@ -52,6 +52,20 @@ def ReportingModel(**kwargs):
                 return ct.ct_to_reporting.all()
 
             @property
+            def reporting_definition(self):
+                rc = [{ "id": "std:"+k, "name": v, "excel": True, "csv": True, "pdf": False, "is_detail": True }
+                    for k,v in dict(self.reporting_detail).items()]
+                rc += [{
+                    "id": "cfg:"+str(rpg.uid),
+                    "name": rpg.name,
+                    "excel": rpg.can_excel,
+                    "csv": rpg.can_csv,
+                    "pdf": rpg.can_pdf,
+                    "is_detail": rpg.is_detail
+                } for rpg in self.reporting_qs]
+                return rc
+
+            @property
             def reporting_choices(self):
                 rc = [("std:"+k, v) for k,v in dict(self.reporting_detail).items()]
                 rc += [("cfg:"+str(rpg.uid), rpg.name) for rpg in self.reporting_qs]
@@ -62,6 +76,7 @@ def ReportingModel(**kwargs):
 
             def reporting_process_cfg(self, reporting, file_type, response="http", *args, **kwargs):
                 reporting = self.reporting_qs.get(uid=reporting)
+                reporting.related_obj = self
                 return reporting.reporting_file_response(response, file_type)
 
             def reporting_process_std(self, reporting, file_type, response="http", *args, **kwargs):

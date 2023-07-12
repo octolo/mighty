@@ -25,10 +25,9 @@ class ModelViewSet(ModelViewSet):
     def model_static(self):
         return self.serializer_class.Meta.model
 
-    @action(detail=True, methods=["get"])
-    def reportinglist(self, request, *args, **kwargs):
-        obj = self.get_object()
-        return Response(obj.reporting_json)
+    @action(detail=False, methods=["get"])
+    def reporting_list(self, request, *args, **kwargs):
+        return Response(self.model_static().reporting_definition)
 
     @action(detail=True, methods=["get"])
     def reporting(self, request, *args, **kwargs):
@@ -56,7 +55,7 @@ class ModelViewSet(ModelViewSet):
         raise Http404
 
     def call_action_model(self, obj, action, data, method):
-        return 
+        return
 
     @action(detail=True, methods=['get', 'post', 'delete'], url_path=r"saction/(?P<saction>\w+)")
     def single_action(self, *args, **kwargs):

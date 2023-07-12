@@ -107,4 +107,12 @@ reporting = (
     "config",
     "filter_config",
     "filter_related",
+    "is_detail",
+    "can_excel",
+    "cfg_excel",
+    "can_csv",
+    "cfg_csv",
+    "can_pdf",
+    "cfg_pdf",
+    "html_pdf",
 )
