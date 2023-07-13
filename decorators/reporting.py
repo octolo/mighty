@@ -87,8 +87,9 @@ def ReportingModel(**kwargs):
                 return getattr(self, "reporting_process_"+spec)(reporting, file_type, *args, **kwargs)
 
             def reporting_execute(self, request, *args, **kwargs):
-                reporting = request.POST.get("reporting")
-                file_type = request.POST.get("file_type", "csv")
+                print(request.GET)
+                reporting = request.GET.get("reporting")
+                file_type = request.GET.get("file_type", "csv")
                 if reporting:
                     spec, reporting = reporting.split(":")
                     return self.reporting_process(spec, reporting, file_type, *args, **kwargs)

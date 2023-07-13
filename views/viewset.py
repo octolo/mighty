@@ -30,13 +30,24 @@ class ModelViewSet(ModelViewSet):
         return Response(self.model_static().reporting_definition)
 
     @action(detail=True, methods=["get"])
-    def reporting(self, request, *args, **kwargs):
+    def reporting_detail(self, request, *args, **kwargs):
         obj = self.get_object()
+        return obj.reporting_execute(request, *args, **kwargs)
+        #report = request.GET.get("report")
+        #filetype = request.GET.get("file")
+        #if any(report, filetype) and filetype in self.file_type and report in obj.reporting_keys:
+        #    return obj.reporting_process(reporting, file_type)
+        #raise Http404()
+
+    @action(detail=False, methods=["get"])
+    def reporting(self, request, *args, **kwargs):
+        obj = self.model_static()
         report = request.GET.get("report")
         filetype = request.GET.get("file")
         if any(report, filetype) and filetype in self.file_type and report in obj.reporting_keys:
             return obj.reporting_process(reporting, file_type)
         raise Http404()
+
 
     @action(detail=False, methods=["get"], url_path=r"forms/(?P<form>\w+)")
     def form_desc(self, request, form=None, *args, **kwargs):
