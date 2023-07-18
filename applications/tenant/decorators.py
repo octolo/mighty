@@ -1,11 +1,12 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from mighty.applications.tenant.apps import TenantConfig as conf
 
 def TenantAssociation(**kwargs):
     def decorator(obj):
-
         class TAModel(obj):
+            tenant_association_kwargs = kwargs
             group_relations = kwargs.get('group_relations', [])
             group = models.ForeignKey(conf.ForeignKey.group,
                 on_delete=kwargs.get('on_delete', models.CASCADE),
@@ -14,8 +15,25 @@ def TenantAssociation(**kwargs):
                 null=kwargs.get('null', False),
             )
 
+            if kwargs.get('user_related'):
+                user = models.ForeignKey(get_user_model(),
+                    related_name=kwargs.get('user_related'),
+                    on_delete=models.SET_NULL, blank=True, null=True,
+                )
+            if kwargs.get('roles_related'):
+                roles = models.ManyToManyField(conf.ForeignKey.role,
+                    related_name=kwargs.get('roles_related'),
+                    blank=True,
+                )
+            if kwargs.get('invitation_related'):
+                invitation = models.ForeignKey(conf.ForeignKey.invitation,
+                    related_name=kwargs.get('invitation_related'),
+                    on_delete=models.SET_NULL, blank=True, null=True,
+                )
+
             class Meta(obj.Meta):
                 abstract = True
+
 
             def groups_m2m(self, field):
                 return [obj.group.id for obj in getattr(self, field).all()]

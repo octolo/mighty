@@ -10,6 +10,10 @@ class Config:
     invitation_days = 7
     invitation_url = 'http://%(domain)s/user/tenant/%(uid)s/?token=%(token)s'
     search_filter = {}
+    tenant_user_related = None
+    tenant_roles_related = None
+    tenant_group_related = None
+    tenant_invitation_related = None
     roles = [
         {
             'name': 'manager',
