@@ -37,7 +37,7 @@ def NotifyByCondition(**kwargs):
 
             class Meta(obj.Meta):
                 abstract = True
-    
+
             @property
             def nbc_last_notify_hash(self):
                 if self.nbc_last_notify:
@@ -47,7 +47,8 @@ def NotifyByCondition(**kwargs):
 
             def nbc_notify_if_different(self, **kwargs):
                 last_md5 = self.nbc_last_notify_hash
-                new_md5 = "".join([getattr(kwargs, field, "") for field in self.nbc_fields_compare])
+                new_md5 = "".join([str(getattr(kwargs, field, "")) for field in self.nbc_fields_compare])
+                print("test", last_md5, new_md5, self.nbc_fields_compare)
                 new_md5 = hashlib.md5(new_md5).hexdigest()
                 if last_md5 != new_md5:
                     ct, pk = self.get_content_type(), self.id
@@ -101,11 +102,12 @@ def NotifyByCondition(**kwargs):
                     if p.startswith(self.nbc_startswith + self.nbc_prefix)]
 
             def nbc_trigger(self):
-                if self.nbc_notify_status:
-                    for nbc in self.nbc_list_trigger:
-                        nbc_notify = self.nbc_startswith + self.nbc_notify
-                        nbc_notify = nbc.replace(self.nbc_startswith + self.nbc_prefix, nbc_notify)
-                        if hasattr(self, nbc_notify) and getattr(self, nbc)():
-                            getattr(self, nbc_notify)()
+                pass
+                #if self.nbc_notify_status:
+                #    for nbc in self.nbc_list_trigger:
+                #        nbc_notify = self.nbc_startswith + self.nbc_notify
+                #        nbc_notify = nbc.replace(self.nbc_startswith + self.nbc_prefix, nbc_notify)
+                #        if hasattr(self, nbc_notify) and getattr(self, nbc)():
+                #            getattr(self, nbc_notify)()
         return NBCModel
     return decorator
