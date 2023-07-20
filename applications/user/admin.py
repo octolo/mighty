@@ -52,7 +52,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender') + address_fields
+        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender', 'sentry_replay') + address_fields
         self.fieldsets[3][1]['fields'] += ('first_connection',)
         if UserConfig.ForeignKey.optional:
             self.fieldsets[1][1]['fields'] += ('optional',)

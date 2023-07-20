@@ -14,6 +14,7 @@ serializer = ('uid',) + fields.image_url + (
     'style',
     'gender',
     'is_staff',
+    'sentry_replay',
 )
 if conf.cgu: serializer+('cgu',)
 if conf.cgv: serializer+('cgv',)
@@ -30,6 +31,7 @@ profile = fields.image_url + (
     'is_staff',
     'language_pref',
     'is_first_login',
+    'sentry_replay',
 )
 
 if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):

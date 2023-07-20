@@ -169,6 +169,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     style = models.CharField(max_length=255, default="clear")
     channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
     first_connection = models.DateTimeField(blank=True, null=True)
+    sentry_replay = models.BooleanField(default=False)
 
     if conf.cgu:
         cgu = models.BooleanField(_.cgu, default=False)
