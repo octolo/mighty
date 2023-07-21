@@ -1,4 +1,0 @@
-from mighty.applications.signature.models.transaction import Transaction
-from mighty.applications.signature.models.document import TransactionDocument
-from mighty.applications.signature.models.signatory import TransactionSignatoryWithoutInfo, TransactionSignatoryWithInfo
-from mighty.applications.signature.models.location import TransactionLocation
