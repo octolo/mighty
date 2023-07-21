@@ -278,11 +278,16 @@ class SearchFilter(ParamFilter):
 class BooleanParamFilter(ParamFilter):
     enable_false = False
 
+    def __init__(self, id, request=None, *args, **kwargs):
+        super().__init__(id, request, *args, **kwargs)
+        self.enable_false = kwargs.get('enable_false', '')
+
     def get_mask(self):
         return self.mask
 
     def get_value(self):
         value = super().get_value()
+        print("bool", value)
         if type(value).__name__ == "str":
             return True if value in ("true", "1") else False
         return bool(int(value))
