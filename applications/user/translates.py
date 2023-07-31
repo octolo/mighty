@@ -1,5 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from django.templatetags.static import static
+from mighty.apps import MightyConfig as conf
 
 v_user = _("user")
 vp_user = _("users")
@@ -28,7 +29,10 @@ phone = _("Phone")
 method = _("Creation method")
 gender = _("Genre")
 profil = _("Profil")
-cgu = _("J'accepte les <a href=\"/static/files/CGU.pdf\" target=\"blank_\">CGU</a> et la <a href=\"/static/files/POLITIQUE_DE_CONFIDENTIALITE_JULY_2022.pdf\" target=\"blank_\">Politique de Confidentialité</a>")
+cgu = _(
+    "J'accepte les <a href=\"%s\" target=\"blank_\">CGU</a> et la <a href=\"%s\" target=\"blank_\">Politique de Confidentialité</a>" % (
+        conf.cgu_path, conf.politic_path
+    ))
 
 v_invitation = _("Invitation")
 vp_invitation = _("Invitations")
