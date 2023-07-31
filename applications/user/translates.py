@@ -28,7 +28,8 @@ phone = _("Phone")
 method = _("Creation method")
 gender = _("Genre")
 profil = _("Profil")
-cgu = _("J'accepte les <a href=\"/static/files/CGU.pdf\" target=\"blank_\">CGU</a>")
+cgu = _("J'accepte les <a href=\"/static/files/CGU.pdf\" target=\"blank_\">CGU</a> et la <a href=\"/static/files/POLITIQUE_DE_CONFIDENTIALITE_JULY_2022.pdf\" target=\"blank_\">Politique de Confidentialité</a>")
+
 v_invitation = _("Invitation")
 vp_invitation = _("Invitations")
 
