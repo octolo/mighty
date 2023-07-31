@@ -75,7 +75,6 @@ class MissiveBackend(EnableLogger):
     def reply_name(self):
         return self.missive.reply_name if self.missive.reply_name else self.missive.name
 
-
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
@@ -190,3 +189,18 @@ class MissiveBackend(EnableLogger):
 
     def on_webhook(self, request):
         return {}
+
+    # PRICE
+    def price_config(self): return {}
+    def prince_info(self): return {}
+
+    def set_price_config(self, *args, **kwargs):
+        for k,v in kwargs.items(): setattr(self, k, v)
+        self.missive.price_config = self.price_config()
+
+    def set_price_info(self, *args, **kwargs):
+        for k,v in kwargs.items(): setattr(self, k, v)
+        self.missive.price_info = self.price_info()
+
+    def price(self):
+        return 0

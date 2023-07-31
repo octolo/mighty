@@ -5,15 +5,17 @@ from mighty.applications.messenger import choices, translates as _, send_missive
 from mighty.functions import masking_email, masking_phone
 from mighty.applications.messenger.models.abstracts import MessengerModel
 from mighty.applications.address.models import AddressNoBase
+from mighty.fields import JSONField
 
 class Missive(MessengerModel, AddressNoBase):
     backend = models.CharField(max_length=255, editable=False)
     msg_id = models.CharField(max_length=255, blank=True, null=True)
-
     response = models.TextField(blank=True, null=True, editable=False)
     partner_id = models.CharField(max_length=255, blank=True, null=True, editable=False)
     code_error = models.CharField(max_length=255, blank=True, null=True, editable=False)
     trace = models.TextField(blank=True, null=True, editable=False)
+    price_config = models.JSONField(default=dict)
+    price_info = models.JSONField(default=dict)
 
     class Meta(MessengerModel.Meta):
         abstract = True

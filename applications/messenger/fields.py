@@ -24,6 +24,8 @@ missive = (
     "partner_id",
     "trace",
     "code_error"
+    "price_config",
+    "price_info",
 )
 
 notification = (

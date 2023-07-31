@@ -35,6 +35,61 @@ class Maileva(MissiveBackend):
     priority = 1
     header_offset = 72
     js_admin = False
+    page = 0
+
+    # PRICE
+    color_first_c4 = setting("MAILEVA_COLOR_FIRST_C4", 0.73)
+    color_next_c4 = setting("MAILEVA_COLOR_NEXT_C4", 0.48)
+    nb_first_c4 = setting("MAILEVA_NB_FIRST_C4", 0.48)
+    nb_next_c4 = setting("MAILEVA_NB_NEXT_C4", 0.23)
+    archiving_lte3_first = setting("MAILEVA_ARCHIVING_LTE3_FIRST", 0.03)
+    archiving_lte6_first = setting("MAILEVA_ARCHIVING_LTE6_FIRST", 0.03)
+    archiving_lte10_first = setting("MAILEVA_ARCHIVING_LTE10_FIRST", 0.03)
+    archiving_lte3_next = setting("MAILEVA_ARCHIVING_LTE3_NEXT", 0.03)
+    archiving_lte6_next = setting("MAILEVA_ARCHIVING_LTE6_NEXT", 0.03)
+    archiving_lte10_next = setting("MAILEVA_ARCHIVING_LTE10_NEXT", 0.03)
+
+    # CONFIG
+    color_printing = setting("MAILEVA_COLOR_PRINTING", False)
+    duplex_printing = setting("MAILEVA_DUPLEX_PRINTING", True)
+    optional_address_sheet = setting("MAILEVA_OPTIONAL_ADDRESS_SHEET", True)
+    archiving_duration = setting("MAILEVA_ARCHIVING_DURATION", 0)
+    notification_email = setting("MAILEVA_NOTIFICATION", False)
+
+    # SENDER
+    sender_address_line_1 = setting("MAILEVA_SENDER1")
+    sender_address_line_2 = setting("MAILEVA_SENDER2")
+    sender_address_line_3 = setting("MAILEVA_SENDER3")
+    sender_address_line_4 = setting("MAILEVA_SENDER4")
+    sender_address_line_5 = setting("MAILEVA_SENDER5")
+    sender_address_line_6 = setting("MAILEVA_SENDER6")
+    sender_country_code = setting("MAILEVA_SENDERC")
+    
+
+    def __init__(self, missive, *args, **kwargs):
+        super().__init__(missive, *args, **kwargs)
+        self.color_first_c4 = kwargs.get("color_first_c4", self.color_first_c4)
+        self.color_next_c4 = kwargs.get("color_next_c4", self.color_next_c4)
+        self.nb_first_c4 = kwargs.get("nb_first_c4", self.nb_first_c4)
+        self.nb_next_c4 = kwargs.get("nb_next_c4", self.nb_next_c4)
+        self.archiving_lte3_first = kwargs.get("archiving_lte3_first", self.archiving_lte3_first)
+        self.archiving_lte6_first = kwargs.get("archiving_lte6_first", self.archiving_lte6_first)
+        self.archiving_lte10_first = kwargs.get("archiving_lte10_first", self.archiving_lte10_first)
+        self.archiving_lte3_next = kwargs.get("archiving_lte3_next", self.archiving_lte3_next)
+        self.archiving_lte6_next = kwargs.get("archiving_lte6_next", self.archiving_lte6_next)
+        self.archiving_lte10_next = kwargs.get("archiving_lte10_next", self.archiving_lte10_next)
+        self.color_printing = kwargs.get("color_printing", self.color_printing)
+        self.duplex_printing = kwargs.get("duplex_printing", self.duplex_printing)
+        self.optional_address_sheet = kwargs.get("optional_address_sheet", self.optional_address_sheet)
+        self.archiving_duration = kwargs.get("archiving_duration", self.archiving_duration)
+        self.notification_email = kwargs.get("notification_email", self.notification_email)
+        self.sender_address_line_1 = kwargs.get("sender_address_line_1", self.sender_address_line_1)
+        self.sender_address_line_2 = kwargs.get("sender_address_line_2", self.sender_address_line_2)
+        self.sender_address_line_3 = kwargs.get("sender_address_line_3", self.sender_address_line_3)
+        self.sender_address_line_4 = kwargs.get("sender_address_line_4", self.sender_address_line_4)
+        self.sender_address_line_5 = kwargs.get("sender_address_line_5", self.sender_address_line_5)
+        self.sender_address_line_6 = kwargs.get("sender_address_line_6", self.sender_address_line_6)
+        self.sender_country_code = kwargs.get("sender_country_code", self.sender_country_code)
 
     @property
     def sender_height(self):
@@ -72,18 +127,18 @@ class Maileva(MissiveBackend):
             "name": self.missive.target,
             "custom_id": self.missive.msg_id,
             "custom_data": self.missive.msg_id,
-            "color_printing": True,
-            "duplex_printing": True,
-            "optional_address_sheet": False,
-            "notification_email": setting("MAILEVA_NOTIFICATION"),
-            "archiving_duration": 3,
-            "sender_address_line_1": setting("MAILEVA_SENDER1"),
-            "sender_address_line_2": setting("MAILEVA_SENDER2"),
-            "sender_address_line_3": setting("MAILEVA_SENDER3"),
-            "sender_address_line_4": setting("MAILEVA_SENDER4"),
-            "sender_address_line_5": setting("MAILEVA_SENDER5"),
-            "sender_address_line_6": setting("MAILEVA_SENDER6"),
-            "sender_country_code": setting("MAILEVA_SENDERC"),
+            "color_printing": self.color_printing,
+            "duplex_printing": self.duplex_printing,
+            "optional_address_sheet": self.optional_address_sheet,
+            "notification_email": self.notification_email,
+            "archiving_duration": self.archiving_duration,
+            "sender_address_line_1": self.sender_address_line_1,
+            "sender_address_line_2": self.sender_address_line_2,
+            "sender_address_line_3": self.sender_address_line_3,
+            "sender_address_line_4": self.sender_address_line_4,
+            "sender_address_line_5": self.sender_address_line_5,
+            "sender_address_line_6": self.sender_address_line_6,
+            "sender_country_code": self.sender_country_code,
         }
         if self.missive.model == _c.MODE_POSTALAR:
             base.update({
@@ -218,6 +273,7 @@ class Maileva(MissiveBackend):
         missive.check_status()
 
     def send_postal(self):
+        self.set_price_config()
         self.missive.msg_id = str(uuid4())
         if self.missive.status == _c.STATUS_FILETEST:
             self.postal_base()
@@ -232,9 +288,58 @@ class Maileva(MissiveBackend):
                 os.remove(self.path_base_doc)
             if not self.in_error and self.submit():
                 self.missive.to_sent()
+                self.set_price_info()
                 if setting("MAILEVA_WEBHOOK"):
                     self.enable_webhooks()
             else:
                 self.missive.to_error()
             getattr(self, "check_%s" % self.missive.mode.lower())()
             return self.missive.status
+
+    def price_archive(self, page, archive):
+        if not archive or not page:
+            return 0
+        elif archive <= 3:
+            return self.archiving_lte3_first+(self.archiving_lte3_next*(page-1))
+        elif archive <= 6:
+            return self.archiving_lte6_first+(self.archiving_lte6_next*(page-1))
+        elif archive <= 10:
+            return self.archiving_lte10_first+(self.archiving_lte10_next*(page-1))
+
+    def price_page(self, count_page, color=False, archive=0):
+        price, pnext, parchive = (0.73, 0.48) if color else (0.48, 0.23)
+        if count_page > 1: price += (pnext*(count_page-1))
+        price += self.price_archive(count_page, archive)
+        return price
+
+    def price_config(self):
+        return {
+            "color_first_c4": self.color_first_c4,
+            "color_next_c4": self.color_next_c4,
+            "nb_first_c4": self.nb_first_c4,
+            "nb_next_c4": self.nb_next_c4,
+            "archiving_lte3_first": self.archiving_lte3_first,
+            "archiving_lte6_first": self.archiving_lte6_first,
+            "archiving_lte10_first": self.archiving_lte10_first,
+            "archiving_lte3_next": self.archiving_lte3_next,
+            "archiving_lte6_next": self.archiving_lte6_next,
+            "archiving_lte10_next": self.archiving_lte10_next,
+        }
+    
+    def prince_info(self):
+        return {
+            "count_page": self.count_page,
+            "duplex_printing": self.duplex_printing,
+            "color_printing": self.color_printing,
+            "archiving_duration": self.archiving_duration,
+            "optional_address_sheet": self.optional_address_sheet
+        }
+
+    def price(self):
+        pages = self.price_info["count_page"]
+        pages += 1 if self.prince_info["optional_address_sheet"] else 0
+        price_page = self.price_page(
+            count_page=pages,
+            color=self.price_info["color_printing"],
+            archive=self.prince_info["archiving_duration"]
+        )
