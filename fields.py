@@ -115,4 +115,8 @@ reporting = (
     "can_pdf",
     "cfg_pdf",
     "html_pdf",
+<<<<<<< HEAD
+=======
+    "email_html",
+>>>>>>> 1e28782 (feat: meetings recap)
 )

@@ -25,6 +25,10 @@ class Reporting(Base):
     can_pdf = models.BooleanField(default=False)
     cfg_pdf = JSONField(default=dict, blank=True, null=True)
     html_pdf = RichTextField(blank=True, null=True)
+<<<<<<< HEAD
+=======
+    email_html = RichTextField(blank=True, null=True)
+>>>>>>> 1e28782 (feat: meetings recap)
 
     related_obj = None
 
@@ -73,4 +77,24 @@ class Reporting(Base):
     def reporting_file_response(self, response, file_type):
         if response == "http":
             return self.reporting_file_generator.response_http(file_type)
+<<<<<<< HEAD
+=======
+        elif response == "email":
+            from mighty.models import Missive
+            from django.template import Template, Context
+
+            file = self.reporting_file_generator.file_csv(file_type, None)
+            print(file)
+
+            missive = Missive (
+                target = self.email_target,
+                subject = "Récapitulatif",
+                html = Template(self.email_html).render(Context({'obj': self})),
+            )
+            missive.attachments = [file]
+            missive.save()
+
+            return file
+        
+>>>>>>> 1e28782 (feat: meetings recap)
         return self.reporting_file_generator.response_file(file_type)
