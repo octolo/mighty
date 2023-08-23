@@ -20,7 +20,7 @@ class Role(Base, Image):
     content_object = GenericForeignKey('content_type', 'object_id')
 
     objects = models.Manager()
-    objectsB = models.Manager()
+    objectsB = managers.RoleManager()
 
     class Meta(Base.Meta):
         abstract = True

@@ -11,11 +11,7 @@ def ReportingModel(**kwargs):
     def decorator(obj):
         class ReportingModel(obj):
             reporting_frequency = models.CharField(_.reporting_frequency, max_length=25, choices=_.FREQUENCY_EXPORT, blank=True, null=True)
-<<<<<<< HEAD
-            reporting_last_date = models.DateField(_.reporting_last_date, auto_now=True)
-=======
             reporting_task_date = models.JSONField(default=dict, blank=True, null=True)
->>>>>>> 1e28782 (feat: meetings recap)
             reporting_email = models.EmailField(_.reporting_email, max_length=254, blank=True, null=True)
             reporting_email_field = kwargs.get("email_field", "reporting_email")
             reporting_list = models.CharField(max_length=255, blank=True, null=True, choices=kwargs.get("reporting_list", ()))
@@ -54,52 +50,6 @@ def ReportingModel(**kwargs):
             def reporting_qs(self):
                 ct = self.get_content_type()
                 return ct.ct_to_reporting.all()
-<<<<<<< HEAD
-
-            @property
-            def reporting_definition(self):
-                rc = [{ "id": "std:"+k, "name": v, "excel": True, "csv": True, "pdf": False, "is_detail": True }
-                    for k,v in dict(self.reporting_detail).items()]
-                rc += [{
-                    "id": "cfg:"+str(rpg.uid),
-                    "name": rpg.name,
-                    "excel": rpg.can_excel,
-                    "csv": rpg.can_csv,
-                    "pdf": rpg.can_pdf,
-                    "is_detail": rpg.is_detail
-                } for rpg in self.reporting_qs]
-                return rc
-
-            @property
-            def reporting_choices(self):
-                rc = [("std:"+k, v) for k,v in dict(self.reporting_detail).items()]
-                rc += [("cfg:"+str(rpg.uid), rpg.name) for rpg in self.reporting_qs]
-                return rc
-
-            def reporting_file_generator(self, name, fields, items):
-                return FileGenerator(filename=name, items=items, fields=fields)
-
-            def reporting_process_cfg(self, reporting, file_type, response="http", *args, **kwargs):
-                reporting = self.reporting_qs.get(uid=reporting)
-                reporting.related_obj = self
-                return reporting.reporting_file_response(response, file_type)
-
-            def reporting_process_std(self, reporting, file_type, response="http", *args, **kwargs):
-                name = "reporting_%s_%s" % (reporting.lower(), file_type.lower())
-                return getattr(self, name)(response) if hasattr(self, name) else False
-
-            def reporting_process(self, spec, reporting, file_type, *args, **kwargs):
-                return getattr(self, "reporting_process_"+spec)(reporting, file_type, *args, **kwargs)
-
-            def reporting_execute(self, request, *args, **kwargs):
-                print(request.GET)
-                reporting = request.GET.get("reporting")
-                file_type = request.GET.get("file_type", "csv")
-                if reporting:
-                    spec, reporting = reporting.split(":")
-                    return self.reporting_process(spec, reporting, file_type, *args, **kwargs)
-=======
->>>>>>> 1e28782 (feat: meetings recap)
 
             @property
             def reporting_definition(self):

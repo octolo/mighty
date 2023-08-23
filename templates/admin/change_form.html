@@ -94,15 +94,7 @@
 
 {% if original.reporting_enable %}
 <div class="submit-row form-list">
-<<<<<<< HEAD
-    <form method="POST" action="{{ original.reporting_admin_url }}">
-=======
-<<<<<<< Updated upstream
-    <form method="POST" action="{{ original.admin_reporting_url }}">
-=======
     <form method="GET" action="{{ original.reporting_admin_url }}">
->>>>>>> Stashed changes
->>>>>>> 1e28782 (feat: meetings recap)
         {% csrf_token %}
         {{ original.reporting_form }}
         <input type="submit" value="Download">
