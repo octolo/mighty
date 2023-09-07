@@ -5,7 +5,7 @@ from mighty.apps import MightyConfig
 from mighty.filegenerator import FileGenerator
 from mighty import translates as _
 
-reporting_fields = ("reporting_frequency", "reporting_last_date", "reporting_email")
+reporting_fields = ("reporting_frequency", "reporting_task_date", "reporting_email")
 
 def ReportingModel(**kwargs):
     def decorator(obj):

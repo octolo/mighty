@@ -98,7 +98,7 @@ error_already_exist = _('already exist')
 
 # export auto
 reporting_frequency = _("Fréquence de l'export")
-reporting_last_date = _("Date du dernier export")
+reporting_task_date = _("Date du dernier export")
 reporting_email = _("Email de l'export")
 
 FREQUENCY_DAILY = "DAILY"

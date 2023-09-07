@@ -80,8 +80,8 @@ class BaseAdmin(admin.ModelAdmin):
         self.custom_filter(model, admin_site)
 
     def add_some_readonly_fields(self, model, admin_site):
-        if hasattr(model, "reporting_last_date"):
-            self.readonly_fields += ("reporting_last_date",)
+        if hasattr(model, "reporting_task_date"):
+            self.readonly_fields += ("reporting_task_date",)
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
