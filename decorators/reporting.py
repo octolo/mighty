@@ -78,7 +78,7 @@ def ReportingModel(**kwargs):
                 reporting = self.reporting_qs.get(uid=reporting)
                 reporting.related_obj = self
                 reporting.email_target = kwargs.get("email_target")
-                return reporting.reporting_file_response(response, file_type)
+                return reporting.reporting_file_response(response, file_type, *args, **kwargs)
 
             def reporting_process_std(self, reporting, file_type, response="http", *args, **kwargs):
                 name = "reporting_%s_%s" % (reporting.lower(), file_type.lower())
@@ -88,8 +88,8 @@ def ReportingModel(**kwargs):
                 return getattr(self, "reporting_process_"+spec)(reporting, file_type, *args, **kwargs)
 
             def reporting_execute(self, request=None, *args, **kwargs):
-                reporting = kwargs.pop("reporting", None) #request.GET.get("reporting", None))
-                file_type = kwargs.pop("file_type", "csv") #request.GET.get("file_type", "csv"))
+                reporting = kwargs.pop("reporting", None) 
+                file_type = kwargs.pop("file_type", "csv")
                 if reporting:
                     spec, reporting = reporting.split(":")
                     return self.reporting_process(spec, reporting, file_type, *args, **kwargs)

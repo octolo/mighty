@@ -71,7 +71,8 @@ class Reporting(Base):
     def reporting_file_generator(self):
         return FileGenerator(filename=self.file_name, items=self.reporting_items, fields=self.reporting_fields)
 
-    def reporting_file_response(self, response, file_type):
+    def reporting_file_response(self, response, file_type, *args, **kwargs):
+        obj = kwargs.get('obj', None)
         if response == "http":
             return self.reporting_file_generator.response_http(file_type)
         elif response == "email":
@@ -85,6 +86,8 @@ class Reporting(Base):
                 target = self.email_target,
                 subject = "Récapitulatif",
                 html = Template(self.email_html).render(Context({'obj': self})),
+                content_type=obj.get_content_type() if obj else None,
+                object_id=obj.id if obj else None,
             )
             missive.attachments = [file]
             missive.save()
