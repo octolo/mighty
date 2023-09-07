@@ -5,8 +5,11 @@ from mighty.applications.tenant.apps import TenantConfig as conf
 
 def TenantAssociation(**kwargs):
     def decorator(obj):
+        class_name = obj.__name__.lower()
         class TAModel(obj):
             tenant_association_kwargs = kwargs
+            tenant_field = kwargs.get("tenant_field", "tenant")
+
             group_relations = kwargs.get('group_relations', [])
             group = models.ForeignKey(conf.ForeignKey.group,
                 on_delete=kwargs.get('on_delete', models.CASCADE),
@@ -17,23 +20,22 @@ def TenantAssociation(**kwargs):
 
             if kwargs.get('user_related'):
                 user = models.ForeignKey(get_user_model(),
-                    related_name=kwargs.get('user_related'),
+                    related_name=class_name + "_user_related",
                     on_delete=models.SET_NULL, blank=True, null=True,
                 )
             if kwargs.get('roles_related'):
                 roles = models.ManyToManyField(conf.ForeignKey.role,
-                    related_name=kwargs.get('roles_related'),
+                    related_name=class_name + "_roles_related",
                     blank=True,
                 )
             if kwargs.get('invitation_related'):
                 invitation = models.ForeignKey(conf.ForeignKey.invitation,
-                    related_name=kwargs.get('invitation_related'),
+                    related_name=class_name + "_invitation_related",
                     on_delete=models.SET_NULL, blank=True, null=True,
                 )
 
             class Meta(obj.Meta):
                 abstract = True
-
 
             def groups_m2m(self, field):
                 return [obj.group.id for obj in getattr(self, field).all()]
@@ -54,6 +56,28 @@ def TenantAssociation(**kwargs):
             def check_group_coherence(self):
                 if not self.is_group_coherence:
                     raise ValidationError('groups relation are not coherent')
+
+            # User related (direct relation)
+            def get_user_related(self):
+                return getattr(self, self.tenant_field) if hasattr(self, self.tenant_field) else None
+
+            def set_user_related(self):
+                if kwargs.get('user_related') and not self.user:
+                    self.user = self.get_user_related()
+
+            # Users related (indirect m2m relation)
+            def get_users_related(self, ur):
+                return self.ur.values_list("id", flat=True)
+
+            def set_users_related(self):
+                for ur in kwargs.get("users_related", []):
+                    ur_name = str(ur)+"_list_id"
+                    if hasattr(self, ur_name):
+                        setattr(self, ur_name, self.get_users_related(ur))
+
+            def tenant_association_update(self):
+                self.set_user_related()
+                self.set_users_related()
 
             def save(self, *args, **kwargs):
                 if not self.group:

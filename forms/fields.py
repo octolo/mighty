@@ -15,6 +15,7 @@ self_fields = (
     "preference",
     "fast_create",
     "form_create",
+    "form_edit",
     "field_detail",
     "discriminant",
     "splitted",

@@ -12,7 +12,17 @@ form_init_fields = (
     "empty_permitted",
     "use_required_attribute",
     "renderer")
-class FormDescriptable(forms.Form):
+
+class FormShare:
+    def get_sub_form(self, form):
+        from mighty.forms.descriptors import FormDescriptor
+        import json
+        test = FormDescriptor(form, self.request)
+        return json.loads(json.dumps(test.as_json()))
+
+    def prepare_descriptor(self, *args, **kwargs): pass
+
+class FormDescriptable(FormShare, forms.Form):
     request = None
 
     class Options:
@@ -25,14 +35,12 @@ class FormDescriptable(forms.Form):
         list_fields = form_init_fields + ("field_order",)
         return {f: kwargs[f] for f in kwargs if f in list_fields}
 
-    def prepare_descriptor(self, *args, **kwargs): pass
-
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request") if "request" in kwargs else None
         super(forms.Form, self).__init__(*args, **{f: kwargs[f] for f in self.form_init(kwargs)})
         self.prepare_descriptor(*args, **kwargs)
 
-class ModelFormDescriptable(forms.ModelForm):
+class ModelFormDescriptable(FormShare, forms.ModelForm):
     request = None
 
     class Options:
@@ -44,8 +52,6 @@ class ModelFormDescriptable(forms.ModelForm):
     def form_init(self, kwargs):
         list_fields = form_init_fields + ("instance",)
         return {f: kwargs[f] for f in kwargs if f in list_fields}
-
-    def prepare_descriptor(self, *args, **kwargs): pass
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request") if "request" in kwargs else None
@@ -83,6 +89,7 @@ class FormDescriptor:
         "preference",
         "fast_create",
         "form_create",
+        "form_edit",
         "post_create",
         "field_detail",
         "discriminant",
@@ -128,12 +135,12 @@ class FormDescriptor:
         self.form_desc["fields"] = [self.get_field_desc(field, name) for name,field in self.form.fields.items()]
 
     def get_error_messages(self, field):
-        errors = field.error_messages
+        errors = {k: str(v) for k,v in field.error_messages.items()}
         for val in field.validators:
             if hasattr(val, "code"):
-                errors.update({val.code: val.message})
+                errors.update({val.code: str(val.message)})
             else:
-                errors.update({"nocode": val.messages})
+                errors.update({"nocode": [str(msg) for msg in val.messages]})
         return errors
 
     def check_enctype(self, desc):
@@ -181,11 +188,11 @@ class FormDescriptor:
                 return []
             elif hasattr(field.choices, 'queryset'):
                 return [{
-                    "label": getattr(obj, self.option(field, name, "label")),
+                    "label": str(getattr(obj, self.option(field, name, "label"))),
                     "value": getattr(obj, self.option(field, name, "value")),
                 } for obj in field.choices.queryset]
             return [{
-                    "label": choice[1],
+                    "label": str(choice[1]),
                     "value": choice[0],
                 } for choice in field.choices]
 
@@ -232,6 +239,9 @@ class FormDescriptor:
 
     def get_field_detail(self, field, name):
         return self.option(field, name, "field_detail", name+"_detail")
+
+    def get_label(self, field, name):
+        return str(getattr(field, "label"))
 
     def get_field_desc(self, field, name):
         desc = {

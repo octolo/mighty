@@ -88,11 +88,12 @@ def ReportingModel(**kwargs):
                 return getattr(self, "reporting_process_"+spec)(reporting, file_type, *args, **kwargs)
 
             def reporting_execute(self, request=None, *args, **kwargs):
-                reporting = kwargs.pop("reporting", None) 
-                file_type = kwargs.pop("file_type", "csv")
+                reporting = kwargs.pop("reporting", request.GET.get("reporting", None))
+                file_type = kwargs.pop("file_type", request.GET.get("file_type", "csv"))
+                print(reporting, file_type)
                 if reporting:
                     spec, reporting = reporting.split(":")
                     return self.reporting_process(spec, reporting, file_type, *args, **kwargs)
-                
+
         return ReportingModel
     return decorator
