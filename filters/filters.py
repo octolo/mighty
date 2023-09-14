@@ -272,7 +272,9 @@ class SearchFilter(ParamFilter):
         values = self.get_value()
         if len(values):
             searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in values])
-            return (searchQ|self.get_andQ())|self.get_orQ()
+            test = (searchQ|self.get_andQ())|self.get_orQ()
+            print(test)
+            return test
         return Q()
 
 class BooleanParamFilter(ParamFilter):

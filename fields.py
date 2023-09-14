@@ -98,6 +98,14 @@ backend = (
     "backend_list",
 )
 
+# Decorators
+
+immutable = (
+    "immutable",
+    "immutable_delete",
+    "immutable_fields",
+)
+
 reporting = (
     "name",
     "file_name",

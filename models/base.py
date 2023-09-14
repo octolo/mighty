@@ -7,6 +7,7 @@ from django.conf import settings
 from django.template.loader import get_template
 from django.core.exceptions import ValidationError
 
+from mighty.apps import MightyConfig as config
 from mighty.functions import url_domain
 from mighty.fields import JSONField
 from mighty.models import fields
@@ -53,9 +54,11 @@ actions = {
 default_permissions = Options(None).default_permissions
 permissions = tuple(sorted(list(actions), key=lambda x: x[0]))
 class Base(models.Model):
+    from_rest = False
     www_action = None
     www_action_cancel = []
     search_fields = []
+    is_immutable_delete = True
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
     logs = JSONField(blank=True, null=True, default=dict)
     is_disable = models.BooleanField(_.is_disable, default=False, editable=False)
@@ -186,13 +189,15 @@ class Base(models.Model):
     # MODIFY
     @property
     def can_be_changed(self):
-        if self.fields_can_be_changed == "*": return True
-        return all([field in self.fields_can_be_changed for field in self.fields_changed])
+        if self.is_immutable:
+            if self.fields_can_be_changed == "*":
+                return True
+            return all([field in self.fields_can_be_changed for field in self.fields_changed])
+        return True
 
     @property
-    def cant_be_changed(self):
-        if self.fields_cant_be_changed == "*": return True
-        return all([field not in self.fields_cant_be_changed for field in self.fields_changed])
+    def can_be_deleted(self):
+        return (not self.is_immutable or self.is_immutable_delete)
 
     class mighty:
         perm_title = actions
@@ -204,6 +209,10 @@ class Base(models.Model):
         default_permissions = default_permissions + permissions
 
     def raise_error(self, message, code=None):
+        if config.use_rest and config.rest_error and self.from_rest:
+            from django.utils.module_loading import import_string
+            SzValidationError = import_string(config.rest_error)
+            raise SzValidationError(detail=message, code=code)
         raise ValidationError(message=message, code=code)
 
     def do_a_copy(self, **kwargs):
@@ -415,7 +424,8 @@ class Base(models.Model):
 
     @property
     def fields_changed(self):
-        return (field for field in self.fields if self.property_change(field))
+        print(self.fields())
+        return (field for field in self.fields() if self.property_change(field))
 
     def set_create_by(self, user=None):
         if user and self.use_create_by:
@@ -478,7 +488,7 @@ class Base(models.Model):
 
     def delete(self, *args, **kwargs):
         self.www_action = "delete"
-        if not self.is_immutable:
+        if self.can_be_deleted:
             if "pre_delete" not in self.www_action_cancel:
                 self.pre_delete()
             super().delete(*args, **kwargs)

@@ -69,6 +69,9 @@ class BaseAdmin(admin.ModelAdmin):
         for field in fields.keywords:
             if hasattr(model, field):
                 self.add_field(_.informations, (field,))
+        for field in fields.immutable:
+            if hasattr(model, field):
+                self.add_field("immutable", (field,))
         self.custom_fieldset(model, admin_site)
         if hasattr(model, "task_list"):
             self.add_field("Tasks", ("task_status", "task_last"))

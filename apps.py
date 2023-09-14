@@ -5,6 +5,8 @@ from . import over_config
 import os, logging
 
 class Config:
+    use_rest = False
+    rest_error = "rest_framework.serializers.ValidationError"
     cgu_path = "/static/files/CGU.pdf"
     politic_path = "/static/files/POLITIQUE_DE_CONFIDENTIALITE_JULY_2022.pdf"
     enable_mimetype = False
