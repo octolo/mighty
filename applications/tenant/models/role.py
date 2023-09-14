@@ -29,8 +29,9 @@ class Role(Base, Image):
         ordering = ["name", "group"]
         unique_together = ('id', 'group', 'name')
 
+    @property
     def count(self):
-        return self.sql_count if hasattr(self, 'sql_count') else self.number
+        return self.get_has("sql_count", 0)
 
     def set_number(self):
         self.number = self.roles_tenant.count()

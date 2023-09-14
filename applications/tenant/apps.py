@@ -5,6 +5,7 @@ from mighty.functions import setting
 from django.contrib.auth import get_user_model
 
 class Config:
+    count_related = "roles_tenant"
     ordering = ("id",)
     invitation_enable = False
     invitation_days = 7

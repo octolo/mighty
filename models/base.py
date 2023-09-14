@@ -424,7 +424,6 @@ class Base(models.Model):
 
     @property
     def fields_changed(self):
-        print(self.fields())
         return (field for field in self.fields() if self.property_change(field))
 
     def set_create_by(self, user=None):
