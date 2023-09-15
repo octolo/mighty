@@ -1,5 +1,5 @@
 from mighty.consumers import Consumer
-from asgiref.sync import async_to_sync
+# from asgiref.sync import async_to_sync
 import logging
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class ChatConsumer(Consumer):
         elif cmd[1] == 'join':
             self.join_init(args['to']) if cmd[2] == 'init' else self.join_accept(args['from'])
         elif cmd[1] == 'leave':
-            self.leave_init(args['to'], args) if cmd[2] == 'init' else self.leave_accept(args['from'], args)                
+            self.leave_init(args['to'], args) if cmd[2] == 'init' else self.leave_accept(args['from'], args)
 
     def join(self, channel):
         self._ws.join_channel('chat', channel)

@@ -1,7 +1,7 @@
 from mighty.functions import models_difference, to_binary
 from mighty.fields import base
 from mighty.applications.logger import createorupdate_changeslog
-from channels.db import database_sync_to_async
+# from channels.db import database_sync_to_async
 
 def pre_change_log(sender, instance, **kwargs):
     try:

@@ -15,7 +15,7 @@ from mighty import translates as _
 from mighty.apps import MightyConfig as conf
 from mighty.functions import service_uptime, service_cpu, service_memory, make_searchable
 from functools import update_wrapper
-import logging, asyncio, aioredis
+import logging
 logger = logging.getLogger(__name__)
 
 supervision = {
@@ -27,19 +27,19 @@ supervision = {
 }
 supervision.update(getattr(settings, 'SUPERVISION', {}))
 
-async def channels_group(pattern):
-    redis = await aioredis.create_redis_pool(settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0])
-    keys = await redis.keys(pattern, encoding='utf-8')
-    channels = {key.replace(pattern[:-1], ''): await redis.ttl(key) for key in keys}
-    redis.close()
-    await redis.wait_closed()
-    return channels
+# async def channels_group(pattern):
+#     redis = await aioredis.create_redis_pool(settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0])
+#     keys = await redis.keys(pattern, encoding='utf-8')
+#     channels = {key.replace(pattern[:-1], ''): await redis.ttl(key) for key in keys}
+#     redis.close()
+#     await redis.wait_closed()
+#     return channels
 
-async def flushdb():
-    redis = await aioredis.create_redis_pool(settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0])
-    await redis.flushdb()
-    redis.close()
-    await redis.wait_closed()
+# async def flushdb():
+#     redis = await aioredis.create_redis_pool(settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0])
+#     await redis.flushdb()
+#     redis.close()
+#     await redis.wait_closed()
 
 class AdminSite(admin.AdminSite):
     site_header = conf.site_header
@@ -56,11 +56,11 @@ class AdminSite(admin.AdminSite):
                     if m._meta.app_label == label}
         else:
             models = self._registry
-        
+
         for model, model_admin in models.items():
             app_label = model._meta.app_label
             app_config = apps.get_app_config(app_label)
-            if hasattr(app_config, 'multi_apps'):    
+            if hasattr(app_config, 'multi_apps'):
                 has_module_perms = model_admin.has_module_permission(request)
                 if not has_module_perms:
                     continue
@@ -131,7 +131,7 @@ class AdminSite(admin.AdminSite):
             if name in models:
                 return app
         return 'others'
-     
+
     def get_multi_app_list(self, request):
         """
         Return a sorted list of all the installed apps that have been
@@ -188,11 +188,11 @@ class AdminSite(admin.AdminSite):
                 try:
                     app_list.append({
                         "name": ct.app_labeled_name,
-                        "url": reverse("admin:%s_%s_changelist" % (ct.app_label, ct.model)) 
+                        "url": reverse("admin:%s_%s_changelist" % (ct.app_label, ct.model))
                     })
                 except Exception:
                     pass
-                
+
         return app_list
         #for app in self.get_app_list(request)
 
@@ -315,38 +315,38 @@ class AdminSite(admin.AdminSite):
     ##########################
     # Supervision
     ##########################
-    def supervision_view(self, request, extra_context=None):
-        services = {}
-        for service, commands in supervision.items():
-            services[service] = {'uptime': service_uptime(service, commands.get('uptime'))}
-            services[service]['cpu'] = service_cpu(service, commands.get('cpu'))
-            services[service]['memory'] = service_memory(service, commands.get('memory'))
-        context = {**self.each_context(request), 'supervision': _.supervision, 'services': services}
-        return TemplateResponse(request, 'admin/supervision.html', context)
+    # def supervision_view(self, request, extra_context=None):
+    #     services = {}
+    #     for service, commands in supervision.items():
+    #         services[service] = {'uptime': service_uptime(service, commands.get('uptime'))}
+    #         services[service]['cpu'] = service_cpu(service, commands.get('cpu'))
+    #         services[service]['memory'] = service_memory(service, commands.get('memory'))
+    #     context = {**self.each_context(request), 'supervision': _.supervision, 'services': services}
+    #     return TemplateResponse(request, 'admin/supervision.html', context)
 
-    def supervision_channel_view(self, request, extra_context=None):
-        context = {**self.each_context(request),
-            'supervision': _.supervision,
-            'groups': asyncio.run(channels_group('asgi::group:*')),
-            'users': asyncio.run(channels_group('specific.*')),
-        }
-        return TemplateResponse(request, 'admin/channel_list.html', context)
+    # def supervision_channel_view(self, request, extra_context=None):
+    #     context = {**self.each_context(request),
+    #         'supervision': _.supervision,
+    #         'groups': asyncio.run(channels_group('asgi::group:*')),
+    #         'users': asyncio.run(channels_group('specific.*')),
+    #     }
+    #     return TemplateResponse(request, 'admin/channel_list.html', context)
 
-    def supervision_channelflushall_view(self, request, extra_context=None):
-        asyncio.run(flushdb())
-        return redirect('admin:supervision_channel_list')
+    # def supervision_channelflushall_view(self, request, extra_context=None):
+    #     asyncio.run(flushdb())
+    #     return redirect('admin:supervision_channel_list')
 
-    def supervision_channeljoin_view(self, request, extra_context=None, **kwargs):
-        room = kwargs.get('room')
-        room_def = room.split(conf.Channel.delimiter)
-        context = {**self.each_context(request),
-            'supervision': _.supervision,
-            'room': room,
-            'room_def': room_def,
-            'from': room_def[0],
-            'to': room_def[1],
-        }
-        return TemplateResponse(request, 'admin/channel_detail.html', context)
+    # def supervision_channeljoin_view(self, request, extra_context=None, **kwargs):
+    #     room = kwargs.get('room')
+    #     room_def = room.split(conf.Channel.delimiter)
+    #     context = {**self.each_context(request),
+    #         'supervision': _.supervision,
+    #         'room': room,
+    #         'room_def': room_def,
+    #         'from': room_def[0],
+    #         'to': room_def[1],
+    #     }
+    #     return TemplateResponse(request, 'admin/channel_detail.html', context)
 
     def get_urls(self):
         urls = super(AdminSite, self).get_urls()
@@ -356,9 +356,9 @@ class AdminSite(admin.AdminSite):
             my_urls.append(path('login/', self.stepsearch, name='twofactor_search'))
             my_urls.append(path('login/choices/', self.stepchoices, name='twofactor_choices'))
             my_urls.append(path('login/code/', self.stepcode, name='twofactor_code'))
-        if conf.supervision:
-            my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
-            my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
-            my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
-            my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))
+        # if conf.supervision:
+        #     my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
+        #     my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
+        #     my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
+        #     my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))
         return my_urls + urls
