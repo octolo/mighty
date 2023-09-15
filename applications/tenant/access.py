@@ -41,7 +41,7 @@ class TenantAccess:
         return self.request.user.user_tenant.filter(roles__in=roles).exists()
 
     # Properties
-    @property
+    @cached_property
     def current_group(self):
         named_id = self.request.parser_context['kwargs'].get('group_named_id')
         group_uid = self.request.data.get('group')

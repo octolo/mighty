@@ -7,7 +7,7 @@ def TenantAssociation(**kwargs):
     def decorator(obj):
         class_name = obj.__name__.lower()
         class NewClass(obj):
-            tenant_association_kwargs = kwargs
+            tenant_association_config = kwargs
             tenant_field = kwargs.get("tenant_field", "tenant")
 
             group_relations = kwargs.get('group_relations', [])
@@ -79,6 +79,12 @@ def TenantAssociation(**kwargs):
                 self.set_user_related()
                 self.set_users_related()
 
+            def tenant_pre_save(self):
+                if self.group:
+                    for field in kwargs.get("duplicate_db_charfields", ()):
+                        setattr(self, "group_"+field, getattr(self.group, field))
+
+
             def save(self, *args, **kwargs):
                 if not self.group:
                     try:
@@ -87,6 +93,9 @@ def TenantAssociation(**kwargs):
                         pass
                 self.check_group_coherence()
                 super().save(*args, **kwargs)
+
+        for field in kwargs.get("duplicate_db_charfields", ()):
+            NewClass.add_to_class("group_"+field, models.CharField(max_length=255, blank=True, null=True))
 
         NewClass.__name__ = obj.__name__
         return NewClass

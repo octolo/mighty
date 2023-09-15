@@ -44,6 +44,14 @@ def batch_bulk_chunk(objects, chunk):
 """
 functions for sql usage
 """
+class CountSubquery(Subquery):
+    template = "(SELECT Count(%(count_field)s) FROM (%(subquery)s) %(name)s)"
+    output_field = PositiveIntegerField()
+
+    def __init__(self, queryset, output_field=None, *, count_field="pk", **extra):
+        extra['count_field'] = count_field
+        extra['name'] = extra.get("name", "_count")
+        super(CountSubquery, self).__init__(queryset, output_field, **extra)
 
 class SumSubquery(Subquery):
     template = "(SELECT SUM(%(sum_field)s) FROM (%(subquery)s) %(name)s)"
@@ -63,6 +71,8 @@ class SumGt0SubQuery(Subquery):
         extra['field1'] = sum_fields[1]
         extra['name'] = extra.get("name", "_sum")
         super(SumGt0SubQuery, self).__init__(queryset, output_field, **extra)
+
+
 
 class Round(Func):
   function = "ROUND"
