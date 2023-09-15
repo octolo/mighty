@@ -6,7 +6,7 @@ from mighty.applications.tenant.apps import TenantConfig as conf
 def TenantAssociation(**kwargs):
     def decorator(obj):
         class_name = obj.__name__.lower()
-        class TAModel(obj):
+        class NewClass(obj):
             tenant_association_kwargs = kwargs
             tenant_field = kwargs.get("tenant_field", "tenant")
 
@@ -88,13 +88,13 @@ def TenantAssociation(**kwargs):
                 self.check_group_coherence()
                 super().save(*args, **kwargs)
 
-        return TAModel
+        NewClass.__name__ = obj.__name__
+        return NewClass
     return decorator
 
 def TenantGroup(**kwargs):
     def decorator(obj):
-
-        class TGModel(obj):
+        class NewClass(obj):
             nbr_tenant = models.PositiveBigIntegerField(default=1, editable=False)
 
             def set_nbr_tenant(self):
@@ -108,5 +108,6 @@ def TenantGroup(**kwargs):
                 self.set_nbr_tenant()
                 super().save(*args, **kwargs)
 
-        return TGModel
+        NewClass.__name__ = obj.__name__
+        return NewClass
     return decorator

@@ -3,7 +3,7 @@ from django.template.defaultfilters import slugify
 
 def PositionModel(**kwargs):
     def decorator(obj):
-        class PositionModel(obj):
+        class NewClass(obj):
             Qposition = kwargs.get("Qfields", ())
             position_fields = kwargs.get("fields", ())
             position = models.PositiveIntegerField(blank=kwargs.get("blank", True), null=kwargs.get("null", True))
@@ -41,5 +41,6 @@ def PositionModel(**kwargs):
                 for i,p in enumerate(qs): qs[i].position-=1
                 type(self).objects.bulk_update(qs, ["position"])
 
-        return PositionModel
+        NewClass.__name__ = obj.__name__
+        return NewClass
     return decorator
