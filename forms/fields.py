@@ -20,6 +20,7 @@ self_fields = (
     "discriminant",
     "splitted",
     "splitted_refs",
+    "vars_url",
 )
 options_fields = ("value",)
 

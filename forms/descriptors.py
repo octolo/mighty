@@ -97,6 +97,7 @@ class FormDescriptor:
         "filter",
         "splitted",
         "splitted_refs",
+        "vars_url",
     ]
     url_attrs = [
         "form_create_url",
@@ -263,6 +264,7 @@ class FormDescriptor:
                 "opt_value": self.option(field, name, "value"),
             })
         for attr in self.default_attrs:
+            print(attr)
             if hasattr(self, "get_%s"%attr):
                 desc.update({attr: getattr(self, "get_%s"%attr)(field, name)})
             elif hasattr(field, attr):

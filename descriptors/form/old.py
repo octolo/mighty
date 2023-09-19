@@ -29,7 +29,7 @@ class FormDescriptor:
                 return self.formats_input[field.widget.format_key]
         if hasattr(field.widget, 'input_type'):
             return self.formats_input.get(field.widget.input_type, field.widget.input_type)
-        return self.formats_input.get(field.widget.__class__.__name__.lower(), field.widget.__class__.__name__.lower()) 
+        return self.formats_input.get(field.widget.__class__.__name__.lower(), field.widget.__class__.__name__.lower())
 
     def config_field(self, field):
         config = {
@@ -40,7 +40,8 @@ class FormDescriptor:
         if hasattr(field, 'choices_enhanced'): config["options_enhanced"] = self.choices_field(field)
         if hasattr(field, "min_length"): config["min_length"] = field.min_length
         if hasattr(field, "max_length"): config["max_length"] = field.max_length
-        if hasattr(field.widget, "allow_multiple_selected"): 
+        if hasattr(field, "vars_url"): config["vars_url"] = field.vars_url
+        if hasattr(field.widget, "allow_multiple_selected"):
             config["multiselect"] = field.widget.allow_multiple_selected,
         return config
 
@@ -70,7 +71,7 @@ class FormDescriptor:
         name = validator.__class__.__name__.lower()
         if name in self.validators:
             config = {"name": name}
-            config.update({val: self.get_config_validator(val, field, validator) 
+            config.update({val: self.get_config_validator(val, field, validator)
                 for val in self.validators[name]})
             return config
         return False
@@ -83,7 +84,7 @@ class FormDescriptor:
 
     def dependencies_field(self, name):
         return getattr(self.form, "%s_dependencies" % name) if hasattr(self.form, "%s_dependencies" % name) else None
-    
+
     def choice_dependencies_field(self, name):
         return getattr(self.form, "%s_choice_dependencies" % name) if hasattr(self.form, "%s_choice_dependencies" % name) else None
 
@@ -129,7 +130,7 @@ class FormDescriptor:
             for field in self.form.fusion:
                 if name in field[1]: return field[0]
         return name
-                
+
     def field_definition(self, field, name):
         self.current_field = name
         config = self.config_field(field)

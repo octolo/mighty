@@ -63,8 +63,8 @@ def EnableVariableEditorModel(**kwargs):
             @property
             def eve_template_variable_list(self):
                 return [{
-                    "name": tvar.name,
-                    "description": tvar.description,
+                    "var": tvar.name,
+                    "desc": tvar.description,
                 } for tvar in self.eve_template_variable_qs]
 
             def eve_add_template_variable(self):

@@ -102,7 +102,7 @@ class ModelViewSet(ModelViewSet):
         model = self.model_static
         if hasattr(self.model_static, 'eve_variable_prefixed_list'):
             var = self.model_static().eve_variable_prefixed_list(related=self.variables_related)
-            var += list(itertools.chain(*(v().eve_variable_prefixed_list() for v in self.variables_model)))
+            #var += list(itertools.chain(*(v().eve_variable_prefixed_list() for v in self.variables_model)))
             return Response(var)
         return Response([])
 
