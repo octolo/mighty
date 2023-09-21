@@ -56,6 +56,10 @@ class Missive(MessengerModel, AddressNoBase):
         return backend.js_admin
 
     @property
+    def is_read(self):
+        return self.status == choices.STATUS_OPEN
+
+    @property
     def url_viewer(self):
         from django.urls import reverse
         return reverse('messenger-email-viewer', args=[self.uid])
