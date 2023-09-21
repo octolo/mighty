@@ -49,6 +49,11 @@ class ModelFormDescriptable(FormShare, forms.ModelForm):
         url = None
         blocks = None
 
+
+    @property
+    def additional_fields(self):
+        return None
+
     def form_init(self, kwargs):
         list_fields = form_init_fields + ("instance",)
         return {f: kwargs[f] for f in kwargs if f in list_fields}
@@ -116,6 +121,7 @@ class FormDescriptor:
         "accept-charset": None,
         "blocks": [],
         "fields": [],
+        "additional_fields": [],
     }
 
     enctypes = {
@@ -129,6 +135,7 @@ class FormDescriptor:
         self.form = form(request=request, *args, **kwargs)
         self.form_desc["name"] = str(self.form.__class__.__name__).lower()
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
+        self.form_desc["additional_fields"] = getattr(self.form, "additional_fields", [])
         self.obj = kwargs.get("obj")
         self.generate_desc()
 
