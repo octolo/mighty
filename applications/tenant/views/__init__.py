@@ -11,7 +11,7 @@ from mighty.applications.tenant.views.setting.classic import (
 
 if 'rest_framework' in settings.INSTALLED_APPS:
     from mighty.applications.tenant.views.tenant.drf import (
-        TenantList, TenantDetail, CurrentTenant, TenantModelViewSet
+        TenantList, TenantDetail, CurrentTenant, TenantModelViewSet, Sesame
     )
     from mighty.applications.tenant.views.role.drf import (
         RoleList, RoleDetail

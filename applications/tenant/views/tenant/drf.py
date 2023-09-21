@@ -27,3 +27,16 @@ class CurrentTenant(TenantBase, RetrieveAPIView):
 
 class TenantModelViewSet(ModelViewSet, TenantAccess):
     pass
+
+from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from sesame.utils import get_token
+
+class Sesame(GenericAPIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            token = get_token(request.user)
+
+            return Response({"token": token}, status=status.HTTP_200_OK)
+        except AttributeError:
+            return Response({"error": "Tenant or user not found"}, status=status.HTTP_404_NOT_FOUND)

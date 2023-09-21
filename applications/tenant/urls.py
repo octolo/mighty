@@ -7,6 +7,7 @@ api_urlpatterns = [
         path('', views.TenantList.as_view(), name="api-tenant-list"),
         path('<uuid:uid>/', views.TenantDetail.as_view(), name="api-tenant-detail"),
         path('<uuid:uid>/current/', views.CurrentTenant.as_view(), name="api-tenant-current"),
+        path('<uuid:uid>/current/sesame/', views.Sesame.as_view(), name="api-tenant-sesame"),
         #path('invitation/', include([
         #    path('', views.InvitationList.as_view(), name="api-invitation-exist"),
         #    path('<uuid:uid>/', views.InvitationDetail.as_view(), name="api-tenant-invitation"),
