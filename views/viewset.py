@@ -98,7 +98,7 @@ class ModelViewSet(ModelViewSet):
         raise Http404
 
     @action(detail=False, methods=["get"])
-    def variables(self, request, group_named_id, *args, **kwargs):
+    def variables(self, request, *args, **kwargs):
         model = self.model_static
         if hasattr(self.model_static, 'eve_variable_prefixed_list'):
             var = self.model_static().eve_variable_prefixed_list(related=self.variables_related)
