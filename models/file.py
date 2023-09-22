@@ -129,7 +129,7 @@ class File(models.Model):
     def mime_or_ext(self): return self.filemimetype if self.filemimetype else self.file_extension[1:]
     @property
     def reader_path(self): return self.readers[self.mime_or_ext] if self.mime_or_ext in self.readers else None
-            
+
     # MEMORY FILE
     def InMemoryUploadedFile_filemimetype(self): return self.file._file.content_type
     def InMemoryUploadedFile_size(self): return self.file._file.size
@@ -165,7 +165,11 @@ class File(models.Model):
             reader = self.reader(file=self.usable_file, filename=self.filename, extension=self.file_extension, reader=True)
             self.metadata = reader.get_meta_data()
 
+    def set_filename(self):
+        self.filename = self.file.name
+
     def pre_save_file(self):
+        self.set_filename()
         self.set_autocomplete()
         self.set_thumbnail()
         self.set_hashid()
