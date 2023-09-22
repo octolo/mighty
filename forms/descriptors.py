@@ -20,6 +20,12 @@ class FormShare:
         test = FormDescriptor(form, self.request)
         return json.loads(json.dumps(test.as_json()))
 
+    def get_additional_fields(self):
+        return []
+
+    def get_additional_fields_options(self):
+        return {}
+
     def prepare_descriptor(self, *args, **kwargs): pass
 
 class FormDescriptable(FormShare, forms.Form):
@@ -48,11 +54,6 @@ class ModelFormDescriptable(FormShare, forms.ModelForm):
         fields = {}
         url = None
         blocks = None
-
-
-    @property
-    def additional_fields(self):
-        return None
 
     def form_init(self, kwargs):
         list_fields = form_init_fields + ("instance",)
@@ -134,8 +135,11 @@ class FormDescriptor:
         if "drf_kwargs" in kwargs: self.drf_kwargs = kwargs.get("drf_kwargs")
         self.form = form(request=request, *args, **kwargs)
         self.form_desc["name"] = str(self.form.__class__.__name__).lower()
+
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
-        self.form_desc["additional_fields"] = getattr(self.form, "additional_fields", [])
+    
+        self.form_desc["additional_fields"] = self.form.get_additional_fields()
+
         self.obj = kwargs.get("obj")
         self.generate_desc()
 
@@ -179,9 +183,12 @@ class FormDescriptor:
         return base_type
 
     def option(self, field, name, key, default=None):
+        additional_options = self.form.get_additional_fields_options()
         if name in self.form.Options.fields and key in self.form.Options.fields[name]:
             return self.form.Options.fields[name][key]
-        elif hasattr(field, "Options") and hasattr(field.Options, key) and getattr(field.Options, key):
+        elif name in additional_options and key in additional_options[name]:
+            return additional_options[name][key]
+        elif hasattr(field, "Options") and hasattr(field.Options, key):
             return getattr(field.Options, key)
         return default
 
@@ -271,7 +278,6 @@ class FormDescriptor:
                 "opt_value": self.option(field, name, "value"),
             })
         for attr in self.default_attrs:
-            print(attr)
             if hasattr(self, "get_%s"%attr):
                 desc.update({attr: getattr(self, "get_%s"%attr)(field, name)})
             elif hasattr(field, attr):
