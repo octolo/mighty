@@ -114,7 +114,9 @@ class File(models.Model):
     @property
     def file_url(self): return self.file.url
     @property
-    def file_name(self): return self.filename if self.filename else os.path.basename(self.file.name)
+    def file_name(self):
+        print("toto", self.filename)
+        return self.filename if self.filename else os.path.basename(self.file.name)
     @property
     def valid_file_name(self): return get_valid_filename(self.file.name)
     @property
@@ -166,7 +168,8 @@ class File(models.Model):
             self.metadata = reader.get_meta_data()
 
     def set_filename(self):
-        self.filename = self.file.name
+        if not self.filename:
+            self.filename = self.file.name
 
     def pre_save_file(self):
         self.set_filename()
