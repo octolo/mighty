@@ -114,9 +114,7 @@ class File(models.Model):
     @property
     def file_url(self): return self.file.url
     @property
-    def file_name(self):
-        print("toto", self.filename)
-        return self.filename if self.filename else os.path.basename(self.file.name)
+    def file_name(self): return self.filename if self.filename else os.path.basename(self.file.name)
     @property
     def valid_file_name(self): return get_valid_filename(self.file.name)
     @property
