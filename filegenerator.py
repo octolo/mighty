@@ -134,14 +134,10 @@ def generate_pdf(**kwargs):
         "static": os.path.abspath(settings.MEDIA_ROOT),
     })
 
-
-    header_tpl = kwargs.get("conf_header", 
-        get_template(conf.pdf_header).render({"header": header}))
-    footer_tpl = kwargs.get("conf_footer",
-        get_template(conf.pdf_footer).render({"footer": footer}))
-
     # header
     if header:
+        header_tpl = kwargs.get("conf_header", get_template(conf.pdf_header).render({"header": header}))
+        context.update({"header_html": header})
         header_html = tempfile.NamedTemporaryFile(suffix=".html", delete=False)
         header_html.write(Template(header_tpl).render(Context(context)).encode("utf-8"))
         header_html.close()
@@ -150,6 +146,7 @@ def generate_pdf(**kwargs):
         header_enable = True
 
     if footer:
+        footer_tpl = kwargs.get("conf_footer", get_template(conf.pdf_footer).render({"footer": footer}))
         context.update({"footer_html": footer})
         footer_html = tempfile.NamedTemporaryFile(suffix=".html", delete=False)
         footer_html.write(Template(footer_tpl).render(Context(context)).encode("utf-8"))
@@ -164,6 +161,8 @@ def generate_pdf(**kwargs):
             content_html = Template(content_html).render(Context(context))
         else:
             content_html = get_template(content).render(context)
+        content_tpl = kwargs.get("conf_content", get_template(conf.pdf_content).render({"content": content_html}))
+        content_html = Template(content_tpl).render(Context(context))
         pdf = pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)
