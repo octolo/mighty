@@ -323,9 +323,9 @@ class Base(models.Model):
     Functions
     """
 
-    def getattr_recursive(self, str):
+    def getattr_recursive(self, str, split="."):
         from functools import reduce
-        return reduce(getattr, [self, ]+str.split("."))
+        return reduce(getattr, [self, ]+str.split(split))
 
     def get_has(self, attr, default=None):
         return getattr(self, attr, default) if hasattr(self, attr) else default
