@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django import forms
+import json
 
 form_init_fields = (
     "data",
@@ -14,11 +15,9 @@ form_init_fields = (
     "renderer")
 
 class FormShare:
-    def get_sub_form(self, form):
+    def get_sub_form(self, form, *args, **kwargs):
         from mighty.forms.descriptors import FormDescriptor
-        import json
-        test = FormDescriptor(form, self.request)
-        return json.loads(json.dumps(test.as_json()))
+        return json.loads(json.dumps(FormDescriptor(form, self.request).as_json()))
 
     def get_additional_fields(self):
         return []
@@ -104,6 +103,8 @@ class FormDescriptor:
         "splitted",
         "splitted_refs",
         "vars_url",
+        "raw_field",
+        "raw_method",
     ]
     url_attrs = [
         "form_create_url",

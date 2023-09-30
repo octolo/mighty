@@ -21,6 +21,8 @@ self_fields = (
     "splitted",
     "splitted_refs",
     "vars_url",
+    "raw_field",
+    "raw_method",
 )
 options_fields = ("value",)
 
