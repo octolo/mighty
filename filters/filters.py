@@ -289,7 +289,6 @@ class BooleanParamFilter(ParamFilter):
 
     def get_value(self):
         value = super().get_value()
-        print("bool", value)
         if type(value).__name__ == "str":
             return True if value in ("true", "1") else False
         return bool(int(value))
