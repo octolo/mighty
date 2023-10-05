@@ -14,6 +14,7 @@ class MissiveBackend(MissiveBackend):
     STATUS = {}
     in_error = False
 
+
     def update_event(self, event):
         pass
 
@@ -28,18 +29,19 @@ class MissiveBackend(MissiveBackend):
 
     @property
     def email_data(self):
-        return {
+        data = {
             "subject": self.missive.subject,
-            "text": str(self.missive.txt),
-            #"attachments": self.email_attachments,
-            "from": {"email": self.missive.sender, "name": self.missive.name},
-            "html": self.missive.html_format,
+            "from": {"email": "contact@dev.octolo.tech", "name": self.missive.name},
             "project_id": self.SCW_PROJECT_ID,
+            "to": [{"email": self.missive.target, "name": self.missive.fullname}],
+            #"attachments": self.email_attachments,
             #"reply_to": [
             #    {"email": self.reply_email, "name": self.reply_name}
             #],
-            "to": [{"email": self.missive.target, "name": self.missive.fullname}],
         }
+        if self.missive.html_format: data["html"] = self.missive.html_format
+        if self.missive.txt: data["text"] = str(self.missive.txt)
+        return data
 
     def email_attachments(self):
         attachments = []

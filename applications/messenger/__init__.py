@@ -133,7 +133,7 @@ def generate_event_url(date, event, service=['google', 'apple', 'outlook', 'yaho
         svg = find("logo/%s_simple.svg" % service)
         with open(svg, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode()
-        
+
     url = "https://calndr.link/d/event/?service=%s&start=%s&title=%s"
     return [{
         "name": s,
