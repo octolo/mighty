@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static mighty admin_urls %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static "css/easy.css" %}">
+<style>
+article { padding: 5px 15px; width: calc(100% / 3); }
+article * { vertical-align: middle;}
+.warning { white-space: pre; }
+.progress { width: 100%; background-color: #ddd; }
+.state { height: 30px; background-color: #4CAF50; text-align: center; line-height: 30px; color: white; }
+.command { color: steelblue; }
+@media (max-width: 768px) {
+    article { width: 100%; padding: 0px; }
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+&rsaquo; {{ supervision|title }}
+</div>
+{% endblock %}
+
+{% block content %}
+test
+{% endfor %}
+
+
+<script>
+
+</script>
+{% endblock %}

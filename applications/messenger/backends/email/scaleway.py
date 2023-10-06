@@ -7,9 +7,10 @@ from mighty.apps import MightyConfig
 import os, base64, json, requests
 
 class MissiveBackend(MissiveBackend):
-    SCW_SECRET_KEY = settings.SCALEWAY_SECRET_ACCESS_KEY
-    SCW_REGION = settings.SCALEWAY_REGION
-    SCW_PROJECT_ID = settings.SCALEWAY_PROJECT_ID
+    SCW_SECRET_KEY = settings.SCALEWAY_SECRET_ACCESS_KEY_TEM
+    SCW_REGION = settings.SCALEWAY_REGION_TEM
+    SCW_PROJECT_ID = settings.SCALEWAY_PROJECT_ID_TEM
+    SCW_DOMAIN_TEM = settings.SCALEWAY_DOMAIN_TEM
     APIURL = "https://api.scaleway.com/transactional-email/v1alpha1/regions/%s/emails"
     STATUS = {}
     in_error = False
@@ -31,10 +32,10 @@ class MissiveBackend(MissiveBackend):
     def email_data(self):
         data = {
             "subject": self.missive.subject,
-            "from": {"email": "contact@dev.octolo.tech", "name": self.missive.name},
+            "from": {"email": self.missive.sender, "name":  self.missive.name},
             "project_id": self.SCW_PROJECT_ID,
             "to": [{"email": self.missive.target, "name": self.missive.fullname}],
-            #"attachments": self.email_attachments,
+            "attachments": self.email_attachments,
             #"reply_to": [
             #    {"email": self.reply_email, "name": self.reply_name}
             #],

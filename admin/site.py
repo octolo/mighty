@@ -1,20 +1,20 @@
 from django.apps import apps
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponseRedirect
 from django.utils.text import capfirst
 from django.urls import reverse, resolve
-from django.views.decorators.cache import never_cache
 from django.template.response import TemplateResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext
 
 from mighty import translates as _
 from mighty.apps import MightyConfig as conf
-from mighty.functions import service_uptime, service_cpu, service_memory, make_searchable
+from mighty.functions import service_uptime, service_cpu, service_memory
+
 from functools import update_wrapper
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,13 @@ supervision.update(getattr(settings, 'SUPERVISION', {}))
 class AdminSite(admin.AdminSite):
     site_header = conf.site_header
     index_title = conf.index_title
+
+    def wrap(self, view):
+        def wrapper(*args, **kwargs):
+            return self.admin_site.admin_view(view)(*args, **kwargs)
+        wrapper.model_admin = self
+        return update_wrapper(wrapper, view)
+
 
     def _build_multi_app_dict(self, request, label=None):
         """
@@ -194,9 +201,7 @@ class AdminSite(admin.AdminSite):
                     pass
 
         return app_list
-        #for app in self.get_app_list(request)
 
-    #@never_cache
     def index(self, request, extra_context=None):
         """
         Display the main admin index page, which lists all of the installed
@@ -219,7 +224,6 @@ class AdminSite(admin.AdminSite):
         request.current_app = self.name
         return TemplateResponse(request, self.index_template or 'admin/index.html', context)
 
-    #@never_cache
     def stepsearch(self, request, extra_context=None):
         current_url = resolve(request.path_info).url_name
 
@@ -250,7 +254,6 @@ class AdminSite(admin.AdminSite):
         from mighty.applications.twofactor.views import LoginStepSearch
         return LoginStepSearch.as_view(**defaults)(request)
 
-    #@never_cache
     def stepchoices(self, request, extra_context=None):
         current_url = resolve(request.path_info).url_name
 
@@ -281,7 +284,6 @@ class AdminSite(admin.AdminSite):
         from mighty.applications.twofactor.views import LoginStepChoices
         return LoginStepChoices.as_view(**defaults)(request)
 
-    #@never_cache
     def stepcode(self, request, extra_context=None):
         current_url = resolve(request.path_info).url_name
 
@@ -311,6 +313,15 @@ class AdminSite(admin.AdminSite):
         request.current_app = self.name
         from mighty.applications.twofactor.views import LoginStepCode
         return LoginStepCode.as_view(**defaults)(request)
+
+
+    def showurls_view(self, request, extra_context=None, **kwargs):
+        from mighty.showurls import ShowUrls
+        context = {
+            **self.each_context(request),
+            "urls": ShowUrls.get_urls(),
+        }
+        return TemplateResponse(request, 'admin/show_urls.html', context)
 
     ##########################
     # Supervision
@@ -353,9 +364,11 @@ class AdminSite(admin.AdminSite):
         from django.urls import path
         my_urls = []
         if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
+            logger.info("Login twofactor enable")
             my_urls.append(path('login/', self.stepsearch, name='twofactor_search'))
             my_urls.append(path('login/choices/', self.stepchoices, name='twofactor_choices'))
             my_urls.append(path('login/code/', self.stepcode, name='twofactor_code'))
+        my_urls.append(path("show_urls", self.wrap(self.showurls_view), name="mighty_showurls"))
         # if conf.supervision:
         #     my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
         #     my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
