@@ -8,7 +8,7 @@ def EnableVariableEditorModel(**kwargs):
             eve_variable_fields = kwargs.get("fields", [])
             eve_variable_list = []
             eve_variable_related = {}
-            eve_variable_prefix = None
+            eve_variable_prefix = "meeting.eve_tv"
 
             class Meta(obj.Meta):
                 abstract = True
@@ -108,7 +108,7 @@ def EnableVariableEditorModel(**kwargs):
 
             def eve_variable_prefixed_list(self, **kwargs):
                 self.eve_variable_related = kwargs.get("related", {})
-                self.eve_variable_prefix = kwargs.get("prefix")
+                #self.eve_variable_prefix = kwargs.get("prefix")
                 self.eve_variable_list = []
                 self.eve_add_variable_fields()
                 self.eve_add_variable_related()

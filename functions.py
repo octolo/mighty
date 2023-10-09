@@ -405,6 +405,28 @@ def format_non_alpha(text):
 def make_searchable(input_str):
     return searchable(input_str).lower()
 
+#To get the keys
+def matchingKeys(dictionary, searchString):
+    return [key for key,val in dictionary.items() if any(searchString in s for s in val)]
+
+#To get the sublists:
+def matchingValues(dictionary, searchString):
+    print(dictionary)
+    return [val for val in dictionary.values() if any(searchString in s for s in val)]
+
+#To get the strings:
+#def matchingValues(dictionary, searchString):
+#    return [s for s,i for val in dictionary.values() if any(searchString in s for s in val)]
+
+#To get both:
+def matchingElements(dictionary, searchString):
+    return {key:val for key,val in dictionary.items() if any(searchString in s for s in val)}
+
+
+#And if you want to get only the strings containing
+def matchingStrings(dictionary, searchString):
+    return [s for val in dictionary.values() for s in val if searchString in s]
+
 """
 Return differences between 2 models
 you can exclude some field with arg [exclude]

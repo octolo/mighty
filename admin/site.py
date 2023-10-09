@@ -47,7 +47,7 @@ class AdminSite(admin.AdminSite):
 
     def wrap(self, view):
         def wrapper(*args, **kwargs):
-            return self.admin_site.admin_view(view)(*args, **kwargs)
+            return self.admin_view(view)(*args, **kwargs)
         wrapper.model_admin = self
         return update_wrapper(wrapper, view)
 
@@ -163,6 +163,7 @@ class AdminSite(admin.AdminSite):
             'title': gettext('%(app)s administration') % {'app': app_name},
             'app_label': app_label,
             'app_name': app_name,
+            'enable_supervision': conf.enable_supervision,
             **(extra_context or {}),
         }
         request.current_app = self.name
@@ -319,45 +320,50 @@ class AdminSite(admin.AdminSite):
         from mighty.showurls import ShowUrls
         context = {
             **self.each_context(request),
-            "urls": ShowUrls.get_urls(),
+            "urls": ShowUrls().get_urls(search=request.GET.get("search")),
         }
         return TemplateResponse(request, 'admin/show_urls.html', context)
 
     ##########################
     # Supervision
     ##########################
-    # def supervision_view(self, request, extra_context=None):
-    #     services = {}
-    #     for service, commands in supervision.items():
-    #         services[service] = {'uptime': service_uptime(service, commands.get('uptime'))}
-    #         services[service]['cpu'] = service_cpu(service, commands.get('cpu'))
-    #         services[service]['memory'] = service_memory(service, commands.get('memory'))
-    #     context = {**self.each_context(request), 'supervision': _.supervision, 'services': services}
-    #     return TemplateResponse(request, 'admin/supervision.html', context)
+    def supervision_view(self, request, extra_context=None):
+        services = {}
+        for service, commands in supervision.items():
+            services[service] = {'uptime': service_uptime(service, commands.get('uptime'))}
+            services[service]['cpu'] = service_cpu(service, commands.get('cpu'))
+            services[service]['memory'] = service_memory(service, commands.get('memory'))
+        context = {
+            **self.each_context(request),
+            'supervision': _.supervision,
+            'services': services,
+            'enable_channel': conf.enable_channel,
+        }
+        return TemplateResponse(request, 'admin/supervision.html', context)
 
-    # def supervision_channel_view(self, request, extra_context=None):
-    #     context = {**self.each_context(request),
-    #         'supervision': _.supervision,
-    #         'groups': asyncio.run(channels_group('asgi::group:*')),
-    #         'users': asyncio.run(channels_group('specific.*')),
-    #     }
-    #     return TemplateResponse(request, 'admin/channel_list.html', context)
+    def supervision_channel_view(self, request, extra_context=None):
+        context = {**self.each_context(request),
+            'supervision': _.supervision,
+            #'groups': asyncio.run(channels_group('asgi::group:*')),
+            #'users': asyncio.run(channels_group('specific.*')),
+        }
+        return TemplateResponse(request, 'admin/channel_list.html', context)
 
-    # def supervision_channelflushall_view(self, request, extra_context=None):
-    #     asyncio.run(flushdb())
-    #     return redirect('admin:supervision_channel_list')
+    def supervision_channelflushall_view(self, request, extra_context=None):
+        #asyncio.run(flushdb())
+        return redirect('admin:supervision_channel_list')
 
-    # def supervision_channeljoin_view(self, request, extra_context=None, **kwargs):
-    #     room = kwargs.get('room')
-    #     room_def = room.split(conf.Channel.delimiter)
-    #     context = {**self.each_context(request),
-    #         'supervision': _.supervision,
-    #         'room': room,
-    #         'room_def': room_def,
-    #         'from': room_def[0],
-    #         'to': room_def[1],
-    #     }
-    #     return TemplateResponse(request, 'admin/channel_detail.html', context)
+    def supervision_channeljoin_view(self, request, extra_context=None, **kwargs):
+        room = kwargs.get('room')
+        room_def = room.split(conf.Channel.delimiter)
+        context = {**self.each_context(request),
+            'supervision': _.supervision,
+            'room': room,
+            'room_def': room_def,
+            'from': room_def[0],
+            'to': room_def[1],
+        }
+        return TemplateResponse(request, 'admin/channel_detail.html', context)
 
     def get_urls(self):
         urls = super(AdminSite, self).get_urls()
@@ -368,10 +374,11 @@ class AdminSite(admin.AdminSite):
             my_urls.append(path('login/', self.stepsearch, name='twofactor_search'))
             my_urls.append(path('login/choices/', self.stepchoices, name='twofactor_choices'))
             my_urls.append(path('login/code/', self.stepcode, name='twofactor_code'))
-        my_urls.append(path("show_urls", self.wrap(self.showurls_view), name="mighty_showurls"))
-        # if conf.supervision:
-        #     my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
-        #     my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
-        #     my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
-        #     my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))
+        my_urls.append(path("showurls/", self.wrap(self.showurls_view), name="mighty_showurls"))
+        if conf.enable_supervision:
+            my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
+            if conf.enable_channel:
+                my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
+                my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
+                my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))
         return my_urls + urls

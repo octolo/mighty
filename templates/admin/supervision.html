@@ -25,7 +25,6 @@ article * { vertical-align: middle;}
 {% endblock %}
 
 {% block content %}
-
 <section>
     <h1>Supervision&nbsp;<img class="h-px50" src="{% static 'img/heartbeat.svg' %}"></h1>
     <ul class="messagelist">
@@ -33,9 +32,11 @@ article * { vertical-align: middle;}
     </ul>
     <article>
         <h2>Services</h2>
+        {% if enable_channel %}
         <ul>
             <li><a href="{% url 'admin:supervision_channel_list' %}">Channels</a></li>
         </ul>
+        {% endif %}
     </article>
 </section>
 <hr><br>

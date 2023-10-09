@@ -51,7 +51,8 @@
 
 {% block content %}
 <ul class="object-tools">
-    <li><a href="/admin/supervision/">Supervision</a></li>
+    <li><a href="/admin/showurls/">Urls</a></li>
+    {% if enable_supervision %}<li><a href="/admin/supervision/">Supervision</a></li>{% endif %}
     <li><a href="/admin">all APP</a></li>
     <li><a href="?view=simple">Simple APP</a></li>
     <li><a href="?view=multi">Multi APP</a></li>

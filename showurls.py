@@ -3,19 +3,21 @@
 import functools, json, re
 
 from django.conf import settings
+from django.core.management import color
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import CommandError
 from django.utils import translation
-
-from django_extensions.management.color import no_style
-
 from django.urls import URLPattern, URLResolver  # type: ignore
+from mighty.functions import matchingValues
 
 class RegexURLPattern: pass
 class RegexURLResolver: pass
 class LocaleRegexURLResolver: pass
 def describe_pattern(p): return str(p.pattern)
+
+def _dummy_style_func(msg):
+    return msg
 
 def no_style():
     style = color.no_style()
@@ -111,53 +113,48 @@ class ShowUrls:
             url = simplify_regex(regex)
             decorator = ', '.join(decorators)
 
-            if format_style == 'json':
-                views.append({"url": url, "module": module, "name": url_name, "decorators": decorator})
-            else:
-                views.append(fmtr.format(
-                    module='{0}.{1}'.format(style.MODULE(func.__module__), style.MODULE_NAME(func_name)),
-                    url_name=style.URL_NAME(url_name),
-                    url=style.URL(url),
-                    decorator=decorator,
-                ).strip())
+            views.append({"url": str(url), "module": str(module), "name": str(url_name)})
+        if options.get("search"):
+            views = [d for d in views if all(word in d['module'] or word in d["url"] or word in d['name']
+                for word in options.get("search").split(" "))]
+        views = sorted(views, key=lambda d: d['url'])
+        #if not opt_unsorted and format_style != 'json':
 
-        if not opt_unsorted and format_style != 'json':
-            views = sorted(views)
+        #if format_style == 'aligned':
+        #    views = [row.split(',', 3) for row in views]
+        #    widths = [len(max(columns, key=len)) for columns in zip(*views)]
+        #    views = [
+        #        '   '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
+        #        for row in views
+        #    ]
+        #elif format_style == 'table':
+        #    # Reformat all data and show in a table format
 
-        if format_style == 'aligned':
-            views = [row.split(',', 3) for row in views]
-            widths = [len(max(columns, key=len)) for columns in zip(*views)]
-            views = [
-                '   '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
-                for row in views
-            ]
-        elif format_style == 'table':
-            # Reformat all data and show in a table format
+        #    views = [row.split(',', 3) for row in views]
+        #    widths = [len(max(columns, key=len)) for columns in zip(*views)]
+        #    table_views = []
 
-            views = [row.split(',', 3) for row in views]
-            widths = [len(max(columns, key=len)) for columns in zip(*views)]
-            table_views = []
+        #    header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
+        #    table_views.append(
+        #        ' | '.join('{0:<{1}}'.format(title, width) for width, title in zip(widths, header))
+        #    )
+        #    table_views.append('-+-'.join('-' * width for width in widths))
 
-            header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
-            table_views.append(
-                ' | '.join('{0:<{1}}'.format(title, width) for width, title in zip(widths, header))
-            )
-            table_views.append('-+-'.join('-' * width for width in widths))
+        #    for row in views:
+        #        table_views.append(
+        #            ' | '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
+        #        )
 
-            for row in views:
-                table_views.append(
-                    ' | '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
-                )
+        #    # Replace original views so we can return the same object
+        #    views = table_views
 
-            # Replace original views so we can return the same object
-            views = table_views
+        #elif format_style == 'json':
+        #    if pretty_json:
+        #        return json.dumps(views, indent=4)
+        #    return json.dumps(views)
 
-        elif format_style == 'json':
-            if pretty_json:
-                return json.dumps(views, indent=4)
-            return json.dumps(views)
-
-        return "\n".join([v for v in views]) + "\n"
+        print(views)
+        return [v for v in views]
 
     def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None):
         """

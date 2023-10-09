@@ -1,35 +1,59 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static mighty admin_urls %}
 
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} changes-list{% endblock %}
+
 {% block extrastyle %}
 {{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
 <link rel="stylesheet" href="{% static "css/easy.css" %}">
 <style>
-article { padding: 5px 15px; width: calc(100% / 3); }
-article * { vertical-align: middle;}
-.warning { white-space: pre; }
-.progress { width: 100%; background-color: #ddd; }
-.state { height: 30px; background-color: #4CAF50; text-align: center; line-height: 30px; color: white; }
-.command { color: steelblue; }
-@media (max-width: 768px) {
-    article { width: 100%; padding: 0px; }
-}
-</style>
+    #changelist table thead th:first-child {width: inherit}
+  </style>
 {% endblock %}
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
-&rsaquo; {{ supervision|title }}
+&rsaquo; Urls
 </div>
 {% endblock %}
 
 {% block content %}
-test
-{% endfor %}
-
-
-<script>
-
-</script>
+<div id="content-main">
+    <div class="module filtered" id="changelist">
+        <div class="changelist-form-container">
+            <div id="toolbar">
+                <form id="changelist-search" method="get">
+                    <div><!-- DIV needed for valid HTML -->
+                        <label for="search"><img src="/static/admin/img/search.svg" alt="Search"></label>
+                        <input type="text" size="40" name="search" value="{{ request.GET.search }}" id="search" autofocus="">
+                        <input type="submit" value="Rechercher">
+                    </div>
+                </form>
+            </div>
+            {% block result_list %}
+            <table id="result_list">
+                <thead>
+                    <tr>
+                        <th scope="col"><div class="text"><span>Name</span></div></th>
+                        <th scope="col"><div class="text"><span>Url</span></div></th>
+                        <th scope="col"><div class="text"><span>Module</span></div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for url in urls %}
+                <tr>
+                        <td><b>{{ url.name }}</b></td>
+                        <td>{{ url.url }}</td>
+                        <td><i>{{ url.module }}</i></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endblock %}
+        </div>
+    </div>
+</div>
 {% endblock %}

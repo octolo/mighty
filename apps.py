@@ -19,7 +19,8 @@ class Config:
     paginate_by = 100
     exclude_content_type = {"id__gt": 9}
     exclude = exclude
-    supervision = True
+    enable_supervision = False
+    enable_channel = False
     user_or_invitation = 'auth.UserOrInvitation'
     jwt_enable = False
     days_in_year = 365.25

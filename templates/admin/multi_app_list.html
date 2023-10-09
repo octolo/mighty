@@ -1,8 +1,18 @@
 {% load i18n %}
 {% block extrastyle %}
 <style>
-.multi_apps {
-  background:#b5daec!important;
+.app-section {
+    text-decoration: none;
+    color: var(--header-link-color)!important;
+    font-size: 1.2em;
+    display: block;
+    border-bottom : 1px solid var(--header-link-color);
+    padding: 5px;
+    margin-bottom: 5px;
+}
+.app-section:hover {
+  color: var(--body-bg)!important;
+  background-color: var(--header-link-color)!important;
 }
 </style>
 {% endblock %}
@@ -10,14 +20,15 @@
 {% if multi_app_list %}
   {% for app in multi_app_list %}
     <div class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}">
-      <table>
-        <caption >
-          <a href="{{ app.app_url }}" class="section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">{{ app.name }}</a>
-        </caption>
+
+      <a href="{{ app.app_url }}" class="app-section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">{{ app.name }}</a>
+
+      </table>
         {% for parent,data in app.apps.items %}
-        <tr><th colspan="3" class="multi_apps">
-          <a href="{{ app.app_url }}?s={{ parent }}">{{ parent }}</a>
-        </th></tr>
+        <table>
+          <caption >
+            <a href="{{ app.app_url }}?s={{ parent }}" class="section" >{{ parent }}</a>
+          </caption>
         {% for model in data.models %}
         <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
           {% if model.admin_url %}
@@ -43,8 +54,9 @@
           {% endif %}
           </tr>
         {% endfor %}
+        </table>
+        <br/>
         {% endfor %}
-      </table>
     </div>
   {% endfor %}
 {% else %}
