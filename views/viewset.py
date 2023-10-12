@@ -1,8 +1,10 @@
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpResponse
+
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+
 from mighty.filters import Foxid, FiltersManager
 from mighty.forms.descriptors import FormDescriptor
 from mighty.tables.descriptors import TableDescriptor
@@ -105,6 +107,13 @@ class ModelViewSet(ModelViewSet):
             #var += list(itertools.chain(*(v().eve_variable_prefixed_list() for v in self.variables_model)))
             return Response(var)
         return Response([])
+
+    # Variables access
+    @action(detail=True, methods=["get"])
+    def variablesviewer(self, request, *args, **kwargs):
+        obj = self.get_object()
+        variable = obj.eve_tv.get(request.GET.get("eve_tv"))
+        return HttpResponse(variable)
 
     # Filter query
     def Q_is_me(self, prefix=""):

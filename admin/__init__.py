@@ -50,17 +50,17 @@ class ConfigClientAdmin(BaseAdmin):
     readonly_fields = ('url_name',)
 
 @admin.register(all_models.ConfigSimple)
-class ConfigClientAdmin(BaseAdmin):
+class ConfigSimpleAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'configchar', 'configbool', 'is_boolean')}),)
     list_display = ('name',)
     readonly_fields = ('url_name',)
 
 @admin.register(all_models.TemplateVariable)
-class ConfigClientAdmin(BaseAdmin):
+class TemplateVariableAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'description', 'content_type', 'template')}),)
-    list_display = ('name', 'description', 'content_type')
+    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'description', 'content_type', 'template', 'hidden')}),)
+    list_display = ('name', 'description', 'content_type', 'hidden')
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     @admin.register(all_models.Channel)
