@@ -85,14 +85,14 @@ def TenantAssociation(**kwargs):
                         setattr(self, "group_"+field, getattr(self.group, field))
 
 
-            def save(self, *args, **kwargs):
-                if not self.group:
-                    try:
-                        self.set_group()
-                    except AttributeError:
-                        pass
-                self.check_group_coherence()
-                super().save(*args, **kwargs)
+            #def save(self, *args, **kwargs):
+            #    if not self.group:
+            #        try:
+            #            self.set_group()
+            #        except AttributeError:
+            #            pass
+            #    self.check_group_coherence()
+            #    super().save(*args, **kwargs)
 
         for field in kwargs.get("duplicate_db_charfields", ()):
             NewClass.add_to_class("group_"+field, models.CharField(max_length=255, blank=True, null=True))
