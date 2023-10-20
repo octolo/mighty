@@ -99,7 +99,7 @@ class FileGenerator:
             writer.writerow(item)
 
 
-    def file_csv(self, ext, ct):
+    def file_csv(self, ext, ct=None):
         tmp = open(self.get_filename(ext), "w")
         self.iter_items_csv(self.items, tmp, False)
         tmp.close()

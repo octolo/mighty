@@ -1,132 +1,39 @@
 {% extends "admin/index.html" %}
-{% load i18n mighty %}
+{% load i18n static %}
 
 {% block extrastyle %}
 
 {{ block.super }}
 <style>
-.search-in-app {
-  display: flex;
-  align-items: stretch;
+.input-filterv2{
+  border: 1px solid var(--secondary);
+  background: var(--body-bg);
+  color: var(--body-loud-color);
+  width: 100%;
+  font-size: 14px;
+  padding: 5px;
+  margin-bottom: 30px;
+  outline: none;
 }
-.search-in-app > input[type=text] {
-  margin: 0;
-  border: 1px solid #79aec8;
-  border-radius: 0;
-  flex: 1;
-}
-.search-in-app > input[type=submit] {
-  border-radius: 0;
-  margin: 0;
-}
-
-#content-main > a.search-app {
-  display: block;
-  margin: 5px;
-}
-
-#content-main > a.search-button {
-  padding: 10px;
-  background-color: red;
-  color: #FFFFFF;
-  margin: 5px;
-  display: inline-block;
-}
-
-#content-related {
-  background-color: transparent!important;
-}
-
-#content-related > .module {
-  background: var(--darkened-bg);
-}
-
-#content-related .actionlist li {
-    padding-bottom: 10px;
-    margin-bottom: 0;
-}
-
 </style>
 {% endblock %}
 
+{% block extrahead %}
+<script>
+window.filter_applist_element = "nav-sidebarv2";
+window.filter_input_element = "nav-filterv2";
+</script>
+<script src="{% static 'admin/js/nav_sidebarv2.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
-<ul class="object-tools">
-    <li><a href="/admin/showurls/">Urls</a></li>
-    {% if enable_supervision %}<li><a href="/admin/supervision/">Supervision</a></li>{% endif %}
-    <li><a href="/admin">all APP</a></li>
-    <li><a href="?view=simple">Simple APP</a></li>
-    <li><a href="?view=multi">Multi APP</a></li>
-</ul>
-
 <div id="content-main">
-  <form class="search-in-app">
-    <input type="text" placeholder="Rechercher" name="s" />
-    <input type="submit">
-  </form>
-
-  {% if search_app_list %}
-    {% for app in search_app_list %}
-      <a class="search-app" href="{{ app.url }}">{{ app.name }}</a>
-    {% endfor %}
-    <a class="deletelink" href="/admin/">{% translate 'Clear search' %}</a>
-  {% else %}
-    {% if request.GET.view == 'simple' or not request.GET.view %}
-    <h2>Simple App</h2>
-    {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
-    {% endif %}
-    {% if request.GET.view == 'multi' or not request.GET.view %}
-    <h2>Multi App</h2>
-    {% include "admin/multi_app_list.html" with multi_app_list=multi_app_list show_changelinks=True %}
-    {% endif %}
-  {% endif %}
-</div>
-{% endblock %}
-
-{% block sidebar %}
-<div id="content-related">
-    <div class="module" id="recent-actions-module">
-        <h2>{% translate 'Shortcuts' %}</h2>
-        <h3>{% translate 'Most used' %}</h3>
-        {% get_most_used_apps 10 as mua %}
-        {% if not mua %}
-        <p>{% translate 'None available' %}</p>
-        {% else %}
-        <ul class="actionlist">
-        {% for app in mua %}
-        <li class="changelink">
-          <a href="{{ app.url }}">{{ app.name|title }}</a>
-        </li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-    </div>
-
-    <div class="module" id="recent-actions-module">
-        <h2>{% translate 'Recent actions' %}</h2>
-        <h3>{% translate 'My actions' %}</h3>
-            {% load log %}
-            {% get_admin_log 10 as admin_log for_user user %}
-            {% if not admin_log %}
-            <p>{% translate 'None available' %}</p>
-            {% else %}
-            <ul class="actionlist">
-            {% for entry in admin_log %}
-            <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
-                {% if entry.is_deletion or not entry.get_admin_url %}
-                    {{ entry.object_repr }}
-                {% else %}
-                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
-                {% endif %}
-                <br>
-                {% if entry.content_type %}
-                    <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
-                {% else %}
-                    <span class="mini quiet">{% translate 'Unknown content' %}</span>
-                {% endif %}
-            </li>
-            {% endfor %}
-            </ul>
-            {% endif %}
+  <input type="search" id="nav-filterv2" class="input-filterv2"
+    placeholder="{% translate 'Start typing to filter…' %}"
+    aria-label="{% translate 'Filter navigation items' %}">
+    <div id="nav-sidebarv2">
+    {% include 'admin/app_list.html' with app_list=available_apps show_changelinks=False %}
     </div>
 </div>
 {% endblock %}
+

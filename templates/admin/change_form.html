@@ -5,7 +5,7 @@
 {{ block.super }}
 <style>
 .disablelink {
-    margin: 0 0 0 8px;
+    margin: 0px!important;
     background: coral!important;
 }
 .enablelink {
@@ -76,9 +76,13 @@
 {% url opts|admin_urlname:'variables' original.pk|admin_urlquote as variables_url %}
 <li><a href="{{ variables_url }}">Variables</a></li>
 {% endif %}
+
+{% for oti in object_tools_items %}
+<li><a href="{% url opts|admin_urlname:oti.url original.pk|admin_urlquote %}">{{ oti.name }}</a></li>
+{% endfor %}
+
 {{ block.super }}
 {% endblock %}
-
 
 {% block object-tools %}
 {{ block.super }}

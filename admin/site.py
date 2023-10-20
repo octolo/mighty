@@ -51,180 +51,6 @@ class AdminSite(admin.AdminSite):
         wrapper.model_admin = self
         return update_wrapper(wrapper, view)
 
-
-    def _build_multi_app_dict(self, request, label=None):
-        """
-        Build the app dictionary. The optional `label` parameter filters models
-        of a specific app.
-        """
-        multi_app_dict = {}
-        if label:
-            models = {m: m_a for m, m_a in self._registry.items()
-                    if m._meta.app_label == label}
-        else:
-            models = self._registry
-
-        for model, model_admin in models.items():
-            app_label = model._meta.app_label
-            app_config = apps.get_app_config(app_label)
-            if hasattr(app_config, 'multi_apps'):
-                has_module_perms = model_admin.has_module_permission(request)
-                if not has_module_perms:
-                    continue
-                perms = model_admin.get_model_perms(request)
-
-                # Check whether user has any perm for this module.
-                # If so, add the module to the model_list.
-                if True not in perms.values():
-                    continue
-
-                info = (app_label, model._meta.model_name)
-                app_parent = self.get_parent_app(app_config, model._meta.object_name)
-                model_dict = {
-                    'name': capfirst(model._meta.verbose_name_plural),
-                    'object_name': model._meta.object_name,
-                    'perms': perms,
-                    'admin_url': None,
-                    'add_url': None,
-                }
-                if perms.get('change') or perms.get('view'):
-                    model_dict['view_only'] = not perms.get('change')
-                    try:
-                        model_dict['admin_url'] = reverse('admin:%s_%s_changelist' % info, current_app=self.name)
-                    except NoReverseMatch:
-                        pass
-                if perms.get('add'):
-                    try:
-                        model_dict['add_url'] = reverse('admin:%s_%s_add' % info, current_app=self.name)
-                    except NoReverseMatch:
-                        pass
-
-                if app_label not in multi_app_dict:
-                    multi_app_dict[app_label] = {
-                        'name': apps.get_app_config(app_label).verbose_name,
-                        'app_label': app_label,
-                        'app_url': reverse(
-                            'admin:app_list',
-                            kwargs={'app_label': app_label},
-                            current_app=self.name,
-                        ),
-                        'has_module_perms': has_module_perms,
-                        'apps': {},
-                    }
-
-                if app_parent in multi_app_dict[app_label]['apps']:
-                    multi_app_dict[app_label]['apps'][app_parent]['models'].append(model_dict)
-                else:
-                    multi_app_dict[app_label]['apps'][app_parent] = {
-                        'name': capfirst(app_parent),
-                        'app_label': app_label,
-                        'app_url': reverse(
-                            'admin:app_list',
-                            kwargs={'app_label': app_label},
-                            current_app=self.name,
-                        ),
-                        'has_module_perms': has_module_perms,
-                        'models': [model_dict],
-                        'app_config': app_config,
-                    }
-
-
-        if label:
-            return multi_app_dict.get(label)
-        return multi_app_dict
-
-    def get_parent_app(self, config, name):
-        for app, models in config.multi_apps.items():
-            if name in models:
-                return app
-        return 'others'
-
-    def get_multi_app_list(self, request):
-        """
-        Return a sorted list of all the installed apps that have been
-        registered in this site.
-        """
-        multi_app_dict = self._build_multi_app_dict(request)
-        multi_app_list = sorted(multi_app_dict.values(), key=lambda x: x['name'].lower())
-        for idx, mapp in enumerate(multi_app_list):
-            multi_app_list[idx]['apps'] = {key: mapp['apps'][key] for key in sorted(mapp['apps'].keys())}
-            for app,value in mapp['apps'].items():
-                multi_app_list[idx]['apps'][app]['models'].sort(key=lambda x: x['name'])
-        return multi_app_list
-
-    def app_index(self, request, app_label, extra_context=None):
-        app_dict = self._build_app_dict(request, app_label)
-        multi_app_dict = self._build_multi_app_dict(request, app_label)
-        if not app_dict and not multi_app_dict:
-            raise Http404('The requested admin page does not exist.')
-        app_name = apps.get_app_config(app_label).verbose_name
-        context = {
-            **self.each_context(request),
-            'title': gettext('%(app)s administration') % {'app': app_name},
-            'app_label': app_label,
-            'app_name': app_name,
-            'enable_supervision': conf.enable_supervision,
-            **(extra_context or {}),
-        }
-        request.current_app = self.name
-        if multi_app_dict:
-            multi_app_dict['apps'] = {key: multi_app_dict['apps'][key] for key in sorted(multi_app_dict['apps'].keys())}
-            for app,value in multi_app_dict['apps'].items():
-                multi_app_dict['apps'][app]['models'].sort(key=lambda x: x['name'])
-            context['multi_app_list'] = [multi_app_dict]
-            return TemplateResponse(request, self.app_index_template or [
-                'admin/%s/multi_app_index.html' % app_label,
-                'admin/multi_app_index.html'
-            ], context)
-        elif app_dict:
-            app_dict['models'].sort(key=lambda x: x['name'])
-            context['app_list'] = [app_dict]
-            return TemplateResponse(request, self.app_index_template or [
-                'admin/%s/app_index.html' % app_label,
-                'admin/app_index.html'
-            ], context)
-
-    def search_app(self, request):
-        app_list = []
-        search = request.GET.get("s")
-        if search:
-            from django.contrib.contenttypes.models import ContentType
-            from django.urls import reverse
-            for ct in ContentType.objects.filter(model__icontains=search):
-                inactive = ct.model_class()
-                active = inactive()
-                try:
-                    app_list.append({
-                        "name": ct.app_labeled_name,
-                        "url": reverse("admin:%s_%s_changelist" % (ct.app_label, ct.model))
-                    })
-                except Exception:
-                    pass
-
-        return app_list
-
-    def index(self, request, extra_context=None):
-        """
-        Display the main admin index page, which lists all of the installed
-        apps that have been registered in this site.
-        """
-        app_list = []
-        for app in self.get_app_list(request):
-            app_config = apps.get_app_config(app['app_label'])
-            if not hasattr(app_config, 'multi_apps'): app_list.append(app)
-
-        multi_app_list = self.get_multi_app_list(request)
-        context = {
-            **self.each_context(request),
-            'title': self.index_title,
-            'app_list': app_list,
-            'multi_app_list': multi_app_list,
-            'search_app_list': self.search_app(request),
-            **(extra_context or {}),
-        }
-        request.current_app = self.name
-        return TemplateResponse(request, self.index_template or 'admin/index.html', context)
-
     def stepsearch(self, request, extra_context=None):
         current_url = resolve(request.path_info).url_name
 
@@ -238,7 +64,8 @@ class AdminSite(admin.AdminSite):
             app_path=request.get_full_path(),
             username=request.user.get_username(),
             current_url=current_url,
-            next_url=request.GET.get('next', '')
+            next_url=request.GET.get('next', ''),
+            is_nav_sidebar_enabled=False,
         )
         if (REDIRECT_FIELD_NAME not in request.GET and REDIRECT_FIELD_NAME not in request.POST):
             context[REDIRECT_FIELD_NAME] = reverse('admin:twofactor_choices', current_app=self.name)
@@ -268,7 +95,9 @@ class AdminSite(admin.AdminSite):
             app_path=request.get_full_path(),
             username=request.user.get_username(),
             current_url=current_url,
-            next_url=request.GET.get('next', '')
+            next_url=request.GET.get('next', ''),
+            is_nav_sidebar_enabled=False,
+
         )
         if (REDIRECT_FIELD_NAME not in request.GET and REDIRECT_FIELD_NAME not in request.POST):
             context[REDIRECT_FIELD_NAME] = reverse('admin:twofactor_code', current_app=self.name)
@@ -298,7 +127,8 @@ class AdminSite(admin.AdminSite):
             app_path=request.get_full_path(),
             username=request.user.get_username(),
             current_url=current_url,
-            next_url=request.GET.get('next', '')
+            next_url=request.GET.get('next', ''),
+            is_nav_sidebar_enabled=False,
         )
         if (REDIRECT_FIELD_NAME not in request.GET and REDIRECT_FIELD_NAME not in request.POST):
             context[REDIRECT_FIELD_NAME] = reverse('admin:index', current_app=self.name)
