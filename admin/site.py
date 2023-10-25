@@ -42,6 +42,7 @@ supervision.update(getattr(settings, 'SUPERVISION', {}))
 #     await redis.wait_closed()
 
 class AdminSite(admin.AdminSite):
+    enable_nav_sidebar = False
     site_header = conf.site_header
     index_title = conf.index_title
 

@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect
 from django_json_widget.widgets import JSONEditorWidget
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
+from django.views.decorators.cache import never_cache
 
 from django.contrib.admin import helpers, widgets
 from django.contrib.admin.utils import (
@@ -47,7 +48,10 @@ class BaseAdmin(admin.ModelAdmin):
     temporary_fieldsets = None
     temporary_urlname = None
     view_added = None
-    object_tools_items = []
+
+    def get_admin_urlname(self, suffix):
+        info = self.model._meta.app_label, self.model._meta.model_name, suffix
+        return "%s_%s_%s" % (self.model._meta.app_label, self.model._meta.model_name, suffix)
 
     def is_urlname_temporary(self, request):
         from django.urls import resolve
@@ -55,8 +59,80 @@ class BaseAdmin(admin.ModelAdmin):
         return self.temporary_urlname == url_name
 
     def temporary_fields_or_fieldsets(self, request, field):
-        if field and hasattr(self, field) and self.is_urlname_temporary(request):
+        if field and hasattr(self.model, field) and self.is_urlname_temporary(request):
             return getattr(self, getattr(self, field))
+
+    def _admincustom_view(self, request, object_id, extra_context, template):
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        if to_field and not self.to_field_allowed(request, to_field):
+            raise DisallowedModelAdminToField("The field %s cannot be referenced." % to_field)
+
+        obj = self.get_object(request, unquote(object_id), to_field)
+
+        if request.method == "POST":
+            if not self.has_change_permission(request, obj):
+                raise PermissionDenied
+        else:
+            if not self.has_view_or_change_permission(request, obj):
+                raise PermissionDenied
+
+        if obj is None:
+            return self._get_obj_does_not_exist_redirect(request, self.opts, object_id)
+
+        media = self.media
+        title = _("View %s")
+        context = {
+            **self.admin_site.each_context(request),
+            "title": title % self.opts.verbose_name,
+            "subtitle": str(obj) if obj else None,
+            "object_id": object_id,
+            "original": obj,
+            "is_popup": IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET,
+            "to_field": to_field,
+            "media": media,
+            "preserved_filters": self.get_preserved_filters(request),
+        }
+        context.update(extra_context or {})
+        return self.render_admin_custom(request, context, obj=obj, template=template)
+
+    def render_admin_custom(self, request, context, template, obj=None):
+        print("ok 2")
+        context["object_tools_items"] = self.object_tools_items
+        app_label = self.opts.app_label
+        preserved_filters = self.get_preserved_filters(request)
+        form_url = add_preserved_filters(
+            {"preserved_filters": preserved_filters, "opts": self.opts}, None
+        )
+        view_on_site_url = self.get_view_on_site_url(obj)
+        context.update(
+            {
+                "add": False,
+                "change": True,
+                "custom": True,
+                "has_view_permission": self.has_view_permission(request, obj),
+                "has_add_permission": self.has_add_permission(request),
+                "has_change_permission": self.has_change_permission(request, obj),
+                "has_delete_permission": self.has_delete_permission(request, obj),
+                "has_absolute_url": view_on_site_url is not None,
+                "absolute_url": view_on_site_url,
+                "opts": self.opts,
+                "content_type_id": get_content_type_for_model(self.model).pk,
+                "save_as": self.save_as,
+                "save_on_top": self.save_on_top,
+                "to_field_var": TO_FIELD_VAR,
+                "is_popup_var": IS_POPUP_VAR,
+                "app_label": app_label,
+            }
+        )
+        request.current_app = self.admin_site.name
+        print("ok 3", template)
+        return TemplateResponse(request, template, context)
+
+    @csrf_protect_m
+    def admincustom_view(self, request, object_id=None, extra_context=None, **kwargs):
+        self.temporary_urlname = kwargs.get("urlname")
+        with transaction.atomic(using=router.db_for_write(self.model)):
+            return self._admincustom_view(request, object_id, extra_context, template=kwargs.get("template"))
 
     def _adminform_view(self, request, object_id, form_url, extra_context, template=None):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
@@ -232,10 +308,14 @@ class BaseAdmin(admin.ModelAdmin):
         return [] if self.is_urlname_temporary(request) else self.inlines
 
     def get_fields(self, request, obj=None):
-        return self.temporary_fields_or_fieldsets(request, "temporary_fields") or super().get_fields(request, obj)
+        if self.is_urlname_temporary(request):
+            return self.temporary_fields or super().get_fields(request, obj)
+        return super().get_fields(request, obj)
 
     def get_fieldsets(self, request, obj=None):
-        return self.temporary_fields_or_fieldsets(request, "temporary_fieldsets") or super().get_fieldsets(request, obj)
+        if self.is_urlname_temporary(request):
+            return self.temporary_fieldsets or super().get_fieldsets(request, obj)
+        return super().get_fieldsets(request, obj)
 
     @csrf_protect_m
     def adminform_view(self, request, object_id=None, form_url="", extra_context=None, **kwargs):
@@ -300,6 +380,7 @@ class BaseAdmin(admin.ModelAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
+        self.object_tools_items = []
         self.add_some_fields(model, admin_site)
         self.add_some_readonly_fields(model, admin_site)
 
@@ -420,7 +501,8 @@ class BaseAdmin(admin.ModelAdmin):
             return None
 
     def wrap(self, view, object_tools=None):
-        if object_tools: self.object_tools_items.append(object_tools)
+        if object_tools: 
+            self.object_tools_items.append(object_tools)
         def wrapper(*args, **kwargs):
             return self.admin_site.admin_view(view)(*args, **kwargs)
         wrapper.model_admin = self
