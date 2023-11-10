@@ -170,7 +170,6 @@ class ModelBaseCommand(BaseCommand):
         label = kwargs.get('label', self.label)
         model = kwargs.get('model', self.model)
         self.model = get_model(label, model)
-        print(self.model)
         return self.model
 
     def get_queryset(self, *args, **kwargs):
