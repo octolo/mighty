@@ -501,7 +501,7 @@ class BaseAdmin(admin.ModelAdmin):
             return None
 
     def wrap(self, view, object_tools=None):
-        if object_tools: 
+        if object_tools:
             self.object_tools_items.append(object_tools)
         def wrapper(*args, **kwargs):
             return self.admin_site.admin_view(view)(*args, **kwargs)
