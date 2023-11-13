@@ -31,14 +31,14 @@ def get_descendant_value(path, obj):
         obj = getattr(obj, p) if hasattr(obj, p) else False
     return obj
 
-def batch_bulk_chunk(objects, chunk):
+def batch_bulk_chunk(objects, chunk, **kwargs):
     model = type(objects[0])
     schunk = 0
     while True:
         batch = objects[schunk:schunk+chunk]
         if not len(batch):
             break
-        model.objects.bulk_create(batch)
+        model.objects.bulk_create(batch, **kwargs)
         schunk+=chunk
 
 """

@@ -176,9 +176,11 @@ class Filter(Verify):
     def usedQ(self, **kwargs):
         return ~Q(**kwargs) if self.is_negative or self.is_array_negative else Q(**kwargs)
 
+    def baseQ(self):
+        return Q(**{self.get_field(): self.format_value()})
+
     def get_Q(self):
-        theQ = Q(**{self.get_field(): self.format_value()})
-        return ~theQ if self.is_negative or self.is_array_negative else theQ
+        return ~self.baseQ() if self.is_negative or self.is_array_negative else self.baseQ()
 
     def sql(self, request=None, *args, **kwargs):
         self.request = request
