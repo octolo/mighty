@@ -24,7 +24,7 @@ def NamedIdModel(**kwargs):
 
         @property
         def count_named_id(self):
-            return self.qs_named_id.count()
+            return 0 if kwargs.get("start0") else self.qs_named_id.count()
         obj.count_named_id = count_named_id
 
         @property
