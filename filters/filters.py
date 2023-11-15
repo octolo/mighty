@@ -19,7 +19,9 @@ class Filter(Verify):
     user = None
     extend = ()
     or_extend = ()
+    or_operator = operator.or_
     and_extend = ()
+    and_operator = operator.and_
 
     def __init__(self, id, *args, **kwargs):
         self.id = id if id else str(uuid.uuid4())
@@ -34,7 +36,9 @@ class Filter(Verify):
         self.choices = kwargs.get('choices')
         self.extend = kwargs.get('extend', self.extend)
         self.or_extend = kwargs.get('or_extend', self.or_extend)
+        self.or_operator = kwargs.get("or_operator", self.or_operator)
         self.and_extend = kwargs.get('and_extend', self.and_extend)
+        self.and_operator = kwargs.get("and_operator", self.and_operator)
         self.params_choices = [
             self.param,
             self.negative_param,
@@ -156,7 +160,7 @@ class Filter(Verify):
 
     def extend_value(self):
         values = self.get_value()
-        return [value for value in values]
+        return [values] if type(values) == str else [value for value in values]
 
     def get_orQ(self):
         if len(self.or_extend):
@@ -177,10 +181,17 @@ class Filter(Verify):
         return ~Q(**kwargs) if self.is_negative or self.is_array_negative else Q(**kwargs)
 
     def baseQ(self):
-        return Q(**{self.get_field(): self.format_value()})
+        baseQ = Q(**{self.get_field(): self.format_value()})
+        if len(self.and_extend):
+            baseQ = reduce(self.and_operator, [baseQ, self.get_andQ()])
+        if len(self.or_extend):
+            baseQ = reduce(self.or_operator, [baseQ, self.get_orQ()])
+        return baseQ
 
     def get_Q(self):
-        return ~self.baseQ() if self.is_negative or self.is_array_negative else self.baseQ()
+        test = ~self.baseQ() if self.is_negative or self.is_array_negative else self.baseQ()
+        print(test)
+        return test
 
     def sql(self, request=None, *args, **kwargs):
         self.request = request
@@ -270,13 +281,11 @@ class SearchFilter(ParamFilter):
         values = super().get_value()
         return [self.startw+value for value in values]
 
-    def get_Q(self):
+    def baseQ(self):
         values = self.get_value()
         if len(values):
             searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in values])
-            test = (searchQ|self.get_andQ())|self.get_orQ()
-            print(test)
-            return test
+            return (searchQ|self.get_andQ())|self.get_orQ()
         return Q()
 
 class BooleanParamFilter(ParamFilter):

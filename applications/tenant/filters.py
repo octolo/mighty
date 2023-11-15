@@ -11,10 +11,6 @@ class SearchByRoleUid(filters.ParamFilter):
         super().__init__(id, request, *args, **kwargs)
         self.field = kwargs.get('field', 'roles__uid')
 
-    def get_Q(self):
-        value = self.get_value()
-        return super().get_Q() if value else Q()
-
 class SearchBySettingUid(filters.ParamFilter):
     def __init__(self, id='role', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
