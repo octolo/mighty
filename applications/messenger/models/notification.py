@@ -23,6 +23,7 @@ fields_shared = (
 
 @MissiveFollower(related_name="missive_to_notification")
 class Notification(MessengerModel):
+    backend = models.CharField(max_length=255, blank=True, null=True, editable=False)
     is_read = models.BooleanField(default=True)
     level = models.PositiveSmallIntegerField(choices=choices.LEVEL, default=choices.INFO)
 

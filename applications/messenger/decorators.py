@@ -40,19 +40,21 @@ def NotifyByCondition(**kwargs):
 
             @property
             def nbc_last_notify_hash(self):
-                if self.nbc_last_notify:
+                if self.nbc_last_notify is not None:
                     last_md5 = "".join([getattr(self.nbc_last_notify, field, "") for field in self.nbc_fields_compare])
-                    last_md5 = hashlib.md5(last_md5).hexdigest()
+                    return hashlib.md5(last_md5).hexdigest()
                 return None
 
             def nbc_notify_if_different(self, **kwargs):
                 last_md5 = self.nbc_last_notify_hash
                 new_md5 = "".join([str(getattr(kwargs, field, "")) for field in self.nbc_fields_compare])
-                print("test", last_md5, new_md5, self.nbc_fields_compare)
                 new_md5 = hashlib.md5(new_md5).hexdigest()
                 if last_md5 != new_md5:
-                    ct, pk = self.get_content_type(), self.id
-                    return notify(kwargs.pop("subject"), ct, pk, **kwargs)
+                    return self.nbc_notify(**kwargs)
+
+            def nbc_notify(self, **kwargs):
+                ct, pk = self.get_content_type(), self.id
+                return notify(kwargs.pop("subject"), ct, pk, **kwargs)
 
             def nbc_get_template(self, name, subject=None):
                 from mighty.models import Template as TPL
