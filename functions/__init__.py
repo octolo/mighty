@@ -1,3 +1,5 @@
+from .random import random_date, random_object_by_id
+
 from django.apps import apps
 from django.db.models import F, Func, Subquery, PositiveIntegerField, Q
 from django.conf import settings
