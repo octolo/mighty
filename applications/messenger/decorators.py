@@ -50,9 +50,9 @@ def NotifyByCondition(**kwargs):
                 new_md5 = "".join([str(getattr(kwargs, field, "")) for field in self.nbc_fields_compare])
                 new_md5 = hashlib.md5(new_md5).hexdigest()
                 if last_md5 != new_md5:
-                    return self.nbc_notify(**kwargs)
+                    return self.nbc_do_notify(**kwargs)
 
-            def nbc_notify(self, **kwargs):
+            def nbc_do_notify(self, **kwargs):
                 ct, pk = self.get_content_type(), self.id
                 return notify(kwargs.pop("subject"), ct, pk, **kwargs)
 
