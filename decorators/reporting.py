@@ -90,7 +90,6 @@ def ReportingModel(**kwargs):
             def reporting_execute(self, request=None, *args, **kwargs):
                 reporting = kwargs.pop("reporting", request.GET.get("reporting", None))
                 file_type = kwargs.pop("file_type", request.GET.get("file_type", "csv"))
-                print(reporting, file_type)
                 if reporting:
                     spec, reporting = reporting.split(":")
                     return self.reporting_process(spec, reporting, file_type, *args, **kwargs)
