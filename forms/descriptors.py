@@ -138,7 +138,7 @@ class FormDescriptor:
         self.form_desc["name"] = str(self.form.__class__.__name__).lower()
 
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
-    
+
         self.form_desc["additional_fields"] = self.form.get_additional_fields()
 
         self.obj = kwargs.get("obj")
