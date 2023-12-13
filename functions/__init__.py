@@ -1,3 +1,4 @@
+from .facilities import getattr_recursive
 from .random import random_date, random_object_by_id
 
 from django.apps import apps
