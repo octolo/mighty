@@ -49,8 +49,6 @@ class CheckData(TemplateView):
         return JsonResponse(self.check_data(), 
             safe=False, status=self.http_status, **response_kwargs)
 
-
-
 class CheckSynchro(CheckData):
     def check_data(self):
         return {
