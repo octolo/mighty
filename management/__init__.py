@@ -28,6 +28,13 @@ class BaseCommand(BaseCommand, EnableLogger):
     ftotal = "total"
     total = 0
 
+    def get_object_unique_from_qs(self, qs, assoc, values):
+        for k,v in assoc.items():
+            if values.get(k):
+                if v == "pos":
+                    return qs[int(values.get(k))]
+                return qs.get(**{v: values.get(k)})
+
     @property
     def user_model(self):
         return get_user_model()
@@ -260,6 +267,7 @@ class ImportModelCommand(ModelBaseCommand):
         self.position = 0
         self.prepare_fields(self.reader.fieldnames)
         for row in self.reader:
+            print(row)
             self.current_row = row
             self.set_position()
             if self.loader or self.progressbar:
@@ -299,8 +307,11 @@ class CSVModelCommand(ImportModelCommand):
     csvmandatory = True
 
     def check_csvfile(self, mandatory):
-        if self.csvfile and not os.path.isfile(self.csvfile) and mandatory:
-            raise CommandError('CSV "%s" does not exist' % self.csv)
+        if self.csvfile and os.path.isfile(self.csvfile):
+            return True
+        if mandatory:
+            raise CommandError('CSV "%s" does not exist' % self.csvfile)
+        return False
 
     def add_arguments(self, parser):
         parser.add_argument('--csv', default=None)
