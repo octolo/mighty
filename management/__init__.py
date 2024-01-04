@@ -296,6 +296,12 @@ class XLSModelCommand(ImportModelCommand):
         super().handle(*args, **options)
 
 class CSVModelCommand(ImportModelCommand):
+    csvmandatory = True
+
+    def check_csvfile(self, mandatory):
+        if self.csvfile and not os.path.isfile(self.csvfile) and mandatory:
+            raise CommandError('CSV "%s" does not exist' % self.csv)
+
     def add_arguments(self, parser):
         parser.add_argument('--csv', default=None)
         parser.add_argument('--delimiter', default=',')
@@ -308,8 +314,7 @@ class CSVModelCommand(ImportModelCommand):
         self.delimiter = options.get('delimiter')
         self.quotechar = options.get('quotechar')
         self.quoting = options.get('quoting')
-        if self.csvfile and not os.path.isfile(self.csvfile):
-            raise CommandError('CSV "%s" does not exist' % self.csv)
+        self.check_csvfile(self.csvmandatory)
         super().handle(*args, **options)
 
     @property
