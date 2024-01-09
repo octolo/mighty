@@ -1,4 +1,4 @@
-from .custom import merge_accounts_signal, merge_accounts_signal_handler
+from .custom import merge_accounts_signal
 
 # TO CLEAN
 
