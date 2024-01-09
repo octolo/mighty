@@ -10,6 +10,7 @@ from django_json_widget.widgets import JSONEditorWidget
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
+from django.forms.formsets import DELETION_FIELD_NAME, all_valid
 
 from django.contrib.admin import helpers, widgets
 from django.contrib.admin.utils import (
@@ -49,6 +50,11 @@ class BaseAdmin(admin.ModelAdmin):
     temporary_urlname = None
     view_added = None
 
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        if kwargs.get("form"):
+            return kwargs.get("form")
+        return super().get_form(request, obj, change, **kwargs)
+
     def get_admin_urlname(self, suffix):
         info = self.model._meta.app_label, self.model._meta.model_name, suffix
         return "%s_%s_%s" % (self.model._meta.app_label, self.model._meta.model_name, suffix)
@@ -62,12 +68,14 @@ class BaseAdmin(admin.ModelAdmin):
         if field and hasattr(self.model, field) and self.is_urlname_temporary(request):
             return getattr(self, getattr(self, field))
 
-    def _admincustom_view(self, request, object_id, extra_context, template):
+    def _admincustom_view(self, request, object_id, extra_context, template, **kwargs):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
             raise DisallowedModelAdminToField("The field %s cannot be referenced." % to_field)
 
-        obj = self.get_object(request, unquote(object_id), to_field)
+        obj = None
+        if object_id:
+            obj = self.get_object(request, unquote(object_id), to_field)
 
         if request.method == "POST":
             if not self.has_change_permission(request, obj):
@@ -76,27 +84,27 @@ class BaseAdmin(admin.ModelAdmin):
             if not self.has_view_or_change_permission(request, obj):
                 raise PermissionDenied
 
-        if obj is None:
+        if obj is None and object_id:
             return self._get_obj_does_not_exist_redirect(request, self.opts, object_id)
 
         media = self.media
         title = _("View %s")
         context = {
             **self.admin_site.each_context(request),
-            "title": title % self.opts.verbose_name,
+            "title": kwargs.get("title", title % self.opts.verbose_name),
             "subtitle": str(obj) if obj else None,
-            "object_id": object_id,
             "original": obj,
             "is_popup": IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET,
             "to_field": to_field,
             "media": media,
             "preserved_filters": self.get_preserved_filters(request),
         }
+        if object_id:
+            context.update({ "object_id": object_id })
         context.update(extra_context or {})
         return self.render_admin_custom(request, context, obj=obj, template=template)
 
     def render_admin_custom(self, request, context, template, obj=None):
-        print("ok 2")
         context["object_tools_items"] = self.object_tools_items
         app_label = self.opts.app_label
         preserved_filters = self.get_preserved_filters(request)
@@ -125,40 +133,51 @@ class BaseAdmin(admin.ModelAdmin):
             }
         )
         request.current_app = self.admin_site.name
-        print("ok 3", template)
         return TemplateResponse(request, template, context)
 
     @csrf_protect_m
     def admincustom_view(self, request, object_id=None, extra_context=None, **kwargs):
         self.temporary_urlname = kwargs.get("urlname")
+        template = kwargs.pop("template")
         with transaction.atomic(using=router.db_for_write(self.model)):
-            return self._admincustom_view(request, object_id, extra_context, template=kwargs.get("template"))
+            return self._admincustom_view(request, object_id, extra_context, template, **kwargs)
 
-    def _adminform_view(self, request, object_id, form_url, extra_context, template=None):
+    def _adminform_view(self, request, object_id, form_url, extra_context, template=None, **kwargs):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
             raise DisallowedModelAdminToField(
                 "The field %s cannot be referenced." % to_field
             )
 
-        obj = self.get_object(request, unquote(object_id), to_field)
-
-        if request.method == "POST":
-            if not self.has_change_permission(request, obj):
-                raise PermissionDenied
+        obj = None
+        if object_id:
+            obj = self.get_object(request, unquote(object_id), to_field)
+            if request.method == "POST":
+                if not self.has_change_permission(request, obj):
+                    raise PermissionDenied
+            else:
+                if not self.has_view_or_change_permission(request, obj):
+                    raise PermissionDenied
         else:
-            if not self.has_view_or_change_permission(request, obj):
-                raise PermissionDenied
+            if request.method == "POST":
+                if not self.has_change_permission(request):
+                    raise PermissionDenied
+            else:
+                if not self.has_view_or_change_permission(request):
+                    raise PermissionDenied
 
-        if obj is None:
+
+        if obj is None and object_id:
             return self._get_obj_does_not_exist_redirect(
                 request, self.opts, object_id
             )
 
-        fieldsets = self.get_fieldsets(request, obj)
+        self.raw_id_fields = kwargs.get("raw_id_fields", self.raw_id_fields)
+        fieldsets = kwargs.get("fields", self.get_fieldsets(request, obj))
         ModelForm = self.get_form(
-            request, obj, change=True, fields=flatten_fieldsets(fieldsets)
+            request, obj, change=True, fields=flatten_fieldsets(fieldsets), form=kwargs.get("form")
         )
+
         if request.method == "POST":
             form = ModelForm(request.POST, request.FILES, instance=obj)
             formsets, inline_instances = self._create_formsets(
@@ -172,12 +191,15 @@ class BaseAdmin(admin.ModelAdmin):
             else:
                 new_object = form.instance
             if all_valid(formsets) and form_validated:
-                self.save_model(request, new_object, form, True)
-                self.save_related(request, form, formsets, True)
-                change_message = self.construct_change_message(
-                    request, form, formsets, add
-                )
-                self.log_change(request, new_object, change_message)
+                if kwargs.get("save_model"):
+                    self.save_model(request, new_object, form, True)
+                if kwargs.get("save_related"):
+                    self.save_related(request, form, formsets, True)
+                if kwargs.get("log_msg"):
+                    change_message = self.construct_change_message(
+                        request, form, formsets, kwargs.get("log_msg")
+                    )
+                    self.log_change(request, new_object, change_message)
                 return self.response_change(request, new_object)
             else:
                 form_validated = False
@@ -213,7 +235,7 @@ class BaseAdmin(admin.ModelAdmin):
 
         context = {
             **self.admin_site.each_context(request),
-            "title": title % self.opts.verbose_name,
+            "title": kwargs.get("title", title % self.opts.verbose_name),
             "subtitle": str(obj) if obj else None,
             "adminform": admin_form,
             "object_id": object_id,
@@ -322,8 +344,9 @@ class BaseAdmin(admin.ModelAdmin):
         self.temporary_urlname = kwargs.get("urlname")
         self.temporary_fields = kwargs.get("fields")
         self.temporary_fieldsets = kwargs.get("fieldsets")
+        template = kwargs.pop("template")
         with transaction.atomic(using=router.db_for_write(self.model)):
-            return self._adminform_view(request, object_id, form_url, extra_context, template=kwargs.get("template"))
+            return self._adminform_view(request, object_id, form_url, extra_context, template, **kwargs)
 
     def get_queryset(self, request):
         if self.queryset: return self.queryset

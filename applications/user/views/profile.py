@@ -15,9 +15,9 @@ class ProfileBaseView:
     def get_object(self, queryset=None):
         user = self.request.user
         newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
-        if newstyle != user.style:
-            user.style = newstyle
-            user.save()
+        #if newstyle != user.style:
+        #    user.style = newstyle
+        #    user.save()
         newlang = self.request.GET.get('lang')
         if newlang != user.language_pref:
             try:
@@ -48,7 +48,7 @@ class ProfileView(ProfileBaseView, DetailView):
 if 'rest_framework' in settings.INSTALLED_APPS:
     from rest_framework.generics import RetrieveAPIView
     from rest_framework.response import Response
-    
+
     class ProfileView(ProfileBaseView, RetrieveAPIView):
         def get(self, request, format=None):
             return Response(self.get_fields())

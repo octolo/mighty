@@ -1,3 +1,7 @@
+from .custom import merge_accounts_signal, merge_accounts_signal_handler
+
+# TO CLEAN
+
 from django.db.models.signals import post_save, pre_save, post_delete
 from django.conf import settings
 from django.contrib.auth import get_user_model

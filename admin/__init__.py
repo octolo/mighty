@@ -41,7 +41,6 @@ class ReportingAdmin(BaseAdmin):
     list_display = ('name', 'content_type', 'target')
     search_fields = ('service',)
 
-
 @admin.register(all_models.ConfigClient)
 class ConfigClientAdmin(BaseAdmin):
     view_on_site = False
