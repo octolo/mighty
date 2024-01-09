@@ -8,7 +8,7 @@ class Config:
     use_rest = False
     rest_error = "rest_framework.serializers.ValidationError"
     cgu_path = "/static/files/CGU.pdf"
-    politic_path = "/static/files/POLITIQUE_DE_CONFIDENTIALITE_JULY_2022.pdf"
+    politic_path = "/static/files/POLITIQUE_DE_CONFIDENTIALITE_JANV_2024.pdf"
     enable_mimetype = False
     named_tpl = "%(named)s-%(id)s"
     logo = "/static/img/logo.png"
