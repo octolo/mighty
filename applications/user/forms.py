@@ -80,6 +80,7 @@ def get_related_field():
 UserModel.get_related_field = get_related_field()
 UserModel.model = UserModel
 UserModel.limit_choices_to = {}
+
 class UserMergeAccountsAdminForm(ModelFormDescriptable):
     account_keep = forms.ModelChoiceField(
         queryset=get_user_model().objects.all(),
@@ -97,9 +98,13 @@ class UserMergeAccountsAdminForm(ModelFormDescriptable):
     def save_form(self):
         kp = self.cleaned_data["account_keep"]
         dl = self.cleaned_data["account_delete"]
-        dl.user_email.update(user=kp)
-        dl.user_phone.update(user=kp)
-        dl.user_address.update(user=kp)
+
+        for data_link in ("user_email", "user_phone", "user_address"):
+            try:
+                getattr(dl, data_link).update(user=kp)
+            except Exception:
+                pass
+
         merge_accounts_signal.send(sender=None, tokeep=kp, todelete=dl)
         dl.delete()
 
