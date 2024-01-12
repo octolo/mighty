@@ -15,15 +15,17 @@ form_init_fields = (
     "renderer")
 
 class FormShare:
+    additional_fields = []
+    additional_fields_options = {}
+
     def get_sub_form(self, form, *args, **kwargs):
         from mighty.forms.descriptors import FormDescriptor
         return json.loads(json.dumps(FormDescriptor(form, self.request).as_json()))
 
-    def get_additional_fields(self):
-        return []
-
-    def get_additional_fields_options(self):
-        return {}
+    def add_addtionnal_field(self, field, options=None):
+        self.additional_fields.append(field)
+        if options:
+            self.additional_fields_options[field] = options
 
     def prepare_descriptor(self, *args, **kwargs): pass
 
@@ -139,7 +141,7 @@ class FormDescriptor:
 
         self.form_desc["blocks"] = getattr(self.form.Options, "blocks", [])
 
-        self.form_desc["additional_fields"] = self.form.get_additional_fields()
+        self.form_desc["additional_fields"] = self.form.additional_fields
 
         self.obj = kwargs.get("obj")
         self.generate_desc()
@@ -184,7 +186,7 @@ class FormDescriptor:
         return base_type
 
     def option(self, field, name, key, default=None):
-        additional_options = self.form.get_additional_fields_options()
+        additional_options = self.form.additional_fields_options
         if name in self.form.Options.fields and key in self.form.Options.fields[name]:
             return self.form.Options.fields[name][key]
         elif name in additional_options and key in additional_options[name]:
