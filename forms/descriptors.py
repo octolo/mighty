@@ -27,6 +27,10 @@ class FormShare:
         if options:
             self.additional_fields_options[field] = options
 
+    def reset_additional_fields(self):
+        self.additional_fields = []
+        self.additional_fields_options = {}
+
     def prepare_descriptor(self, *args, **kwargs): pass
 
 class FormDescriptable(FormShare, forms.Form):
@@ -43,6 +47,7 @@ class FormDescriptable(FormShare, forms.Form):
         return {f: kwargs[f] for f in kwargs if f in list_fields}
 
     def __init__(self, *args, **kwargs):
+        self.reset_additional_fields()
         self.request = kwargs.pop("request") if "request" in kwargs else None
         super(forms.Form, self).__init__(*args, **{f: kwargs[f] for f in self.form_init(kwargs)})
         self.prepare_descriptor(*args, **kwargs)
@@ -61,6 +66,7 @@ class ModelFormDescriptable(FormShare, forms.ModelForm):
         return {f: kwargs[f] for f in kwargs if f in list_fields}
 
     def __init__(self, *args, **kwargs):
+        self.reset_additional_fields()
         self.request = kwargs.pop("request") if "request" in kwargs else None
         super(forms.ModelForm, self).__init__(*args, **{f: kwargs.get(f) for f in self.form_init(kwargs)})
         self.prepare_descriptor(*args, **kwargs)
