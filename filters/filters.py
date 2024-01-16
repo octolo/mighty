@@ -18,6 +18,7 @@ class Filter(Verify):
     regex_delimiter = None
     user = None
     extend = ()
+    only_extend = False
     or_extend = ()
     or_operator = operator.or_
     and_extend = ()
@@ -39,6 +40,7 @@ class Filter(Verify):
         self.or_operator = kwargs.get("or_operator", self.or_operator)
         self.and_extend = kwargs.get('and_extend', self.and_extend)
         self.and_operator = kwargs.get("and_operator", self.and_operator)
+        self.only_extend = kwargs.get("only_extend", self.only_extend)
         self.params_choices = [
             self.param,
             self.negative_param,
@@ -284,6 +286,9 @@ class SearchFilter(ParamFilter):
     def baseQ(self):
         values = self.get_value()
         if len(values):
+            if self.only_extend:
+                print("okkk")
+                return self.get_andQ()|self.get_orQ()
             searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in values])
             return (searchQ|self.get_andQ())|self.get_orQ()
         return Q()
