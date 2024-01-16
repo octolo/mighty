@@ -11,6 +11,7 @@ class Foxid:
     distinct = None
     order_enable = False
     order_base = []
+    order_association = {}
 
     class Param:
         _filters = 'f'
@@ -41,6 +42,7 @@ class Foxid:
         self.order_base = kwargs.get('order_base', [])
         self.distinct = kwargs.get('distinct', False)
         self.order_enable = kwargs.get('order_enable', False)
+        self.order_association = kwargs.get("order_association", {})
         self.separator = self.Token._split
         self.negative = self.Token._negative
 
@@ -140,6 +142,12 @@ class Foxid:
             return fltr.sql(self.request, method_request={fltr.param: args})
         return False
 
+    def get_arg_order(self, arg):
+        assoc = arg.replace("-", "")
+        direc = "-" if arg.startswith("-") else ""
+        return direc+self.order_association.get(assoc, assoc)
+
+
     def order_by(self):
         args = []
         if self.order:
@@ -149,7 +157,7 @@ class Foxid:
             for ord_base in self.order_base:
                 if ord_base.replace("-", "") not in args_base:
                     args.append(ord_base)
-        return args
+        return [self.get_arg_order(arg) for arg in args]
 
     def ready(self):
         if self.include:
