@@ -1,3 +1,6 @@
+from mighty.applications.messenger.decorators.messenger import HeritToMessenger, AccessToMessenger
+
+# TO CLEAN
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
 

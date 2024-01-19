@@ -125,3 +125,15 @@ reporting = (
     "html_pdf",
     "email_html",
 )
+
+registertask = (
+    "register_type",
+    "status",
+    "period",
+    "choiceday",
+    "content_type",
+    "object_id",
+    "is_enable_test",
+    "how_start_task",
+    "last_date_task",
+)

@@ -156,7 +156,7 @@ class ModelBaseCommand(BaseCommand):
         super().add_arguments(parser)
         parser.add_argument('--create', action="store_true")
         parser.add_argument('--label', default=self.label)
-        parser.add_argument('--model', default=None)
+        parser.add_argument('--model', default=self.model)
         parser.add_argument('--filter', default=None)
         parser.add_argument('--manager', default=self.manager)
         parser.add_argument('--search', action="store_true")
@@ -172,6 +172,7 @@ class ModelBaseCommand(BaseCommand):
 
     @property
     def model_use(self, *args, **kwargs):
+        print(self.model)
         if self.model and type(self.model) != str:
             return self.model
         label = kwargs.get('label', self.label)

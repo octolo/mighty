@@ -2,13 +2,13 @@ from django.db import models
 from django.utils.module_loading import import_string
 
 from mighty.applications.messenger import choices, translates as _, send_missive
-from mighty.functions import masking_email, masking_phone
+from mighty.applications.messenger.decorators import HeritToMessenger
 from mighty.applications.messenger.models.abstracts import MessengerModel
 from mighty.applications.address.models import AddressNoBase
 from mighty.fields import JSONField
 
-class Missive(MessengerModel, AddressNoBase):
-    backend = models.CharField(max_length=255, editable=False)
+@HeritToMessenger(related_name="missive_to_content_type", backend_blank=False, backend_null=False)
+class Missive(AddressNoBase):
     msg_id = models.CharField(max_length=255, blank=True, null=True)
     response = models.TextField(blank=True, null=True, editable=False)
     partner_id = models.CharField(max_length=255, blank=True, null=True, editable=False)
@@ -17,7 +17,7 @@ class Missive(MessengerModel, AddressNoBase):
     price_config = models.JSONField(default=dict)
     price_info = models.JSONField(default=dict)
 
-    class Meta(MessengerModel.Meta):
+    class Meta:
         abstract = True
         verbose_name = "missive"
         verbose_name_plural = "missives"

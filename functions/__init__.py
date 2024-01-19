@@ -104,6 +104,9 @@ Shortcut to get a setting django
 def setting(name, default=None):
     return getattr(settings, name, default)
 
+def get_setting(name, default=None):
+    return getattr(settings, name, default)
+
 """
 Return True/False if input not in search list
 [input_str] the data tested

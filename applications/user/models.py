@@ -18,7 +18,7 @@ from mighty.applications.address import fields as address_fields
 from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.user.manager import UserManager
 from mighty.applications.user import translates as _, fields, choices, validators
-from mighty.applications.messenger import choices as m_choices
+from mighty.applications.messenger.decorators import AccessToMessenger
 from mighty.applications.nationality.fields import nationality as fields_nationality
 from mighty.applications.tenant.apps import TenantConfig
 
@@ -146,7 +146,7 @@ class UserChangeLogModel(ChangeLog):
     class Meta:
         abstract = True
 
-
+@AccessToMessenger()
 class User(AbstractUser, Base, Image, AddressNoBase):
     enable_model_change_log = True
     search_fields = fields.search
@@ -187,8 +187,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     if conf.ForeignKey.optional5:
         optional = models.ForeignKey(conf.ForeignKey.optional5, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional5_user')
 
-    if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
-        missives = GenericRelation(conf.ForeignKey.missive)
+    #missives = GenericRelation("mighty.Missive")
 
     if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
         nationalities = models.ManyToManyField(conf.ForeignKey.nationalities, blank=True)

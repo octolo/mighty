@@ -12,9 +12,10 @@ class MissiveAdmin(BaseAdmin):
     list_display = ('target', 'subject', 'mode', 'status')
     search_fields = ('target',)
     list_filter = ('mode', 'status')
-    readonly_fields = ('backend', 'addr_backend_id', 'response', 'partner_id', 'code_error', 'trace')
+    readonly_fields = ('backend', 'addr_backend_id', 'response', 'partner_id', 'code_error', 'trace', "admin_url_html")
     fieldsets = (
         (None, {"classes": ("wide",), "fields": (
+            "backend",
             "mode",
             "status",
             "name",
@@ -22,11 +23,18 @@ class MissiveAdmin(BaseAdmin):
             "reply",
             "reply_name",
             "target",
+        )}),
+        ("Content type", {"classes": ("wide",), "fields": (
+            "admin_url_html",
+            "content_type",
+            "object_id",
+        )}),
+        ("Contact", {"classes": ("collapse",), "fields": (
             "denomination",
             "last_name",
             "first_name",
         )}),
-        ("Address", {"classes": ("wide",), "fields": addr_fields}),
+        ("Address", {"classes": ("collapse",), "fields": addr_fields}),
         ("Content", {"classes": ("collapse",), "fields": (
             "subject",
             "template",
@@ -36,10 +44,7 @@ class MissiveAdmin(BaseAdmin):
             "html",
             "txt",
         )}),
-        ("Follow", {"classes": ("wide",), "fields": (
-            "content_type",
-            "object_id",
-            "backend",
+        ("Follow", {"classes": ("collapse",), "fields": (
             "response",
             "msg_id",
             "partner_id",

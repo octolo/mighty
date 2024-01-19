@@ -34,6 +34,7 @@ class BackendAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.backend}),)
     list_display = ('service', 'content_type', 'is_disable')
     search_fields = ('service',)
+
 @admin.register(all_models.Reporting)
 class ReportingAdmin(BaseAdmin):
     view_on_site = False
@@ -41,6 +42,18 @@ class ReportingAdmin(BaseAdmin):
     list_display = ('name', 'content_type', 'target')
     search_fields = ('service',)
 
+<<<<<<< Updated upstream
+=======
+@admin.register(all_models.RegisterTask)
+class RegisterTaskAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertask}),)
+    list_display = ('content_type', 'how_start_task', 'register_type', 'status')
+    search_fields = ('content_type', 'how_start_task')
+    readonly_fields = ("last_date_task",)
+
+
+>>>>>>> Stashed changes
 @admin.register(all_models.ConfigClient)
 class ConfigClientAdmin(BaseAdmin):
     view_on_site = False

@@ -2,7 +2,7 @@
 from django.db import models
 from mighty.applications.messenger import translates as _
 from mighty.applications.messenger.models.abstracts import MessengerModel
-from mighty.applications.messenger.decorators import MissiveFollower
+from mighty.applications.messenger.decorators import HeritToMessenger, MissiveFollower
 from mighty.applications.logger import choices
 
 fields_shared = (
@@ -21,13 +21,13 @@ fields_shared = (
     "txt",
 )
 
+@HeritToMessenger(related_name="notification_to_content_type")
 @MissiveFollower(related_name="missive_to_notification")
-class Notification(MessengerModel):
-    backend = models.CharField(max_length=255, blank=True, null=True, editable=False)
+class Notification(models.Model):
     is_read = models.BooleanField(default=True)
     level = models.PositiveSmallIntegerField(choices=choices.LEVEL, default=choices.INFO)
 
-    class Meta(MessengerModel.Meta):
+    class Meta:
         abstract = True
         verbose_name = "notification"
         verbose_name_plural = "notifications"
