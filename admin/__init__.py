@@ -42,8 +42,6 @@ class ReportingAdmin(BaseAdmin):
     list_display = ('name', 'content_type', 'target')
     search_fields = ('service',)
 
-<<<<<<< Updated upstream
-=======
 @admin.register(all_models.RegisterTask)
 class RegisterTaskAdmin(BaseAdmin):
     view_on_site = False
@@ -53,7 +51,6 @@ class RegisterTaskAdmin(BaseAdmin):
     readonly_fields = ("last_date_task",)
 
 
->>>>>>> Stashed changes
 @admin.register(all_models.ConfigClient)
 class ConfigClientAdmin(BaseAdmin):
     view_on_site = False

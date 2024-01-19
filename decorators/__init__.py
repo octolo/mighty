@@ -7,3 +7,4 @@ from mighty.decorators.reporting import ReportingModel, reporting_fields
 from mighty.decorators.variable import EnableVariableEditorModel
 from mighty.decorators.inherit import  InheritClassList, InheritModelClassList
 from mighty.decorators.override import OverrideClass
+from mighty.decorators.registertask import AccessToRegisterTask, AdminRegisteredTasksView

@@ -3,6 +3,7 @@ from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import admin
+from django.core.paginator import Paginator
 from mighty.admin.models import BaseAdmin
 from mighty.applications.logger import fields
 from mighty.models import Log
@@ -57,7 +58,6 @@ class ModelWithLogAdmin(BaseAdmin):
         return TemplateResponse(request, 'admin/logs.html', context)
 
     def changelogs_view(self, request, object_id, extra_context=None):
-        from django.core.paginator import Paginator
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)

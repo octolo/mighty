@@ -65,6 +65,7 @@ class RegisterTask(Base):
 
     class Meta(Base.Meta):
         abstract = True
+        ordering = ("date_create", "last_date_task")
 
     @property
     def is_delta_date_ok(self):
@@ -72,7 +73,8 @@ class RegisterTask(Base):
 
     @property
     def is_register_enable(self):
-        return getattr(self.content_object, self.is_enable_test)()
+        enable = getattr(self.content_object, self.is_enable_test)
+        return enable() if callable(enable) else enable
 
     def start_task(self):
         if self.is_register_enable:
@@ -80,7 +82,7 @@ class RegisterTask(Base):
                 try:
                     getattr(self.content_object, self.how_start_task)
                     self.status = _c.STATUS_FINISHED
-                    self.last_date_task = timezone.now
+                    self.last_date_task = timezone.now()
                 except Exception:
                     self.status = _c.STATUS_ERROR
         else:

@@ -68,24 +68,14 @@ class BaseAdmin(admin.ModelAdmin):
         if field and hasattr(self.model, field) and self.is_urlname_temporary(request):
             return getattr(self, getattr(self, field))
 
-<<<<<<< Updated upstream
     def _admincustom_view(self, request, object_id, extra_context, template, **kwargs):
-=======
-    def _admincustom_view(self, request, object_id, extra_context, template):
-        print("_admcus", object_id)
->>>>>>> Stashed changes
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
             raise DisallowedModelAdminToField("The field %s cannot be referenced." % to_field)
 
-<<<<<<< Updated upstream
         obj = None
         if object_id:
             obj = self.get_object(request, unquote(object_id), to_field)
-=======
-        obj = self.get_object(request, unquote(object_id), to_field)
-        print("_admcus", obj)
->>>>>>> Stashed changes
 
         if request.method == "POST":
             if not self.has_change_permission(request, obj):

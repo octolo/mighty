@@ -11,6 +11,7 @@ from mighty.applications.user import fields
 from mighty.applications.address.admin import AddressAdminInline
 from mighty.applications.address import fields as address_fields
 from mighty.applications.user.apps import UserConfig
+from mighty.applications.messenger.decorators import AdminMissivesView
 
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
@@ -40,6 +41,7 @@ class UserAddressAdminInline(admin.StackedInline):
     extra = 0
     readonly_fields = ("addr_backend_id",)
 
+@AdminMissivesView()
 class UserAdmin(UserAdmin, BaseAdmin):
     change_list_template = "admin/users_change_list.html"
     #formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
@@ -73,7 +75,6 @@ class UserAdmin(UserAdmin, BaseAdmin):
         if not change: obj.method = METHOD_BACKEND
         super().save_model(request, obj, form, change)
 
-<<<<<<< Updated upstream
     def mergeaccounts_view(self, request):
         return self.adminform_view(
             request=request,
@@ -83,28 +84,15 @@ class UserAdmin(UserAdmin, BaseAdmin):
             fields=((None, {'classes': ('wide',), 'fields': ("account_keep", "account_delete"),}),),
             raw_id_fields=("account_keep", "account_delete"),
             log_msg="Merge success",
-=======
-    def missives_view(self, request, object_id, form_url=None, extra_context=None):
-        return self.admincustom_view(request, object_id, extra_context,
-            urlname=self.get_admin_urlname("missives"),
-            template="admin/missives.html",
->>>>>>> Stashed changes
         )
 
     def get_urls(self):
         from django.urls import path, include
         urls = super().get_urls()
         my_urls = [
-            path(
-<<<<<<< Updated upstream
-                "mergeaccounts/",
+            path("mergeaccounts/",
                 self.wrap(self.mergeaccounts_view),
                 name=self.get_admin_urlname("mergeaccounts"),
-=======
-                "<path:object_id>/missives/",
-                self.wrap(self.missives_view, object_tools={"name": "Missives", "url": "missives"}),
-                name=self.get_admin_urlname("missives"),
->>>>>>> Stashed changes
             ),
         ]
         return my_urls + urls

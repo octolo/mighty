@@ -18,7 +18,7 @@
 &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'change' original.pk|admin_urlquote %}">{{ original|truncatewords:"18" }}</a>
-&rsaquo; {% trans "Missives" %}
+&rsaquo; {% trans "Registered Tasks" %}
 </div>
 {% endblock %}
 
@@ -29,20 +29,26 @@
         <thead>
             <tr>
                 <th scope="col">date_create</th>
-                <th scope="col">target</th>
-                <th scope="col">sender</th>
+                <th scope="col">register_type</th>
                 <th scope="col">status</th>
-                <th scope="col">subject</th>
+                <th scope="col">period</th>
+                <th scope="col">choice_day</th>
+                <th scope="col">last_date_task</th>
+                <th scope="col">test</th>
+                <th scope="col">start</th>
              </tr>
         </thead>
         <tbody>
-            {% for missive in missives %}
+            {% for rt in registered_tasks %}
             <tr>
-                <td><a href="{{ missive.admin_change_url }}">{{ missive.date_create }}</a></td>
-                <td>{{ missive.target }}</td>
-                <td>{{ missive.sender }}</td>
-                <td>{{ missive.get_status_display }}</td>
-                <td>{{ missive.subject }}</td>
+                <td><a href="{{ rt.admin_change_url }}">{{ rt.date_create }}</a></td>
+                <td>{{ rt.register_type }}</td>
+                <td>{{ rt.status }}</td>
+                <td>{{ rt.period }}</td>
+                <td>{{ rt.choice_day }}</td>
+                <td>{{ rt.last_date_task }}</td>
+                <td>{{ rt.is_enable_test }}</td>
+                <td>{{ rt.how_start_task }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -52,18 +58,18 @@
 
 <div class="pagination">
     <span class="step-links">
-        {% if missives.has_previous %}
+        {% if registered_tasks.has_previous %}
             <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ missives.previous_page_number }}">previous</a>
+            <a href="?page={{ registered_tasks.previous_page_number }}">previous</a>
         {% endif %}
 
         <span class="current">
-            Page {{ missives.number }} of {{ missives.paginator.num_pages }}.
+            Page {{ registered_tasks.number }} of {{ registered_tasks.paginator.num_pages }}.
         </span>
 
-        {% if missives.has_next %}
-            <a href="?page={{ missives.next_page_number }}">next</a>
-            <a href="?page={{ missives.paginator.num_pages }}">last &raquo;</a>
+        {% if registered_tasks.has_next %}
+            <a href="?page={{ registered_tasks.next_page_number }}">next</a>
+            <a href="?page={{ registered_tasks.paginator.num_pages }}">last &raquo;</a>
         {% endif %}
     </span>
 </div>

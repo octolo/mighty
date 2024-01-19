@@ -1,4 +1,6 @@
-from mighty.applications.messenger.decorators.messenger import HeritToMessenger, AccessToMessenger
+from mighty.applications.messenger.decorators.messenger import (
+    HeritToMessenger, AccessToMessenger, AdminMissivesView
+)
 
 # TO CLEAN
 from django.db import models

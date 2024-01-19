@@ -40,8 +40,9 @@
         <tbody>
             {% for log in logs %}
             <tr>
-                <th scope="row"><a href="{% url optslog|admin_urlname:'change' log.pk|admin_urlquote %}">{{ log.field }}</a></th>
+                <th scope="row"><a href="{% url 'admin:mighty_modelchangelog_change' log.pk %}">{{ log.field }}</a></th>
                 <td>{{ log.get_value }}</td>
+                <td>{% field_value object log.field %}</td>
                 <td>{{ log.date_begin }}</td>
                 <td>{{ log.date_end }}</td>
                 <td>{{ log.user }}</td>
