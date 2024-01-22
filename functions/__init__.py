@@ -1,5 +1,6 @@
 from .facilities import getattr_recursive
 from .random import random_date, random_object_by_id
+from .registertask import subscribe_register_task, unsubscribe_register_task
 
 from django.apps import apps
 from django.db.models import F, Func, Subquery, PositiveIntegerField, Q

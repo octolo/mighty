@@ -1,11 +1,11 @@
 from django.core.management.base import CommandError
 from mighty.management import ModelBaseCommand
-from mighty.models import RegisterTask
+from mighty.models import RegisterTaskSubscription
 
 class Command(ModelBaseCommand):
     tasks = "*"
     action = "start"
-    model = RegisterTask
+    model = RegisterTaskSubscription
     action_associated = {
         "start": "start_task",
     }

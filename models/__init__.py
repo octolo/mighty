@@ -10,7 +10,7 @@ from mighty.models.news import News
 from mighty.models.config import Config
 from mighty.models.backend import Backend
 from mighty.models.reporting import Reporting
-from mighty.models.registertask import RegisterTask
+from mighty.models.registertask import RegisterTask, RegisterTaskSubscription
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 
 
@@ -20,6 +20,7 @@ from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models 
 class Backend(Backend): pass
 class Reporting(Reporting): pass
 class RegisterTask(RegisterTask): pass
+class RegisterTaskSubscription(RegisterTaskSubscription): pass
 
 class ConfigClient(Config):
     config = JSONField(null=True, blank=True)

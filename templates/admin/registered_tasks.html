@@ -36,19 +36,21 @@
                 <th scope="col">last_date_task</th>
                 <th scope="col">test</th>
                 <th scope="col">start</th>
+                <th scope="col">subscribe to</th>
              </tr>
         </thead>
         <tbody>
             {% for rt in registered_tasks %}
             <tr>
                 <td><a href="{{ rt.admin_change_url }}">{{ rt.date_create }}</a></td>
-                <td>{{ rt.register_type }}</td>
+                <td>{{ rt.register.register_type }}</td>
                 <td>{{ rt.status }}</td>
                 <td>{{ rt.period }}</td>
                 <td>{{ rt.choice_day }}</td>
                 <td>{{ rt.last_date_task }}</td>
-                <td>{{ rt.is_enable_test }}</td>
-                <td>{{ rt.how_start_task }}</td>
+                <td>{{ rt.register.is_enable_test }}</td>
+                <td>{{ rt.register.how_start_task }}</td>
+                <td><a href="{{ rt.subscribe_to.admin_change_url }}">{{ rt.subscribe_to }}</a></td>
             </tr>
             {% endfor %}
         </tbody>

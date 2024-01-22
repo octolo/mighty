@@ -127,13 +127,21 @@ reporting = (
 )
 
 registertask = (
+    "named_id",
+    "name",
     "register_type",
+    "content_type",
+    "is_enable_test",
+    "how_start_task",
+)
+
+registertasksubscription = (
+    "register",
     "status",
     "period",
     "choiceday",
-    "content_type",
-    "object_id",
-    "is_enable_test",
-    "how_start_task",
     "last_date_task",
+    "object_id",
+    "content_type_subscriber",
+    "object_id_subscriber",
 )

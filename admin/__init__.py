@@ -46,10 +46,17 @@ class ReportingAdmin(BaseAdmin):
 class RegisterTaskAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertask}),)
-    list_display = ('content_type', 'how_start_task', 'register_type', 'status')
-    search_fields = ('content_type', 'how_start_task')
-    readonly_fields = ("last_date_task",)
+    list_display = ('__str__', 'content_type', 'how_start_task', 'register_type',)
+    search_fields = ('name', 'content_type', 'how_start_task')
 
+@admin.register(all_models.RegisterTaskSubscription)
+class RegisterTaskSubscriptionAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertasksubscription}),)
+    list_display = ('register',)
+    search_fields = ('register__name', 'register__content_type', 'register__how_start_task')
+    readonly_fields = ("last_date_task",)
+    raw_id_fields = ('register',)
 
 @admin.register(all_models.ConfigClient)
 class ConfigClientAdmin(BaseAdmin):
