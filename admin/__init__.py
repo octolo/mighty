@@ -53,7 +53,7 @@ class RegisterTaskAdmin(BaseAdmin):
 class RegisterTaskSubscriptionAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertasksubscription}),)
-    list_display = ('register',)
+    list_display = ('register', 'subscribe_to', 'content_type_subscriber')
     search_fields = ('register__name', 'register__content_type', 'register__how_start_task')
     readonly_fields = ("last_date_task",)
     raw_id_fields = ('register',)

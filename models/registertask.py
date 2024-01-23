@@ -93,7 +93,7 @@ class RegisterTaskSubscription(Base):
     def content_object(self):
         if self.object_id:
             return self.register.content_type.get_object_for_this_type(id=self.object_id)
-        return self.register.content_type.model_class()
+        return self.register.content_type
 
     @property
     def subscriber(self):
@@ -118,13 +118,13 @@ class RegisterTaskSubscription(Base):
         if self.is_register_enable:
             if self.is_delta_date_ok:
                 try:
-                    self._logger.info("start task: "+str(self.register))
+                    self._logger.info("start register task - sub: %s, model: %s, object_id: %s" % (self.pk, self.register, self.object_id))
                     getattr(self.content_object, self.register.how_start_task)(self.subscriber)
                     self.status = _c.STATUS_FINISHED
                     self.last_date_task = timezone.now()
                 except Exception:
                     self.status = _c.STATUS_ERROR
-                    self._logger.warning("start task can't be started: "+str(self.register))
+                    self._logger.warning("register task can't be started - sub: %s, model: %s, object_id: %s" % (self.pk, self.register, self.object_id))
         else:
             self.status = _c.STATUS_EXPIRED
             self.last_date_task = timezone.now()
