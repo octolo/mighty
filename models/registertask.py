@@ -51,9 +51,10 @@ CHOICES_PERIOD = (
     (PERIOD_EVERYDAY, _("every day")),
 )
 
-@NamedIdModel(fields=["name_or_how","content_type"])
+@NamedIdModel(fields=["name"])
 class RegisterTask(Base):
-    name = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=255, unique=True)
+    desc = models.TextField(blank=True, null=True)
     register_type = models.CharField(max_length=10, choices=CHOICES_TYPE, default=TYPE_ALERT)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="registertask_to_content_type")
     is_enable_test = models.TextField(blank=True, null=True)

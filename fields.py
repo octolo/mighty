@@ -129,6 +129,7 @@ reporting = (
 registertask = (
     "named_id",
     "name",
+    "desc",
     "register_type",
     "content_type",
     "is_enable_test",
