@@ -12,7 +12,7 @@ from mighty.applications.address.admin import AddressAdminInline
 from mighty.applications.address import fields as address_fields
 from mighty.applications.user.apps import UserConfig
 from mighty.applications.messenger.decorators import AdminMissivesView
-
+from mighty.decorators import AdminRegisteredTasksView
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 from mighty.applications.user import get_form_fields
@@ -41,6 +41,7 @@ class UserAddressAdminInline(admin.StackedInline):
     extra = 0
     readonly_fields = ("addr_backend_id",)
 
+@AdminRegisteredTasksView()
 @AdminMissivesView()
 class UserAdmin(UserAdmin, BaseAdmin):
     change_list_template = "admin/users_change_list.html"

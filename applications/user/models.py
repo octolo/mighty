@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 
 from mighty.apps import MightyConfig
+from mighty.decorators import AccessToRegisterTask
 from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.models.image import Image
@@ -146,6 +147,7 @@ class UserChangeLogModel(ChangeLog):
     class Meta:
         abstract = True
 
+@AccessToRegisterTask()
 @AccessToMessenger()
 class User(AbstractUser, Base, Image, AddressNoBase):
     enable_model_change_log = True
