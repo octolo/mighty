@@ -18,7 +18,6 @@ if 'mighty.applications.logger' in settings.INSTALLED_APPS:
 
 #def AfterAddAnEmail(sender, instance, **kwargs):
 #    post_save.disconnect(AfterAddAnEmail, UserEmail)
-#    print("tata")
 #    if instance.default or instance.user.email is None:
 #        UserEmail.objects.filter(user=instance.user).first()
 #        instance.user.email = instance.email

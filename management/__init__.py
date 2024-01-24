@@ -172,7 +172,6 @@ class ModelBaseCommand(BaseCommand):
 
     @property
     def model_use(self, *args, **kwargs):
-        print(self.model)
         if self.model and type(self.model) != str:
             return self.model
         label = kwargs.get('label', self.label)
@@ -268,7 +267,6 @@ class ImportModelCommand(ModelBaseCommand):
         self.position = 0
         self.prepare_fields(self.reader.fieldnames)
         for row in self.reader:
-            print(row)
             self.current_row = row
             self.set_position()
             if self.loader or self.progressbar:

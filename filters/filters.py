@@ -192,7 +192,6 @@ class Filter(Verify):
 
     def get_Q(self):
         test = ~self.baseQ() if self.is_negative or self.is_array_negative else self.baseQ()
-        print(test)
         return test
 
     def sql(self, request=None, *args, **kwargs):
@@ -287,7 +286,6 @@ class SearchFilter(ParamFilter):
         values = self.get_value()
         if len(values):
             if self.only_extend:
-                print("okkk")
                 return self.get_andQ()|self.get_orQ()
             searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in values])
             return (searchQ|self.get_andQ())|self.get_orQ()

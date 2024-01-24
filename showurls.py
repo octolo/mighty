@@ -153,7 +153,6 @@ class ShowUrls:
         #        return json.dumps(views, indent=4)
         #    return json.dumps(views)
 
-        print(views)
         return [v for v in views]
 
     def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None):

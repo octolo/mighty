@@ -19,6 +19,10 @@ api_urlpatterns = [
         ])),
         path('', views.CreateUserView.as_view(), name="api-user-profile"),
         path('profile/', views.ProfileView.as_view(), name="api-user-profile"),
+        path('notification/', include([
+            path('', views.NotificationListView.as_view(), name="api-user-notification-list"),
+            path('<uuid:uid>/', views.NotificationDetailView.as_view(), name="api-user-notification-detail"),
+        ])),
         path('invitation/', include([
             path('<uuid:uid>/', views.InvitationDetailView.as_view(), name="api-user-invitation"),
             path('<uuid:uid>/<str:action>/', views.InvitationDetailView.as_view(), name="api-user-invitation-action"),

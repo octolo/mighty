@@ -78,10 +78,7 @@ class Reporting(Base):
         elif response == "email":
             from mighty.models import Missive
             from django.template import Template, Context
-
             file = self.reporting_file_generator.file_csv(file_type, None)
-            print(file)
-
             missive = Missive (
                 target = self.email_target,
                 subject = "Récapitulatif",
@@ -93,5 +90,5 @@ class Reporting(Base):
             missive.save()
 
             return file
-        
+
         return self.reporting_file_generator.response_file(file_type)

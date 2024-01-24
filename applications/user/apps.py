@@ -10,6 +10,10 @@ class Config:
     cgu = True
     cgv = False
     protect_trashmail = True
+    notification_optional_relation = {
+        "octolo.Contact": "tenant__user",
+        "octolo.MeetingParticipant": "contact__tenant__user",
+    }
 
     class ForeignKey:
         missive = 'mighty.Missive'
