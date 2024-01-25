@@ -45,7 +45,7 @@ def HeritToMessenger(**kwargs):
         return NewClass
     return decorator
 
-def AccessToMessenger(**kwargs):
+def AccessToMissive(**kwargs):
     def decorator(obj):
         if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
             obj.add_to_class("missives", GenericRelation(kwargs.get("foreignkey", "mighty.Missive")))
