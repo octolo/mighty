@@ -280,6 +280,8 @@ class FormDescriptor:
             "options": self.get_options(field, name),
             "dependencies": self.get_dependencies(name),
             "initial": self.get_initial_value(field, name),
+            "config": self.option(field, name, "config"),
+            "exclude": self.option(field, name, "exclude"),
         }
         if (hasattr(field, 'choices') and hasattr(field.choices, 'queryset')) or self.get_api(field, name):
             desc.update({
