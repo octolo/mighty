@@ -97,21 +97,19 @@ class TwoFactorBackend(ModelBackend):
         if len(user) == 1: return user[0], target
         raise UserModel.DoesNotExist
 
-    @property
-    def earlier(self):
-        now = timezone.now()
-        earlier = now - datetime.timedelta(minutes=conf.minutes_allowed)
-        return earlier, now
+    def time_threshold(self, minutes):
+        return timezone.now() - timezone.timedelta(minutes=minutes)
 
     def get_object(self, user, target, mode, backend, **kwargs):
         target = self.clean_target(target)
-        earlier, now = self.earlier
+        time_threshold = self.time_threshold(conf.minutes_allowed)
+
         prepare = {
             "mode": mode,
             "email_or_phone": target,
             "user": user,
             "backend": backend,
-            "date_create__range": (earlier,now),
+            "date_create__gte": time_threshold,
             "is_consumed": False,
         }
         prepare.update(**kwargs)
@@ -122,8 +120,11 @@ class TwoFactorBackend(ModelBackend):
             user, target = self.get_user_target(target)
             mode = self.method_twofactor(user, target)
             twofactor, created = self.get_object(user, target, mode, backend_path)
+
+            # FIXME: Need refacto with conf
             twofactor.slack_notify.send_msg_create()
             twofactor.discord_notify.send_msg_create()
+
             logger.info("code twofactor (%s): %s" % (target, twofactor.code), extra={'user': user, 'app': 'twofactor'})
             if mode == choices.MODE_EMAIL:
                 return self.send_email(twofactor, user, target)
@@ -135,22 +136,22 @@ class TwoFactorBackend(ModelBackend):
             pass
         return CantIdentifyError()
 
-    def get_date_protect(self, minutes):
-        return timezone.now()-timezone.timedelta(minutes=minutes)
+    # def get_date_protect(self, minutes):
+        # return timezone.now()-timezone.timedelta(minutes=minutes)
 
     def raise_date_protect(self, date, minutes):
-        date = date+timezone.timedelta(minutes=minutes)
+        date = date + timezone.timedelta(minutes=minutes)
         raise SpamException(date)
 
     def check_protect(self, target, subject, minutes, mode):
         target = self.clean_target(target)
         if minutes:
-            date_test = self.get_date_protect(minutes)
+            time_threshold = self.time_threshold(minutes)
             missive = Missive.objects.filter(
                 target=target,
                 subject=subject,
                 mode=mode,
-                date_create__gt=date_test,
+                date_create__gte=time_threshold,
                 twofactor_missive__is_consumed=False,
             ).order_by('-date_create').last()
             if missive:
