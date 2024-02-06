@@ -12,6 +12,7 @@ class Foxid:
     order_enable = False
     order_base = []
     order_association = {}
+    order_authorized = []
 
     class Param:
         _filters = 'f'
@@ -43,6 +44,7 @@ class Foxid:
         self.distinct = kwargs.get('distinct', False)
         self.order_enable = kwargs.get('order_enable', False)
         self.order_association = kwargs.get("order_association", {})
+        self.order_authorized = kwargs.get("order_authorized", [])
         self.separator = self.Token._split
         self.negative = self.Token._negative
 
@@ -145,8 +147,12 @@ class Foxid:
     def get_arg_order(self, arg):
         assoc = arg.replace("-", "")
         direc = "-" if arg.startswith("-") else ""
-        return direc+self.order_association.get(assoc, assoc)
-
+        field = self.order_association.get(assoc, assoc)
+        if self.order_authorized:
+            if assoc in self.order_authorized:
+                return direc+field
+        else:
+            return direc+field
 
     def order_by(self):
         args = []
@@ -157,7 +163,7 @@ class Foxid:
             for ord_base in self.order_base:
                 if ord_base.replace("-", "") not in args_base:
                     args.append(ord_base)
-        return [self.get_arg_order(arg) for arg in args]
+        return [result for arg in args if (result := self.get_arg_order(arg)) is not None]
 
     def ready(self):
         if self.include:
