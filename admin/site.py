@@ -212,4 +212,10 @@ class AdminSite(admin.AdminSite):
                 my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
                 my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
                 my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))
+                
+                
+        from django.utils.module_loading import import_string
+        for url in conf.urls_admin_to_add:
+            view = import_string(url["view"])
+            my_urls.append(path(url["path"], self.admin_view(view.as_view() if hasattr(view, "as_view") else view), name=url["name"]))
         return my_urls + urls

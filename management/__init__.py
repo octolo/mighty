@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.core.exceptions import MultipleObjectsReturned
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
@@ -27,6 +28,7 @@ class BaseCommand(BaseCommand, EnableLogger):
     userlog_cache = None
     ftotal = "total"
     total = 0
+    date_start = timezone.now()
 
     def get_object_unique_from_qs(self, qs, assoc, values):
         for k,v in assoc.items():
@@ -299,7 +301,7 @@ class XLSModelCommand(ImportModelCommand):
         self.xlsfile = options.get('xls')
         self.sheet = options.get('sheet')
         if not os.path.isfile(self.xlsfile):
-            raise CommandError('XLS "%s" does not exist' % self.csv)
+            raise CommandError('XLS "%s" does not exist' % self.xls)
         super().handle(*args, **options)
 
 class CSVModelCommand(ImportModelCommand):
@@ -313,13 +315,15 @@ class CSVModelCommand(ImportModelCommand):
         return False
 
     def add_arguments(self, parser):
-        parser.add_argument('--csv', default=None)
+        parser.add_argument('--skiprows', type=int, default=0, help='Skip rows')
+        parser.add_argument('--csv', type=str, help='CSV file to import')
         parser.add_argument('--delimiter', default=',')
         parser.add_argument('--quotechar', default='"')
         parser.add_argument('--quoting', default=csv.QUOTE_ALL)
         super().add_arguments(parser)
 
     def handle(self, *args, **options):
+        self.skiprows = options.get('skiprows')
         self.csvfile = options.get('csv')
         self.delimiter = options.get('delimiter')
         self.quotechar = options.get('quotechar')
@@ -331,6 +335,7 @@ class CSVModelCommand(ImportModelCommand):
     def reader(self):
         if not self._reader or self.need_reset_reader:
             csvfile = open(self.csvfile, encoding=self.encoding)
+            for i in range(self.skiprows): next(csvfile)
             self._reader = csv.DictReader(csvfile, delimiter=self.delimiter)
             self.need_reset_reader = False
         return self._reader
