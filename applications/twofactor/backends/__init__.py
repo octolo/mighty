@@ -56,37 +56,7 @@ class TwoFactorBackend(ModelBackend):
     def Qfilters(self, target):
         return Q(user_email__email__iexact=target)|Q(user_phone__phone=target)|Q(username=target)
 
-    def authenticate(self, request, username=None, password=None, **kwargs):
-        field_type = kwargs.get('field_type', None)
-        if username is None:
-            username = kwargs.get(UserModel.USERNAME_FIELD)
-        if username is None or password is None:
-            return
-        try:
-            if field_type == 'uid' and hasattr(UserModel, 'uid'):
-                user = UserModel.objects.get(uid=username)
-            else:
-                user, username = self.get_user_target(username)
-        except UserModel.DoesNotExist:
-            UserModel().set_password(password)
-        else:
-            if self.user_can_authenticate(user):
-                try:
-                    earlier, now = self.earlier
-                    if user.email in conf.accounts_market:
-                        code = Twofactor.objects.get(user=user, date_create__range=(earlier,now), is_consumed=False)
-                        if not user.check_password(password) or not self.user_can_authenticate(user):
-                            raise UserModel.DoesNotExist()
-                    else:
-                        code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now), is_consumed=False)
-                    code.is_consumed = True
-                    code.save()
-                    if hasattr(request, 'META'):
-                        user.get_client_ip(request)
-                        user.get_user_agent(request)
-                    return user
-                except Exception as e:
-                    UserModel().set_password(password)
+
 
     def clean_target(self, target):
         return "".join(filter(lambda c: c not in string.whitespace, target))
@@ -198,3 +168,86 @@ class TwoFactorBackend(ModelBackend):
         obj.missive = missive
         obj.save()
         return missive
+
+    # Old
+    # def authenticate(self, request, username=None, password=None, **kwargs):
+    #     field_type = kwargs.get('field_type', None)
+    #     if username is None:
+    #         username = kwargs.get(UserModel.USERNAME_FIELD)
+    #     if username is None or password is None:
+    #         return
+    #     try:
+    #         if field_type == 'uid' and hasattr(UserModel, 'uid'):
+    #             user = UserModel.objects.get(uid=username)
+    #         else:
+    #             user, username = self.get_user_target(username)
+    #     except UserModel.DoesNotExist:
+    #         UserModel().set_password(password)
+    #     else:
+    #         if self.user_can_authenticate(user):
+    #             try:
+    #                 earlier, now = self.earlier
+    #                 if user.email in conf.accounts_market:
+    #                     code = Twofactor.objects.get(user=user, date_create__range=(earlier,now), is_consumed=False)
+    #                     if not user.check_password(password) or not self.user_can_authenticate(user):
+    #                         raise UserModel.DoesNotExist()
+    #                 else:
+    #                     code = Twofactor.objects.get(user=user, code=password, date_create__range=(earlier,now), is_consumed=False)
+    #                 code.is_consumed = True
+    #                 code.save()
+    #                 if hasattr(request, 'META'):
+    #                     user.get_client_ip(request)
+    #                     user.get_user_agent(request)
+    #                 return user
+    #             except Exception as e:
+    #                 UserModel().set_password(password)
+
+    # New
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        field_type = kwargs.get('field_type', None)
+
+        if username is None or password is None:
+            return None
+
+        try:
+            user = None
+            if field_type == 'uid' and hasattr(UserModel, 'uid'):
+                user = UserModel.objects.get(uid=username)
+            else:
+                user, username = self.get_user_target(username)
+
+            if not user:
+                return None
+
+            if self.user_can_authenticate(user):
+                return self.handle_two_factor_authentication(user, password, request)
+
+            if hasattr(request, 'META'):
+                user.get_client_ip(request)
+                user.get_user_agent(request)
+
+        except UserModel.DoesNotExist:
+            return None
+
+    def handle_two_factor_authentication(self, user, password, request):
+        try:
+            time_threshold = self.time_threshold(conf.minutes_allowed)
+            if user.email in conf.accounts_market:
+                code = Twofactor.objects.get(user=user, date_create__gte=time_threshold, is_consumed=False)
+                valid_password = user.check_password(password)
+            else:
+                code = Twofactor.objects.get(user=user, code=password, date_create__gte=time_threshold, is_consumed=False)
+                valid_password = True
+
+            if not valid_password or not self.user_can_authenticate(user):
+                return None
+
+            code.is_consumed = True
+            code.save()
+
+            return user
+        except Twofactor.DoesNotExist:
+            return None
+        except Exception as e:
+            logger.error("Two-factor authentication error: %s" % str(e), extra={'user': user.id})
+            return None
