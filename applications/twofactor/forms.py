@@ -140,10 +140,11 @@ class TwoFactorCodeForm(AuthenticationForm):
         if password:
             self.user_cache = authenticate(self.request, username=self.uid, password=password, field_type='uid')
             if self.user_cache is None:
+                username_field_verbose_name = getattr(self, 'username_field', 'Username').verbose_name
                 raise forms.ValidationError(
                     self.error_messages['invalid_login'],
                     code='invalid_login',
-                    params={'username': self.username_field.verbose_name},
+                    params={'username': username_field_verbose_name},
                 )
             else:
                 self.del_session_with_uid()
