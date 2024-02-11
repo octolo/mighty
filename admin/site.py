@@ -46,6 +46,12 @@ class AdminSite(admin.AdminSite):
     site_header = conf.site_header
     index_title = conf.index_title
 
+    def index(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        print("test", conf.urls_admin_to_add)
+        extra_context['urls_admin_to_add'] = conf.urls_admin_to_add
+        return super().index(request, extra_context=extra_context)
+
     def wrap(self, view):
         def wrapper(*args, **kwargs):
             return self.admin_view(view)(*args, **kwargs)
@@ -170,7 +176,7 @@ class AdminSite(admin.AdminSite):
             'services': services,
             'enable_channel': conf.enable_channel,
         }
-        return TemplateResponse(request, 'admin/supervision.html', context)
+        return TemplateResponse(request, 'admin/supervision/supervision.html', context)
 
     def supervision_channel_view(self, request, extra_context=None):
         context = {**self.each_context(request),
@@ -178,7 +184,7 @@ class AdminSite(admin.AdminSite):
             #'groups': asyncio.run(channels_group('asgi::group:*')),
             #'users': asyncio.run(channels_group('specific.*')),
         }
-        return TemplateResponse(request, 'admin/channel_list.html', context)
+        return TemplateResponse(request, 'admin/supervision/channel_list.html', context)
 
     def supervision_channelflushall_view(self, request, extra_context=None):
         #asyncio.run(flushdb())
@@ -194,7 +200,7 @@ class AdminSite(admin.AdminSite):
             'from': room_def[0],
             'to': room_def[1],
         }
-        return TemplateResponse(request, 'admin/channel_detail.html', context)
+        return TemplateResponse(request, 'admin/supervision/channel_detail.html', context)
 
     def get_urls(self):
         urls = super(AdminSite, self).get_urls()
@@ -212,10 +218,11 @@ class AdminSite(admin.AdminSite):
                 my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
                 my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
                 my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))
-                
-                
-        from django.utils.module_loading import import_string
-        for url in conf.urls_admin_to_add:
-            view = import_string(url["view"])
-            my_urls.append(path(url["path"], self.admin_view(view.as_view() if hasattr(view, "as_view") else view), name=url["name"]))
+
+        if len(conf.urls_admin_to_add):
+            from django.utils.module_loading import import_string
+            for app in conf.urls_admin_to_add:
+                for url in app["urls"]:
+                    view = import_string(url["view"])
+                    my_urls.append(path(url["path"], self.admin_view(view.as_view() if hasattr(view, "as_view") else view), name=url["name"]))
         return my_urls + urls

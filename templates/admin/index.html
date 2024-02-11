@@ -27,13 +27,18 @@ window.filter_input_element = "nav-filterv2";
 {% endblock %}
 
 {% block content %}
+<ul class="object-tools">
+  <li><a href="/admin/showurls/">Show urls</a></li>
+  {% if enable_supervision %}<li><a href="/admin/supervision/">Supervision</a></li>{% endif %}
+  {% for url in urls_admin_to_add %}
+    <li><a href="{{ url.path }}">{{ url.name }}</a></li>
+  {% endfor %}
+</ul>
+
 <div id="content-main">
-  <input type="search" id="nav-filterv2" class="input-filterv2"
-    placeholder="{% translate 'Start typing to filter…' %}"
-    aria-label="{% translate 'Filter navigation items' %}">
-    <div id="nav-sidebarv2">
-    {% include 'admin/app_list.html' with app_list=available_apps show_changelinks=False %}
-    </div>
+  {% include "admin/includes/search_app.html" %}
+  <div id="nav-sidebarv2">
+  {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+  </div>
 </div>
 {% endblock %}
-
