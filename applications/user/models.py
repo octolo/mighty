@@ -1,18 +1,17 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 from django.templatetags.static import static
 from django.urls import reverse
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
-from mighty.apps import MightyConfig
 from mighty.decorators import AccessToRegisterTask
-from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.models.image import Image
-from mighty.functions import masking_email, masking_phone, url_domain
+from mighty.functions import masking_email, masking_phone
 from mighty.applications.logger.models import ChangeLog
 from mighty.applications.address.models import Address, AddressNoBase
 from mighty.applications.address import fields as address_fields
@@ -28,6 +27,7 @@ from datetime import datetime
 import uuid, logging, re
 
 logger = logging.getLogger(__name__)
+
 validate_email = validators.validate_email
 validate_phone = validators.validate_phone
 validate_trashmail = validators.validate_trashmail
@@ -147,23 +147,29 @@ class UserChangeLogModel(ChangeLog):
     class Meta:
         abstract = True
 
+
+
 @AccessToRegisterTask()
 @AccessToMissive()
 class User(AbstractUser, Base, Image, AddressNoBase):
     enable_model_change_log = True
     search_fields = fields.search
-    username = models.CharField(_.username, max_length=254, unique=True, blank=True, null=True)
-    if conf.Field.username == 'email':
-        email = models.EmailField(_.email, unique=True, validators=[validate_trashmail])
-    else:
-        email = models.EmailField(_.email, blank=True, null=True, validators=[validate_email, validate_trashmail])
-    if conf.Field.username == 'phone':
-        phone = models.CharField(_.phone, unique=True, max_length=255)
-    else:
-        phone = models.CharField(_.phone, blank=True, null=True, db_index=True, max_length=255)
+    username = models.CharField(_.username, max_length=254, unique=True, default="WILL_BE_GENERATED")
+    email = models.EmailField(_.email, blank=True, null=True, db_index=True, validators=[validate_trashmail])
+    phone = models.CharField(_.phone, blank=True, null=True, db_index=True, max_length=255)
 
-    def check_phone(self):
-        validate_phone(self.phone, {"id": self.id, "user_phone__user__id": self.id})
+    @staticmethod
+    def validate_unique_email(email):
+        UserModel = get_user_model()
+        if UserModel.objects.filter(email__iexact=email).exists() or UserModel.objects.filter(user_email__email__iexact=email).exists():
+            raise ValidationError("This email is already in use")
+
+    # FIXME:
+    # @staticmethod
+    # def validate_unique_phone(phone):
+    #     UserModel = get_user_model()
+    #     if UserModel.objects.filter(phone=phone).exists() or UserModel.objects.filter(user_phone__phone=phone).exists():
+    #         raise ValidationError("This phone is already in use")
 
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
@@ -264,19 +270,6 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         obj, created = useragent.objects.get_or_create(useragent=request.META['HTTP_USER_AGENT'], user=self)
         logger.info('usereagent: %s' % request.META['HTTP_USER_AGENT'], extra={'user': self})
 
-    def gen_username(self):
-        prefix = "".join([f for f in [self.first_name, self.last_name, self.email] if f.isalpha()])
-        prefix = prefix[:3] if len(prefix) >= 3 else prefix
-        exist = True
-        while exist:
-            username = '%s%s' % ('%s-' % prefix if prefix else '', str(uuid.uuid4())[:8])
-            username = username.lower()
-            try:
-                type(self).objects.get(username=username)
-            except type(self).DoesNotExist:
-                exist = False
-        return username
-
     def get_emails(self, flat=True):
         if flat:
             return self.user_email.all().values_list('email', flat=True)
@@ -325,8 +318,29 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         return SlackUser(self)
 
     def pre_save(self):
-        if self.email is not None: self.email = self.email.lower()
-        self.username = self.username.lower() if self.username is not None else self.gen_username()
+        from mighty.applications.user import username_generator_v2
+
+        # Old
+        # if self.email is not None: self.email = self.email.lower()
+        # self.username = self.username.lower() if self.username is not None else self.gen_username()
+        # if not self.first_connection and self.last_login:
+        #     self.first_connection = self.last_login
+
+        if self.username == "WILL_BE_GENERATED":
+            self.username = username_generator_v2(self.first_name, self.last_name, self.email)
+
+        # Handle the email uniqueness
+        if self.email is not None:
+            self.email = self.email.lower()
+        else:
+            self.validate_unique_email(self.email)
+
+        # Handle the phone uniqueness
+        # FIXME:
+        # if self.phone is None:
+        #     self.validate_unique_phone(self.phone)
+
+        # Assign the first connection date
         if not self.first_connection and self.last_login:
             self.first_connection = self.last_login
 

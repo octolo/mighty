@@ -50,10 +50,14 @@ class UserCreationForm(UserCreationForm, ModelFormDescriptable):
         fields = allfields
 
     def __init__(self, *args, **kwargs):
+
         super(UserCreationForm, self).__init__(*args, **kwargs)
         for field in allfields:
             if field in required:
                 self.fields[field].required = True
+
+        # Make username readonly as it is generated
+        self.fields["username"].widget.attrs["readonly"] = True
         self.add_icon()
         self.reorder()
 
