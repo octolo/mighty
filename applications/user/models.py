@@ -18,6 +18,7 @@ from mighty.applications.address import fields as address_fields
 from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.user.manager import UserManager
 from mighty.applications.user import translates as _, fields, choices, validators
+from mighty.applications.user import username_generator_v2
 from mighty.applications.messenger.decorators import AccessToMissive
 from mighty.applications.nationality.fields import nationality as fields_nationality
 from mighty.applications.tenant.apps import TenantConfig
@@ -148,7 +149,6 @@ class UserChangeLogModel(ChangeLog):
         abstract = True
 
 
-
 @AccessToRegisterTask()
 @AccessToMissive()
 class User(AbstractUser, Base, Image, AddressNoBase):
@@ -229,6 +229,10 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     USERNAME_FIELD = conf.Field.username
     REQUIRED_FIELDS = conf.Field.required
     objects = UserManager()
+
+    # Django-Allauth fix
+    def get_user_email(self, email):
+        return self.user_email.get(email=email).email
 
     @property
     def image_url(self): return self.image.url if self.image else static("img/avatar.svg")
@@ -323,8 +327,6 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         return SlackUser(self)
 
     def pre_save(self):
-        from mighty.applications.user import username_generator_v2
-
         # Old
         # if self.email is not None: self.email = self.email.lower()
         # self.username = self.username.lower() if self.username is not None else self.gen_username()
