@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from mighty import fields, translates as _
 from mighty.applications.user.apps import UserConfig
-from mighty.applications.user.forms import UserCreationForm, UserMergeAccountsAdminForm
+from mighty.applications.user.forms import UserCreationForm, UserMergeAccountsAdminForm, UserChangeForm
 from mighty.admin.models import BaseAdmin
 from mighty.applications.user.choices import METHOD_BACKEND
 from mighty.applications.user import fields
@@ -47,6 +47,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
     change_list_template = "admin/users_change_list.html"
     #formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
     add_form = UserCreationForm
+    form = UserChangeForm
     add_fieldsets = ((None, {
         'classes': ('wide',),
         'fields': get_form_fields()}),)

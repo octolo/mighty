@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
+from django.db.models import Q
 from django.templatetags.static import static
-from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from mighty.decorators import AccessToRegisterTask
@@ -159,17 +159,22 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     phone = models.CharField(_.phone, blank=True, null=True, db_index=True, max_length=255)
 
     @staticmethod
-    def validate_unique_email(email):
+    def validate_unique_email(email, pk=None):
+        if not email: return email
         UserModel = get_user_model()
-        if UserModel.objects.filter(email__iexact=email).exists() or UserModel.objects.filter(user_email__email__iexact=email).exists():
-            raise ValidationError("This email is already in use")
+        qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
+        if qs.filter(Q(email__iexact=email) | Q(user_email__email__iexact=email)).exists():
+            raise ValidationError(_("This email is already in use"))
+        return email
 
-    # FIXME:
-    # @staticmethod
-    # def validate_unique_phone(phone):
-    #     UserModel = get_user_model()
-    #     if UserModel.objects.filter(phone=phone).exists() or UserModel.objects.filter(user_phone__phone=phone).exists():
-    #         raise ValidationError("This phone is already in use")
+    @staticmethod
+    def validate_unique_phone(phone, pk=None):
+        if not phone: return phone
+        UserModel = get_user_model()
+        qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
+        if qs.filter(Q(phone__iexact=phone) | Q(user_phone__phone__iexact=phone)).exists():
+            raise ValidationError(_("This phone is already in use"))
+        return phone
 
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_.method, max_length=255, blank=True, null=True)
@@ -329,16 +334,12 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         if self.username == "WILL_BE_GENERATED":
             self.username = username_generator_v2(self.first_name, self.last_name, self.email)
 
-        # Handle the email uniqueness
-        if self.email is not None:
-            self.email = self.email.lower()
-        else:
-            self.validate_unique_email(self.email)
+        # Handle umique email and phone
+        self.validate_unique_email(self.email, self.pk)
+        self.validate_unique_phone(self.phone, self.pk)
 
-        # Handle the phone uniqueness
-        # FIXME:
-        # if self.phone is None:
-        #     self.validate_unique_phone(self.phone)
+        if self.email:
+            self.email = self.email.lower()
 
         # Assign the first connection date
         if not self.first_connection and self.last_login:

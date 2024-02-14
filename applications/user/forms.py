@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, UsernameField
+from django.contrib.auth.forms import UserCreationForm, UsernameField, UserChangeForm
 #from phonenumber_field.widgets import PhoneNumberPrefixWidget
 #from phonenumber_field.formfields import PhoneNumberField
 
@@ -57,7 +57,8 @@ class UserCreationForm(UserCreationForm, ModelFormDescriptable):
                 self.fields[field].required = True
 
         # Make username readonly as it is generated
-        self.fields["username"].widget.attrs["readonly"] = True
+        if "username" in self.fields:
+            self.fields["username"].widget.attrs["readonly"] = True
         self.add_icon()
         self.reorder()
 
@@ -75,6 +76,13 @@ class UserCreationForm(UserCreationForm, ModelFormDescriptable):
         if "last_name" in self.fields: self.fields["last_name"].icon = "user"
         if "first_name" in self.fields: self.fields["first_name"].icon = "user"
 
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        return get_user_model().validate_unique_email(email, self.instance.id)
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        return get_user_model().validate_unique_phone(phone, self.instance.id)
 
 UserModel = get_user_model()
 def get_related_field():
@@ -112,3 +120,12 @@ class UserMergeAccountsAdminForm(ModelFormDescriptable):
         merge_accounts_signal.send(sender=None, tokeep=kp, todelete=dl)
         dl.delete()
 
+
+class UserChangeForm(UserChangeForm):
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        return get_user_model().validate_unique_email(email, self.instance.id)
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        return get_user_model().validate_unique_phone(phone, self.instance.id)
