@@ -164,7 +164,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         UserModel = get_user_model()
         qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
         if qs.filter(Q(email__iexact=email) | Q(user_email__email__iexact=email)).exists():
-            raise ValidationError(_("This email is already in use"))
+            raise ValidationError(_.error_email_already)
         return email
 
     @staticmethod
@@ -173,7 +173,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         UserModel = get_user_model()
         qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
         if qs.filter(Q(phone__iexact=phone) | Q(user_phone__phone__iexact=phone)).exists():
-            raise ValidationError(_("This phone is already in use"))
+            raise ValidationError(_.error_phone_already)
         return phone
 
     method = models.CharField(_.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
