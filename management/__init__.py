@@ -7,8 +7,8 @@ from django.utils import timezone
 from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
-from mighty.readers import ReaderXLS
-import datetime, sys, csv, os.path, os
+from mighty.readers import ReaderXLS, ReaderXLSX
+import datetime, sys, csv, os.path, os, pandas
 
 class BaseCommand(BaseCommand, EnableLogger):
     default_string_arguments = ("fkmodel", "m2mmodel")
@@ -280,29 +280,75 @@ class ImportModelCommand(ModelBaseCommand):
     def on_row(self, row):
         raise NotImplementedError("Command should implement method on_object(self, obj)")
 
-class XLSModelCommand(ImportModelCommand):
+#class XLSModelCommand(ImportModelCommand):
+#    xlsmandatory = True
+#
+#    def check_xlsfile(self, mandatory):
+#        if self.xlsxfile and os.path.isfile(self.xls):
+#            return True
+#        if mandatory:
+#            raise CommandError('file %s" does not exist' % self.xlsx)
+#        return False
+#
+#    def add_arguments(self, parser):
+#        parser.add_argument('--sheet')
+#        parser.add_argument('--xls')
+#        super().add_arguments(parser)
+#
+#    def handle(self, *args, **options):
+#        self.xlsfile = options.get('xls')
+#        self.sheet = options.get('sheet')
+#        self.check_xlsfile(self.xlsmandatory)
+#        super().handle(*args, **options)
+#
+#    @property
+#    def reader(self):
+#        if not self._reader or self.need_reset_reader:
+#            self._reader = ReaderXLS(self.xlsfile, self.sheet)
+#            self.need_reset_reader = False
+#        return self._reader
+#
+#    @property
+#    def import_total(self):
+#        return self.reader.total-1
+
+class XLSXModelCommand(ImportModelCommand):
+    xlsxmandatory = True
+
+    def check_xlsxfile(self, mandatory):
+        if self.xlsxfile and os.path.isfile(self.xlsxfile):
+            return True
+        if mandatory:
+            raise CommandError('file %s" does not exist' % self.xlsx)
+        return False
+
+    def add_arguments(self, parser):
+        parser.add_argument('--sheet')
+        parser.add_argument('--xlsx')
+        super().add_arguments(parser)
+
+    def handle(self, *args, **options):
+        self.xlsxfile = options.get('xlsx')
+        self.sheet = options.get('sheet')
+        self.check_xlsxfile(self.xlsxmandatory)
+        super().handle(*args, **options)
+
     @property
-    def reader(self):
+    def reader_xlsx(self):
         if not self._reader or self.need_reset_reader:
-            self._reader = ReaderXLS(self.xlsfile, self.sheet)
+            print("31")
+            self._reader = ReaderXLSX(self.xlsxfile, self.sheet)
+            print("32")
             self.need_reset_reader = False
         return self._reader
 
     @property
+    def reader(self):
+        return self.reader_xlsx
+
+    @property
     def import_total(self):
         return self.reader.total-1
-
-    def add_arguments(self, parser):
-        parser.add_argument('--sheet')
-        parser.add_argument('--xls')
-        super().add_arguments(parser)
-
-    def handle(self, *args, **options):
-        self.xlsfile = options.get('xls')
-        self.sheet = options.get('sheet')
-        if not os.path.isfile(self.xlsfile):
-            raise CommandError('XLS "%s" does not exist' % self.xls)
-        super().handle(*args, **options)
 
 class CSVModelCommand(ImportModelCommand):
     csvmandatory = True
@@ -332,7 +378,7 @@ class CSVModelCommand(ImportModelCommand):
         super().handle(*args, **options)
 
     @property
-    def reader(self):
+    def reader_csv(self):
         if not self._reader or self.need_reset_reader:
             csvfile = open(self.csvfile, encoding=self.encoding)
             for i in range(self.skiprows): next(csvfile)
@@ -341,7 +387,23 @@ class CSVModelCommand(ImportModelCommand):
         return self._reader
 
     @property
+    def reader(self):
+        return self.reader_csv
+
+    @property
     def import_total(self):
         if not self._total:
             self._total = len(open(self.csvfile).readlines())-1
         return self._total
+
+class AnyDataFileCommand(XLSXModelCommand, CSVModelCommand):
+    xlsmandatory = False
+    xlsxmandatory = False
+    csvmandatory = False
+
+    @property
+    def reader(self):
+        if self.xlsxfile:
+            return self.reader_xlsx
+        elif self.csvfile:
+            return self.reader_csv
