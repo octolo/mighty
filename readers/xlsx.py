@@ -1,3 +1,4 @@
+from mighty.applications.logger import EnableLogger
 from openpyxl import load_workbook
 
 def reader(iterator):
@@ -5,9 +6,11 @@ def reader(iterator):
     for row in total:
         yield row
 
-class ReaderXLSX(object):
+class ReaderXLSX(EnableLogger):
     def __init__(self, filename, worksheet=None, *args, **kwargs):
+        self.logger.info("Opening file %s" % filename)
         self.wb = load_workbook(filename, **kwargs)
+        self.logger.info("file %s open" % filename)
         self.ws = worksheet and self.wb[worksheet] or self.wb.active
         self.total = self.ws.max_row
         self.reader = reader(self.ws)

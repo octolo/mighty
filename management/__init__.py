@@ -336,9 +336,7 @@ class XLSXModelCommand(ImportModelCommand):
     @property
     def reader_xlsx(self):
         if not self._reader or self.need_reset_reader:
-            print("31")
             self._reader = ReaderXLSX(self.xlsxfile, self.sheet)
-            print("32")
             self.need_reset_reader = False
         return self._reader
 
