@@ -203,8 +203,13 @@ class TwoFactorBackend(ModelBackend):
     #                 UserModel().set_password(password)
 
     # New
+
+        # New
     def authenticate(self, request, username=None, password=None, **kwargs):
         field_type = kwargs.get('field_type', None)
+
+        if username is None:
+            username = kwargs.get(UserModel.USERNAME_FIELD)
 
         if username is None or password is None:
             return None
