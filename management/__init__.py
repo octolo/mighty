@@ -8,7 +8,7 @@ from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
 from mighty.readers import ReaderXLS, ReaderXLSX
-import datetime, sys, csv, os.path, os, pandas
+import datetime, sys, csv, os.path, os
 
 class BaseCommand(BaseCommand, EnableLogger):
     default_string_arguments = ("fkmodel", "m2mmodel")
