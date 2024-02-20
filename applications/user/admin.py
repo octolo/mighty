@@ -18,13 +18,31 @@ from mighty.decorators import AdminRegisteredTasksView
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 from mighty.applications.user import get_form_fields
+from django.forms.models import BaseInlineFormSet
 from django import forms
-
-import logging
-logger = logging.getLogger(__name__)
 
 if apps.is_installed('allauth'):
     from allauth.account.models import EmailAddress
+
+    class UserEmailAdminFormset(BaseInlineFormSet):
+        def save(self, commit=True):
+            instances = super().save(commit=False)
+            for form in self.forms:
+                # Check if the form has changes and one of them is the 'primary' field
+                if form.has_changed() and 'primary' in form.changed_data:
+                    # Change user.email to the new primary email
+                    if form.cleaned_data['primary']:
+                        form.instance.user.email = form.instance.email
+                        form.instance.user.save()
+                        # invoke EmailAddress.set_as_primary() method
+                        form.instance.set_as_primary()
+            if commit:
+                for instance in instances:
+                    instance.save()
+                self.save_m2m()
+
+            return instances
+
     class UserEmailAdminForm(forms.ModelForm):
         class Meta:
             model = EmailAddress
@@ -42,8 +60,12 @@ if apps.is_installed('allauth'):
 
     class UserEmailAdmin(admin.TabularInline):
         form = UserEmailAdminForm
+        extra = 1
+        can_delete = True
+        fields = ['email', 'verified', 'primary']  #
         raw_id_fields = ("user",)
         model = EmailAddress
+        formset = UserEmailAdminFormset
 else:
     class UserEmailAdmin(admin.TabularInline):
         fields = ('email', 'default')
@@ -126,6 +148,15 @@ class UserAdmin(UserAdmin, BaseAdmin):
             ),
         ]
         return my_urls + urls
+    def save_formset(self, request, form, formset, change):
+            instances = formset.save(commit=False)
+            for instance in formset.deleted_objects:
+                instance.delete()
+            for instance in instances:
+                instance.save()
+            formset.save_m2m()
+
+            super().save_formset(request, form, formset, change)
 
 class InvitationAdmin(BaseAdmin):
     raw_id_fields = ('user', 'by')
