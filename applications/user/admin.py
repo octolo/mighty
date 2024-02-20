@@ -1,6 +1,8 @@
+from django.apps import apps
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth import get_user_model
 
 from mighty import fields, translates as _
 from mighty.applications.user.apps import UserConfig
@@ -16,10 +18,36 @@ from mighty.decorators import AdminRegisteredTasksView
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberPrefixWidget
 from mighty.applications.user import get_form_fields
+from django import forms
 
-class UserEmailAdmin(admin.TabularInline):
-    fields = ('email', 'default')
-    extra = 0
+import logging
+logger = logging.getLogger(__name__)
+
+if apps.is_installed('allauth'):
+    from allauth.account.models import EmailAddress
+    class UserEmailAdminForm(forms.ModelForm):
+        class Meta:
+            model = EmailAddress
+            fields = '__all__'
+
+        def save(self, commit=True):
+            instance = super().save(commit=False)
+            if commit:
+                instance.save()
+            return instance
+
+        def clean_email(self):
+            email = self.cleaned_data["email"]
+            return get_user_model().validate_unique_email(email, self.instance.user_id)
+
+    class UserEmailAdmin(admin.TabularInline):
+        form = UserEmailAdminForm
+        raw_id_fields = ("user",)
+        model = EmailAddress
+else:
+    class UserEmailAdmin(admin.TabularInline):
+        fields = ('email', 'default')
+        extra = 0
 
 class UserPhoneAdmin(admin.TabularInline):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}

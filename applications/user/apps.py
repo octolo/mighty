@@ -1,4 +1,4 @@
-from django.apps import AppConfig
+from django.apps import AppConfig, apps
 from mighty import over_config
 from mighty.functions import setting
 
@@ -16,7 +16,13 @@ class Config:
         missive = 'mighty.Missive'
         invitation = 'mighty.Invitation'
         nationalities = 'mighty.Nationality'
+        # Need cleanup
         email = 'mighty.UserEmail'
+        email_related_name = 'user_email'
+        email_related_name_attr = 'user_email'
+        email_field = ('default')
+        email_primary = 'default'
+        #
         phone = 'mighty.UserPhone'
         address = 'mighty.UserAddress'
         user = setting("AUTH_USER_MODEL")

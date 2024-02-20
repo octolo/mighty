@@ -12,6 +12,7 @@ from mighty.functions import get_backends
 from mighty.applications.twofactor import translates as _, SpamException, CantIdentifyError, PhoneValidator
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
 from mighty.applications.messenger import choices
+from mighty.applications.user.apps import UserConfig
 
 from phonenumber_field.validators import validate_international_phonenumber
 import datetime, logging, string
@@ -36,27 +37,25 @@ class TwoFactorBackend(ModelBackend):
         return True
 
     def method_twofactor(self, user, target):
+        email_manager = getattr(user, UserConfig.ForeignKey.email_related_name_attr)
         try:
-            user.user_email.get(email=target)
+            email_manager.get(email=target)
             return choices.MODE_EMAIL
-        except user.user_email.model.DoesNotExist:
+        except email_manager.model.DoesNotExist:
             if hasattr(user, "email") and user.email == target and self.is_email(target):
                 return choices.MODE_EMAIL
 
         try:
             user.user_phone.get(phone=target)
             return choices.MODE_SMS
-        except user.user_email.model.DoesNotExist:
+        except email_manager.model.DoesNotExist:
             if hasattr(user, "phone") and user.phone == target and self.is_phone(target):
                 return choices.MODE_SMS
 
         return False
 
-
     def Qfilters(self, target):
-        return Q(user_email__email__iexact=target)|Q(user_phone__phone=target)|Q(username=target)
-
-
+        return Q(**{UserConfig.ForeignKey.email_related_name + "__email__iexact": target})|Q(user_phone__phone=target)|Q(username=target)
 
     def clean_target(self, target):
         return "".join(filter(lambda c: c not in string.whitespace, target))

@@ -67,3 +67,10 @@ def username_generator_v2(first_name=None, last_name=None, email=None):
             return username  # Return the username if it's unique
 
     # Note: The loop will continue until a unique username is found
+
+
+from django.apps import apps as django_apps
+
+def get_user_email_model(model=conf.ForeignKey.email):
+    email = model.split('.')
+    return django_apps.get_model(email[0], email[1])

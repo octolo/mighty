@@ -7,6 +7,7 @@ from django.contrib.auth.forms import UserCreationForm, UsernameField, UserChang
 #from phonenumber_field.formfields import PhoneNumberField
 
 from mighty.applications.user import get_form_fields, translates as _
+from mighty.applications.user.apps import UserConfig
 from mighty.forms import ModelFormDescriptable
 
 from mighty.applications.user.signals import merge_accounts_signal
@@ -111,7 +112,7 @@ class UserMergeAccountsAdminForm(ModelFormDescriptable):
         kp = self.cleaned_data["account_keep"]
         dl = self.cleaned_data["account_delete"]
 
-        for data_link in ("user_email", "user_phone", "user_address"):
+        for data_link in (UserConfig.ForeignKey.email_related_name_attr, "user_phone", "user_address"):
             try:
                 getattr(dl, data_link).update(user=kp)
             except Exception:
@@ -119,7 +120,6 @@ class UserMergeAccountsAdminForm(ModelFormDescriptable):
 
         merge_accounts_signal.send(sender=None, tokeep=kp, todelete=dl)
         dl.delete()
-
 
 class UserChangeForm(UserChangeForm):
     def clean_email(self):

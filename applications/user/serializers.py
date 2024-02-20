@@ -1,18 +1,22 @@
 from django.conf import settings
+from django.apps import apps
 from rest_framework.serializers import ModelSerializer, ValidationError
-from mighty.models import User, UserEmail, UserPhone, InternetProtocol
+from mighty.models import User, UserPhone, InternetProtocol
 from mighty.applications.user import fields
+from mighty.applications.user.apps import UserConfig
 from mighty.applications.nationality import serializers as nationality_serializers
-from mighty.applications.user import get_form_fields
+from mighty.applications.user import get_form_fields, get_user_email_model
 
 allfields = get_form_fields()
 required = get_form_fields('required')
 optional = get_form_fields('optional')
 
+UserEmailModel = get_user_email_model()
+
 class UserEmailSerializer(ModelSerializer):
     class Meta:
-        models = UserEmail
-        fields = ('email', 'default')
+        models = UserEmailModel
+        fields = ('email', ) + (UserConfig.ForeignKey.email_field, )
 
 class UserPhoneSerializer(ModelSerializer):
     class Meta:

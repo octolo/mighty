@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -22,6 +23,7 @@ from mighty.applications.user import username_generator_v2
 from mighty.applications.messenger.decorators import AccessToMissive
 from mighty.applications.nationality.fields import nationality as fields_nationality
 from mighty.applications.tenant.apps import TenantConfig
+from mighty.applications.user.apps import UserConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import datetime
@@ -29,7 +31,6 @@ import uuid, logging, re
 
 logger = logging.getLogger(__name__)
 
-validate_email = validators.validate_email
 validate_phone = validators.validate_phone
 validate_trashmail = validators.validate_trashmail
 
@@ -163,7 +164,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         if not email: return email
         UserModel = get_user_model()
         qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
-        if qs.filter(Q(email__iexact=email) | Q(user_email__email__iexact=email)).exists():
+        if qs.filter(Q(email__iexact=email) | Q(**{UserConfig.ForeignKey.email_related_name + "__email__iexact": email})).exists():
             raise ValidationError(_.error_email_already)
         return email
 
@@ -230,10 +231,6 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     REQUIRED_FIELDS = conf.Field.required
     objects = UserManager()
 
-    # Django-Allauth fix
-    def get_user_email(self, email):
-        return self.user_email.get(email=email).email
-
     @property
     def image_url(self): return self.image.url if self.image else static("img/avatar.svg")
 
@@ -280,17 +277,20 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         logger.info('usereagent: %s' % request.META['HTTP_USER_AGENT'], extra={'user': self})
 
     def get_emails(self, flat=True):
+        email_manager = getattr(self, UserConfig.ForeignKey.email_related_name_attr)
         if flat:
-            return self.user_email.all().values_list('email', flat=True)
-        return self.user_email.all()
+            return email_manager.all().values_list('email', flat=True)
+        return email_manager.all()
 
     def in_emails(self):
-        if self.email:
-            try:
-                self.user_email.get(email=self.email)
-            except ObjectDoesNotExist:
-                self.user_email.create(email=self.email, default=True)
-            self.user_email.exclude(email=self.email).update(default=False)
+        if not self.email:
+            return
+        email_manager = getattr(self, UserConfig.ForeignKey.email_related_name_attr)
+        flag_name = 'primary' if apps.is_installed('allauth') else 'default'
+        updated = email_manager.filter(email=self.email).update(**{flag_name: True})
+        if not updated:
+            email_manager.create(email=self.email, **{flag_name: True})
+        email_manager.exclude(email=self.email).update(**{flag_name: False})
 
     def get_phones(self, flat=True):
         if flat:

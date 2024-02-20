@@ -1,12 +1,16 @@
+from django.conf import settings
 from django.core.validators import EmailValidator, ValidationError
 from mighty.views import CheckData
 from mighty.applications.user.choices import STATUS_PENDING
-from mighty.models import UserEmail, UserPhone
+from mighty.models import UserPhone
 from mighty.functions import make_searchable
+from mighty.applications.user import get_user_email_model
+
+UserEmailModel = get_user_email_model()
 
 class UserEmailCheckView(CheckData):
     permission_classes = ()
-    model = UserEmail
+    model = UserEmailModel
     test_field = 'email'
 
     def get_data(self):
@@ -31,4 +35,4 @@ class UserPhoneCheckView(CheckData):
             validate_international_phonenumber(phone)
             return super().check_data()
         except ValidationError as e:
-            return { "code": "002", "error": str(e.message) }    
+            return { "code": "002", "error": str(e.message) }

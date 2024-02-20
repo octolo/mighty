@@ -7,6 +7,7 @@ from django.utils import timezone
 from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
+from mighty.applications.user.apps import UserConfig
 from mighty.readers import ReaderXLS, ReaderXLSX
 import datetime, sys, csv, os.path, os
 
@@ -46,7 +47,7 @@ class BaseCommand(BaseCommand, EnableLogger):
             try:
                 Qparams = Q(id=int(info))
             except ValueError:
-                Qparams = Q(user_email__email=info)|Q(user_phone__phone=info)|Q(username=info)
+                Qparams = Q(**{UserConfig.ForeignKey.email_related_name + "__email": info})|Q(user_phone__phone=info)|Q(username=info)
             try:
                 return self.user_model.objects.get(Qparams)
             except self.user_model.DoesNotExist:

@@ -128,7 +128,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import admin as admin_user
     from mighty.applications.user.apps import UserConfig as user_conf
 
-    class UserEmailAdmin(admin_user.UserEmailAdmin): model = all_models.UserEmail
+    class UserEmailAdmin(admin_user.UserEmailAdmin): model = admin_user.UserEmailAdmin.model or all_models.UserEmail
     class UserPhoneAdmin(admin_user.UserPhoneAdmin): model = all_models.UserPhone
     class InternetProtocolAdmin(admin_user.InternetProtocolAdmin): model = all_models.InternetProtocol
     class UserAgentAdmin(admin_user.UserAgentAdmin): model = all_models.UserAgent

@@ -59,7 +59,7 @@ if UserConfig.invitation_enable:
     def OnStatusChange(sender, instance, **kwargs):
         if instance.status == choices.STATUS_ACCEPTED:
             if instance.user and instance.email not in instance.user.get_emails():
-                instance.user.user_email.create(email=instance.email)
+                getattr(instance.user, UserConfig.ForeignKey.email_related_name_attr).create(email=instance.email)
             elif not instance.user:
                 post_save.disconnect(OnStatusChange, sender=Invitation)
                 instance.user, status = UserModel.objects.get_or_create(

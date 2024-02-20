@@ -23,7 +23,7 @@ UserModel = get_user_model()
 class TwoFactorSearchForm(FormDescriptable):
     # A corriger
     #username = forms.CharField(label=_.search, required=True)
-    username = forms.CharField(label="Votre email", required=True)
+    username = forms.CharField(label="Votre email", required=True) # Need to be fixed
     error_messages = { 'invalid_search': _.invalid_search, 'inactive': _.inactive }
 
     def __init__(self, *args, **kwargs):
@@ -34,7 +34,7 @@ class TwoFactorSearchForm(FormDescriptable):
         return "".join(filter(lambda c: c not in string.whitespace, target))
 
     def Qfilters(self, search):
-        return Q(username=search)|Q(user_email__email=search)|Q(user_phone__phone=search)
+        return Q(username=search)|Q(**{UserConfig.ForeignKey.email_related_name+"__email":search})|Q(user_phone__phone=search)
 
     def get_user_target(self, target):
         target = self.clean_target(target)

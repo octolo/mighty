@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.conf import settings
 from django.db import  models
 from django.utils.text import get_valid_filename
@@ -121,7 +122,8 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     @EnableAccessLog(UserAccessLogModel)
     @EnableChangeLog(UserChangeLogModel, ('logentry', 'password', 'tenant'))
     class User(models_user.User): pass
-    class UserEmail(models_user.UserEmail): pass
+    if not apps.is_installed('allauth'):
+        class UserEmail(models_user.UserEmail): pass
     class UserPhone(models_user.UserPhone): pass
     class InternetProtocol(models_user.InternetProtocol): pass
     class UserAgent(models_user.UserAgent): pass
