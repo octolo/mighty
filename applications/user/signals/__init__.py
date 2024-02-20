@@ -8,9 +8,12 @@ from django.contrib.auth import get_user_model
 
 from mighty.applications.logger import signals
 from mighty.applications.user.apps import UserConfig
-from mighty.models import UserEmail, UserPhone
+from mighty.applications.user import get_user_email_model
+from mighty.models import UserPhone
+
 
 UserModel = get_user_model()
+UserEmailModel = get_user_email_model()
 
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     pre_save.connect(signals.pre_change_log, UserModel)
@@ -26,12 +29,15 @@ if 'mighty.applications.logger' in settings.INSTALLED_APPS:
 #post_save.connect(AfterAddAnEmail, UserEmail)
 
 def AfterDeleteAnEmail(sender, instance, **kwargs):
-    if not UserEmail.objects.filter(user=instance.user, default=True).count():
-        email = UserEmail.objects.filter(user=instance.user).first()
+    if not UserEmailModel.objects.filter(user=instance.user, **{UserConfig.ForeignKey.email_primary: True}).count():
+        email = UserEmailModel.objects.filter(user=instance.user).first()
         if email:
-            email.default = True
-            email.save()
-post_delete.connect(AfterDeleteAnEmail, UserEmail)
+            if apps.is_installed('allauth'):
+                email.set_as_primary()
+            else:
+                setattr(instance.user, UserConfig.ForeignKey.email_primary, True)
+                email.save()
+post_delete.connect(AfterDeleteAnEmail, UserEmailModel)
 
 #def AfterAddAPhone(sender, instance, **kwargs):
 #    post_save.disconnect(AfterAddAPhone, UserPhone)
@@ -104,3 +110,14 @@ if UserConfig.invitation_enable:
             instance.save()
             post_save.connect(SendMissiveInvitation, Invitation)
     post_save.connect(SendMissiveInvitation, Invitation)
+
+# Signal that set the EmailAddres to verified=True
+from django.apps import apps
+if apps.is_installed('allauth'):
+    from allauth.account.models import EmailAddress
+    def EmailAddressSetVerified(sender, instance, **kwargs):
+        if instance.verified:
+            return
+        instance.verified = True
+        instance.save()
+    post_save.connect(EmailAddressSetVerified, sender=EmailAddress)
