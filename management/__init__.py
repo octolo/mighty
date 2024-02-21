@@ -2,7 +2,11 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.core.exceptions import MultipleObjectsReturned
 from django.contrib.auth import get_user_model
+<<<<<<< Updated upstream
 from django.utils import timezone
+=======
+from django.utils.module_loading import import_string
+>>>>>>> Stashed changes
 
 from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
@@ -12,6 +16,9 @@ from mighty.readers import ReaderXLS, ReaderXLSX
 import datetime, sys, csv, os.path, os
 
 class BaseCommand(BaseCommand, EnableLogger):
+    importer = None
+    importer_required = False
+    importer_path = None
     default_string_arguments = ("fkmodel", "m2mmodel")
     default_boolean_arguments = ("loader", "test", "progressbar")
     default_integer_arguments = ()
@@ -30,6 +37,9 @@ class BaseCommand(BaseCommand, EnableLogger):
     ftotal = "total"
     total = 0
     date_start = timezone.now()
+
+    def init_importer(self, importer):
+        self.importer = import_string(self.importer_path+".importers.{}.Importer".format(importer))()
 
     def get_object_unique_from_qs(self, qs, assoc, values):
         for k,v in assoc.items():
@@ -94,6 +104,7 @@ class BaseCommand(BaseCommand, EnableLogger):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
+        parser.add_argument('--importer', type=str, help='Importer type', required=self.importer_required)
         parser.add_argument('--logfile', default="%s_%s.log" % (str(self.subcommand).lower(), f"{datetime.datetime.now():%Y%m%d_%H%M%S_%f}"))
         parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--userlog', default=None)
@@ -117,6 +128,7 @@ class BaseCommand(BaseCommand, EnableLogger):
         return self.default_fields+self.working_fields+("logfile", "encoding")
 
     def handle(self, *args, **options):
+        self.importer = options.get('importer')
         for field in self.auto_fields:
             setattr(self, field, options.get(field))
         self.verbosity = options.get('verbosity', 0)
