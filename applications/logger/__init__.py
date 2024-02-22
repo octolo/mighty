@@ -1,5 +1,6 @@
 default_app_config = 'mighty.applications.logger.apps.LoggerConfig'
 
+from django.utils.functional import cached_property
 import logging
 
 class EnableLogger:
@@ -13,7 +14,29 @@ class EnableLogger:
         if not self.cache_logger:
             self.reload_logger()
         return self.cache_logger
+    
+    
+    class locally:
+        logs = []
+        
+        def reset(self):
+            self.logs = []
+        
+        def warning(self, message, *args, **kwargs):
+            self.logs.append((logging.WARNING, message, args, kwargs))
+            
+        def error(self, message, *args, **kwargs):
+            self.logs.append((logging.ERROR, message, args, kwargs))
+                      
+        def info(self, message, *args, **kwargs):
+            self.logs.append((logging.INFO, message, args, kwargs))
+            
+        def debug(self, message, *args, **kwargs):
+            self.logs.append((logging.DEBUG, message, args, kwargs))
 
+    @cached_property
+    def loglocally(self):
+        return self.locally()
 
 def format_log_field(field, value, instance, fk_column, fk_field):
     return {
