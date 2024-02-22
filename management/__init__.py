@@ -2,11 +2,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.core.exceptions import MultipleObjectsReturned
 from django.contrib.auth import get_user_model
-<<<<<<< Updated upstream
 from django.utils import timezone
-=======
 from django.utils.module_loading import import_string
->>>>>>> Stashed changes
 
 from mighty.functions import get_model, request_kept
 from mighty.apps import MightyConfig as conf
