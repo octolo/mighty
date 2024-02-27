@@ -330,7 +330,7 @@ class Base(models.Model):
         return strtoget
 
     def get_has(self, attr, default=None):
-        return getattr(self, attr, default) if hasattr(self, attr) else default
+        return getattr(self, attr, default) or default
 
     def get_content_type(self):
         return ContentType.objects.get_for_model(self)

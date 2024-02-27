@@ -76,8 +76,6 @@ class SumGt0SubQuery(Subquery):
         extra['name'] = extra.get("name", "_sum")
         super(SumGt0SubQuery, self).__init__(queryset, output_field, **extra)
 
-
-
 class Round(Func):
   function = "ROUND"
   arity = 2
