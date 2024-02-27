@@ -32,6 +32,11 @@ class ModelViewSet(ModelViewSet):
     def reporting_list(self, request, *args, **kwargs):
         return Response(self.model_static().reporting_definition)
 
+    @action(detail=False, methods=["get"])
+    def reporting_global(self, request, *args, **kwargs):
+        obj = self.get_queryset().first()
+        return obj.reporting_execute(request, *args, **kwargs)
+
     @action(detail=True, methods=["get"])
     def reporting_detail(self, request, *args, **kwargs):
         obj = self.get_object()
