@@ -6,6 +6,7 @@ from mighty.models.base import Base
 from mighty.functions import make_searchable
 from mighty.fields import JSONField
 from mighty.filegenerator import FileGenerator
+from mighty.functions import getattr_recursive
 
 class Reporting(Base):
     name = models.CharField(max_length=255)
@@ -42,12 +43,13 @@ class Reporting(Base):
         if self.filter_config:
             Qfilter.update(self.filter_config)
         if self.filter_related:
+            print("test", self.related_obj.group_id)
             Qfilter.update({k: self.reporting_data_obj(v, self.related_obj) for k,v in self.filter_related.items()})
         return Qfilter
 
     @property
     def reporting_queryset(self):
-        return getattr(self.target.model_class(), self.manager).filter(**self.reporting_filter)
+        return getattr_recursive(self.target.model_class(), self.manager).filter(**self.reporting_filter)
 
     @property
     def reporting_header(self):
@@ -58,8 +60,9 @@ class Reporting(Base):
         return [f["data"] for f in self.config]
 
     def reporting_data_obj(self, field, obj):
-        return getattr(obj, field)() if isinstance(getattr(type(obj), field), property) else getattr(obj, field)
-
+        attr = getattr_recursive(obj, field)
+        return attr(obj) if callable(attr) else attr
+    
     def reporting_line_detail(self, obj):
         return (self.reporting_data_obj(field, obj) for field in self.reporting_fields)
 
