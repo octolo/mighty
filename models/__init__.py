@@ -11,6 +11,7 @@ from mighty.models.news import News
 from mighty.models.config import Config
 from mighty.models.backend import Backend
 from mighty.models.reporting import Reporting
+from mighty.models.variable import TemplateVariable
 from mighty.models.registertask import RegisterTask, RegisterTaskSubscription
 from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
 
@@ -22,6 +23,7 @@ class Backend(Backend): pass
 class Reporting(Reporting): pass
 class RegisterTask(RegisterTask): pass
 class RegisterTaskSubscription(RegisterTaskSubscription): pass
+class TemplateVariable(TemplateVariable): pass
 
 class ConfigClient(Config):
     config = JSONField(null=True, blank=True)
@@ -37,27 +39,6 @@ class ConfigSimple(Config):
 
     class Meta(Base.Meta):
         ordering = ('date_create', 'name')
-
-class TemplateVariable(Base):
-    name = models.CharField(max_length=255)
-    description = models.CharField(max_length=255)
-    template = models.TextField()
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="template_variable")
-    hidden = models.BooleanField(default=False)
-
-    class Meta(Base.Meta):
-        unique_together = ("name", "content_type")
-
-    @property
-    def var_prefix(self): return self.content_type.model_class().eve_variable_prefix+"eve_tv."
-    @property
-    def var_name(self): return self.var_prefix+self.name
-    @property
-    def json_object(self): return { "var": self.var_name, "desc": self.description }
-
-    def pre_save(self):
-        if not self.description:
-            self.description = self.name
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     class Channel(Base):

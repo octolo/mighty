@@ -121,6 +121,14 @@ class ModelViewSet(ModelViewSet):
         variable = obj.eve_tv.get(request.GET.get("eve_tv"))
         return HttpResponse(variable)
 
+    @action(detail=True, methods=["get"])
+    def variablesviewer2(self, request, *args, **kwargs):
+        obj = self.get_object()
+        variable = obj.eve_tv2.get(request.GET.get("eve_tv2"))
+        if variable:
+            return HttpResponse(variable.compiled)
+        return HttpResponse("variable not found")
+
     # Filter query
     def Q_is_me(self, prefix=""):
         return Q(**{prefix+self.user_way: self.user.id})

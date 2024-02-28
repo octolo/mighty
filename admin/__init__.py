@@ -83,7 +83,7 @@ class ConfigSimpleAdmin(BaseAdmin):
 @admin.register(all_models.TemplateVariable)
 class TemplateVariableAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'description', 'content_type', 'template', 'hidden')}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'description', 'content_type', 'template', 'hidden', 'version')}),)
     list_display = ('name', 'description', 'content_type', 'hidden')
 
 if hasattr(settings, 'CHANNEL_LAYERS'):

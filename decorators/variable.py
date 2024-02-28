@@ -37,11 +37,22 @@ def EnableVariableEditorModel(**kwargs):
             def eve_template_variable_qs(self):
                 return TemplateVariable.objects.filter(content_type=self.get_content_type(), hidden=False)
 
+            def eve_template_variable_qs_version(self, version=1):
+                qs = []
+                for tvar in self.eve_template_variable_qs.filter(version=version):
+                    tvar.context = self.eve_context_or_none
+                    qs.append(tvar)
+                return qs
+
             # Return qs template variable model
             @property
             def eve_tv(self):
                 return { tvar.name: self.eve_get_template_variable_compiled(tvar.template)
-                    for tvar in self.eve_template_variable_qs}
+                    for tvar in self.eve_template_variable_qs_version()}
+
+            @property
+            def eve_tv2(self):
+                return { tvar.name: tvar for tvar in self.eve_template_variable_qs_version(2)}
 
             # Json desc from template variable model
             @property
