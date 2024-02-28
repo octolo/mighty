@@ -1,6 +1,7 @@
 'use strict';
 {
     const toggleNavSidebar = document.getElementById('toggle-nav-sidebar');
+    let matches = false;
     if (toggleNavSidebar !== null) {
         const navSidebar = document.getElementById(window.filter_applist_element || 'nav-sidebar');
         const main = document.getElementById('main');
@@ -52,7 +53,9 @@
                 for (const o of t.options) {
                     let displayValue = '';
                     if (filterValue) {
-                        if (o.title.toLowerCase().indexOf(filterValue) === -1) {
+                        const title_test = o.title.toLowerCase().indexOf(filterValue) === -1;
+                        const href_test = o.node.href && o.node.href.includes(filterValue);
+                        if (title_test && !href_test) {
                             displayValue = 'none';
                         } else {
                             matches = true;

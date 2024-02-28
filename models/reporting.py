@@ -43,7 +43,6 @@ class Reporting(Base):
         if self.filter_config:
             Qfilter.update(self.filter_config)
         if self.filter_related:
-            print("test", self.related_obj.group_id)
             Qfilter.update({k: self.reporting_data_obj(v, self.related_obj) for k,v in self.filter_related.items()})
         return Qfilter
 

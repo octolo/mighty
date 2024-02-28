@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.sessions.models import Session
@@ -16,9 +17,15 @@ admin.sites.site = mysite
 ###########################
 # Models django
 ###########################
+@admin.register(ContentType)
+class ContentTypeAdmin(admin.ModelAdmin):
+    list_display = ('app_label', 'model')
+    search_fields = ('app_label', 'model')
+
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
     list_filter = ('content_type',)
+
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
     def _session_data(self, obj):
@@ -41,6 +48,7 @@ class ReportingAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.reporting}),)
     list_display = ('name', 'content_type', 'target')
     search_fields = ('service',)
+    raw_id_fields = ("content_type", "target")
 
 @admin.register(all_models.RegisterTask)
 class RegisterTaskAdmin(BaseAdmin):

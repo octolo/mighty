@@ -48,7 +48,6 @@ class AdminSite(admin.AdminSite):
 
     def index(self, request, extra_context=None):
         extra_context = extra_context or {}
-        print("test", conf.urls_admin_to_add)
         extra_context['urls_admin_to_add'] = conf.urls_admin_to_add
         return super().index(request, extra_context=extra_context)
 
