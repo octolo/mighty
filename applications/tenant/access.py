@@ -27,6 +27,9 @@ class TenantAccess(RequestAccess):
     # Query filter
     def Q_current_group(self, prefix=""):
         return Q(**{prefix+self.group_way: self.current_group})
+    
+    def Q_groups_associated(self, prefix=""):
+        return Q(**{prefix+self.group_way+"__in": self.tenant_groups})
 
     # Filter query
     def Q_is_tenant(self, prefix=""):
