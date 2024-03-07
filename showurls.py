@@ -9,11 +9,11 @@ from django.core.exceptions import ViewDoesNotExist
 from django.core.management.base import CommandError
 from django.utils import translation
 from django.urls import URLPattern, URLResolver  # type: ignore
-from mighty.functions import matchingValues
 
 class RegexURLPattern: pass
 class RegexURLResolver: pass
 class LocaleRegexURLResolver: pass
+
 def describe_pattern(p): return str(p.pattern)
 
 def _dummy_style_func(msg):
