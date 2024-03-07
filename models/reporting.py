@@ -102,7 +102,7 @@ class Reporting(Base):
             data = [getattr(d, cfg["multiple"]) for d in mlt]
             data += ["" for i in range(len(mlt), blk)]
         return data
-    
+
     def reporting_get_data_fields(self, cfg, obj):
         return [self.reporting_data_obj(field, obj) for field in cfg["fields"]]
     
