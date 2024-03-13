@@ -115,6 +115,7 @@ reporting = (
     "config",
     "filter_config",
     "filter_related",
+    "filter_request",
     "is_detail",
     "can_excel",
     "cfg_excel",

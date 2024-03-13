@@ -21,6 +21,7 @@ class Reporting(Base):
     config = JSONField(default=list, blank=True, null=True, help_text=_.config_help)
     filter_config = JSONField(_.filter_config, default=dict, blank=True, null=True, help_text=_.filter_config_help)
     filter_related = JSONField(_.filter_related, default=dict, blank=True, null=True, help_text=_.filter_related_help)
+    filter_request = JSONField(_.filter_request, default=dict, blank=True, null=True, help_text=_.filter_request_help)
     is_detail = models.BooleanField(_.is_detail, default=False)
     can_excel = models.BooleanField(_.can_excel, default=True)
     cfg_excel = JSONField(_.cfg_excel, default=dict, blank=True, null=True)
@@ -31,6 +32,7 @@ class Reporting(Base):
     html_pdf = RichTextField(_.html_pdf, blank=True, null=True)
     email_html = RichTextField(_.email_html, blank=True, null=True)
     related_obj = None
+    kwargs = {}
 
     class Meta(Base.Meta):
         abstract = True
@@ -64,6 +66,9 @@ class Reporting(Base):
         if self.filter_related:
             Qfilter.update({k: self.reporting_data_obj(v, self.related_obj)
                 for k,v in self.filter_related.items()})
+        if self.filter_request:
+            Qfilter.update({v: self.kwargs.get(k) 
+                for k,v in self.filter_request.items() if k in self.kwargs})
         return Qfilter
 
     @property
@@ -83,6 +88,8 @@ class Reporting(Base):
                     data += [head+str(i+1) for i in range(0, max)]
             elif cfg.get("fields"):
                 data += [field for field in cfg["fields"]]
+            else:
+                 data += [head,]
         return data
 
     def reporting_data_obj(self, field, obj, multiple=None):
@@ -130,6 +137,7 @@ class Reporting(Base):
         )
 
     def reporting_file_response(self, response, file_type, *args, **kwargs):
+        self.kwargs = kwargs or {}
         obj = kwargs.get('obj', None)
         if response == "http":
             return self.reporting_file_generator.response_http(file_type)

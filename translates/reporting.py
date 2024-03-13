@@ -11,6 +11,7 @@ manager = _("Model manager used to get the queryset")
 config = _("Configuration of the report")
 filter_config = _("Filter of the report")
 filter_related = _("Filter using startup object values")
+filter_request = _("Filter using request data")
 is_detail = _("Filter used a specific object to start")
 can_excel = _("Can export to Excel")
 cfg_excel = _("Configuration of the Excel export")
@@ -39,6 +40,9 @@ filter_config_help = _("""Filter used in the queryset.
 example: {"field__gte": 10, "field__lte": 20}
 """)
 filter_related_help = _("""Filter used in the queryset using the startup object values.
+example: {"target_field": "object_field"}
+""")
+filter_request_help = _("""Filter used in the queryset using the request data.
 example: {"target_field": "object_field"}
 """)
 #is_detail_help = _("")
