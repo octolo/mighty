@@ -270,6 +270,7 @@ class ImportModelCommand(ModelBaseCommand):
             self.fields = self.reverse = {field: field for field in fields}
 
     def do(self):
+        self.prepare_fields(self.reader.fieldnames)
         self.loop_qs("on_row")
 
     def get_current_info(self):
@@ -277,7 +278,6 @@ class ImportModelCommand(ModelBaseCommand):
 
     def loop_qs(self, do):
         self.position = 0
-        self.prepare_fields(self.reader.fieldnames)
         for row in self.reader:
             self.current_row = row
             self.set_position()
@@ -410,8 +410,49 @@ class AnyDataFileCommand(XLSXModelCommand, CSVModelCommand):
     csvmandatory = False
 
     @property
+    def has_file_data(self):
+        return any([self.xlsxfile, self.csvfile])
+
+    @property
     def reader(self):
         if self.xlsxfile:
+            self.prepare_fields(self.reader.fieldnames)
             return self.reader_xlsx
         elif self.csvfile:
+            self.prepare_fields(self.reader.fieldnames)
             return self.reader_csv
+        else:
+            return self.get_queryset()
+
+    @property
+    def import_total(self):
+        if self.xlsxfile:
+            return super(self, XLSXModelCommand).import_total
+        elif self.csvfile:
+            return super(self, CSVModelCommand).import_total
+        else:
+            return self.get_queryset().count()
+
+class ImporterCommand(AnyDataFileCommand):
+    help = 'Command importer'
+    impoter_required = True
+    importer_path = None
+
+    def do(self):
+        self.loop_qs("on_data")
+
+    def before_job(self):
+        self.action = self.importer
+        self.init_importer(self.importer)
+        if hasattr(self, "before_"+self.action):
+            getattr(self, "before_"+self.action)()
+
+    def on_data(self, data):
+        if hasattr(self, self.action):
+            getattr(self, self.action)(data)
+        else:
+            self.do_action(self.action, data)
+
+    def do_action(self, action, data):
+        raise NotImplementedError("Command should implement method do_action(self, action, data)")
+

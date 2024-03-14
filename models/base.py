@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.template.loader import get_template
 from django.core.exceptions import ValidationError
+from django.core.exceptions import FieldDoesNotExist
 
 from mighty.apps import MightyConfig as config
 from mighty.functions import url_domain
@@ -318,6 +319,12 @@ class Base(models.Model):
                     return lvl
         return None
 
+    def has_field(self, field_name):
+        try:
+            self._meta.get_field(field_name)
+            return True
+        except FieldDoesNotExist:
+            return False
 
     """
     Functions
@@ -473,7 +480,6 @@ class Base(models.Model):
                 self.pre_create()
 
     def save(self, *args, **kwargs):
-        self._logger.info("save: "+str(self.__class__.__name__))
         if self.can_be_changed:
             do_post_create = True if self.pk is None else False
             self.default_data()
