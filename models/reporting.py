@@ -42,24 +42,26 @@ class Reporting(Base):
 
     def __str__(self):
         return self.name
-    
+
     @property
     def reporting_export_name(self):
         return "%s_%s" % (self.file_name or self.name, timezone.now().strftime("%Y%m%d-%Hh%Ms%S"))
-    
+
     @property
     def max_fields(self):
         return [mf for mf in self.config if mf.get("multiple")]
-    
+
     @cached_property
     def reporting_max_aggregate(self):
-        count_data = {"count_"+mf["data"]: models.Count(mf["data"]) for mf in self.max_fields}
+        count_data = {"count_"+mf["data"]: models.Count(mf["data"], distinct=True) for mf in self.max_fields}
         max_data = {mf["data"]: models.Max("count_"+mf["data"]) for mf in self.max_fields}
         qs = getattr_recursive(self.target.model_class(), self.manager).filter(**self.reporting_filter)
-        return qs.annotate(**count_data).aggregate(**max_data)
+        qs = qs.annotate(**count_data).aggregate(**max_data)
+        return qs
 
     @property
     def reporting_filter(self):
+        self._logger.info("test")
         Qfilter = {}
         if self.filter_config:
             Qfilter.update(self.filter_config)
@@ -67,7 +69,7 @@ class Reporting(Base):
             Qfilter.update({k: self.reporting_data_obj(v, self.related_obj)
                 for k,v in self.filter_related.items()})
         if self.filter_request:
-            Qfilter.update({v: self.kwargs.get(k) 
+            Qfilter.update({v: self.kwargs.get(k)
                 for k,v in self.filter_request.items() if k in self.kwargs})
         return Qfilter
 
@@ -104,15 +106,15 @@ class Reporting(Base):
         blk = max - len(mlt)
         if cfg.get("fields"):
             data = [getattr(d, field) for d in mlt for field in cfg["fields"]]
-            data += ["" for i in range(len(mlt), blk) for field in cfg["fields"]]
+            data += ["" for i in range(0, blk) for field in cfg["fields"]]
         else:
             data = [getattr(d, cfg["multiple"]) for d in mlt]
-            data += ["" for i in range(len(mlt), blk)]
+            data += ["" for i in range(0, blk)]
         return data
 
     def reporting_get_data_fields(self, cfg, obj):
         return [self.reporting_data_obj(field, obj) for field in cfg["fields"]]
-    
+
     def reporting_line_detail(self, obj):
         data = []
         for cfg in self.config:
