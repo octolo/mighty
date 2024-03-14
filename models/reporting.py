@@ -61,7 +61,6 @@ class Reporting(Base):
 
     @property
     def reporting_filter(self):
-        self._logger.info("test")
         Qfilter = {}
         if self.filter_config:
             Qfilter.update(self.filter_config)
