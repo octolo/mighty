@@ -13,14 +13,14 @@ def start_task(ct, pk, task, task_id, *args, **kwargs):
     obj.task_status = "RUNNING"
     obj.save()
     try:
-        getattr(obj, "task_%s"%task.lower())()
+        getattr(obj, "task_%s"%task.lower())(**kwargs)
     except Exception as e:
         obj.task_status = "ERROR"
+        obj.save()
+        logger.warning("error task (%s) %s: %s -> %s" % (obj.task_status, model, task, task_id))
+        raise e
     obj.task_status = "FINISH"
     obj.can_use_task = False
     obj.save()
-    log_msg = "end task (%s) %s: %s -> %s" % (obj.task_status, model, task, task_id)
-    if obj.task_status == "ERROR":
-        logger.error(log_msg)
-    else:
-        logger.info(log_msg)
+    logger.info("end task (%s) %s: %s -> %s" % (obj.task_status, model, task, task_id))
+
