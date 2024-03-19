@@ -31,6 +31,7 @@ class Reporting(Base):
     cfg_pdf = JSONField(_.cfg_pdf, default=dict, blank=True, null=True)
     html_pdf = RichTextField(_.html_pdf, blank=True, null=True)
     email_html = RichTextField(_.email_html, blank=True, null=True)
+    is_detail = models.BooleanField(default=False)
     related_obj = None
     kwargs = {}
 
@@ -51,11 +52,15 @@ class Reporting(Base):
     def max_fields(self):
         return [mf for mf in self.config if mf.get("multiple")]
 
+    def get_manager(self):
+        manager = getattr_recursive(self.target.model_class(), self.manager) or self.target.objects
+        return manager() if manager != models.Manager and callable(manager) else manager
+
     @cached_property
     def reporting_max_aggregate(self):
         count_data = {"count_"+mf["data"]: models.Count(mf["data"], distinct=True) for mf in self.max_fields}
         max_data = {mf["data"]: models.Max("count_"+mf["data"]) for mf in self.max_fields}
-        qs = getattr_recursive(self.target.model_class(), self.manager).filter(**self.reporting_filter)
+        qs = self.get_manager().filter(**self.reporting_filter)
         qs = qs.annotate(**count_data).aggregate(**max_data)
         return qs
 
@@ -74,7 +79,7 @@ class Reporting(Base):
 
     @property
     def reporting_queryset(self):
-        return getattr_recursive(self.target.model_class(), self.manager).filter(**self.reporting_filter)
+        return self.get_manager().filter(**self.reporting_filter)
 
     @property
     def reporting_fields(self):
