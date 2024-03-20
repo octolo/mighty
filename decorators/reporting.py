@@ -59,6 +59,7 @@ def ReportingModel(**kwargs):
                     "id": "cfg:"+str(rpg.uid),
                     "name": rpg.name,
                     "excel": rpg.can_excel,
+                    "xlsx": rpg.can_excel,
                     "csv": rpg.can_csv,
                     "pdf": rpg.can_pdf,
                     "is_detail": rpg.is_detail

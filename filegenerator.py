@@ -24,6 +24,7 @@ class FileGenerator:
     ct_list = {
         "text/csv": "csv",
         "application/vnd.ms-excel": "xls",
+        "application/vnd.ms-excel": "excel",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
     }
     row = 0
@@ -71,6 +72,9 @@ class FileGenerator:
         tmp = open(self.get_filename(ext), "rb")
         wb.save(tmp.name)
         return tmp
+
+    def http_excel(self, ext, ct):
+        return self.http_xls("xlsx", ct)
 
     def http_xlsx(self, ext, ct):
         return self.http_xls(ext, ct)

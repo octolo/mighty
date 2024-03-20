@@ -44,6 +44,11 @@ class Reporting(Base):
     def __str__(self):
         return self.name
 
+
+    @property
+    def can_xlsx(self):
+        return self.can_excel
+
     @property
     def reporting_export_name(self):
         return "%s_%s" % (self.file_name or self.name, timezone.now().strftime("%Y%m%d-%Hh%Ms%S"))
