@@ -82,7 +82,8 @@ def ReportingModel(**kwargs):
                 return reporting.reporting_file_response(response, file_type, *args, **kwargs)
 
             def reporting_process_std(self, reporting, file_type, response="http", *args, **kwargs):
-                name = "reporting_%s_%s" % (reporting.lower(), file_type.lower())
+                file_type = "xlsx" if file_type.lower() == "excel" else file_type.lower()
+                name = "reporting_%s_%s" % (reporting.lower(), file_type)
                 return getattr(self, name)(response) if hasattr(self, name) else False
 
             def reporting_process(self, spec, reporting, file_type, *args, **kwargs):
