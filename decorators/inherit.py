@@ -12,7 +12,14 @@ def InheritClassList(*args):
 
 def InheritModelClassList(*args, **kwargs):
     def decorator(cls):
-        inherit_classes = tuple(import_string(i) for i in args)
+        inherit_classes = tuple()
+
+        for i in args:
+            try:
+                inherit_classes += (import_string(i),)
+            except ImportError:
+                inherit_classes += (import_string(i+".Extend"),)
+
         class NewClass(cls, type("InheritClass", inherit_classes, {})):
             class Meta(cls.Meta):
                 abstract = kwargs.get("abstract", True)
