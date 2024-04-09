@@ -1,3 +1,6 @@
+# https://www.maileva.com/developpeur
+# https://secure2.recette.maileva.com/
+
 from django.core.files import File
 from django.shortcuts import get_object_or_404
 from django.template import Template
@@ -64,7 +67,7 @@ class Maileva(MissiveBackend):
     sender_address_line_5 = setting("MAILEVA_SENDER5")
     sender_address_line_6 = setting("MAILEVA_SENDER6")
     sender_country_code = setting("MAILEVA_SENDERC")
-    
+
 
     def __init__(self, missive, *args, **kwargs):
         super().__init__(missive, *args, **kwargs)
@@ -130,7 +133,7 @@ class Maileva(MissiveBackend):
             "color_printing": self.color_printing,
             "duplex_printing": self.duplex_printing,
             "optional_address_sheet": self.optional_address_sheet,
-            "notification_email": self.notification_email,
+            #"notification_email": self.notification_email,
             "archiving_duration": self.archiving_duration,
             "sender_address_line_1": self.sender_address_line_1,
             "sender_address_line_2": self.sender_address_line_2,
@@ -288,7 +291,7 @@ class Maileva(MissiveBackend):
                 os.remove(self.path_base_doc)
             if not self.in_error and self.submit():
                 self.missive.to_sent()
-                self.set_price_info()
+                #self.set_price_info()
                 if setting("MAILEVA_WEBHOOK"):
                     self.enable_webhooks()
             else:
@@ -325,7 +328,7 @@ class Maileva(MissiveBackend):
             "archiving_lte6_next": self.archiving_lte6_next,
             "archiving_lte10_next": self.archiving_lte10_next,
         }
-    
+
     def prince_info(self):
         return {
             "count_page": self.count_page,
