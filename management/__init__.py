@@ -416,10 +416,8 @@ class AnyDataFileCommand(XLSXModelCommand, CSVModelCommand):
     @property
     def reader(self):
         if self.xlsxfile:
-            self.prepare_fields(self.reader.fieldnames)
             return self.reader_xlsx
         elif self.csvfile:
-            self.prepare_fields(self.reader.fieldnames)
             return self.reader_csv
         else:
             return self.get_queryset()

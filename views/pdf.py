@@ -67,8 +67,8 @@ class PDFView(DetailView):
             '--header-html': self.build_header_html().name,
             '--footer-html': self.build_footer_html().name,
         })
-        if self.get_config().get("orientation", False):
-            self.options.update({'orientation': self.get_config().get("orientation")})
+
+        self.options.update({'orientation': self.get_config().get("orientation", 'Portrait') })
         return self.options
 
     def get_pdf_name(self):
