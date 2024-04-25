@@ -56,7 +56,7 @@ class Maileva(MissiveBackend):
     color_printing = setting("MAILEVA_COLOR_PRINTING", False)
     duplex_printing = setting("MAILEVA_DUPLEX_PRINTING", True)
     optional_address_sheet = setting("MAILEVA_OPTIONAL_ADDRESS_SHEET", True)
-    archiving_duration = setting("MAILEVA_ARCHIVING_DURATION", 0)
+    archiving_duration = setting("MAILEVA_ARCHIVING_DURATION", 3)
     notification_email = setting("MAILEVA_NOTIFICATION", False)
 
     # SENDER
@@ -203,7 +203,7 @@ class Maileva(MissiveBackend):
     def valid_response(self, response):
         if response.status_code not in [200, 201]:
             self.missive.trace = str(response.content)
-            if response.status_code in [401, 404]:
+            if str(response.status_code).startswith("4"):
                 if "code" in response.json():
                     self.missive.code_error = response.json()["code"]
                 else:
@@ -232,20 +232,21 @@ class Maileva(MissiveBackend):
             rjson = response.json()
             return rjson
 
+    def postal_add_attachment(self, attachment):
+        self.priority+=1
+        api = self.api_url["documents"] % self.sending_id
+        headers = self.api_headers
+        doc_name = os.path.basename(attachment.name)
+        files = {'document': (doc_name, attachment)}
+        data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
+        response = requests.post(api, headers=headers, files=files, data=data)
+        self.valid_response(response)
+        self.add_log_array("attachments", doc_name)
+
     def postal_attachments(self):
         if self.missive.attachments:
-            api = self.api_url["documents"] % self.sending_id
-            headers = self.api_headers
-            logs = []
             for document in self.missive.attachments:
-                self.priority+=1
-                doc_name = os.path.basename(document.name)
-                logs.append(doc_name)
-                files = {'document': (doc_name, document)}
-                data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
-                response = requests.post(api, headers=headers, files=files, data=data)
-                self.valid_response(response)
-            self.missive.logs['attachments'] = logs
+                self.postal_add_attachment(document)
         return False if self.in_error else True
 
     def add_recipients(self):
@@ -276,7 +277,7 @@ class Maileva(MissiveBackend):
         missive.check_status()
 
     def send_postal(self):
-        self.set_price_config()
+        #self.set_price_config()
         self.missive.msg_id = str(uuid4())
         if self.missive.status == _c.STATUS_FILETEST:
             self.postal_base()
@@ -288,7 +289,6 @@ class Maileva(MissiveBackend):
             if not self.in_error:
                 self.postal_base()
                 self.postal_attachments()
-                os.remove(self.path_base_doc)
             if not self.in_error and self.submit():
                 self.missive.to_sent()
                 #self.set_price_info()

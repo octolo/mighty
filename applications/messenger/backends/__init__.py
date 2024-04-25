@@ -75,6 +75,7 @@ class MissiveBackend(EnableLogger):
     def reply_name(self):
         return self.missive.reply_name if self.missive.reply_name else self.missive.name
 
+
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target if over_target else self.missive.target
@@ -100,12 +101,21 @@ class MissiveBackend(EnableLogger):
     def send_emailar(self):
         return self.send_email()
 
+    def add_log_array(self, key, log):
+        if self.missive.logs.get(key):
+            self.missive.logs[key].append(log)
+        else:
+            self.missive.logs[key] = [log]
+
+    def postal_add_attachment(self, attachment):
+        logs.append(os.path.basename(attachment.name))
+        self.add_log_array('attachments', attachment.name)
+
     def postal_attachments(self):
         if self.missive.attachments:
             logs = []
             for document in self.missive.attachments:
-                logs.append(os.path.basename(document.name))
-            self.missive.logs['attachments'] = logs
+                self.postal_add_attachment(document)
 
     def postal_template(self, context):
         return Template(self.missive.html).render(context)
@@ -126,41 +136,36 @@ class MissiveBackend(EnableLogger):
         footer_html.write(Template(footer).render(context).encode("utf-8"))
         footer_html.close()
 
-        # file
-        tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
-        content_html = self.postal_template(context)
-        pdf = pdfkit.from_string(content_html, tmp_pdf.name, options={
-            'encoding': "UTF-8",
-            '--header-html': header_html.name,
-            '--footer-html': footer_html.name,
-            'page-size':'A4',
-            'margin-top': '0.75in',
-            'margin-right': '0.75in',
-            'margin-bottom': '0.75in',
-            'margin-left': '0.75in',
-            'custom-header' : [
-                ('Accept-Encoding', 'gzip')
-            ]
-        })
-        path_tmp = tmp_pdf.name
-        valid_file_name = searchable(get_valid_filename('%s.pdf' % self.missive.subject))
-        path_basedoc = tempfile.gettempdir() + '/' + valid_file_name
-        shutil.copyfile(path_tmp, path_basedoc)
-        doc_name = os.path.basename(path_basedoc)
-        #headers = self.api_headers
 
-        logger.warning(path_basedoc)
-        self.path_base_doc = path_basedoc
-        self.missive.attachments.insert(0, open(path_basedoc, 'rb'))
-
-        #files = {'document': (doc_name, )}
-        #data = {'metadata': json.dumps({"priority": self.priority, "name": doc_name})}
-        #response = requests.post(api, headers=headers, files=files, data=data)
-
+        # first file
+        with tempfile.NamedTemporaryFile(suffix='postalfirstpage.pdf', delete=False) as tmp_pdf:
+            #tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
+            content_html = self.postal_template(context)
+            pdf = pdfkit.from_string(content_html, tmp_pdf.name, options={
+                'encoding': "UTF-8",
+                '--header-html': header_html.name,
+                '--footer-html': footer_html.name,
+                'page-size':'A4',
+                'margin-top': '0.75in',
+                'margin-right': '0.75in',
+                'margin-bottom': '0.75in',
+                'margin-left': '0.75in',
+                'custom-header' : [
+                    ('Accept-Encoding', 'gzip')
+                ]
+            })
+            self.postal_add_attachment(tmp_pdf)
+        #path_tmp = tmp_pdf.name
+        #doc_name = os.path.basename(path_tmp)
+        #self.path_base_doc = path_tmp
+        #valid_file_name = searchable(get_valid_filename('%s.pdf' % self.missive.subject))
+        #path_basedoc = tempfile.gettempdir() + '/' + valid_file_name
+        #shutil.copyfile(path_tmp, path_basedoc)
+        #self.missive.attachments.insert(0, open(path_tmp, 'rb'))
         os.remove(footer_html.name)
         os.remove(header_html.name)
-        if self.missive.status != choices.STATUS_FILETEST:
-            tmp_pdf.close()
+        #if self.missive.status != choices.STATUS_FILETEST:
+        #    tmp_pdf.close()
         #os.remove(path_basedoc)
         #return self.valid_response(response)
 
@@ -189,18 +194,3 @@ class MissiveBackend(EnableLogger):
 
     def on_webhook(self, request):
         return {}
-
-    # PRICE
-    def price_config(self): return {}
-    def prince_info(self): return {}
-
-    def set_price_config(self, *args, **kwargs):
-        for k,v in kwargs.items(): setattr(self, k, v)
-        self.missive.price_config = self.price_config()
-
-    def set_price_info(self, *args, **kwargs):
-        for k,v in kwargs.items(): setattr(self, k, v)
-        self.missive.price_info = self.price_info()
-
-    def price(self):
-        return 0
