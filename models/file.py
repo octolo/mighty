@@ -20,11 +20,11 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.module_loading import import_string
-
 from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
 from mighty.thumbnail import Thumbnail
 from mighty.fields import JSONField
 
+from sys import getsizeof
 import os, magic, logging, requests, tempfile, hashlib
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,17 @@ class File(models.Model):
 
     class Meta:
         abstract = True
+
+    def calcul_db_size(self, *args, **kwargs):
+        excludes = kwargs.get('excludes', [])
+        fltr = kwargs.get('fltr', {})
+        size = []
+        for key,type_ in self.concrete_fields(excludes).items():
+            data = getattr(self, '%s_id' % key) if type_ == 'ForeignKey' else getattr(self, key)
+            size.append(getsizeof(data))
+        #for key,type_ in self.m2m_fields(excludes).items():
+        #    size += [getsizeof(key) for key,obj in getattr(self, key).in_bulk(**fltr).items()]
+        return sum(size) if size else None
 
     @property
     def cloud_file(self):
