@@ -191,10 +191,13 @@ class ModelBaseCommand(BaseCommand):
         self.model = get_model(label, model)
         return self.model
 
+    def get_queryset_filter(self):
+        return dict(x.split(',') for x in self.filter.split(';')) if self.filter else {}
+
     def get_queryset(self, *args, **kwargs):
         manager = kwargs.get('manager', self.manager)
         model = self.model_use
-        return getattr(model, manager).filter(**dict(x.split(',') for x in self.filter.split(';')) if self.filter else {})
+        return getattr(model, manager).filter(**self.get_queryset_filter())
 
     def get_current_info(self):
         return self.current_object
@@ -435,6 +438,20 @@ class ImporterCommand(AnyDataFileCommand):
     help = 'Command importer'
     impoter_required = True
     importer_path = None
+
+    def get_queryset(self, *args, **kwargs):
+        if hasattr(self.importer, "get_queryset"):
+            return self.importer.get_queryset(*args, **kwargs).filter(**self.get_queryset_filter())
+        return super().get_queryset(*args, **kwargs)
+
+    @property
+    def reader(self):
+        if self.xlsxfile:
+            return self.reader_xlsx
+        elif self.csvfile:
+            return self.reader_csv
+        else:
+            return self.get_queryset()
 
     def do(self):
         self.loop_qs("on_data")
