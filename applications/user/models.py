@@ -87,7 +87,7 @@ class UserPhone(Data, Base):
         self.phone = re.sub('[^+0-9]+', '', self.phone)
 
     def __str__(self):
-        return "%s - %s" % (str(self.user), self.phone)
+        return self.phone
 
     def pre_save(self):
         self.clean_phone()
@@ -442,3 +442,16 @@ class Trashmail(Base):
 
     def __str__(self):
         return "@" + self.domain
+
+# Draft
+class MergeableAccount(Base):
+    primary_user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='primary_user')
+    secondary_user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='mergeable_user')
+    reason = models.CharField(max_length=255)
+    is_merged = models.BooleanField(default=False)
+
+    class Meta(Base.Meta):
+        abstract = True
+
+    def __str__(self):
+        return f"{self.primary_user} - {self.secondary_user}"

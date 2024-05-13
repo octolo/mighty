@@ -57,7 +57,8 @@ class Config:
         'user': [
             'User',
             'Twofactor',
-            'Trashmail'
+            'Trashmail',
+            'MergeableAccount',
         ],
         'dataprotect': [
             'ServiceData',

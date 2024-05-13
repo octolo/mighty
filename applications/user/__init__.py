@@ -74,3 +74,7 @@ from django.apps import apps as django_apps
 def get_user_email_model(model=conf.ForeignKey.email):
     email = model.split('.')
     return django_apps.get_model(email[0], email[1])
+
+def get_user_phone_model(model=conf.ForeignKey.phone):
+    phone = model.split('.')
+    return django_apps.get_model(phone[0], phone[1])

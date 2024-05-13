@@ -112,6 +112,8 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     class Invitation(models_user.Invitation): pass
     if user_conf.protect_trashmail:
         class Trashmail(models_user.Trashmail): pass
+    # Draft
+    class MergeableAccount(models_user.MergeableAccount): pass
 
 # Data protect
 if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:

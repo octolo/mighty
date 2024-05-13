@@ -179,3 +179,10 @@ class TrashmailAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': ('domain',)}),)
     list_display = ('__str__', 'domain')
     search_fields = ('domain',)
+
+# Draft
+class MergeableAccountAdmin(BaseAdmin):
+    view_on_site = False
+    fieldsets = ((None, {'classes': ('wide',), 'fields': ('primary_user', 'secondary_user', 'reason', 'is_merged')}),)
+    list_display = ('__str__', 'is_merged')
+    search_fields = ('primary_user', 'secondary_user', 'reason')

@@ -15,7 +15,7 @@ def send_missive(missive):
 
 def send_missive_type(**kwargs):
     from mighty.models import Missive
-    logger.warning(kwargs)
+    logger.debug(kwargs)
     missive = Missive(
         header_html=kwargs.get('header_html'),
         footer_html=kwargs.get('footer_html'),

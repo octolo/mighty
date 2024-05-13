@@ -142,6 +142,9 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     class UserAgentAdmin(admin_user.UserAgentAdmin): model = all_models.UserAgent
     class UserAddressAdmin(admin_user.UserAddressAdminInline): model = all_models.UserAddress
     class UserAdmin(admin_user.UserAdmin): pass
+    # Draft
+    @admin.register(all_models.MergeableAccount)
+    class MergeableAccountAdmin(admin_user.MergeableAccountAdmin): model = all_models.MergeableAccount
 
     if 'mighty.applications.logger' in settings.INSTALLED_APPS:
         from mighty.applications.logger.admin import ModelWithLogAdmin
