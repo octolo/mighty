@@ -186,3 +186,4 @@ class MergeableAccountAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': ('primary_user', 'secondary_user', 'reason', 'is_merged')}),)
     list_display = ('__str__', 'is_merged')
     search_fields = ('primary_user', 'secondary_user', 'reason')
+    raw_id_fields = ['primary_user', 'secondary_user',]
