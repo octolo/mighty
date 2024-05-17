@@ -9,11 +9,9 @@ from mighty.applications.messenger import choices as _c
 from mighty.apps import MightyConfig
 from mighty.functions import setting
 from mighty.models import Missive
-
+from mighty.functions import get_logger
 from uuid import uuid4
 import os, requests, json
-
-from mighty.functions import get_logger
 logger = get_logger()
 
 class Maileva(MissiveBackend):
@@ -39,6 +37,7 @@ class Maileva(MissiveBackend):
     header_offset = 72
     js_admin = False
     page = 0
+    _logger = logger
 
     # PRICE
     color_first_c4 = setting("MAILEVA_COLOR_FIRST_C4", 0.73)
