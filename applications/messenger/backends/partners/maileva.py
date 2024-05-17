@@ -201,6 +201,7 @@ class Maileva(MissiveBackend):
 
     def valid_response(self, response):
         if response.status_code not in [200, 201]:
+            self._logger.warning("Maileva - %s" % str(response.content))
             self.missive.trace = str(response.content)
             if str(response.status_code).startswith("4"):
                 if "code" in response.json():
@@ -209,6 +210,7 @@ class Maileva(MissiveBackend):
                     self.missive.code_error = response.json()["error"]
             self.in_error = True
             return False
+        self._logger.debug("Maileva - %s" % str(response.content))
         return True
 
     def authentication(self):

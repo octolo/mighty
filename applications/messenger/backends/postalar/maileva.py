@@ -33,47 +33,30 @@ class MissiveBackend(Maileva):
             self.missive.save()
             return rjson
 
-
     def postal_add_attachment(self, attachment):
-        from datetime import datetime
+        self._logger.info("postal_add_attachment %s" % attachment.name)
         self.priority+=1
         api = self.api_url["documents"] % self.sending_id
         headers = self.api_headers
         doc_name = os.path.basename(attachment.name)
-
-        # Define the boundary for the multipart form-data
-        boundary = f"----------------------------{hex(int(datetime.now().timestamp()))[2:]}"
-        headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
-
-        # Prepare the multipart form-data content
-        file_bytes = attachment.read()
-
-        file_content_disposition = f'form-data; name="document"; filename="{doc_name}"'
-        metadata_json = json.dumps({"priority": self.priority, "name": doc_name})
-
-        data = (
-            f"--{boundary}\r\n"
-            f"Content-Disposition: {file_content_disposition}\r\n"
-            f"Content-Type: application/octet-stream\r\n\r\n"
-            f"{file_bytes.decode('ISO-8859-1')}\r\n"
-            f"--{boundary}\r\n"
-            f"Content-Disposition: form-data; name=\"metadata\"\r\n"
-            f"Content-Type: application/json\r\n\r\n"
-            f"{metadata_json}\r\n"
-            f"--{boundary}--\r\n"
-        )
-
-        response = requests.post(api, headers=headers, data=data)
-
-        print(response.text)
+        data = { "priority": self.priority, "name": doc_name, "shrink": True}
+        files = {
+            'document': (doc_name, open(attachment.name, "rb").read().decode('ISO-8859-1')),
+            "metadata": ("metadata", json.dumps(data), "application/json"),
+        }
+        response = requests.post(api, headers=headers, files=files)
         self.valid_response(response)
         self.add_log_array("attachments", doc_name)
 
 
     def postal_attachments(self):
         if self.missive.attachments:
+            import tempfile, os
+            from django.utils.text import get_valid_filename
             for document in self.missive.attachments:
-                self.postal_add_attachment(document)
+                suffix = get_valid_filename(os.path.basename(str(document)))
+                with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_pdf:
+                    tmp_pdf.write(document.read())
+                    self.postal_add_attachment(tmp_pdf)
         return False if self.in_error else True
-
 
