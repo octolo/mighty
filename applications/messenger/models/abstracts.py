@@ -17,7 +17,6 @@ from mighty.applications.messenger.apps import MessengerConfig as conf
 from mighty.functions import masking_email, masking_phone, get_model, url_domain
 from mighty.models.base import Base
 from mighty.fields import RichTextField, JSONField
-from html2text import html2text
 
 class MessengerModel(Base):
     in_test = False
