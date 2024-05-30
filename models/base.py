@@ -482,20 +482,27 @@ class Base(models.Model):
     def save(self, *args, **kwargs):
         if self.can_be_changed:
             do_post_create = True if self.pk is None else False
+            self._logger.debug("default_data %s %s" % (type(self), str(self)))
             self.default_data()
+            self._logger.debug("pre_save %s %s" % (type(self), str(self)))
             self.pre_save()
             super().save(*args, **kwargs)
             if do_post_create:
                 if "post_create" not in self.www_action_cancel:
+                    self._logger.debug("post_create %s %s" % (type(self), str(self)))
                     self.post_create()
             else:
                 if "post_update" not in self.www_action_cancel:
+                    self._logger.debug("post_update %s %s" % (type(self), str(self)))
                     self.post_update()
                 if "mighty.applications.logger" in settings.INSTALLED_APPS:
+                    self._logger.debug("save_model_change_log %s %s" % (type(self), str(self)))
                     self.save_model_change_log()
             if "post_save" not in self.www_action_cancel:
+                self._logger.debug("post_save %s %s" % (type(self), str(self)))
                 self.post_save()
         else:
+            self._logger.debug("is_immutable %s %s" % (type(self), str(self)))
             raise self.raise_error(code="is_immutable", message="is immutable")
 
     def delete(self, *args, **kwargs):
