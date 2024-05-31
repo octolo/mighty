@@ -482,7 +482,6 @@ class Base(models.Model):
     def save(self, *args, **kwargs):
         if self.can_be_changed:
             do_post_create = True if self.pk is None else False
-            self._logger.debug("default_data %s %s" % (type(self), str(self)))
             self.default_data()
             self._logger.debug("pre_save %s %s" % (type(self), str(self)))
             self.pre_save()
