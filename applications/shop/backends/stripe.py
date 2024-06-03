@@ -33,7 +33,7 @@ class PaymentBackend(PaymentBackend):
     @property
     def data_iban(self):
         return {
-            "billing_details": {"name": str(self.payment_method.uid), "email": "dev@easyshares.io"},
+            "billing_details": {"name": str(self.payment_method.uid), "email": "dev@octolo.tech"},
             "type": "sepa_debit",
             "sepa_debit": {
                 "iban": self.payment_method.iban}}

@@ -113,7 +113,7 @@ class MissiveBackend(MissiveBackend):
     @property
     def data_confirm(self):
         data = self.base_headers
-        data["email"] = "dev@easyshares.io"
+        data["email"] = ""
         return data
 
     def is_confirmed(self):
@@ -213,7 +213,7 @@ class MissiveBackend(MissiveBackend):
         self.missive.in_test = True
         self.missive.last_name = "Mighty-Lastname"
         self.missive.first_name = "Mighty-Firstname"
-        self.missive.target = "charles@easyshares.io"
+        self.missive.target = ""
         self.missive.attachments = [open(os.path.realpath(__file__))]
         self.send_email()
         self.logger.info("Send email: %s" % self.missive.cache)
