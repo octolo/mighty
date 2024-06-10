@@ -92,6 +92,7 @@ class Maileva(MissiveBackend):
         self.sender_address_line_5 = kwargs.get("sender_address_line_5", self.sender_address_line_5)
         self.sender_address_line_6 = kwargs.get("sender_address_line_6", self.sender_address_line_6)
         self.sender_country_code = kwargs.get("sender_country_code", self.sender_country_code)
+        self.notification_treat_undelivered_mail = kwargs.get("notification_treat_undelivered_mail", [])
 
     @property
     def sender_height(self):
@@ -125,6 +126,10 @@ class Maileva(MissiveBackend):
 
     @property
     def postal_data(self):
+        undelivered = setting("MAILEVA_EMAIL_UNDELIVERED", None)
+        undelivered = [undelivered,] if undelivered else []
+        if self.missive.reply:
+            undelivered.append(self.missive.reply)
         base = {
             "name": self.missive.target,
             "custom_id": self.missive.msg_id,
@@ -141,12 +146,16 @@ class Maileva(MissiveBackend):
             "sender_address_line_5": self.sender_address_line_5,
             "sender_address_line_6": self.sender_address_line_6,
             "sender_country_code": self.sender_country_code,
+            "notification_treat_undelivered_mail": undelivered,
         }
+
         if self.missive.model == _c.MODE_POSTALAR:
             base.update({
                 "acknowledgement_of_receipt": True,
                 "acknowledgement_of_receipt_scanning": False,
             })
+
+        print(base)
         return base
 
     @property
