@@ -11,10 +11,9 @@ from mighty.functions import setting, searchable
 from mighty.models import Missive
 from mighty.applications.messenger import choices
 from mighty.applications.messenger.apps import MessengerConfig as conf
-import datetime, logging, os, tempfile, pdfkit, shutil
-
-logger = logging.getLogger(__name__)
 from mighty.applications.logger import EnableLogger
+
+import datetime, os, tempfile, pdfkit, shutil
 
 class MissiveBackend(EnableLogger):
     in_error = False
@@ -47,7 +46,7 @@ class MissiveBackend(EnableLogger):
             pass
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
-        logger.info("send sms: %s" % self.message, extra=self.extra)
+        self.logger.info("send sms: %s" % self.message, extra=self.extra)
         return self.missive.status
 
     def email_attachments(self):
@@ -74,7 +73,6 @@ class MissiveBackend(EnableLogger):
     @property
     def reply_name(self):
         return self.missive.reply_name if self.missive.reply_name else self.missive.name
-
 
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
@@ -136,10 +134,8 @@ class MissiveBackend(EnableLogger):
         footer_html.write(Template(footer).render(context).encode("utf-8"))
         footer_html.close()
 
-
         # first file
         with tempfile.NamedTemporaryFile(suffix='postalfirstpage.pdf', delete=False) as tmp_pdf:
-            #tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
             content_html = self.postal_template(context)
             pdf = pdfkit.from_string(content_html, tmp_pdf.name, options={
                 'encoding': "UTF-8",
@@ -155,19 +151,8 @@ class MissiveBackend(EnableLogger):
                 ]
             })
             self.postal_add_attachment(tmp_pdf)
-        #path_tmp = tmp_pdf.name
-        #doc_name = os.path.basename(path_tmp)
-        #self.path_base_doc = path_tmp
-        #valid_file_name = searchable(get_valid_filename('%s.pdf' % self.missive.subject))
-        #path_basedoc = tempfile.gettempdir() + '/' + valid_file_name
-        #shutil.copyfile(path_tmp, path_basedoc)
-        #self.missive.attachments.insert(0, open(path_tmp, 'rb'))
         os.remove(footer_html.name)
         os.remove(header_html.name)
-        #if self.missive.status != choices.STATUS_FILETEST:
-        #    tmp_pdf.close()
-        #os.remove(path_basedoc)
-        #return self.valid_response(response)
 
     def send_postal(self):
         self.postal_base()
@@ -184,13 +169,16 @@ class MissiveBackend(EnableLogger):
         return self.send_postal()
 
     def send_web(self):
-        return ""
+        return NotImplementedError("Web mode not implemented")
 
     def send_app(self):
-        return ""
+        raise NotImplementedError("App mode not implemented")
 
     def check(self, missive):
-        return True
+        return NotImplementedError("Check mode not implemented")
 
     def on_webhook(self, request):
-        return {}
+        return NotImplementedError("Webhook mode not implemented")
+
+    def cancel(self):
+        return NotImplementedError("Cancel mode not implemented")

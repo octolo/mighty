@@ -24,6 +24,7 @@ class MissiveBackend(MissiveBackend):
         "documents": "https://api.sandbox.maileva.net/registered_mail/v4/sendings/%s/documents",
         "recipients": "https://api.sandbox.maileva.net/registered_mail/v4/sendings/%s/recipients",
         "submit": "https://api.sandbox.maileva.net/registered_mail/v4/sendings/%s/submit",
+        "cancel": "https://api.sandbox.maileva.com/registered_mail/v4/sendings/%s",
     }
     api_official = {
         "webhook": "https://api.maileva.com/notification_center/v4/subscriptions",
@@ -32,6 +33,7 @@ class MissiveBackend(MissiveBackend):
         "documents": "https://api.maileva.com/registered_mail/v4/sendings/%s/documents",
         "recipients": "https://api.maileva.com/registered_mail/v4/sendings/%s/recipients",
         "submit": "https://api.maileva.com/registered_mail/v4/sendings/%s/submit",
+        "cancel": "https://api.maileva.com/registered_mail/v4/sendings/%s",
     }
     status_ref = {
         "PENDING": _c.STATUS_PENDING,
@@ -155,7 +157,6 @@ class MissiveBackend(MissiveBackend):
             "color_printing": self.color_printing,
             "duplex_printing": self.duplex_printing,
             "optional_address_sheet": self.optional_address_sheet,
-            #"notification_email": self.notification_email,
             "archiving_duration": self.archiving_duration,
             "sender_address_line_1": self.sender_address_line_1,
             "sender_address_line_2": self.sender_address_line_2,
@@ -187,14 +188,6 @@ class MissiveBackend(MissiveBackend):
         return {
             "resource_type": self.resource_type,
             "callback_url": self.callback_url,
-            #"authentication": {
-            #    "oauth2": {
-            #        "oauth2_server": MightyConfig.webhook + "/oauth2/token/",
-            #        "client_id": self.user_webhook.client_id,
-            #        "client_secret": setting("MAILEVA_OAUTH_SECRET"),
-            #        "grant_type": "client_credentials"
-            #    }
-            #}
         }
 
     @property
@@ -226,14 +219,17 @@ class MissiveBackend(MissiveBackend):
         }
 
     def valid_response(self, response):
-        if response.status_code not in [200, 201]:
+        if response.status_code not in [200, 201, 204]:
             self._logger.warning("Maileva - %s" % str(response.content))
             self.missive.trace = str(response.content)
             if str(response.status_code).startswith("4"):
-                if "code" in response.json():
-                    self.missive.code_error = response.json()["code"]
-                else:
-                    self.missive.code_error = response.json()["error"]
+                try:
+                    if "code" in response.json():
+                        self.missive.code_error = response.json()["code"]
+                    else:
+                        self.missive.code_error = response.json()["error"]
+                except:
+                    self.missive.code_error = "unknown"
             self.in_error = True
             return False
         self._logger.warning("Maileva - %s" % str(response.content))
@@ -270,7 +266,6 @@ class MissiveBackend(MissiveBackend):
             'document': (doc_name, open(attachment.name, "rb").read()),
             "metadata": ("metadata", json.dumps(data), "application/json"),
         }
-        print("api", api)
         response = requests.post(api, headers=headers, files=files)
         self.valid_response(response)
         self.add_log_array("attachments", doc_name)
@@ -394,3 +389,11 @@ class MissiveBackend(MissiveBackend):
                 self.missive.status = self.status_ref[rjson["status"]]
             self.missive.save()
             return rjson
+
+    def cancel(self):
+        if self.authentication():
+            api = self.api_url["cancel"] % self.missive.partner_id
+            response = requests.delete(api, headers=self.api_headers)
+            if self.valid_response(response):
+                self.missive.status = _c.STATUS_CANCELLED
+            self.missive.save()

@@ -102,6 +102,19 @@ class MissiveAdmin(BaseAdmin):
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/missive_check.html', context)
 
+    missivecancel_view_template = "admin/missivecancel.html"
+    missivecancel_view_suffix = "missivecancel"
+    missivecancel_view_path = "<path:object_id>/missivecancel/"
+    missivecancel_view_object_tools = {"name": "Cancel", "url": "missivecancel"}
+    def missivecancel_view(self, request, object_id, form_url=None, extra_context=None):
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        obj = self.get_object(request, unquote(object_id), to_field)
+        extra_context = { "response": obj.cancel_missive(), }
+        return self.admincustom_view(request, object_id, extra_context,
+            urlname=self.get_admin_urlname(self.missivecancel_view_suffix),
+            template=self.missivecancel_view_template,
+        )
+
     def get_urls(self):
         from django.urls import path
         urls = super().get_urls()
@@ -110,6 +123,11 @@ class MissiveAdmin(BaseAdmin):
             path('<path:object_id>/html/', self.wrap(self.html_view), name='%s_%s_html' % info),
             path('<path:object_id>/check/', self.wrap(self.check_view), name='%s_%s_check' % info),
             path('<path:object_id>/documents/', self.wrap(self.check_documents), name='%s_%s_documents' % info),
+            path(
+                self.missivecancel_view_path,
+                self.wrap(self.missivecancel_view, object_tools=self.missivecancel_view_object_tools),
+                name=self.get_admin_urlname(self.missivecancel_view_suffix),
+            ),
         ]
         return my_urls + urls
 

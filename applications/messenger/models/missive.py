@@ -25,7 +25,7 @@ class Missive(AddressNoBase):
         ordering = ['-date_create',]
 
     def __str__(self):
-        return '%s (%s)' % (self.masking, self.subject)
+        return '%s (%s)' % (self.masking, self.mode)
 
     def need_to_send(self):
         if self.status in (choices.STATUS_PREPARE, choices.STATUS_FILETEST):
@@ -49,6 +49,9 @@ class Missive(AddressNoBase):
     def check_status(self):
         backend = self.get_backend()
         return getattr(backend, 'check_%s' % self.mode.lower())()
+
+    def cancel_missive(self):
+        return self.get_backend().cancel()
 
     @property
     def js_admin(self):
