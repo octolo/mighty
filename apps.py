@@ -60,10 +60,6 @@ class Config:
             'Trashmail',
             'MergeableAccount',
         ],
-        'dataprotect': [
-            'ServiceData',
-            'UserDataProtect',
-        ],
         'Logger': [
             'Log',
             'ModelChangeLog',
