@@ -55,14 +55,3 @@ def AfterDeleteAPhone(sender, instance, **kwargs):
             phone.default = True
             phone.save()
 post_delete.connect(AfterDeleteAPhone, UserPhone)
-
-# Signal that set the EmailAddres to verified=True
-from django.apps import apps
-if apps.is_installed('allauth'):
-    from allauth.account.models import EmailAddress
-    def EmailAddressSetVerified(sender, instance, **kwargs):
-        if instance.verified:
-            return
-        instance.verified = True
-        instance.save()
-    post_save.connect(EmailAddressSetVerified, sender=EmailAddress)
