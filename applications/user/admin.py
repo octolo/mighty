@@ -158,22 +158,6 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
             super().save_formset(request, form, formset, change)
 
-class InvitationAdmin(BaseAdmin):
-    raw_id_fields = ('user', 'by')
-    view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.invitation + ('missive_link',)}),)
-    list_display = ('__str__', 'status', 'user')
-    list_filter = ('status',)
-    readonly_fields = ('missive_link', 'token')
-    search_fields = ('last_name', 'first_name',) + tuple('user__%s' % field for field in fields.search)
-
-    def missive_link(self, obj):
-        from django.urls import reverse
-        from django.utils.html import format_html
-        link = reverse("admin:mighty_missive_change", args=[obj.missive.id])
-        return format_html('<a href="{}">{}</a>', link, obj.missive) if obj.missive else None
-    missive_link.short_description = 'Missive'
-
 class TrashmailAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': ('domain',)}),)

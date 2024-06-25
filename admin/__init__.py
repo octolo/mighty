@@ -162,9 +162,6 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
             self.inlines = [UserEmailAdmin, UserPhoneAdmin, InternetProtocolAdmin, UserAgentAdmin, UserAddressAdmin]
             return super(admin_user.UserAdmin, self).change_view(*args, **kwargs)
 
-    @admin.register(all_models.Invitation)
-    class InvitationAdmin(admin_user.InvitationAdmin): pass
-
     if user_conf.protect_trashmail:
         @admin.register(all_models.Trashmail)
         class TrashmailAdmin(admin_user.TrashmailAdmin): pass

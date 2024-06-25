@@ -3,10 +3,6 @@ from mighty import over_config
 from mighty.functions import setting
 
 class Config:
-    #user_or_inivitation_lct = {'app_label': 'mighty', 'model__in': ['user', 'userorinvitation']}
-    invitation_enable = True
-    invitation_days = 7
-    invitation_url = 'http://%(domain)s/user/invitation/%(uid)s/?token=%(token)s'
     cgu = True
     cgv = False
     protect_trashmail = True
@@ -14,7 +10,6 @@ class Config:
 
     class ForeignKey:
         missive = 'mighty.Missive'
-        invitation = 'mighty.Invitation'
         nationalities = 'mighty.Nationality'
         # Need cleanup
         email = 'mighty.UserEmail'

@@ -28,11 +28,6 @@ def TenantAssociation(**kwargs):
                     related_name=class_name + "_roles_related",
                     blank=True,
                 )
-            if kwargs.get('invitation_related'):
-                invitation = models.ForeignKey(conf.ForeignKey.invitation,
-                    related_name=class_name + "_invitation_related",
-                    on_delete=models.SET_NULL, blank=True, null=True,
-                )
 
             class Meta(obj.Meta):
                 abstract = True

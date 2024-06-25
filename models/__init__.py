@@ -109,7 +109,6 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     class InternetProtocol(models_user.InternetProtocol): pass
     class UserAgent(models_user.UserAgent): pass
     class UserAddress(models_user.UserAddress): pass
-    class Invitation(models_user.Invitation): pass
     if user_conf.protect_trashmail:
         class Trashmail(models_user.Trashmail): pass
     # Draft

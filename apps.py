@@ -21,7 +21,6 @@ class Config:
     exclude = exclude
     enable_supervision = False
     enable_channel = False
-    user_or_invitation = 'auth.UserOrInvitation'
     jwt_enable = False
     days_in_year = 365.25
     backend_task = 'mighty.backends'
@@ -38,7 +37,6 @@ class Config:
         'messenger': [
             'Missive',
             'Notification',
-            'Invitation',
             'Template',
         ],
         'languages/translations': [

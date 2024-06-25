@@ -9,7 +9,7 @@ class RoleManager(models.Manager.from_queryset(models.QuerySet)):
                 sql_count=models.Count(config.count_related, distinct=True),
             )
 
-Selected_related = ('group', 'user', 'invitation')
+Selected_related = ('group', 'user',)
 Prefetch_related = ('roles',)
 class TenantManager(models.Manager.from_queryset(models.QuerySet)):
     def get_queryset(self):

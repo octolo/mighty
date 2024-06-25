@@ -7,14 +7,10 @@ from django.contrib.auth import get_user_model
 class Config:
     count_related = "roles_tenant"
     ordering = ("id",)
-    invitation_enable = False
-    invitation_days = 7
-    invitation_url = 'http://%(domain)s/user/tenant/%(uid)s/?token=%(token)s'
     search_filter = {}
     tenant_user_related = None
     tenant_roles_related = None
     tenant_group_related = None
-    tenant_invitation_related = None
     roles = [
         {
             'name': 'manager',
@@ -48,11 +44,8 @@ class Config:
     class ForeignKey:
         group = setting('TENANT_GROUP', 'auth.Group')
         role = setting('TENANT_ROLE', 'mighty.Role')
-        fksetting = setting('TENANT_SETTING', 'mighty.TenantSetting')
-        #alternate = setting('TENANT_ALTERNATE', 'mighty.TenantAlternate')
         tenant = setting('TENANT_MODEL', 'mighty.Tenant')
         missive = setting('TENANT_MISSIVE', 'mighty.Missive')
-        invitation = setting('TENANT_INVITATION', 'mighty.TenantInvitation')
         nationalities = setting('TENANT_NATIONALITY', 'mighty.Nationality')
         user = settings.AUTH_USER_MODEL
         optional = False

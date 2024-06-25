@@ -7,7 +7,6 @@ class Config:
     sender_email = None
     reply_name = None
     reply_email = None
-    user_or_invitation = 'mighty.UserOrInvitation'
     missive = 'mighty.Missive'
     delimiter = '__'
     missive_backend = settings.MISSIVE_BACKEND if hasattr(settings, 'MISSIVE_BACKEND') else 'mighty.applications.messenger.backends'

@@ -34,8 +34,6 @@ cgu = _(
         conf.cgu_path, conf.politic_path
     ))
 
-v_invitation = _("Invitation")
-vp_invitation = _("Invitations")
 
 error_phone_already = _("user with this Phone already exists.")
 error_email_already = _("user with this Email already exists.")

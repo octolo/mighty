@@ -56,61 +56,6 @@ def AfterDeleteAPhone(sender, instance, **kwargs):
             phone.save()
 post_delete.connect(AfterDeleteAPhone, UserPhone)
 
-if UserConfig.invitation_enable:
-    from django.template.loader import render_to_string
-    from mighty.apps import MightyConfig
-    from mighty.models import Invitation
-    from mighty.applications.user import choices
-
-    def OnStatusChange(sender, instance, **kwargs):
-        if instance.status == choices.STATUS_ACCEPTED:
-            if instance.user and instance.email not in instance.user.get_emails():
-                getattr(instance.user, UserConfig.ForeignKey.email_related_name_attr).create(email=instance.email)
-            elif not instance.user:
-                post_save.disconnect(OnStatusChange, sender=Invitation)
-                instance.user, status = UserModel.objects.get_or_create(
-                    last_name=instance.last_name,
-                    first_name=instance.first_name,
-                    email=instance.email,
-                    phone=instance.phone,
-                )
-                instance.user.save()
-                instance.save()
-                post_save.connect(OnStatusChange, Invitation)
-    post_save.connect(OnStatusChange, Invitation)
-
-    def SendMissiveInvitation(sender, instance, **kwargs):
-        instance.status = choices.STATUS_ACCEPTED if instance.user else instance.status
-        save_need = False
-        if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
-            from mighty.models import Missive
-            if instance.status in [choices.STATUS_TOSEND, choices.STATUS_PENDING]:
-                if not instance.missive:
-                    save_need = True
-                    instance.missive = Missive(
-                        content_type=instance.missives.content_type,
-                        object_id=instance.id,
-                        target=instance.email,
-                        subject='subject: Invitation',
-                    )
-                elif instance.is_expired:
-                    instance.new_token()
-                    instance.missive.prepare()
-                ctx = {
-                    "website": MightyConfig.domain,
-                    "by": instance.by.representation,
-                    "link": UserConfig.invitation_url % {"domain": MightyConfig.domain,  "uid": instance.uid, "token": instance.token}
-                }
-                instance.status = choices.STATUS_PENDING
-                instance.missive.html = render_to_string('user/invitation.html', ctx)
-                instance.missive.txt = render_to_string('user/invitation.txt', ctx)
-                instance.missive.save()
-        if save_need:
-            post_save.disconnect(SendMissiveInvitation, sender=Invitation)
-            instance.save()
-            post_save.connect(SendMissiveInvitation, Invitation)
-    post_save.connect(SendMissiveInvitation, Invitation)
-
 # Signal that set the EmailAddres to verified=True
 from django.apps import apps
 if apps.is_installed('allauth'):

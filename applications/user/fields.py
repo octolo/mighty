@@ -19,7 +19,6 @@ serializer = ('uid',) + fields.image_url + (
 if conf.cgu: serializer+('cgu',)
 if conf.cgv: serializer+('cgv',)
 
-invitation = ('last_name', 'first_name', 'email', 'phone', 'user', 'by', 'token', 'status')
 profile = fields.image_url + (
     'username',
     'last_name',

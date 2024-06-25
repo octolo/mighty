@@ -1,13 +1,2 @@
-tenant = ('group', 'user', 'sync', 'invitation', 'roles')
-#tenant_alternate = ('tenant', 'alternate', 'position')
+tenant = ('group', 'user', 'sync', 'roles')
 role = ('group', 'name', 'number', 'three_first')
-tenant_invitation = ('group', 'email', 'by', 'roles', 'tenant', 'status', 'token')
-
-tenant_setting = (
-    "group",
-    "name",
-    "config_char",
-    "config_json",
-    "config_rich",
-    "config_text",
-)
