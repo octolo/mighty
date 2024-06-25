@@ -1,0 +1,1 @@
+tenant = ('group', 'user', 'sync',)

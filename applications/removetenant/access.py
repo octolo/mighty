@@ -17,17 +17,13 @@ class TenantAccess(RequestAccess):
     def tenant_model(self):
         return get_tenant_model(TenantConfig.ForeignKey.tenant)
 
-    @property
-    def role_model(self):
-        return get_tenant_model(TenantConfig.ForeignKey.role)
-
     def get_group_model(self, uid, field="uid"):
         return self.group_model.objects.get(**{field: uid})
 
     # Query filter
     def Q_current_group(self, prefix=""):
         return Q(**{prefix+self.group_way: self.current_group})
-    
+
     def Q_groups_associated(self, prefix=""):
         return Q(**{prefix+self.group_way+"__in": self.tenant_groups})
 
@@ -39,15 +35,6 @@ class TenantAccess(RequestAccess):
     def is_tenant(self, group, pk=None):
         if pk: return self.request_access.user.user_tenant.filter(**{"group__"+pk: group}).exists()
         return self.request_access.user.user_tenant.filter(group=group).exists()
-
-    def has_role(self, role, pk=None):
-        if pk: return self.request_access.user.user_tenant.filter(**{"roles__"+pk: role}).exists()
-        return self.request_access.user.user_tenant.filter(roles=role).exists()
-
-    def has_one_role(self, roles, pk=None):
-        if pk: return self.request_access.user.user_tenant.filter(**{"roles__"+pk+"__in": roles}).exists()
-        return self.request_access.user.user_tenant.filter(roles__in=roles).exists()
-
 
     # Properties
     @property
@@ -65,14 +52,6 @@ class TenantAccess(RequestAccess):
     @property
     def current_group_uid(self):
         return self.current_group.uid
-
-    @property
-    def tenant_roles(self):
-        return self.role_model.objects.filter(roles_tenant__user=self.request_access.user)
-
-    @property
-    def tenant_roles_pk(self):
-        return self.role_model.objects.filter(roles_tenant__user=self.request_access.user).values_list("pk", flat=True)
 
     @property
     def current_tenant_group(self):

@@ -1,10 +1,10 @@
 from mighty.management import CSVModelCommand
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.tenant import get_tenant_model
+from octolo.models import Role
 
 TenantModel = get_tenant_model(TenantConfig.ForeignKey.tenant)
 TenantGroup = get_tenant_model(TenantConfig.ForeignKey.group)
-RoleModel = get_tenant_model(TenantConfig.ForeignKey.role)
 
 class Command(CSVModelCommand):
     def add_arguments(self, parser):
@@ -23,7 +23,7 @@ class Command(CSVModelCommand):
         super().handle(*args, **options)
 
     def add_role(self, tenant):
-        roles = RoleModel.objects.filter(group=self.group, name__in=self.role)
+        roles = Role.objects.filter(group=self.group, name__in=self.role)
         if len(roles):
             tenant.roles.add(*roles)
 

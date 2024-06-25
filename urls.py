@@ -56,14 +56,6 @@ if "mighty.applications.messenger" in settings.INSTALLED_APPS:
     if hasattr(urls_messenger, 'wbh_urlpatterns'):
         wbh_urlpatterns += urls_messenger.wbh_urlpatterns
 
-# Enable app tenant
-if "mighty.applications.tenant" in settings.INSTALLED_APPS:
-    from mighty.applications.tenant import urls as urls_tenant
-    if hasattr(urls_tenant, 'urlpatterns'):
-        urlpatterns += urls_tenant.urlpatterns
-    if hasattr(urls_tenant, 'api_urlpatterns'):
-        api_urlpatterns += urls_tenant.api_urlpatterns
-
 # Enable app dataprotect
 if "mighty.applications.dataprotect" in settings.INSTALLED_APPS:
     from mighty.applications.dataprotect import urls as urls_dataprotect

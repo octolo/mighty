@@ -22,7 +22,6 @@ from mighty.applications.user import translates as _, fields, choices, validator
 from mighty.applications.user import username_generator_v2
 from mighty.applications.messenger.decorators import AccessToMissive
 from mighty.applications.nationality.fields import nationality as fields_nationality
-from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.user.apps import UserConfig
 
 from phonenumber_field.modelfields import PhoneNumberField
@@ -211,8 +210,8 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         def language_pref(self):
             return self.language.alpha2.lower() if self.language else None
 
-    if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
-        current_tenant = models.ForeignKey(TenantConfig.ForeignKey.tenant, on_delete=models.SET_NULL, blank=True, null=True, related_name='current_tenant')
+    #if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
+    #    current_tenant = models.ForeignKey(TenantConfig.ForeignKey.tenant, on_delete=models.SET_NULL, blank=True, null=True, related_name='current_tenant')
 
         @property
         def all_nationalities(self):

@@ -1,4 +1,4 @@
-from rest_framework.generics import RetrieveAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from mighty.views import ModelViewSet

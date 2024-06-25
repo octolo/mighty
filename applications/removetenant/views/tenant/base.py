@@ -52,10 +52,9 @@ class TenantBase:
             "status": tenant.status,
             "company_representative": tenant.company_representative,
             "sync": tenant.sync,
-            "group": {key: str(get_descendant_value(path, tenant)) 
-                for key,path in TenantConfig.group_api.items() 
+            "group": {key: str(get_descendant_value(path, tenant))
+                for key,path in TenantConfig.group_api.items()
                     if get_descendant_value(path, tenant)},
-            "roles": [{'uid': role.uid, 'name': role.name} for role in tenant.roles.all()]
         }
 
     def get_tenants(self):

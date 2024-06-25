@@ -6,12 +6,11 @@ from mighty.models.image import Image
 from mighty.functions import setting
 from mighty.applications.tenant import managers, translates as _, choices
 from mighty.applications.tenant.apps import TenantConfig as conf
-from mighty.applications.tenant.decorators import TenantAssociation
+from octolo.decorators.tenant import TenantAssociation
 
 CHAT_WITH_TENANTUSERS = "can_chat_with_tenant_users"
 @TenantAssociation(related_name='group_tenant', on_delete=models.CASCADE)
 class Tenant(Base, Image):
-    roles = models.ManyToManyField(conf.ForeignKey.role, related_name="roles_tenant", blank=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="user_tenant", null=True, blank=True)
     company_representative = models.CharField(max_length=255, blank=True, null=True)
     sync = models.CharField(max_length=3, choices=_.SYNC, default=_.MY)
