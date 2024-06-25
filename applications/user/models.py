@@ -231,6 +231,16 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     REQUIRED_FIELDS = conf.Field.required
     objects = UserManager()
 
+    def disable(self):
+        self.is_disable = True
+        self.is_active = False
+        self.save()
+
+    def enable(self):
+        self.is_disable = False
+        self.is_active = True
+        self.save()
+
     @property
     def image_url(self): return self.image.url if self.image else static("img/avatar.svg")
 

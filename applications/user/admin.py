@@ -102,7 +102,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
         'classes': ('wide',),
         'fields': get_form_fields()}),)
     readonly_fields = ('method', 'channel', "addr_backend_id", )
-    list_display = ('username', 'email', 'phone', 'date_create')
+    list_display = ('username', 'email', 'phone', 'date_create', 'is_active')
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
