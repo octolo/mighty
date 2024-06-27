@@ -73,7 +73,7 @@ else:
 
 class UserPhoneAdmin(admin.TabularInline):
     formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
-    fields = ('phone', 'default')
+    fields = ('phone', 'verified', 'default')
     extra = 0
 
 class InternetProtocolAdmin(admin.TabularInline):

@@ -8,6 +8,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db.models import Q
 from django.templatetags.static import static
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.utils.translation import gettext_lazy as _django
 
 from mighty.decorators import AccessToRegisterTask
 from mighty.models.base import Base
@@ -35,7 +36,7 @@ validate_phone = validators.validate_phone
 validate_trashmail = validators.validate_trashmail
 
 class Data(models.Model):
-    default = models.BooleanField(default=False)
+    default = models.BooleanField(verbose_name=_django("primary"), default=False)
 
     class Meta:
         abstract = True
@@ -77,11 +78,14 @@ class UserEmail(Data, Base):
     def masking(self):
         return masking_email(self.email)
 
+#FIXME: This model will be changed to Phones soon, as a copy from EmailAddress from Django Allauth, with a real phonenumbers field
 class UserPhone(Data, Base):
     enable_model_change_log = True
     user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
     phone = models.CharField(_.phone, unique=True, max_length=255)
     search_fields = ('phone',)
+    # Until we create a model like Django Allauth
+    verified = models.BooleanField(verbose_name=_django("verified"), default=False)
 
     def clean_phone(self):
         self.phone = re.sub('[^+0-9]+', '', self.phone)
