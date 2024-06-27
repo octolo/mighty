@@ -26,9 +26,10 @@ from mighty.applications.nationality.fields import nationality as fields_nationa
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.user.apps import UserConfig
 
-from phonenumber_field.modelfields import PhoneNumberField
-from datetime import datetime
-import uuid, logging, re
+from login import USERNAME_REGEX
+
+# from phonenumber_field.modelfields import PhoneNumberField
+import logging, re
 
 logger = logging.getLogger(__name__)
 
@@ -347,7 +348,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         # if not self.first_connection and self.last_login:
         #     self.first_connection = self.last_login
 
-        if self.username == "WILL_BE_GENERATED":
+        if self.username == "WILL_BE_GENERATED" or not re.match(USERNAME_REGEX, self.username):
             self.username = username_generator_v2(self.first_name, self.last_name, self.email)
 
         # Handle umique email and phone
