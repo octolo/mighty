@@ -71,13 +71,6 @@ if "mighty.applications.dataprotect" in settings.INSTALLED_APPS:
     if hasattr(urls_dataprotect, 'api_urlpatterns'):
         api_urlpatterns += urls_dataprotect.api_urlpatterns
 
-# Enable app twofactor
-if "mighty.applications.twofactor" in settings.INSTALLED_APPS:
-    from mighty.applications.twofactor import urls as urls_twofactor
-    urlpatterns += urls_twofactor.urlpatterns
-    if hasattr(urls_twofactor, 'api_urlpatterns'):
-        api_urlpatterns += urls_twofactor.api_urlpatterns
-
 # Enable app address
 if "mighty.applications.address" in settings.INSTALLED_APPS:
     from mighty.applications.address import urls as urls_address
@@ -98,16 +91,16 @@ if "mighty.applications.grapher" in settings.INSTALLED_APPS:
     from mighty.applications.grapher import urls as urls_grapher
     urlpatterns += urls_grapher.urlpatterns
 
-if conf.jwt_enable:
-    from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-    api_urlpatterns.append(
-        path('token/', include([
-            path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-            path('obtain/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-            path('verify/', TokenVerifyView.as_view(), name='token_verify'),
-        ]))
-    )
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+
+api_urlpatterns.append(
+    path('token/', include([
+        path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+        path('obtain/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+        path('verify/', TokenVerifyView.as_view(), name='token_verify'),
+    ]))
+)
 
 #Enable app chat
 #if "mighty.applications.chat" in settings.INSTALLED_APPS:
