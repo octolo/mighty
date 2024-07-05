@@ -221,7 +221,6 @@ class User(AbstractUser, Base, Image, AddressNoBase):
             self.email = None
 
         if not self.phone:
-            logger.info('UserModel: pre_save: phone is empty')
             self.phone = None
 
         # Assign the first connection date
