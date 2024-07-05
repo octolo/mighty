@@ -136,12 +136,15 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import admin as admin_user
     from mighty.applications.user.apps import UserConfig as user_conf
 
+    class UserAdmin(admin_user.UserAdmin): pass
     class UserEmailAdmin(admin_user.UserEmailAdmin): model = admin_user.UserEmailAdmin.model or all_models.UserEmail
-    class UserPhoneAdmin(admin_user.UserPhoneAdmin): model = all_models.UserPhone
+    class UserPhoneAdmin(admin_user.UserPhoneAdmin): model = admin_user.UserPhoneAdmin.model or all_models.UserPhone
+    @admin.register(all_models.UserPhone)
+    class UserPhoneAdminBase(admin_user.UserPhoneAdminBase):
+        pass
     class InternetProtocolAdmin(admin_user.InternetProtocolAdmin): model = all_models.InternetProtocol
     class UserAgentAdmin(admin_user.UserAgentAdmin): model = all_models.UserAgent
     class UserAddressAdmin(admin_user.UserAddressAdminInline): model = all_models.UserAddress
-    class UserAdmin(admin_user.UserAdmin): pass
     # Draft
     @admin.register(all_models.MergeableAccount)
     class MergeableAccountAdmin(admin_user.MergeableAccountAdmin): model = all_models.MergeableAccount

@@ -122,6 +122,11 @@ class UserMergeAccountsAdminForm(ModelFormDescriptable):
         dl.delete()
 
 class UserChangeForm(UserChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].disabled = True
+        self.fields['phone'].disabled = True
+
     def clean_email(self):
         email = self.cleaned_data["email"]
         return get_user_model().validate_unique_email(email, self.instance.id)

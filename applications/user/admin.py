@@ -1,44 +1,43 @@
+from django import forms
 from django.apps import apps
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import get_user_model
-
-from mighty import fields, translates as _
-from mighty.applications.user.apps import UserConfig
-from mighty.applications.user.forms import UserCreationForm, UserMergeAccountsAdminForm, UserChangeForm
-from mighty.admin.models import BaseAdmin
-from mighty.applications.user.choices import METHOD_BACKEND
-from mighty.applications.user import fields
-from mighty.applications.address.admin import AddressAdminInline
-from mighty.applications.address import fields as address_fields
-from mighty.applications.user.apps import UserConfig
-from mighty.applications.messenger.decorators import AdminMissivesView
-from mighty.decorators import AdminRegisteredTasksView
-from phonenumber_field.modelfields import PhoneNumberField
-from phonenumber_field.widgets import PhoneNumberPrefixWidget
-from mighty.applications.user import get_form_fields
+from django.contrib.auth.admin import UserAdmin
 from django.forms.models import BaseInlineFormSet
-from django import forms
+
+from mighty import translates as _
+from mighty.admin.models import BaseAdmin
+from mighty.applications.address import fields as address_fields
+from mighty.applications.messenger.decorators import AdminMissivesView
+from mighty.applications.user import get_user_phone_model
+from mighty.applications.user.apps import UserConfig
+from mighty.applications.user.choices import METHOD_BACKEND
+from mighty.applications.user.forms import UserCreationForm, UserMergeAccountsAdminForm, UserChangeForm
+from mighty.applications.user.apps import UserConfig
+from mighty.applications.user import get_form_fields
+from mighty.decorators import AdminRegisteredTasksView
+
+import logging
+logger = logging.getLogger(__name__)
+
+UserPhoneModel = get_user_phone_model()
 
 if apps.is_installed('allauth'):
     from allauth.account.models import EmailAddress
-
     class UserEmailAdminFormset(BaseInlineFormSet):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            for form in self.forms:
+                form.fields['primary'].disabled = True
+
         def save(self, commit=True):
             instances = super().save(commit=False)
-            for form in self.forms:
-                # Check if the form has changes and one of them is the 'primary' field
-                if form.has_changed() and 'primary' in form.changed_data:
-                    # Change user.email to the new primary email
-                    if form.cleaned_data['primary']:
-                        form.instance.user.email = form.instance.email
-                        form.instance.user.save()
-                        # invoke EmailAddress.set_as_primary() method
-                        form.instance.set_as_primary()
             if commit:
                 for instance in instances:
-                    instance.save()
+                    if not instance.primary:
+                        logger.info(f"UserEmailAdminFormset: save {instance.email}")
+                        instance.save()
                 self.save_m2m()
 
             return instances
@@ -60,21 +59,97 @@ if apps.is_installed('allauth'):
 
     class UserEmailAdmin(admin.TabularInline):
         form = UserEmailAdminForm
-        extra = 1
+        extra = 0
         can_delete = True
         fields = ['email', 'verified', 'primary']  #
         raw_id_fields = ("user",)
-        model = EmailAddress
+        model = EmailAddress #FIXME: Will be removed when old email models are removed (Messing up with __init__)
         formset = UserEmailAdminFormset
 else:
     class UserEmailAdmin(admin.TabularInline):
         fields = ('email', 'default')
         extra = 0
 
+from django.core.exceptions import ValidationError
+class UserPhoneAdminFormset(BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.forms:
+            form.fields['primary'].disabled = True
+
+    def save(self, commit=True):
+        instances = super().save(commit=False)
+        if commit:
+            for instance in instances:
+                if not instance.primary:
+                    logger.info(f"UserPhoneAdminFormset: save {instance.phone}")
+                    instance.save()
+            self.save_m2m()
+
+        return instances
+
+class UserPhoneAdminForm(forms.ModelForm):
+    class Meta:
+        model = UserPhoneModel
+        fields = '__all__'
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if instance.primary:
+            instance.set_as_primary()
+        if commit:
+            instance.save()
+        return instance
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        return get_user_model().validate_unique_phone(phone, self.instance.user_id)
+
 class UserPhoneAdmin(admin.TabularInline):
-    formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
-    fields = ('phone', 'verified', 'default')
+    form = UserPhoneAdminForm
     extra = 0
+    can_delete = True
+    fields = ['phone', 'verified', 'primary']
+    raw_id_fields = ("user",)
+    formset = UserPhoneAdminFormset
+
+#FIXME: Django-allauth implementation, need to be moved
+from django.core.exceptions import FieldDoesNotExist
+def get_user_search_fields():
+    ret = []
+    User = get_user_model()
+    candidates = [
+        "username",
+        "first_name",
+        "last_name",
+        "phone",
+    ]
+    for candidate in candidates:
+        try:
+            User._meta.get_field(candidate)
+            ret.append(candidate)
+        except FieldDoesNotExist:
+            pass
+    return ret
+#
+
+class UserPhoneAdminBase(BaseAdmin):
+    view_on_site = False
+    list_display = ("phone", "user", "primary", "verified")
+    list_filter = ("primary", "verified")
+    search_fields = []
+    raw_id_fields = ("user",)
+    actions = ["make_verified"]
+    form = UserPhoneAdminForm
+
+    def get_search_fields(self, request):
+        base_fields = get_user_search_fields()
+        return ["phone"] + list(map(lambda a: "user__" + a, base_fields))
+
+    def make_verified(self, request, queryset):
+        queryset.update(verified=True)
+
+    make_verified.short_description = "Mark selected phone addresses as verified"
 
 class InternetProtocolAdmin(admin.TabularInline):
     fields = ('ip',)
@@ -87,7 +162,7 @@ class UserAgentAdmin(admin.TabularInline):
     extra = 0
 
 class UserAddressAdminInline(admin.StackedInline):
-    fieldsets = ((None, {'classes': ('wide',), 'fields': ('default',)+address_fields}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': address_fields}),)
     extra = 0
     readonly_fields = ("addr_backend_id",)
 
