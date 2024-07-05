@@ -1,57 +1,184 @@
-from .custom import merge_accounts_signal
-
-# TO CLEAN
-
-from django.db.models.signals import post_save, pre_save, post_delete
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Case, When, Value, BooleanField
+from django.db.models.signals import post_save, pre_save, post_delete
+from django.dispatch import receiver
+
 
 from mighty.applications.logger import signals
+from mighty.applications.user import get_user_email_model, get_user_phone_model
 from mighty.applications.user.apps import UserConfig
-from mighty.applications.user import get_user_email_model
-from mighty.models import UserPhone
 
+from .custom import merge_accounts_signal
 
 UserModel = get_user_model()
 UserEmailModel = get_user_email_model()
+UserPhoneModel = get_user_phone_model()
+
+import logging
+logger = logging.getLogger(__name__)
 
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     pre_save.connect(signals.pre_change_log, UserModel)
     post_save.connect(signals.post_change_log, UserModel)
 
-#def AfterAddAnEmail(sender, instance, **kwargs):
-#    post_save.disconnect(AfterAddAnEmail, UserEmail)
-#    if instance.default or instance.user.email is None:
-#        UserEmail.objects.filter(user=instance.user).first()
-#        instance.user.email = instance.email
-#        instance.user.save()
-#    post_save.connect(AfterAddAnEmail, UserEmail)
-#post_save.connect(AfterAddAnEmail, UserEmail)
+@receiver(post_save, sender=UserModel)
+def create_user_identifiers(sender, instance, created, **kwargs):
+    if created and (instance.email or instance.phone):
+        # If the user is created, create a primary email and/or phone
+        with transaction.atomic():
+            try:
+                if instance.email:
+                    logger.info(f"create_user_identifiers: create primary email {instance.email}")
+                    UserEmailModel.objects.create(user=instance, email=instance.email, primary=True)
+                if instance.phone:
+                    logger.info(f"create_user_identifiers: create primary phone {instance.phone}")
+                    UserPhoneModel.objects.create(user=instance, phone=instance.phone, primary=True)
+            except Exception as e:
+                logger.error(f"create_user_identifiants: {e}")
 
-def AfterDeleteAnEmail(sender, instance, **kwargs):
-    if not UserEmailModel.objects.filter(user=instance.user, **{UserConfig.ForeignKey.email_primary: True}).count():
-        email = UserEmailModel.objects.filter(user=instance.user).first()
-        if email:
-            if apps.is_installed('allauth'):
-                email.set_as_primary()
+# This signal help us to monitor and find user based on their primary and verified email
+# At the moment it does not imply any action
+@receiver(post_delete, sender=UserEmailModel)
+def SetPrimaryEmailAddressAfterDeleteEmail(sender, instance, **kwargs):
+    user = instance.user
+
+    # Check if the user has any primary email left
+    if not UserEmailModel.objects.filter(user=user, **{UserConfig.ForeignKey.email_primary: True}).exists():
+
+        # Find the first verified email, or the first non-verified if none are verified
+        email = (
+            UserEmailModel.objects.filter(user=user)
+            .annotate(
+                is_verified=Case(
+                    When(verified=True, then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                )
+            )
+            .order_by('-is_verified')
+            .first()
+        )
+
+        with transaction.atomic():
+            if email:
+                logger.info(f"SetPrimaryEmailAddressAfterDeleteEmail: set {email.email} as primary email")
+                if apps.is_installed('allauth'):
+                    email.set_as_primary()
+                else:
+                    #FIXME: Temporary until other email models are removed, not used either way
+                    setattr(email, UserConfig.ForeignKey.email_primary, True)
+                    email.save()
             else:
-                setattr(instance.user, UserConfig.ForeignKey.email_primary, True)
-                email.save()
-post_delete.connect(AfterDeleteAnEmail, UserEmailModel)
+                logger.info(f"SetPrimaryEmailAddressAfterDeleteEmail: no email found, clear email field {user.email}")
+                # If no verified email is found, clear the email field
+                user.email = None
+                user.save()
 
-#def AfterAddAPhone(sender, instance, **kwargs):
-#    post_save.disconnect(AfterAddAPhone, UserPhone)
-#    if instance.default or instance.user.phone is None:
-#        UserPhone.objects.filter(user=instance.user).exclude(id=instance.id).update(default=False)
-#        instance.user.phone = instance.phone
-#        instance.user.save()
-#    post_save.connect(AfterAddAPhone, UserPhone)
-#post_save.connect(AfterAddAPhone, UserPhone)
+@receiver(post_delete, sender=UserPhoneModel)
+def SetPrimaryUserPhoneAfterDeletePhone(sender, instance, **kwargs):
+    user = instance.user
 
-def AfterDeleteAPhone(sender, instance, **kwargs):
-    if not UserPhone.objects.filter(user=instance.user, default=True).count():
-        phone = UserPhone.objects.filter(user=instance.user).first()
-        if phone:
-            phone.default = True
-            phone.save()
-post_delete.connect(AfterDeleteAPhone, UserPhone)
+    # Check if the user has any primary phone left
+    if not UserPhoneModel.objects.filter(user=user, primary=True).exists():
+
+        # Find the first verified phone, or the first non-verified if none are verified
+        phone = (
+            UserPhoneModel.objects.filter(user=user)
+            .annotate(
+                is_verified=Case(
+                    When(verified=True, then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                )
+            )
+            .order_by('-is_verified')
+            .first()
+        )
+
+        with transaction.atomic():
+            if phone:
+                logger.info(f"SetPrimaryPhoneNumberAfterDeletePhone: set {phone.phone} as primary phone")
+                phone.set_as_primary()
+            else:
+                logger.info(f"SetPrimaryPhoneNumberAfterDeletePhone: no phone found, clear phone field {user.phone}")
+                # If no verified phone is found, clear the phone field
+                # Upodate user phone field
+                UserModel.objects.filter(pk=user.pk).update(phone=None)
+
+@receiver(post_save, sender=UserEmailModel)
+def SetPrimaryUserEmailAfterSaveEmail(sender, instance, created, **kwargs):
+    user = instance.user
+    # Check if the user has any primary email left
+    if not UserEmailModel.objects.filter(user=user, **{UserConfig.ForeignKey.email_primary: True}).exists():
+        # If the email is created and no other email exists, set it as primary
+        if created and not user.email:
+            with transaction.atomic():
+                logger.info(f"SetPrimaryUserEmailAfterSaveEmail: set {instance.email} as primary email")
+                instance.set_as_primary()
+        else:
+            # Find the first verified email, or the first non-verified if none are verified
+            email = (
+                UserEmailModel.objects.filter(user=user).exclude(pk=instance.pk)
+                .annotate(
+                    is_verified=Case(
+                        When(verified=True, then=Value(True)),
+                        default=Value(False),
+                        output_field=BooleanField(),
+                    )
+                )
+                .order_by('-is_verified')
+                .first()
+            )
+            # If a email is found, set it as primary
+            if email:
+                logger.info(f"SetPrimaryUserEmailAfterSaveEmail: set {email.email} as primary email")
+                email.set_as_primary()
+            # if not email is found, set the current email as primary
+            else:
+                logger.info(f"SetPrimaryUserEmailAfterSaveEmail: no other email found, force set {instance.email} as primary email")
+                # If no verified email is found, clear the email field
+                instance.set_as_primary()
+
+@receiver(post_save, sender=UserPhoneModel)
+def SetPrimaryUserPhoneAfterSavePhone(sender, instance, created, **kwargs):
+    user = instance.user
+    # Check if the user has any primary phone left
+    if not UserPhoneModel.objects.filter(user=user, primary=True).exists():
+        # If the phone is created and no other phone exists, set it as primary
+        if created and not user.phone:
+            with transaction.atomic():
+                logger.info(f"SetPrimaryUserPhoneAfterSavePhone: set {instance.phone} as primary phone")
+                instance.set_as_primary()
+        else:
+            # Find the first verified phone, or the first non-verified if none are verified
+            phone = (
+                UserPhoneModel.objects.filter(user=user).exclude(pk=instance.pk)
+                .annotate(
+                    is_verified=Case(
+                        When(verified=True, then=Value(True)),
+                        default=Value(False),
+                        output_field=BooleanField(),
+                    )
+                )
+                .order_by('-is_verified')
+                .first()
+            )
+            # If a phone is found, set it as primary
+            if phone:
+                logger.info(f"SetPrimaryUserPhoneAfterSavePhone: set {phone.phone} as primary phone")
+                phone.set_as_primary()
+            # if not phone is found, set the current phone as primary
+            else:
+                logger.info(f"SetPrimaryUserPhoneAfterSavePhone: no other phone found, force set {instance.phone} as primary phone")
+                # If no verified phone is found, clear the phone field
+                instance.set_as_primary()
+
+
+@receiver(pre_save, sender=UserEmailModel)
+def handleFormSetAsPrimaryEmail(sender, instance, **kwargs):
+    if instance.primary:
+        # Remove primary from other emails
+        UserEmailModel.objects.filter(user=instance.user).exclude(pk=instance.pk).update(primary=False)
