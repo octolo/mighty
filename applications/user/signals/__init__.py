@@ -51,14 +51,7 @@ def SetPrimaryEmailAddressAfterDeleteEmail(sender, instance, **kwargs):
         # Find the first verified email, or the first non-verified if none are verified
         email = (
             UserEmailModel.objects.filter(user=user)
-            .annotate(
-                is_verified=Case(
-                    When(verified=True, then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField(),
-                )
-            )
-            .order_by('-is_verified')
+            .order_by('-verified')
             .first()
         )
 
@@ -87,14 +80,7 @@ def SetPrimaryUserPhoneAfterDeletePhone(sender, instance, **kwargs):
         # Find the first verified phone, or the first non-verified if none are verified
         phone = (
             UserPhoneModel.objects.filter(user=user)
-            .annotate(
-                is_verified=Case(
-                    When(verified=True, then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField(),
-                )
-            )
-            .order_by('-is_verified')
+            .order_by('-verified')
             .first()
         )
 
@@ -122,14 +108,7 @@ def SetPrimaryUserEmailAfterSaveEmail(sender, instance, created, **kwargs):
             # Find the first verified email, or the first non-verified if none are verified
             email = (
                 UserEmailModel.objects.filter(user=user).exclude(pk=instance.pk)
-                .annotate(
-                    is_verified=Case(
-                        When(verified=True, then=Value(True)),
-                        default=Value(False),
-                        output_field=BooleanField(),
-                    )
-                )
-                .order_by('-is_verified')
+                .order_by('-verified')
                 .first()
             )
             # If a email is found, set it as primary
@@ -156,14 +135,7 @@ def SetPrimaryUserPhoneAfterSavePhone(sender, instance, created, **kwargs):
             # Find the first verified phone, or the first non-verified if none are verified
             phone = (
                 UserPhoneModel.objects.filter(user=user).exclude(pk=instance.pk)
-                .annotate(
-                    is_verified=Case(
-                        When(verified=True, then=Value(True)),
-                        default=Value(False),
-                        output_field=BooleanField(),
-                    )
-                )
-                .order_by('-is_verified')
+                .order_by('-verified')
                 .first()
             )
             # If a phone is found, set it as primary
