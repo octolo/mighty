@@ -20,7 +20,11 @@
 {% block content %}
 {% if form.errors and not form.non_field_errors %}
 <p class="errornote">
-{% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+{% blocktrans count form_errors=form.errors.items|length %}
+    Please correct the error below.
+{% plural %}
+    Please correct the errors below.
+{% endblocktrans %}
 </p>
 {% endif %}
 
