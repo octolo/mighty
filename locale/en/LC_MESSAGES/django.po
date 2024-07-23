@@ -1,0 +1,2192 @@
+msgid ""
+msgstr ""
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-23 17:12+0200\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: mighty/admin/models.py:91 mighty/admin/models.py:234
+#, python-format
+msgid "View %s"
+msgstr ""
+
+#: mighty/applications/address/translates.py:3
+msgid "Address"
+msgstr ""
+
+#: mighty/applications/address/translates.py:4
+msgid "Addresses"
+msgstr ""
+
+#: mighty/applications/address/translates.py:7
+msgid "Allée"
+msgstr ""
+
+#: mighty/applications/address/translates.py:8
+msgid "Avenue"
+msgstr ""
+
+#: mighty/applications/address/translates.py:9
+msgid "Boulevard"
+msgstr ""
+
+#: mighty/applications/address/translates.py:10
+msgid "Carrefour"
+msgstr ""
+
+#: mighty/applications/address/translates.py:11
+msgid "Chemin"
+msgstr ""
+
+#: mighty/applications/address/translates.py:12
+msgid "Chaussée"
+msgstr ""
+
+#: mighty/applications/address/translates.py:13
+msgid "Cité"
+msgstr ""
+
+#: mighty/applications/address/translates.py:14
+msgid "Corniche"
+msgstr ""
+
+#: mighty/applications/address/translates.py:15
+msgid "Cours"
+msgstr ""
+
+#: mighty/applications/address/translates.py:16
+msgid "Domaine"
+msgstr ""
+
+#: mighty/applications/address/translates.py:17
+msgid "Descente"
+msgstr ""
+
+#: mighty/applications/address/translates.py:18
+msgid "Ecart"
+msgstr ""
+
+#: mighty/applications/address/translates.py:19
+msgid "Esplanade"
+msgstr ""
+
+#: mighty/applications/address/translates.py:20
+msgid "Faubourg"
+msgstr ""
+
+#: mighty/applications/address/translates.py:21
+msgid "Grande Rue"
+msgstr ""
+
+#: mighty/applications/address/translates.py:22
+msgid "Hameau"
+msgstr ""
+
+#: mighty/applications/address/translates.py:23
+msgid "Halle"
+msgstr ""
+
+#: mighty/applications/address/translates.py:24
+msgid "Impasse"
+msgstr ""
+
+#: mighty/applications/address/translates.py:25
+msgid "Lieu-dit"
+msgstr ""
+
+#: mighty/applications/address/translates.py:26
+msgid "Lotissement"
+msgstr ""
+
+#: mighty/applications/address/translates.py:27
+msgid "Marché"
+msgstr ""
+
+#: mighty/applications/address/translates.py:28
+msgid "Montée"
+msgstr ""
+
+#: mighty/applications/address/translates.py:29
+msgid "Passage"
+msgstr ""
+
+#: mighty/applications/address/translates.py:30
+msgid "Place"
+msgstr ""
+
+#: mighty/applications/address/translates.py:31
+msgid "Plaine"
+msgstr ""
+
+#: mighty/applications/address/translates.py:32
+msgid "Plateau"
+msgstr ""
+
+#: mighty/applications/address/translates.py:33
+msgid "Promenade"
+msgstr ""
+
+#: mighty/applications/address/translates.py:34
+msgid "Parvis"
+msgstr ""
+
+#: mighty/applications/address/translates.py:35
+msgid "Quartier"
+msgstr ""
+
+#: mighty/applications/address/translates.py:36
+msgid "Quai"
+msgstr ""
+
+#: mighty/applications/address/translates.py:37
+msgid "Résidence"
+msgstr ""
+
+#: mighty/applications/address/translates.py:38
+msgid "Ruelle"
+msgstr ""
+
+#: mighty/applications/address/translates.py:39
+msgid "Rocade"
+msgstr ""
+
+#: mighty/applications/address/translates.py:40
+msgid "Rond-point"
+msgstr ""
+
+#: mighty/applications/address/translates.py:41
+msgid "Route"
+msgstr ""
+
+#: mighty/applications/address/translates.py:42
+msgid "Rue"
+msgstr ""
+
+#: mighty/applications/address/translates.py:43
+msgid "Sente - Sentier"
+msgstr ""
+
+#: mighty/applications/address/translates.py:44
+msgid "Square"
+msgstr ""
+
+#: mighty/applications/address/translates.py:45
+msgid "Terre-plein"
+msgstr ""
+
+#: mighty/applications/address/translates.py:46
+msgid "Traverse"
+msgstr ""
+
+#: mighty/applications/address/translates.py:47
+msgid "Villa"
+msgstr ""
+
+#: mighty/applications/address/translates.py:48
+msgid "Village"
+msgstr ""
+
+#: mighty/applications/address/translates.py:51
+msgid "Adresse/Address"
+msgstr ""
+
+#: mighty/applications/address/translates.py:52
+msgid "Complément/Complement"
+msgstr ""
+
+#: mighty/applications/address/translates.py:53
+msgid "Ville/City"
+msgstr ""
+
+#: mighty/applications/address/translates.py:54
+msgid "Code postal/Postal code"
+msgstr ""
+
+#: mighty/applications/address/translates.py:55
+msgid "Etat/State"
+msgstr ""
+
+#: mighty/applications/address/translates.py:56
+msgid "Code de de l'état/State code"
+msgstr ""
+
+#: mighty/applications/address/translates.py:57
+msgid "Pays/Country"
+msgstr ""
+
+#: mighty/applications/address/translates.py:58
+msgid "Code du pays (Fr)/Country code (US)"
+msgstr ""
+
+#: mighty/applications/address/translates.py:59
+msgid "Cedex"
+msgstr ""
+
+#: mighty/applications/address/translates.py:60
+msgid "Code cedex/Cedex code"
+msgstr ""
+
+#: mighty/applications/address/translates.py:61
+msgid "Informations spéciales/Special information"
+msgstr ""
+
+#: mighty/applications/address/translates.py:62
+msgid "Indice/Index"
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:9
+msgid "Strictly Necessary Cookies."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:10
+msgid "Performance Cookies."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:11
+msgid "Functional Cookies."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:12
+msgid "Targeting Cookies."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:13
+msgid "Social Media Cookies."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:15
+msgid ""
+"These cookies are necessary for the website to function and cannot be "
+"switched off in our systems. They are usually only set in response to "
+"actions made by you which amount to a request for services, such as setting "
+"your privacy preferences, logging in or filling in forms. You can set your "
+"browser to block or alert you about these cookies, but some parts of the "
+"site will not then work. These cookies do not store any personally "
+"identifiable information."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:16
+msgid ""
+"These cookies allow us to count visits and traffic sources so we can measure "
+"and improve the performance of our site. They help us to know which pages "
+"are the most and least popular and see how visitors move around the site. "
+"All information these cookies collect is aggregated and therefore anonymous. "
+"If you do not allow these cookies we will not know when you have visited our "
+"site, and will not be able to monitor its performance."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:17
+msgid ""
+"These cookies enable the website to provide enhanced functionality and "
+"personalisation. They may be set by us or by third party providers whose "
+"services we have added to our pages. If you do not allow these cookies then "
+"some or all of these services may not function properly."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:18
+msgid ""
+"These cookies may be set through our site by our advertising partners. They "
+"may be used by those companies to build a profile of your interests and show "
+"you relevant adverts on other sites. They do not store directly personal "
+"information, but are based on uniquely identifying your browser and internet "
+"device. If you do not allow these cookies, you will experience less targeted "
+"advertising."
+msgstr ""
+
+#: mighty/applications/dataprotect/choices.py:19
+msgid ""
+"These cookies are set by a range of social media services that we have added "
+"to the site to enable you to share our content with your friends and "
+"networks. They are capable of tracking your browser across other sites and "
+"building up a profile of your interests. This may impact the content and "
+"messages you see on other websites you visit. If you do not allow these "
+"cookies you may not be able to use or see these sharing tools."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:3
+msgid "Key"
+msgstr ""
+
+#: mighty/applications/extend/translates.py:4
+msgid "keys"
+msgstr ""
+
+#: mighty/applications/extend/translates.py:6
+msgid "key type"
+msgstr ""
+
+#: mighty/applications/extend/translates.py:8
+msgid ""
+"It is a 64-bit integer, much like an IntegerField except that it is "
+"guaranteed to fit numbers from -9223372036854775808 to 9223372036854775807."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:9
+msgid "A field to store raw binary data."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:10
+msgid "A true/false field."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:11
+msgid "It is a date, represented in Python by a datetime.date instance."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:12
+msgid "A date, represented in Python by a datetime.date instance"
+msgstr ""
+
+#: mighty/applications/extend/translates.py:13
+msgid ""
+"It is a fixed-precision decimal number, represented in Python by a Decimal "
+"instance."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:14
+msgid "A field for storing periods of time."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:15
+msgid "It is a CharField that checks that the value is a valid email address."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:16
+msgid "It is a file-upload field."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:17
+msgid ""
+"It is a floating-point number represented in Python by a float instance."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:18
+msgid ""
+"It inherits all attributes and methods from FileField, but also validates "
+"that the uploaded object is a valid image."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:19
+msgid ""
+"It is an integer field. Values from -2147483648 to 2147483647 are safe in "
+"all databases supported by Django."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:20
+msgid ""
+"It is like an IntegerField, but only allows values under a certain (database-"
+"dependent) point."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:21
+msgid ""
+"A large text field. The default form widget for this field is a Textarea."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:22
+msgid "A time, represented in Python by a datetime.time instance."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:23
+msgid "A CharField for a URL, validated by URLValidator."
+msgstr ""
+
+#: mighty/applications/extend/translates.py:25
+msgid "Value"
+msgstr ""
+
+#: mighty/applications/extend/translates.py:26
+msgid "Values"
+msgstr ""
+
+#: mighty/applications/logger/templates/admin/change_logs.html:17
+#: mighty/applications/messenger/templates/admin/missive_check.html:17
+#: mighty/applications/messenger/templates/admin/missivecancel.html:9
+#: mighty/applications/messenger/templates/admin/missives.html:17
+#: mighty/applications/shop/templates/admin/do_bill.html:6
+#: mighty/applications/shop/templates/admin/shop_exports.html:13
+#: mighty/applications/shop/templates/admin/try_to_charge.html:6
+#: mighty/applications/user/templates/admin/merge_accounts.html:17
+#: mighty/templates/admin/cache_field.html:6
+#: mighty/templates/admin/disable_confirmation.html:14
+#: mighty/templates/admin/disable_selected_confirmation.html:14
+#: mighty/templates/admin/enable_confirmation.html:14
+#: mighty/templates/admin/enable_selected_confirmation.html:14
+#: mighty/templates/admin/logs_field.html:6
+#: mighty/templates/admin/oldapp_index.html:9
+#: mighty/templates/admin/oldmulti_app_index.html:9
+#: mighty/templates/admin/registered_tasks.html:17
+#: mighty/templates/admin/remove_18102023_base.html:61
+#: mighty/templates/admin/show_urls.html:18
+#: mighty/templates/admin/supervision/supervision.html:22
+msgid "Home"
+msgstr ""
+
+#: mighty/applications/logger/translates.py:3
+msgid "log"
+msgstr ""
+
+#: mighty/applications/logger/translates.py:4
+msgid "logs"
+msgstr ""
+
+#: mighty/applications/logger/translates.py:6
+msgid ""
+"The tuple of arguments merged into msg to produce message, or a dict whose "
+"values are used for the merge (when there is only one argument, and it is a "
+"dictionary)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:7
+msgid ""
+"Human-readable time when the LogRecord was created. By default this is of "
+"the form '2003-07-08 16:49:45,896' (the numbers after the comma are "
+"millisecond portion of the time)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:8
+msgid "Time when the LogRecord was created (as returned by time.time())."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:9
+msgid ""
+"Exception tuple (à la sys.exc_info) or, if no exception has occurred, None."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:10
+msgid "Filename portion of pathname."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:11
+msgid "Name of function containing the logging call."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:12
+msgid ""
+"Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', "
+"'CRITICAL')."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:13
+msgid ""
+"Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, "
+"CRITICAL)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:14
+msgid "Source line number where the logging call was issued (if available)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:15
+msgid ""
+"The logged message, computed as msg % args. This is set when Formatter."
+"format() is invoked."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:16
+msgid "Module (name portion of filename)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:17
+msgid "Millisecond portion of the time when the LogRecord was created."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:18
+msgid ""
+"The format string passed in the original logging call. Merged with args to "
+"produce message, or an arbitrary object (see Utilisation d'objets "
+"arbitraires comme messages)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:19
+msgid "Name of the logger used to log the call."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:20
+msgid ""
+"Full pathname of the source file where the logging call was issued (if "
+"available)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:21
+msgid "Process ID (if available)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:22
+msgid "Process name (if available)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:23
+msgid ""
+"Time in milliseconds when the LogRecord was created, relative to the time "
+"the logging module was loaded."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:24
+msgid ""
+"Stack frame information (where available) from the bottom of the stack in "
+"the current thread, up to and including the stack frame of the logging call "
+"which resulted in the creation of this record."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:25
+msgid "Thread ID (if available)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:26
+msgid "Thread name (if available)."
+msgstr ""
+
+#: mighty/applications/logger/translates.py:28
+msgid "change log"
+msgstr ""
+
+#: mighty/applications/logger/translates.py:29
+msgid "changes logs"
+msgstr ""
+
+#: mighty/applications/logger/translates.py:31
+msgid "access log"
+msgstr ""
+
+#: mighty/applications/logger/translates.py:32
+msgid "access logs"
+msgstr ""
+
+#: mighty/applications/logger/translates.py:34
+msgid "access date"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:3
+msgid "The server is unable to connect."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:4
+msgid "Connection refused or inability to open an SMTP stream."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:5
+msgid "System status message or help reply."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:6
+msgid "A response to the HELP command."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:7
+msgid "The server is ready."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:8
+msgid ""
+"The server is closing its transmission channel. It can come with side "
+"messages like “Goodbye” or “Closing connection”."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:9
+msgid ""
+"Its typical side message is “Requested mail action okay completed”: meaning "
+"that the server has transmitted a message."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:10
+msgid ""
+"“User not local will forward”: the recipient’s account is not on the present "
+"server, so it will be relayed to another."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:11
+msgid ""
+"The server cannot verify the user, but it will try to deliver the message "
+"anyway."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:12
+msgid ""
+"The side message can be very cryptic (“Start mail input end <CRLF>.<CRLF>”). "
+"It’s the typical response to the DATA command."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:13
+msgid ""
+"“Timeout connection problem”: there have been issues during the message "
+"transfer."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:14
+msgid ""
+"The service is unavailable due to a connection problem: it may refer to an "
+"exceeded limit of simultaneous connections, or a more general temporary "
+"problem."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:15
+msgid "The recipient’s mailbox has exceeded its storage limit."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:16
+msgid ""
+"Not enough space on the disk, or an “out of memory” condition due to a file "
+"overload."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:17
+msgid ""
+"Typical side-message: “The recipient’s Exchange Server incoming mail queue "
+"has been stopped”."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:18
+msgid "The recipient’s server is not responding."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:19
+msgid "The connection was dropped during the transmission."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:20
+msgid ""
+"The maximum hop count was exceeded for the message: an internal loop has "
+"occurred."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:21
+msgid ""
+"Your outgoing message timed out because of issues concerning the incoming "
+"server."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:22
+msgid "A routing error."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:23
+msgid ""
+"Requested action not taken – The user’s mailbox is unavailable. The mailbox "
+"has been corrupted or placed on an offline server, or your email hasn’t been "
+"accepted for IP problems or blacklisting."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:24
+msgid ""
+"Requested action aborted – Local error in processing. Your ISP’s server or "
+"the server that got a first relay from yours has encountered a connection "
+"problem."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:25
+msgid ""
+"Too many emails sent or too many recipients: more in general, a server "
+"storage limit exceeded."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:26
+msgid ""
+"An error of your mail server, often due to an issue of the local anti-spam "
+"filter."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:27
+msgid "A syntax error: the server couldn’t recognize the command."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:28
+msgid ""
+"Another syntax error, not in the command but in its parameters or arguments."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:29
+msgid "The command is not implemented."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:30
+msgid ""
+"The server has encountered a bad sequence of commands, or it requires an "
+"authentication."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:31
+msgid "A command parameter is not implemented."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:32
+#: mighty/applications/messenger/choices.py:33
+msgid "Bad email address."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:34
+msgid ""
+"A DNS error: the host server for the recipient’s domain name cannot be found."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:35
+msgid ""
+"Address type is incorrect: another problem concerning address misspelling. "
+"In few cases, however, it’s related to an authentication issue."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:36
+msgid "The total size of your mailing exceeds the recipient server’s limits."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:37
+msgid ""
+"Normally, an authentication problem. But sometimes it’s about the "
+"recipient’s server blacklisting yours, or an invalid email address."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:38
+msgid ""
+"The recipient address rejected your message: normally, it’s an error caused "
+"by an anti-spam filter."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:39
+msgid "It usually defines a non-existent email address on the remote side."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:40
+msgid ""
+"“User not local or invalid address – Relay denied”. Meaning, if both your "
+"address and the recipient’s are not locally hosted by the server, a relay "
+"can be interrupted."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:41
+msgid ""
+"“Requested mail actions aborted – Exceeded storage allocation”: simply put, "
+"the recipient’s mailbox has exceeded its limits."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:42
+msgid ""
+"“Requested action not taken – Mailbox name invalid”. That is, there’s an "
+"incorrect email address into the recipients line."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:43
+msgid ""
+"This means that the transaction has failed. It’s a permanent error and the "
+"server will not try to send the message again."
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:57
+msgid "Prepare"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:58
+msgid "Sent"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:59
+msgid "Pending"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:60
+msgid "Processed"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:61
+msgid "Received"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:62
+msgid "Accepted"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:63
+msgid "Rejected"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:64
+msgid "Cancelled"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:65
+msgid "Open"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:66
+#: mighty/applications/shop/choices.py:82
+msgid "Error"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:67
+msgid "File test"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:78
+#: mighty/applications/messenger/translates.py:6
+#: mighty/applications/twofactor/translates.py:6
+msgid "email"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:79
+msgid "emailar"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:80
+#: mighty/applications/messenger/translates.py:7
+#: mighty/applications/twofactor/translates.py:7
+msgid "sms"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:81
+#: mighty/applications/messenger/translates.py:8
+msgid "postal"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:82
+msgid "postalar"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:83
+msgid "web"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:84
+msgid "app"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:88
+msgid "economic"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:89
+msgid "normal"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:90
+msgid "recommanded"
+msgstr ""
+
+#: mighty/applications/messenger/choices.py:91
+msgid "urgent"
+msgstr ""
+
+#: mighty/applications/messenger/templates/admin/missivecancel.html:13
+msgid "Document editor"
+msgstr ""
+
+#: mighty/applications/messenger/templates/admin/missives.html:21
+msgid "Missives"
+msgstr ""
+
+#: mighty/applications/messenger/translates.py:3
+msgid "Check status"
+msgstr ""
+
+#: mighty/applications/messenger/translates.py:9
+msgid "phone"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:3
+msgid "nationality"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:4
+msgid "nationalities"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:6
+msgid "country"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:7
+msgid "alpha2"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:8
+msgid "alpha3"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:9
+msgid "numeric"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:10
+msgid "numbering"
+msgstr ""
+
+#: mighty/applications/nationality/translates.py:11
+msgid "flag"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:9
+msgid "Par utilisation"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:10
+#: mighty/applications/shop/choices.py:17
+msgid "Paiement mensuel"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:11
+#: mighty/applications/shop/choices.py:18
+msgid "Paiement annuel"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:12
+msgid "Gratuite"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:13
+msgid "Custom"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:66
+msgid "Nothing"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:67
+msgid "url"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:68
+msgid "To charge"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:69
+msgid "Paid"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:70
+msgid "Check"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:81
+msgid "Preparation"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:83
+msgid "Need action"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:84
+msgid "Valid"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:85
+msgid "Ready"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:86
+#: mighty/templates/admin/disable_confirmation.html:18
+#: mighty/translates/__init__.py:17
+msgid "Disable"
+msgstr ""
+
+#: mighty/applications/shop/choices.py:87
+msgid "Expired"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:3
+msgid "stock"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:4
+msgid "stocks"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:16
+msgid "IBAN empty"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:17
+msgid "BIC empty"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:19
+msgid "Propriétaire"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:20
+msgid "Méthode de paiement"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:21
+msgid "Date d'expiration"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:22
+msgid "Exports"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:23
+msgid "Numéro de carte"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:24
+msgid "IBAN"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:25
+msgid "BIC"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:26
+msgid "Signature"
+msgstr ""
+
+#: mighty/applications/shop/translates.py:27
+msgid "Cryptogramme"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:7
+#: mighty/applications/tenant/translates.py:14
+#: mighty/applications/user/choices.py:41
+#: mighty/applications/user/translates.py:13 mighty/choices.py:18
+msgid "pending"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:8
+#: mighty/applications/tenant/translates.py:17
+#: mighty/applications/user/choices.py:43
+#: mighty/applications/user/translates.py:14 mighty/choices.py:20
+msgid "refused"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:9
+#: mighty/applications/tenant/translates.py:15
+#: mighty/applications/user/choices.py:44
+#: mighty/applications/user/translates.py:15 mighty/choices.py:21
+msgid "accepted"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:16
+msgid "inactive"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:17
+msgid "active"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:18
+msgid "blocked"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:25
+msgid "alternate"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:26
+msgid "deputy"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:32
+msgid "Domaine principal de votre société"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:33
+msgid "Préfixe pour les emails envoyé par la plateforme prefix@domain.com"
+msgstr ""
+
+#: mighty/applications/tenant/choices.py:34
+msgid "https://domain.com"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:4
+msgid "role"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:5
+msgid "roles"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:8
+msgid "tenant"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:9
+msgid "tenants"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:11
+msgid "Can chat with tenant users"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:16
+msgid "cancelled"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:24
+msgid "my direction"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:25
+msgid "all directions"
+msgstr ""
+
+#: mighty/applications/tenant/translates.py:26
+msgid "no direction"
+msgstr ""
+
+#: mighty/applications/twofactor/templates/admin/choices.html:40
+#: mighty/applications/twofactor/templates/admin/search.html:23
+msgid ""
+"\n"
+"    Please correct the error below.\n"
+msgid_plural ""
+"\n"
+"    Please correct the errors below.\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: mighty/applications/twofactor/templates/admin/choices.html:60
+#: mighty/applications/twofactor/templates/admin/code.html:41
+#: mighty/applications/twofactor/templates/admin/search.html:43
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr ""
+
+#: mighty/applications/twofactor/templates/admin/choices.html:95
+#: mighty/applications/twofactor/templates/admin/code.html:56
+#: mighty/applications/twofactor/templates/admin/search.html:63
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: mighty/applications/twofactor/templates/admin/code.html:21
+msgid ""
+"\n"
+"  Please correct the error below.\n"
+msgid_plural ""
+"\n"
+"  Please correct the errors below.\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: mighty/applications/twofactor/templates/admin/code.html:60
+#: mighty/applications/twofactor/templates/admin/search.html:67
+msgid "Log in"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:3
+msgid "two factor"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:4
+msgid "two factors"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:8
+msgid "prepare"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:9
+msgid "sent"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:10
+msgid "received"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:11
+#: mighty/applications/user/choices.py:48 mighty/choices.py:25
+msgid "error"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:13
+msgid "phone number, email or username"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:14
+msgid ""
+"please enter a correct email, phone or username. Note that both fields may "
+"be case-sensitive."
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:15
+#, python-format
+msgid ""
+"please enter a correct %s and password. Note that both fields may be case-"
+"sensitive."
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:16
+msgid "this account is inactive."
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:17
+msgid "unable to send message"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:18
+msgid "This authentication method is not allowed"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:19
+msgid "Can't found user"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:21
+#, python-format
+msgid "%(domain)s - Code de connexion"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:22
+#, python-format
+msgid ""
+"%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:23
+#, python-format
+msgid ""
+"Afin de vous authentifier et accéder à votre espace  %(domain)s, veuillez "
+"copier le code suivant : %(code)s"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:24
+#, python-format
+msgid ""
+"%(domain)s  - Code de connexion\n"
+"Cher utilisateur,\n"
+"Vous venez de demander un code d'authentification afin de vous connecter sur "
+"%(domain)s.\n"
+"Afin de vous authentifier et accéder à votre espace, veuillez copier le code "
+"suivant : %(code)s.\n"
+"A tout de suite sur %(domain)s !\n"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:30
+#, python-format
+msgid "Bonjour, Votre code de connexion %(domain)s est %(code)s."
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:33
+msgid "Don't have an account? Register"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:34
+msgid "I already have an account"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:35
+msgid "I forget my password"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:36
+msgid "I did not get the sms"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:37
+msgid "I did not get the mail"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:40
+msgid "enter the code received by Email"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:41
+msgid "enter the code received by SMS"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:42
+msgid "enter your password"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:43
+msgid "You are disconnected"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:45
+msgid "method authentication"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:46
+msgid "basic authentication"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:47
+#: mighty/applications/twofactor/translates.py:58
+msgid "sign in"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:48
+msgid "sign up"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:50
+#: mighty/applications/user/translates.py:27
+msgid "Email"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:51
+msgid "SMS"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:52
+msgid "password"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:54
+#, python-format
+msgid "An authenticate code has been sent to the email address %s"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:55
+#, python-format
+msgid "An authenticate code has been sent to the phone number %s"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:57
+msgid "registration"
+msgstr ""
+
+#: mighty/applications/twofactor/translates.py:59
+msgid "see you soon"
+msgstr ""
+
+#: mighty/applications/user/choices.py:8
+#: mighty/applications/user/translates.py:8
+msgid "Manage.py createsuperuser"
+msgstr ""
+
+#: mighty/applications/user/choices.py:9
+#: mighty/applications/user/translates.py:9
+msgid "Backend (/admin)"
+msgstr ""
+
+#: mighty/applications/user/choices.py:10
+#: mighty/applications/user/translates.py:10
+msgid "Workflow allowed by your website"
+msgstr ""
+
+#: mighty/applications/user/choices.py:11
+#: mighty/applications/user/translates.py:11
+msgid "By import"
+msgstr ""
+
+#: mighty/applications/user/choices.py:20
+msgid "man"
+msgstr ""
+
+#: mighty/applications/user/choices.py:21
+msgid "woman"
+msgstr ""
+
+#: mighty/applications/user/choices.py:22
+msgid "company"
+msgstr ""
+
+#: mighty/applications/user/choices.py:23
+#: mighty/applications/user/translates.py:21
+msgid "Entity"
+msgstr ""
+
+#: mighty/applications/user/choices.py:24
+#: mighty/applications/user/translates.py:22
+msgid "Undivided"
+msgstr ""
+
+#: mighty/applications/user/choices.py:39 mighty/choices.py:16
+msgid "not send"
+msgstr ""
+
+#: mighty/applications/user/choices.py:40 mighty/choices.py:17
+msgid "to send"
+msgstr ""
+
+#: mighty/applications/user/choices.py:42 mighty/choices.py:19
+msgid "to remind"
+msgstr ""
+
+#: mighty/applications/user/choices.py:45 mighty/choices.py:22
+msgid "ready"
+msgstr ""
+
+#: mighty/applications/user/choices.py:46
+#: mighty/applications/user/translates.py:16 mighty/choices.py:23
+msgid "expired"
+msgstr ""
+
+#: mighty/applications/user/choices.py:47 mighty/choices.py:24
+msgid "finished"
+msgstr ""
+
+#: mighty/applications/user/translates.py:5
+msgid "user"
+msgstr ""
+
+#: mighty/applications/user/translates.py:6
+msgid "users"
+msgstr ""
+
+#: mighty/applications/user/translates.py:18
+msgid "Homme"
+msgstr ""
+
+#: mighty/applications/user/translates.py:19
+msgid "Femme"
+msgstr ""
+
+#: mighty/applications/user/translates.py:20
+msgid "Company"
+msgstr ""
+
+#: mighty/applications/user/translates.py:24
+msgid "Gender of user"
+msgstr ""
+
+#: mighty/applications/user/translates.py:25
+msgid "Gender"
+msgstr ""
+
+#: mighty/applications/user/translates.py:26
+msgid "Username"
+msgstr ""
+
+#: mighty/applications/user/translates.py:28
+msgid "Phone"
+msgstr ""
+
+#: mighty/applications/user/translates.py:29
+msgid "Creation method"
+msgstr ""
+
+#: mighty/applications/user/translates.py:30
+msgid "Genre"
+msgstr ""
+
+#: mighty/applications/user/translates.py:31
+msgid "Profil"
+msgstr ""
+
+#: mighty/applications/user/translates.py:33
+#, python-format
+msgid ""
+"J'accepte les <a href=\"%s\" target=\"blank_\">CGU</a> et la <a href=\"%s\" "
+"target=\"blank_\">Politique de Confidentialité</a>"
+msgstr ""
+
+#: mighty/applications/user/translates.py:38
+msgid "user with this Phone already exists."
+msgstr ""
+
+#: mighty/applications/user/translates.py:39
+msgid "user with this Email already exists."
+msgstr ""
+
+#: mighty/choices.py:15
+msgid "initialized"
+msgstr ""
+
+#: mighty/models/registertask.py:16
+msgid "remind"
+msgstr ""
+
+#: mighty/models/registertask.py:17
+msgid "alert"
+msgstr ""
+
+#: mighty/models/registertask.py:18
+msgid "reporting"
+msgstr ""
+
+#: mighty/models/registertask.py:19 mighty/translates/__init__.py:29
+#: mighty/translates/__init__.py:94
+msgid "other"
+msgstr ""
+
+#: mighty/models/registertask.py:30
+msgid "Monday"
+msgstr ""
+
+#: mighty/models/registertask.py:31
+msgid "Tuesday"
+msgstr ""
+
+#: mighty/models/registertask.py:32
+msgid "Wednesday"
+msgstr ""
+
+#: mighty/models/registertask.py:33
+msgid "Thursday"
+msgstr ""
+
+#: mighty/models/registertask.py:34
+msgid "Friday"
+msgstr ""
+
+#: mighty/models/registertask.py:35
+msgid "Saturday"
+msgstr ""
+
+#: mighty/models/registertask.py:36
+msgid "Sunday"
+msgstr ""
+
+#: mighty/models/registertask.py:46
+msgid "monthly"
+msgstr ""
+
+#: mighty/models/registertask.py:47
+msgid "weekly"
+msgstr ""
+
+#: mighty/models/registertask.py:48
+msgid "every 3 days"
+msgstr ""
+
+#: mighty/models/registertask.py:49
+msgid "every 2 days"
+msgstr ""
+
+#: mighty/models/registertask.py:50
+msgid "choose a day"
+msgstr ""
+
+#: mighty/models/registertask.py:51
+msgid "every day"
+msgstr ""
+
+#: mighty/templates/admin/disable_confirmation.html:24
+#, python-format
+msgid ""
+"Disabling the %(object_name)s '%(escaped_object)s' would result in deleting "
+"related objects, but your account doesn't have permission to delete the "
+"following types of objects:"
+msgstr ""
+
+#: mighty/templates/admin/disable_confirmation.html:31
+#, python-format
+msgid ""
+"Disabling the %(object_name)s '%(escaped_object)s' would require deleting "
+"the following protected related objects:"
+msgstr ""
+
+#: mighty/templates/admin/disable_confirmation.html:38
+#, python-format
+msgid ""
+"Are you sure you want to disable the %(object_name)s \"%(escaped_object)s\"? "
+"All of the following related items will be disabled:"
+msgstr ""
+
+#: mighty/templates/admin/disable_confirmation.html:40
+#: mighty/templates/admin/disable_selected_confirmation.html:40
+#: mighty/templates/admin/enable_confirmation.html:40
+#: mighty/templates/admin/enable_selected_confirmation.html:39
+msgid "Objects"
+msgstr ""
+
+#: mighty/templates/admin/disable_confirmation.html:47
+#: mighty/templates/admin/disable_selected_confirmation.html:51
+#: mighty/templates/admin/enable_confirmation.html:47
+#: mighty/templates/admin/enable_selected_confirmation.html:50
+msgid "Yes, I'm sure"
+msgstr ""
+
+#: mighty/templates/admin/disable_confirmation.html:48
+#: mighty/templates/admin/disable_selected_confirmation.html:52
+#: mighty/templates/admin/enable_confirmation.html:48
+#: mighty/templates/admin/enable_selected_confirmation.html:51
+msgid "No, take me back"
+msgstr ""
+
+#: mighty/templates/admin/disable_selected_confirmation.html:17
+msgid "Disable multiple objects"
+msgstr ""
+
+#: mighty/templates/admin/disable_selected_confirmation.html:24
+#, python-format
+msgid ""
+"Disabling the selected %(objects_name)s would result in deleting related "
+"objects, but your account doesn't have permission to disable the following "
+"types of objects:"
+msgstr ""
+
+#: mighty/templates/admin/disable_selected_confirmation.html:31
+#, python-format
+msgid ""
+"Disabling the selected %(objects_name)s would require deleting the following "
+"protected related objects:"
+msgstr ""
+
+#: mighty/templates/admin/disable_selected_confirmation.html:38
+#, python-format
+msgid ""
+"Are you sure you want to disable the selected %(objects_name)s? All of the "
+"following objects and their related items will be disabled:"
+msgstr ""
+
+#: mighty/templates/admin/edit_inline/stacked.html:12
+#: mighty/templates/admin/edit_inline/tabular.html:34
+#: mighty/templates/admin/multi_app_list.html:50
+#: mighty/translates/__init__.py:15
+msgid "Change"
+msgstr ""
+
+#: mighty/templates/admin/edit_inline/stacked.html:12
+#: mighty/templates/admin/edit_inline/tabular.html:34
+#: mighty/templates/admin/multi_app_list.html:48
+msgid "View"
+msgstr ""
+
+#: mighty/templates/admin/edit_inline/stacked.html:14
+#: mighty/templates/admin/edit_inline/tabular.html:36
+msgid "View on site"
+msgstr ""
+
+#: mighty/templates/admin/edit_inline/tabular.html:20
+msgid "Delete?"
+msgstr ""
+
+#: mighty/templates/admin/enable_confirmation.html:18
+#: mighty/translates/__init__.py:18
+msgid "Enable"
+msgstr ""
+
+#: mighty/templates/admin/enable_confirmation.html:24
+#, python-format
+msgid ""
+"Deleting the %(object_name)s '%(escaped_object)s' would result in deleting "
+"related objects, but your account doesn't have permission to delete the "
+"following types of objects:"
+msgstr ""
+
+#: mighty/templates/admin/enable_confirmation.html:31
+#, python-format
+msgid ""
+"Deleting the %(object_name)s '%(escaped_object)s' would require deleting the "
+"following protected related objects:"
+msgstr ""
+
+#: mighty/templates/admin/enable_confirmation.html:38
+#, python-format
+msgid ""
+"Are you sure you want to enable the %(object_name)s \"%(escaped_object)s\"? "
+"All of the following related items will be enabled:"
+msgstr ""
+
+#: mighty/templates/admin/enable_selected_confirmation.html:17
+msgid "Enable multiple objects"
+msgstr ""
+
+#: mighty/templates/admin/enable_selected_confirmation.html:23
+#, python-format
+msgid ""
+"Deleting the selected %(objects_name)s would result in deleting related "
+"objects, but your account doesn't have permission to delete the following "
+"types of objects:"
+msgstr ""
+
+#: mighty/templates/admin/enable_selected_confirmation.html:30
+#, python-format
+msgid ""
+"Deleting the selected %(objects_name)s would require deleting the following "
+"protected related objects:"
+msgstr ""
+
+#: mighty/templates/admin/enable_selected_confirmation.html:37
+#, python-format
+msgid ""
+"Are you sure you want to delete the selected %(objects_name)s? All of the "
+"following objects and their related items will be deleted:"
+msgstr ""
+
+#: mighty/templates/admin/includes/search_app.html:3
+msgid "Start typing to filter…"
+msgstr ""
+
+#: mighty/templates/admin/includes/search_app.html:4
+msgid "Filter navigation items"
+msgstr ""
+
+#: mighty/templates/admin/multi_app_list.html:24
+#, python-format
+msgid "Models in the %(name)s application"
+msgstr ""
+
+#: mighty/templates/admin/multi_app_list.html:41
+#: mighty/translates/__init__.py:12
+msgid "Add"
+msgstr ""
+
+#: mighty/templates/admin/multi_app_list.html:63
+msgid "You don’t have permission to view or edit anything."
+msgstr ""
+
+#: mighty/templates/admin/registered_tasks.html:21
+msgid "Registered Tasks"
+msgstr ""
+
+#: mighty/templates/admin/remove_18102023_base.html:35
+msgid "Welcome,"
+msgstr ""
+
+#: mighty/templates/admin/remove_18102023_base.html:40
+msgid "View site"
+msgstr ""
+
+#: mighty/templates/admin/remove_18102023_base.html:45
+msgid "Documentation"
+msgstr ""
+
+#: mighty/templates/admin/remove_18102023_base.html:49
+msgid "Change password"
+msgstr ""
+
+#: mighty/templates/admin/remove_18102023_base.html:51
+msgid "Log out"
+msgstr ""
+
+#: mighty/translates/__init__.py:4
+msgid "Creation date"
+msgstr ""
+
+#: mighty/translates/__init__.py:5
+msgid "Update date"
+msgstr ""
+
+#: mighty/translates/__init__.py:6
+msgid "Created by"
+msgstr ""
+
+#: mighty/translates/__init__.py:7
+msgid "Updated by"
+msgstr ""
+
+#: mighty/translates/__init__.py:8
+msgid "Is disable"
+msgstr ""
+
+#: mighty/translates/__init__.py:9
+msgid "Alerts"
+msgstr ""
+
+#: mighty/translates/__init__.py:10
+msgid "Errors"
+msgstr ""
+
+#: mighty/translates/__init__.py:13
+msgid "Detail"
+msgstr ""
+
+#: mighty/translates/__init__.py:14
+msgid "List"
+msgstr ""
+
+#: mighty/translates/__init__.py:16
+msgid "Delete"
+msgstr ""
+
+#: mighty/translates/__init__.py:19
+msgid "Export"
+msgstr ""
+
+#: mighty/translates/__init__.py:20
+msgid "Import"
+msgstr ""
+
+#: mighty/translates/__init__.py:21
+msgid "Anticipate"
+msgstr ""
+
+#: mighty/translates/__init__.py:22 mighty/translates/__init__.py:64
+msgid "Source"
+msgstr ""
+
+#: mighty/translates/__init__.py:23
+msgid "Filter lvl0 (Keys/Params)"
+msgstr ""
+
+#: mighty/translates/__init__.py:24
+msgid "Filter lvl1 (filters request)"
+msgstr ""
+
+#: mighty/translates/__init__.py:25
+msgid "Filter lvl2 (url expression)"
+msgstr ""
+
+#: mighty/translates/__init__.py:27
+msgid "Site"
+msgstr ""
+
+#: mighty/translates/__init__.py:28
+msgid "Document"
+msgstr ""
+
+#: mighty/translates/__init__.py:30
+msgid "none"
+msgstr ""
+
+#: mighty/translates/__init__.py:31
+msgid "yes"
+msgstr ""
+
+#: mighty/translates/__init__.py:32
+msgid "no"
+msgstr ""
+
+#: mighty/translates/__init__.py:35
+msgid "home"
+msgstr ""
+
+#: mighty/translates/__init__.py:36 mighty/translates/__init__.py:47
+msgid "login"
+msgstr ""
+
+#: mighty/translates/__init__.py:37
+msgid "logout"
+msgstr ""
+
+#: mighty/translates/__init__.py:38
+msgid "Admin"
+msgstr ""
+
+#: mighty/translates/__init__.py:39
+msgid "Admin view"
+msgstr ""
+
+#: mighty/translates/__init__.py:40
+msgid "not disclosed"
+msgstr ""
+
+#: mighty/translates/__init__.py:41
+msgid "next"
+msgstr ""
+
+#: mighty/translates/__init__.py:42
+msgid "previous"
+msgstr ""
+
+#: mighty/translates/__init__.py:45
+msgid "since"
+msgstr ""
+
+#: mighty/translates/__init__.py:46
+msgid "until"
+msgstr ""
+
+#: mighty/translates/__init__.py:48
+msgid "Are you sure?"
+msgstr ""
+
+#: mighty/translates/__init__.py:49
+#, python-format
+msgid "Are you sure you want to disable \"%s\"?"
+msgstr ""
+
+#: mighty/translates/__init__.py:50
+#, python-format
+msgid "Are you sure you want to enable \"%s\"?"
+msgstr ""
+
+#: mighty/translates/__init__.py:51
+#, python-format
+msgid "Are you sure you want to delete \"%s\"?"
+msgstr ""
+
+#: mighty/translates/__init__.py:52
+#, python-format
+msgid "Cannot disable %(name)s"
+msgstr ""
+
+#: mighty/translates/__init__.py:53
+#, python-format
+msgid "Successfully disabled %(count)d %(items)s."
+msgstr ""
+
+#: mighty/translates/__init__.py:54
+#, python-format
+msgid "Disable selected %(verbose_name_plural)s"
+msgstr ""
+
+#: mighty/translates/__init__.py:55
+#, python-format
+msgid "The %(name)s \"%(obj)s\" was disabled successfully."
+msgstr ""
+
+#: mighty/translates/__init__.py:56
+#, python-format
+msgid "Cannot enable %(name)s"
+msgstr ""
+
+#: mighty/translates/__init__.py:57
+#, python-format
+msgid "Successfully enabled %(count)d %(items)s."
+msgstr ""
+
+#: mighty/translates/__init__.py:58
+#, python-format
+msgid "Enable selected %(verbose_name_plural)s"
+msgstr ""
+
+#: mighty/translates/__init__.py:59
+#, python-format
+msgid "The %(name)s \"%(obj)s\" was enabled successfully."
+msgstr ""
+
+#: mighty/translates/__init__.py:60
+msgid "More"
+msgstr ""
+
+#: mighty/translates/__init__.py:61
+msgid "Tasks"
+msgstr ""
+
+#: mighty/translates/__init__.py:62
+msgid "Informations"
+msgstr ""
+
+#: mighty/translates/__init__.py:63
+msgid "Alerts and errors"
+msgstr ""
+
+#: mighty/translates/__init__.py:65
+msgid "is in alert"
+msgstr ""
+
+#: mighty/translates/__init__.py:66
+msgid "is in error"
+msgstr ""
+
+#: mighty/translates/__init__.py:67
+msgid "supervision"
+msgstr ""
+
+#: mighty/translates/__init__.py:68
+msgid "test"
+msgstr ""
+
+#: mighty/translates/__init__.py:69
+msgid "search"
+msgstr ""
+
+#: mighty/translates/__init__.py:72 mighty/translates/__init__.py:73
+msgid "timeline"
+msgstr ""
+
+#: mighty/translates/__init__.py:75
+msgid "timeline a change"
+msgstr ""
+
+#: mighty/translates/__init__.py:76
+msgid "associated model"
+msgstr ""
+
+#: mighty/translates/__init__.py:77
+msgid "field"
+msgstr ""
+
+#: mighty/translates/__init__.py:78
+msgid "value"
+msgstr ""
+
+#: mighty/translates/__init__.py:79
+msgid "replaced by"
+msgstr ""
+
+#: mighty/translates/__init__.py:80
+msgid "field type"
+msgstr ""
+
+#: mighty/translates/__init__.py:81
+msgid "begin"
+msgstr ""
+
+#: mighty/translates/__init__.py:82
+msgid "end"
+msgstr ""
+
+#: mighty/translates/__init__.py:85
+msgid "source"
+msgstr ""
+
+#: mighty/translates/__init__.py:86
+msgid "sources"
+msgstr ""
+
+#: mighty/translates/__init__.py:88
+msgid "web site"
+msgstr ""
+
+#: mighty/translates/__init__.py:89
+msgid "document"
+msgstr ""
+
+#: mighty/translates/__init__.py:90
+msgid "file"
+msgstr ""
+
+#: mighty/translates/__init__.py:91
+msgid "image"
+msgstr ""
+
+#: mighty/translates/__init__.py:92
+msgid "flux"
+msgstr ""
+
+#: mighty/translates/__init__.py:93
+msgid "event"
+msgstr ""
+
+#: mighty/translates/__init__.py:96
+msgid "no errors"
+msgstr ""
+
+#: mighty/translates/__init__.py:97
+msgid "already exist"
+msgstr ""
+
+#: mighty/translates/__init__.py:100
+msgid "Fréquence de l'export"
+msgstr ""
+
+#: mighty/translates/__init__.py:101
+msgid "Date du dernier export"
+msgstr ""
+
+#: mighty/translates/__init__.py:102
+msgid "Email de l'export"
+msgstr ""
+
+#: mighty/translates/__init__.py:108
+msgid "Quotidien"
+msgstr ""
+
+#: mighty/translates/__init__.py:109
+msgid "Hebdomadaire"
+msgstr ""
+
+#: mighty/translates/__init__.py:110
+msgid "Mensuel"
+msgstr ""
+
+#: mighty/translates/reporting.py:3
+msgid "Reporting"
+msgstr ""
+
+#: mighty/translates/reporting.py:4
+msgid "Reportings"
+msgstr ""
+
+#: mighty/translates/reporting.py:6
+msgid "Reporting name"
+msgstr ""
+
+#: mighty/translates/reporting.py:7
+msgid "File name"
+msgstr ""
+
+#: mighty/translates/reporting.py:8
+msgid "Object used to start the report "
+msgstr ""
+
+#: mighty/translates/reporting.py:9
+msgid "Object targeted by the report"
+msgstr ""
+
+#: mighty/translates/reporting.py:10
+msgid "Model manager used to get the queryset"
+msgstr ""
+
+#: mighty/translates/reporting.py:11
+msgid "Configuration of the report"
+msgstr ""
+
+#: mighty/translates/reporting.py:12
+msgid "Filter of the report"
+msgstr ""
+
+#: mighty/translates/reporting.py:13
+msgid "Filter using startup object values"
+msgstr ""
+
+#: mighty/translates/reporting.py:14
+msgid "Filter using request data"
+msgstr ""
+
+#: mighty/translates/reporting.py:15
+msgid "Filter used a specific object to start"
+msgstr ""
+
+#: mighty/translates/reporting.py:16
+msgid "Can export to Excel"
+msgstr ""
+
+#: mighty/translates/reporting.py:17
+msgid "Configuration of the Excel export"
+msgstr ""
+
+#: mighty/translates/reporting.py:18
+msgid "Can export to CSV"
+msgstr ""
+
+#: mighty/translates/reporting.py:19
+msgid "Configuration of the CSV export"
+msgstr ""
+
+#: mighty/translates/reporting.py:20
+msgid "Can export to PDF"
+msgstr ""
+
+#: mighty/translates/reporting.py:21
+msgid "Configuration of the PDF export"
+msgstr ""
+
+#: mighty/translates/reporting.py:22
+msgid "HTML used to generate the PDF"
+msgstr ""
+
+#: mighty/translates/reporting.py:23
+msgid "HTML used to generate the email"
+msgstr ""
+
+#: mighty/translates/reporting.py:25
+msgid "File name will be stringified with the date of the report"
+msgstr ""
+
+#: mighty/translates/reporting.py:26
+msgid "Object used to start, he can be used in filter_related"
+msgstr ""
+
+#: mighty/translates/reporting.py:27
+msgid ""
+"Object targeted by the report, he can be used in filter_config and manager "
+"field"
+msgstr ""
+
+#: mighty/translates/reporting.py:28
+msgid "You can change the manager, default is 'objects'"
+msgstr ""
+
+#: mighty/translates/reporting.py:29
+msgid ""
+"You can config every fields used.\n"
+"    - data: field name\n"
+"    - label: label used in the report (not impletmented yet)\n"
+"    - multiple: if the field is a multiple field, the report will use the "
+"max value to create multiple columns\n"
+"    - aggregate: if the field is a multiple field, you can use a specific "
+"aggregate function\n"
+"    - format: if the field is a date, you can use a specific format (not "
+"impleted yet)\n"
+"    - help: help used in the report (not impleted yet)\n"
+"    - width: width used in the report (not impleted yet)\n"
+"    - style: style used in the report (not impleted yet)\n"
+"    - class: class used (not impleted yet)"
+msgstr ""
+
+#: mighty/translates/reporting.py:39
+msgid ""
+"Filter used in the queryset.\n"
+"example: {\"field__gte\": 10, \"field__lte\": 20}\n"
+msgstr ""
+
+#: mighty/translates/reporting.py:42
+msgid ""
+"Filter used in the queryset using the startup object values.\n"
+"example: {\"target_field\": \"object_field\"}\n"
+msgstr ""
+
+#: mighty/translates/reporting.py:45
+msgid ""
+"Filter used in the queryset using the request data.\n"
+"example: {\"target_field\": \"object_field\"}\n"
+msgstr ""
