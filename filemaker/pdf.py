@@ -3,6 +3,8 @@ from django.contrib.staticfiles.finders import find as find_static_file
 from django.template import Template, Context
 from django.core.files.base import ContentFile
 from weasyprint import HTML
+import logger
+logging = logger.get_logger(__name__)
 
 class FileMakerPDF:
     str_options = ["html", "header", "footer", "lang", "title", "charset"]
@@ -12,7 +14,6 @@ class FileMakerPDF:
     lang, title, charset = "en", "Document", "UTF-8"
     header, html, footer = "", "", ""
     config, context, fonts, images = {}, {}, {}, {}
-    css = []
     current_pdf = None
 
     body_html = """<!DOCTYPE html>
@@ -29,6 +30,8 @@ class FileMakerPDF:
 
     # Init options
     def init_options(self, **kwargs):
+        logging.warning(self.css)
+        self.css = settings.CSS_FILES_WEASYPRINT or []
         for key,value in kwargs.items():
             if key in self.str_options:
                 setattr(self, key, value)
@@ -42,6 +45,8 @@ class FileMakerPDF:
     def __init__(self, **kwargs):
         self.init_options(**settings.PDFMAKER)
         self.init_options(**kwargs)
+        logging.warning(self.css)
+
 
     # Font rules
     def get_font_rule(self, font, name):
