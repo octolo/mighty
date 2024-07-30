@@ -140,6 +140,15 @@ class AddressNoBase(models.Model):
         return self.raw
 
     @property
+    def address_without_country(self):
+        tpl = ""
+        if self.address: tpl += "%(address)s"
+        if self.postal_code: tpl += ", %(postal_code)s" if len(tpl) else "%(postal_code)s"
+        if self.locality: tpl += ", %(locality)s"  if len(tpl) else "%(locality)s"
+        if self.state: tpl += ", %(state)s" if len(tpl) else "%(state)s"
+        return tpl % ({field: getattr(self, field) for field in self.fields_used})
+
+    @property
     def fields_used(self):
         return fields
 

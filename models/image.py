@@ -14,7 +14,7 @@ from django.db import models
 from django.utils.html import format_html
 from django.templatetags.static import static
 from mighty.functions import image_directory_path
-import os, mimetypes
+import os, mimetypes, base64
 
 IMAGE_DEFAULT = "none.jpg"
 class Image(models.Model):
@@ -39,3 +39,5 @@ class Image(models.Model):
     def image_extension(self): return os.path.splitext(self.imagename)[1]
     @property
     def imagex16_html(self): return format_html('<img src="%s" title="%s" style="max-height: 16px">' % (self.image_url, str(self)))
+    @property
+    def image_b64(self): return base64.b64encode(self.image.read()).decode('utf-8')
