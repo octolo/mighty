@@ -611,9 +611,11 @@ def calcul_size(size, unit):
     return round(float(size/conf.FileSystem.units_mapping[unit][0]), 2)
 
 def human_size(size):
-    for unit, config in conf.FileSystem.units_mapping.items():
-        if size >= config[0]: break
-    return unit, calcul_size(size, unit)
+    if size:
+        for unit, config in conf.FileSystem.units_mapping.items():
+            if size >= config[0]: break
+        return unit, calcul_size(size, unit)
+    return "B", 0
 
 def pretty_size(size, unit=None):
     if not unit: return human_size(size)
