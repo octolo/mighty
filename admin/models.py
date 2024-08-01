@@ -262,9 +262,15 @@ class BaseAdmin(admin.ModelAdmin):
 
         return self.render_admin_form(request, context, obj=obj, form_url=form_url, template=template)
 
-    def render_change_form(self, request, context, add=False, change=False, form_url="", obj=None):
-        context["object_tools_items"] = self.object_tools_items
-        return super(BaseAdmin, self).render_change_form(request, context, add=add, change=change, form_url=form_url, obj=obj)
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['object_tools_items'] = [item for item in self.object_tools_items if '<path:' not in item['url']]
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['object_tools_items'] = [item for item in self.object_tools_items if '<path:' in item['url']]
+        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
 
     def render_admin_form(self, request, context, form_url="", obj=None, template=None):
         context["object_tools_items"] = self.object_tools_items

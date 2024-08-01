@@ -22,6 +22,7 @@ from mighty.forms.fields import (
     FileField,
     FilePathField,
     FloatField,
+    ModelChoiceField,
     GenericIPAddressField,
     ImageField,
     IntegerField,
