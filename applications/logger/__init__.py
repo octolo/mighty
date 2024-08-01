@@ -14,23 +14,23 @@ class EnableLogger:
         if not self.cache_logger:
             self.reload_logger()
         return self.cache_logger
-    
-    
+
+
     class locally:
         logs = []
-        
+
         def reset(self):
             self.logs = []
-        
+
         def warning(self, message, *args, **kwargs):
             self.logs.append((logging.WARNING, message, args, kwargs))
-            
+
         def error(self, message, *args, **kwargs):
             self.logs.append((logging.ERROR, message, args, kwargs))
-                      
+
         def info(self, message, *args, **kwargs):
             self.logs.append((logging.INFO, message, args, kwargs))
-            
+
         def debug(self, message, *args, **kwargs):
             self.logs.append((logging.DEBUG, message, args, kwargs))
 
@@ -47,38 +47,6 @@ def format_log_field(field, value, instance, fk_column, fk_field):
         'date_begin': instance._unmodified.date_update,
         'user': instance._unmodified.update_by,
     }
-
-#def ModelChangelog(model, on_delete=None):
-#    from mighty.applications.logger.models import ChangeLog
-#    from django.db import models
-#    model_name = model.split(".")[-1]
-#    ChangeLog.__name__ = model_name+"ChangeLog"
-#    class NewChangeLog(ChangeLog):
-#        object_id = models.ForeignKey(model, on_delete=models.CASCADE, related_name=model_name.lower()+"change_log")
-#        class Meta:
-#            label = model.split(".")[0l]
-#    return NewChangeLog
-
-def EnableChangeLog(model, excludes=()):
-    def deco(cls):
-        setattr(cls, "changelog_model", model)
-        setattr(cls, "changelog_exclude", excludes+(str(model.__name__).lower(),))
-        return cls
-    return deco
-
-#def EnableChangeLogV2(**kwargs):
-#    from django.db import models
-#    import types
-#    def decorator(obj):
-#        from mighty.applications.logger.models import ChangeLog
-#        class ChangeLog(ChangeLog):
-#            object_id = models.ForeignKey(kwargs["fk"], on_delete=models.CASCADE)
-#
-#            clas
-#        #setattr(cls, "changelog_model", LogModel)
-#        #setattr(cls, "changelog_exclude", kwargs.get("excludes", ())+(str(LogModel.__name__).lower(),))
-#        return obj#, LogModel
-#    return decorator#, LogModel
 
 def EnableAccessLog(model, excludes=()):
     def deco(cls):

@@ -24,8 +24,3 @@ class UserAccessLogModel(ChangeLog):
     class Meta:
         abstract = True
 
-class UserChangeLogModel(ChangeLog):
-    object_id = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_changelog')
-
-    class Meta:
-        abstract = True

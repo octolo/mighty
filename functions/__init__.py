@@ -3,7 +3,7 @@ from .random import random_date, random_object_by_id
 from .registertask import subscribe_register_task, unsubscribe_register_task
 
 from django.apps import apps
-from django.db.models import F, Func, Subquery, PositiveIntegerField, Q
+from django.db.models import Func, Subquery, PositiveIntegerField, Q
 from django.conf import settings
 from django.core import serializers
 from django.utils.module_loading import import_string
@@ -11,10 +11,13 @@ from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 
 from mighty.apps import MightyConfig as conf
-from mighty import stdtypes, fields
-from pathlib import Path
-import base64, datetime, string, random, unicodedata, re, json, sys, subprocess, threading, requests
+from mighty import fields
 
+from pathlib import Path
+import datetime, string, random, unicodedata, re, json, subprocess, threading, requests
+import logging
+
+logger = logging.getLogger(__name__)
 BS = conf.Crypto.BS
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 unpad = lambda s: s[:-ord(s[len(s)-1:])]
@@ -39,6 +42,8 @@ def batch_bulk_chunk(objects, chunk, **kwargs):
     model = type(objects[0])
     schunk = 0
     while True:
+        if kwargs.get("log", False):
+            logger.info("Batch %s to %s" % (schunk, schunk+chunk))
         batch = objects[schunk:schunk+chunk]
         if not len(batch):
             break

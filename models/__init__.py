@@ -13,7 +13,7 @@ from mighty.models.backend import Backend
 from mighty.models.reporting import Reporting
 from mighty.models.variable import TemplateVariable
 from mighty.models.registertask import RegisterTask, RegisterTaskSubscription
-from mighty.applications.logger import EnableAccessLog, EnableChangeLog, models as models_logger
+from mighty.applications.logger import EnableAccessLog, models as models_logger
 
 
 ###########################
@@ -99,9 +99,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import models as models_user
     from mighty.applications.user.apps import UserConfig as user_conf
     class UserAccessLogModel(models_user.UserAccessLogModel): pass
-    class UserChangeLogModel(models_user.UserChangeLogModel): pass
     @EnableAccessLog(UserAccessLogModel)
-    @EnableChangeLog(UserChangeLogModel, ('logentry', 'password', 'tenant'))
     class User(models_user.User): pass
     if not apps.is_installed('allauth'):
         class UserEmail(models_user.UserEmail): pass

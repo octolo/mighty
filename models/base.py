@@ -119,6 +119,7 @@ class Base(models.Model):
                             "value": bytes(str(value), 'utf-8'),
                             "fmodel": self.fields()[field],
                             "date_begin": self._unmodified.date_update,
+                            "date_end": self.date_update,
                             "user": self._user,
                         }) for field, value in old.items()])
 
