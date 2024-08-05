@@ -9,7 +9,6 @@ from django.forms.models import BaseInlineFormSet
 from mighty import translates as _
 from mighty.admin.models import BaseAdmin
 from mighty.applications.address import fields as address_fields
-from mighty.applications.messenger.decorators import AdminMissivesView
 from mighty.applications.user import get_user_phone_model
 from mighty.applications.user.apps import UserConfig
 from mighty.applications.user.choices import METHOD_BACKEND
@@ -167,7 +166,6 @@ class UserAddressAdminInline(admin.StackedInline):
     readonly_fields = ("addr_backend_id",)
 
 @AdminRegisteredTasksView()
-@AdminMissivesView()
 class UserAdmin(UserAdmin, BaseAdmin):
     change_list_template = "admin/users_change_list.html"
     #formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}

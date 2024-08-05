@@ -264,12 +264,15 @@ class BaseAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        extra_context['object_tools_items'] = [item for item in self.object_tools_items if '<path:' not in item['url']]
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(self.object_tools_items)
+        extra_context['object_tools_items'] = [item for item in self.object_tools_items if item.get("list")]
         return super().changelist_view(request, extra_context=extra_context)
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = extra_context or {}
-        extra_context['object_tools_items'] = [item for item in self.object_tools_items if '<path:' in item['url']]
+        extra_context['object_tools_items'] = [item for item in self.object_tools_items if not item.get("list")]
         return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
 
     def render_admin_form(self, request, context, form_url="", obj=None, template=None):

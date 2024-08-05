@@ -27,8 +27,3 @@ threadNa = _("Thread name (if available).")
 
 v_changelog = _('change log')
 vp_changelog = _('changes logs')
-
-v_accesslog = _('access log')
-vp_accesslog = _('access logs')
-
-date_access = _('access date')

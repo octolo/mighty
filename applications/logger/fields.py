@@ -21,16 +21,13 @@ log = (
     "log_hash",
 )
 
-changelog = (
+modelchangelog = (
     "field",
     "value",
     "fmodel",
     "date_begin",
     "date_end",
     "user",
-)
-
-modelchangelog = changelog + (
     "content_type",
     "object_id",
 )

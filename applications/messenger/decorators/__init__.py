@@ -1,5 +1,5 @@
 from mighty.applications.messenger.decorators.messenger import (
-    HeritToMessenger, AccessToMissive, AdminMissivesView
+    HeritToMessenger, AccessToMissive
 )
 
 # TO CLEAN

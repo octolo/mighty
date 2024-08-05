@@ -2,15 +2,10 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Case, When, Value, BooleanField
 from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
-
-
-from mighty.applications.logger import signals
 from mighty.applications.user import get_user_email_model, get_user_phone_model
 from mighty.applications.user.apps import UserConfig
-
 from .custom import merge_accounts_signal
 
 UserModel = get_user_model()
@@ -19,10 +14,6 @@ UserPhoneModel = get_user_phone_model()
 
 import logging
 logger = logging.getLogger(__name__)
-
-if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-    pre_save.connect(signals.pre_change_log, UserModel)
-    post_save.connect(signals.post_change_log, UserModel)
 
 @receiver(post_save, sender=UserModel)
 def create_user_identifiers(sender, instance, created, **kwargs):

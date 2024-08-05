@@ -1,6 +1,5 @@
 from django.db import models
 
-from mighty.applications.logger.models import ChangeLog
 from mighty.applications.user.apps import UserConfig as conf
 from mighty.models import Base
 
@@ -18,9 +17,4 @@ class UserAgent(models.Model):
     class Meta(Base.Meta):
         abstract = True
 
-class UserAccessLogModel(ChangeLog):
-    object_id = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_accesslog')
-
-    class Meta:
-        abstract = True
 

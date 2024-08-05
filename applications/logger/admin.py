@@ -16,12 +16,6 @@ class LogAdmin(BaseAdmin):
     list_filter = ("content_type",)
     readonly_fields = fields.log
 
-class ChangeLogAdmin(BaseAdmin):
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.changelog}),)
-    list_display = ('field', 'value', 'user')
-    search_fields = ('field', 'value', 'user__lastname', 'user__username', 'user__email')
-    readonly_fields = fields.changelog
-
 class ModelChangeLogAdmin(BaseAdmin):
     change_form_template  = 'admin/change_form_modelchangelog.html'
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.modelchangelog}),)
@@ -57,51 +51,11 @@ class ModelWithLogAdmin(BaseAdmin):
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/logs.html', context)
 
-    def changelogs_view(self, request, object_id, extra_context=None):
-        opts = self.model._meta
-        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object(request, unquote(object_id), to_field)
-        paginator = Paginator(obj.changelog_model.objects.filter(object_id=obj), 25)
-        page = request.GET.get('page', 1)
-        context = {
-            **self.admin_site.each_context(request),
-            'object_name': str(opts.verbose_name),
-            'object': obj,
-            'fake': obj.changelog_model(),
-            'logs': paginator.get_page(page),
-            'opts': opts,
-            'app_label': opts.app_label,
-            'media': self.media
-        }
-        request.current_app = self.admin_site.name
-        return TemplateResponse(request, 'admin/change_logs.html', context)
-
-    def accesslogs_view(self, request, object_id, extra_context=None):
-        opts = self.model._meta
-        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object(request, unquote(object_id), to_field)
-        paginator = Paginator(obj.accesslog_model.objects.filter(object_id=obj), 25)
-        page = request.GET.get('page', 1)
-        context = {
-            **self.admin_site.each_context(request),
-            'object_name': str(opts.verbose_name),
-            'object': obj,
-            'fake': obj.accesslog_model(),
-            'logs': paginator.get_page(page),
-            'opts': opts,
-            'app_label': opts.app_label,
-            'media': self.media
-        }
-        request.current_app = self.admin_site.name
-        return TemplateResponse(request, 'admin/change_logs.html', context)
-
     def get_urls(self):
         from django.urls import path
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
             path('<path:object_id>/logs/', self.wrap(self.logs_view), name='%s_%s_logs' % info),
-            path('<path:object_id>/changelogs/', self.wrap(self.changelogs_view), name='%s_%s_changelogs' % info),
-            path('<path:object_id>/accesselogs/', self.wrap(self.accesslogs_view), name='%s_%s_accesslogs' % info),
         ]
         return my_urls + urls

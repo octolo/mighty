@@ -46,13 +46,16 @@ class Log(Base):
         self.log_hash = self.get_log_hash()
         super().save(*args, **kwargs)
 
-class ChangeLog(models.Model):
+class ModelChangeLog(models.Model):
     field = models.CharField(_m.field, max_length=255, db_index=True)
     value = models.BinaryField(_m.value)
     fmodel = models.CharField(_m.fmodel, max_length=255)
     date_begin = models.DateTimeField(_m.date_begin, editable=False)
     date_end = models.DateTimeField(_m.date_end, editable=False, auto_now_add=True)
     user = models.CharField(max_length=255, blank=True, null=True, default='anonymous~root')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField(blank=True, null=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     def get_value(self):
         if hasattr(self.value, 'decode'):
@@ -67,21 +70,3 @@ class ChangeLog(models.Model):
         verbose_name_plural = _.vp_changelog
         ordering = ['-date_end']
 
-class ModelChangeLog(ChangeLog):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField(blank=True, null=True)
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    class Meta(ChangeLog.Meta):
-        abstract = True
-
-class AccessLog(models.Model):
-    object_id = models.ForeignKey('', on_delete=models.CASCADE)
-    date_access = models.DateTimeField(_.date_access, editable=False)
-    user = models.CharField(max_length=255, default='anonymous~root')
-
-    class Meta:
-        abstract = True
-        verbose_name = _.v_accesslog
-        verbose_name_plural = _.vp_accesslog
-        ordering = ['-date_access']
