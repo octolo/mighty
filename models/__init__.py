@@ -99,6 +99,7 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import models as models_user
     from mighty.applications.user.apps import UserConfig as user_conf
     class UserAccessLogModel(models_user.UserAccessLogModel): pass
+    class UserChangeLogModel(models_user.UserChangeLogModel): pass
     @EnableAccessLog(UserAccessLogModel)
     class User(models_user.User): pass
     if not apps.is_installed('allauth'):

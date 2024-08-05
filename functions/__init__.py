@@ -41,9 +41,12 @@ def get_descendant_value(path, obj):
 def batch_bulk_chunk(objects, chunk, **kwargs):
     model = type(objects[0])
     schunk = 0
+    log = kwargs.pop("log", False)
     while True:
-        if kwargs.get("log", False):
+        if log == "logger":
             logger.info("Batch %s to %s" % (schunk, schunk+chunk))
+        elif log == "print":
+            print("Batch %s to %s" % (schunk, schunk+chunk))
         batch = objects[schunk:schunk+chunk]
         if not len(batch):
             break
