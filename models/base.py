@@ -473,11 +473,13 @@ class Base(models.Model):
             self.update_count+=1
             self.www_action = "update"
             if "pre_update" not in self.www_action_cancel:
+                self._logger.debug("pre_update %s (%s)" % (type(self), str(self.pk)))
                 self.pre_update()
         else:
             self.set_create_by(get_request_kept().user if request else None)
             self.www_action = "create"
             if "pre_create" not in self.www_action_cancel:
+                self._logger.debug("pre_create %s" % (type(self)))
                 self.pre_create()
 
     def save(self, *args, **kwargs):
@@ -509,9 +511,11 @@ class Base(models.Model):
         self.www_action = "delete"
         if self.can_be_deleted:
             if "pre_delete" not in self.www_action_cancel:
+                self._logger.debug("pre_delete %s (%s)" % (type(self), str(self.pk)))
                 self.pre_delete()
             super().delete(*args, **kwargs)
             if "post_delete" not in self.www_action_cancel:
+                self._logger.debug("post_delete %s (%s)" % (type(self), str(self.pk)))
                 self.post_delete()
         else:
             raise self.raise_error(code="is_immutable", message="is immutable")
