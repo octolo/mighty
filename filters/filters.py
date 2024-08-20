@@ -304,10 +304,9 @@ class BooleanParamFilter(ParamFilter):
     def get_value(self):
         value = super().get_value()
         if type(value).__name__ == "str":
-            if value in ("true", "1"):
-                return True
             if self.enable_false and value in ("false", "0"):
                 return False
+            return True
         return bool(int(value))
 
     def get_Q(self):
