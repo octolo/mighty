@@ -291,8 +291,6 @@ class SearchFilter(ParamFilter):
             return (searchQ|self.get_andQ())|self.get_orQ()
         return Q()
 
-import logging
-logger = logging.getLogger(__name__)
 class BooleanParamFilter(ParamFilter):
     enable_false = False
 
@@ -304,23 +302,17 @@ class BooleanParamFilter(ParamFilter):
         return self.mask
 
     def get_value(self):
-        logging.warning(f"Enable_false: {self.enable_false}")
         value = super().get_value()
         if type(value).__name__ == "str":
-            logging.warning(f"BooleanParamFilter str: {value}")
             if value in ("true", "1"):
                 return True
             if self.enable_false and value in ("false", "0"):
                 return False
-        logging.warning(f"BooleanParamFilter int: {value}")
         return bool(int(value))
 
     def get_Q(self):
-
         if self.enable_false or self.get_value():
-            q = super().get_Q()
-            logger.warning(f"BooleanParamFilter.get_Q: {q}")
-            return q
+            return super().get_Q()
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
     def __init__(self, id='gtelte', request=None, *args, **kwargs):

@@ -266,7 +266,6 @@ class BaseAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         import logging
         logger = logging.getLogger(__name__)
-        logger.warning(self.object_tools_items)
         extra_context['object_tools_items'] = [item for item in self.object_tools_items if item.get("list")]
         return super().changelist_view(request, extra_context=extra_context)
 
