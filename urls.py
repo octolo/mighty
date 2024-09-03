@@ -10,15 +10,6 @@ urlpatterns = [
     path('widgets/<str:widget>/<str:id>/', Widget.as_view(), name="mighty-widget"),
 ]
 
-if "ckeditor" in settings.INSTALLED_APPS and hasattr(settings, "CKEDITOR_UPLOAD_PATH"):
-    tools_urlpatterns = [
-        re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
-    ]
-elif "django_ckeditor_5" in settings.INSTALLED_APPS:
-    tools_urlpatterns = [
-        path("ckeditor5/", include('django_ckeditor_5.urls')),
-    ]
-
 
 api_urlpatterns = [
     path('config/', include([
