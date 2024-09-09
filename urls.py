@@ -10,7 +10,6 @@ urlpatterns = [
     path('widgets/<str:widget>/<str:id>/', Widget.as_view(), name="mighty-widget"),
 ]
 
-
 api_urlpatterns = [
     path('config/', include([
         path('', Config.as_view(), name="api-config-full"),
