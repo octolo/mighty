@@ -2,6 +2,7 @@ from django.db.models import Q
 from mighty.request_access import RequestAccess
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.applications.tenant import get_tenant_model
+from mighty.functions import get_descendant_value
 
 class TenantAccess(RequestAccess):
     group_pk = "uid"
@@ -27,7 +28,7 @@ class TenantAccess(RequestAccess):
     # Query filter
     def Q_current_group(self, prefix=""):
         return Q(**{prefix+self.group_way: self.current_group})
-    
+
     def Q_groups_associated(self, prefix=""):
         return Q(**{prefix+self.group_way+"__in": self.tenant_groups})
 
@@ -76,7 +77,7 @@ class TenantAccess(RequestAccess):
 
     @property
     def current_tenant_group(self):
-        return self.request_access.user.current_tenant.group
+        return get_descendant_value("current_tenant.group", self.request_access.user)
 
     @property
     def tenant_groups(self):
