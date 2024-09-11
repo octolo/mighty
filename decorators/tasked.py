@@ -27,9 +27,6 @@ def TaskedModel(**kwargs):
                 self.task_list = None
 
             def backend_task(self, task, *args, **kwargs):
-                self._logger.warning("backend_task %s" % task)
-                self._logger.warning("ct %s" % self.get_content_type().id)
-                self._logger.warning("pk %s" % self.pk)
                 return import_string("%s.TaskBackend" % MightyConfig.backend_task)(
                     ct=self.get_content_type().id,
                     pk=self.pk,
