@@ -5,4 +5,4 @@ from mighty.applications.nationality import fields
 class NationalitySerializer(ModelSerializer):
     class Meta:
         model = Nationality
-        fields = fields.nationality + ('image_url',)
+        fields = fields.nationality

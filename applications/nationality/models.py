@@ -23,11 +23,11 @@ class Nationality(Base, Image):
     def __str__(self):
         return "%s (%s, %s, %s)" % (self.country, self.alpha2, self.alpha3, self.numeric)
 
-    @property
-    def image_html(self):
-        if self.image:
-            return format_html('<img src="%s" title="%s" style="max-height: 20px">' % (self.image.url, str(self)))
-        return        
+    # @property
+    # def image_html(self):
+    #     if self.image:
+    #         return format_html('<img src="%s" title="%s" style="max-height: 20px">' % (self.image.url, str(self)))
+    #     return
 
 class Translator(Base):
     name = models.CharField(max_length=255)
@@ -63,7 +63,7 @@ class TranslateDict(Base):
         for key,tr in self.translates.items():
             self.one_dim_keytr(self.translator.name+"."+key, tr)
         return self.one_dim
-            
+
     def one_dim_keytr(self, key, tr):
         if type(tr) == dict:
             for key2,tr2 in tr.items():

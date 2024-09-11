@@ -17,12 +17,12 @@ class Command(Command):
         obj.numeric = row[self.reverse['numeric']]
         if row[self.reverse['numbering']]:
             obj.numbering = row[self.reverse['numbering']]
-        img = '%s/flags/%s.png' % (conf.directory, row[self.reverse['alpha2']].lower())
-        if obj.image and os.path.isfile(obj.image.path):
-            os.remove(obj.image.path) 
-            obj.image = None
-        if os.path.isfile(img):
-            f = open(img, "rb")
-            flag = File(f)
-            obj.image.save(img, flag, save=True)
+        # img = '%s/flags/%s.png' % (conf.directory, row[self.reverse['alpha2']].lower())
+        # if obj.image and os.path.isfile(obj.image.path):
+        #     os.remove(obj.image.path)
+        #     obj.image = None
+        # if os.path.isfile(img):
+        #     f = open(img, "rb")
+        #     flag = File(f)
+        #     obj.image.save(img, flag, save=True)
         obj.save()

@@ -18,14 +18,14 @@ class Command(CSVModelCommand):
         for field in ("alpha2", "alpha3", "numeric", "numbering"):
             if row[field]:
                 setattr(obj, field, row[field])
-        img = '%s/flags/%s.png' % (conf.directory, obj.alpha2.lower())
-        if obj.image and os.path.isfile(obj.image.path):
-            os.remove(obj.image.path)
-            obj.image = None
-        if os.path.isfile(img):
-            f = open(img, "rb")
-            flag = File(f)
-            obj.image.save(img, flag, save=True)
+        # img = '%s/flags/%s.png' % (conf.directory, obj.alpha2.lower())
+        # if obj.image and os.path.isfile(obj.image.path):
+        #     os.remove(obj.image.path)
+        #     obj.image = None
+        # if os.path.isfile(img):
+        #     f = open(img, "rb")
+        #     flag = File(f)
+        #     obj.image.save(img, flag, save=True)
         obj.save()
         if self.position >= 2:
             self.stop_loop = True
