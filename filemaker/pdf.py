@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.staticfiles.finders import find as find_static_file
 from django.template import Template, Context
+from django.template.loader import get_template
 from django.core.files.base import ContentFile
 from weasyprint import HTML
 import logger
@@ -15,6 +16,7 @@ class FileMakerPDF:
     header, html, footer = "", "", ""
     config, context, fonts, images = {}, {}, {}, {}
     current_pdf = None
+    template_name = None
 
     body_html = """<!DOCTYPE html>
 <html>
@@ -76,6 +78,8 @@ class FileMakerPDF:
         return self.header
 
     def get_body_html(self):
+        if self.template_name:
+            return get_template(self.template_name).render(self.context)
         template = Template(self.html)
         return template.render(Context(self.context))
 

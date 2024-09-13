@@ -33,7 +33,7 @@ class BaseCommand(BaseCommand, EnableLogger):
     userlog_cache = None
     ftotal = "total"
     total = 0
-    date_start = timezone.now()
+    command_date_start = timezone.now()
 
     def init_importer(self, importer):
         self.importer = import_string(self.importer_path+".importers.{}.Importer".format(importer))()
