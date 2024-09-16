@@ -72,15 +72,10 @@ class Command(BaseCommand):
             os.remove(fullpath)
 
     def backup_cloud(self, archive):
-        cloudstorage = settings.MEDIA_ROOT + '/%s' % conf.Directory.cloud
+        cloudstorage =  + '/%s' % conf.Directory.cloud
         if os.path.isdir(cloudstorage):
             archive.add(cloudstorage, arcname=conf.Directory.cloud[:-1])
             shutil.rmtree(cloudstorage)
-
-    def backup_media(self, archive):
-        mediastorage = settings.MEDIA_ROOT
-        if os.path.isdir(mediastorage):
-            archive.add(mediastorage, arcname=settings.MEDIA_URL.replace('/', ''))
 
     def do(self):
         self.get_dir()
@@ -89,5 +84,3 @@ class Command(BaseCommand):
                 self.backup_csv(archive)
             if 'cloud' in self.backup:
                 self.backup_cloud(archive)
-            if 'media' in self.backup:
-                self.backup_media(archive)

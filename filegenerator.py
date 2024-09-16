@@ -134,8 +134,7 @@ def generate_pdf(**kwargs):
     content_html = kwargs.get("content_html", False)
     as_string = kwargs.get("as_string", False)
     context.update({
-        "media": os.path.abspath(settings.MEDIA_ROOT),
-        "static": os.path.abspath(settings.MEDIA_ROOT),
+        "static": os.path.abspath(settings.STATIC_ROOT),
     })
 
     # header
