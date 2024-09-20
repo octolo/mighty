@@ -8,7 +8,11 @@ except Exception:
     from jsonfield import JSONField
 
 def RichTextField(*args, **kwargs):
-    return TextField(*args, **kwargs)
+    if "django_ckeditor_5" in settings.INSTALLED_APPS:
+        from django_ckeditor_5.fields import CKEditor5Field
+        return CKEditor5Field(*args, **kwargs)
+    else:
+        return TextField(*args, **kwargs)
 
 # Fields mighty
 uid = ('uid',)
