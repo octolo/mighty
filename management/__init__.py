@@ -287,8 +287,6 @@ class ImportModelCommand(ModelBaseCommand):
             if self.loader or self.progressbar:
                 self.progress_bar()
             getattr(self, do)(row)
-            if self.stop_loop and os.environ.get('CI'):
-                break
 
     def on_row(self, row):
         raise NotImplementedError("Command should implement method on_object(self, obj)")
