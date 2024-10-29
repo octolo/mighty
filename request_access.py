@@ -1,5 +1,4 @@
 from mighty.functions import get_request_kept
-from functools import cached_property
 
 class RequestAccess:
     @property
