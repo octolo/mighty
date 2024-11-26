@@ -1,14 +1,19 @@
 
-from django.http import HttpResponse, FileResponse
-from django.template.loader import get_template
-from django.template import Context, Template
-from django.db.models import Q
+import json
+import os
+import tempfile
 
-from mighty.views.crud import DetailView
+import pdfkit
+import pypandoc
+from django.db.models import Q
+from django.http import FileResponse, HttpResponse
+from django.template import Context, Template
+from django.template.loader import get_template
+
 from mighty.apps import MightyConfig as conf
 from mighty.functions import setting
+from mighty.views.crud import DetailView
 
-import pdfkit, os, tempfile
 
 class PDFView(DetailView):
     header_html = None
@@ -22,6 +27,11 @@ class PDFView(DetailView):
     content_html = conf.pdf_content
     tmp_pdf = None
     config = {}
+    post_data = {}
+
+    def post(self, request, *args, **kwargs):
+        self.post_data = json.loads(request.body.decode('utf-8'))
+        return self.get(request, *args, **kwargs)
 
     def get_object(self):
         if not self.cache_object:
@@ -98,9 +108,30 @@ class PDFView(DetailView):
         if self.tmp_pdf and os.path.isfile(self.tmp_pdf.name):
             os.remove(self.tmp_pdf.name)
 
+    def render_to_word(self, context):
+        html_content = Template(self.post_data.get("raw_template")).render(context)
+        # Créer un fichier temporaire pour stocker le fichier DOCX
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp_file:
+            output_path = tmp_file.name
+            # Utiliser pypandoc pour convertir le HTML en DOCX et écrire dans le fichier temporaire
+            pypandoc.convert_text(html_content, 'docx', format='html', outputfile=output_path)
+        # Ouvrir le fichier temporaire pour le lire
+        with open(output_path, 'rb') as docx_file:
+            # Lire le contenu du fichier DOCX
+            docx_content = docx_file.read()
+        # Supprimer le fichier temporaire après lecture
+        os.remove(output_path)
+        # Préparer la réponse HTTP avec le fichier DOCX
+        response = HttpResponse(docx_content, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+        response['Content-Disposition'] = 'attachment; filename="%s"' %  self.get_pdf_name().replace("pdf", "docx")
+        return response
+
     def render_to_response(self, context, **response_kwargs):
         self.prepare_options()
-        if self.request.GET.get('save', False): self.save_pdf(context)
+        if self.request.GET.get('save', False):
+            self.save_pdf(context)
+        if self.post_data.get('action', False) == 'word':
+            return self.render_to_word(context)
         if self.in_browser:
             with tempfile.NamedTemporaryFile(suffix='.pdf', delete=True) as tmp_pdf:
                 pdf = pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.options)
