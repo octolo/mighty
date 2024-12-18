@@ -374,7 +374,7 @@ class Base(models.Model):
 
     # Search facilities
     def get_search_fields(self):
-        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields if getattr(self, field)]+self.timeline_search()).split()
+        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields if getattr(self, field)] + self.timeline_search()).split()
 
     def timeline_relate(self):
         return str(self.__class__.__name__).lower() + 'timeline_set'
@@ -385,14 +385,15 @@ class Base(models.Model):
         return []
 
     def set_search(self):
-        self.search = '_'+'_'.join(list(dict.fromkeys(self.get_search_fields())))
+        self.search = '_' + '_'.join(list(dict.fromkeys(self.get_search_fields())))
 
     # Log facilities
     def get_log(self, lvl, field=None):
         return self.logs[lvl][field]
 
     def add_log(self, lvl, msg, field=None):
-        if lvl not in self.logs: self.logs[lvl] = {}
+        if lvl not in self.logs:
+            self.logs[lvl] = {}
         self.logs[lvl][field] = msg
 
     def del_log(self, lvl, field=None):
@@ -402,8 +403,9 @@ class Base(models.Model):
         return True if lvl in self.logs else False
 
     def has_log(self):
-        for lvl,errors in self.logs.items():
-            if any(errors): return True
+        for lvl, errors in self.logs.items():
+            if any(errors):
+                return True
         return False
 
     # Cache facilities
@@ -426,19 +428,22 @@ class Base(models.Model):
     @property
     def create_by_id(self):
         return self.create_by.split('.')[0]
+
     @property
     def update_by_id(self):
         return self.update_by.split('.')[0]
+
     @property
     def create_by_username(self):
         return self.create_by.split('.')[1]
+
     @property
     def update_by_username(self):
         return self.update_by.split('.')[1]
 
     @property
     def fields_changed(self):
-        return (field for field in self.fields() if self.property_change(field))
+        return (field for field in self.fields() if hasattr(self, field) and self.property_change(field))
 
     def set_create_by(self, user=None):
         if user and self.use_create_by:
@@ -465,14 +470,21 @@ class Base(models.Model):
         self.is_disable = False
         self.save()
 
-    def default_data(self):
+    def on_change_data(self, action="on"):
+        for field in self.fields_changed:
+            fct = '%s_change_%s' % (action, field)
+            if hasattr(self, fct) and callable(getattr(self, fct)):
+                getattr(self, fct)()
+
+    def on_pre_save(self):
         request = get_request_kept()
         self.set_search()
         self.set_update_by(get_request_kept().user if request else None)
         if self.pk:
-            self.update_count+=1
+            self.update_count += 1
             self.www_action = "update"
             if "pre_update" not in self.www_action_cancel:
+                self.on_change_data("pre")
                 self._logger.debug("pre_update %s (%s)" % (type(self), str(self.pk)))
                 self.pre_update()
         else:
@@ -481,28 +493,32 @@ class Base(models.Model):
             if "pre_create" not in self.www_action_cancel:
                 self._logger.debug("pre_create %s" % (type(self)))
                 self.pre_create()
+        self.pre_save()
+
+    def on_post_save(self):
+        if self.pk is None:
+            if "post_create" not in self.www_action_cancel:
+                self._logger.debug("post_create %s (%s)" % (type(self), str(self.pk)))
+                self.post_create()
+        else:
+            if "post_update" not in self.www_action_cancel:
+                self.on_change_data("post")
+                self._logger.debug("post_update %s (%s)" % (type(self), str(self.pk)))
+                self.post_update()
+            if "mighty.applications.logger" in settings.INSTALLED_APPS:
+                self._logger.debug("save_model_change_log %s (%s)" % (type(self), str(self.pk)))
+                self.save_model_change_log()
+        if "post_save" not in self.www_action_cancel:
+            self._logger.debug("post_save %s (%s)" % (type(self), str(self.pk)))
+            self.post_save()
 
     def save(self, *args, **kwargs):
         if self.can_be_changed:
-            do_post_create = True if self.pk is None else False
             self._logger.debug("pre_save %s (%s)" % (type(self), str(self.pk)))
-            self.default_data()
-            self.pre_save()
+            self.on_pre_save()
+            self.on_change_data()
             super().save(*args, **kwargs)
-            if do_post_create:
-                if "post_create" not in self.www_action_cancel:
-                    self._logger.debug("post_create %s (%s)" % (type(self), str(self.pk)))
-                    self.post_create()
-            else:
-                if "post_update" not in self.www_action_cancel:
-                    self._logger.debug("post_update %s (%s)" % (type(self), str(self.pk)))
-                    self.post_update()
-                if "mighty.applications.logger" in settings.INSTALLED_APPS:
-                    self._logger.debug("save_model_change_log %s (%s)" % (type(self), str(self.pk)))
-                    self.save_model_change_log()
-            if "post_save" not in self.www_action_cancel:
-                self._logger.debug("post_save %s (%s)" % (type(self), str(self.pk)))
-                self.post_save()
+            self.on_post_save()
         else:
             self._logger.debug("is_immutable %s (%s)" % (type(self), str(self.pk)))
             raise self.raise_error(code="is_immutable", message="is immutable")
