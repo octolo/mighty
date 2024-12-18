@@ -484,7 +484,7 @@ class Base(models.Model):
             self.update_count += 1
             self.www_action = "update"
             if "pre_update" not in self.www_action_cancel:
-                self.on_change_data("pre")
+                self.on_change_data("pre_update")
                 self._logger.debug("pre_update %s (%s)" % (type(self), str(self.pk)))
                 self.pre_update()
         else:
@@ -502,7 +502,7 @@ class Base(models.Model):
                 self.post_create()
         else:
             if "post_update" not in self.www_action_cancel:
-                self.on_change_data("post")
+                self.on_change_data("post_update")
                 self._logger.debug("post_update %s (%s)" % (type(self), str(self.pk)))
                 self.post_update()
             if "mighty.applications.logger" in settings.INSTALLED_APPS:
@@ -516,7 +516,6 @@ class Base(models.Model):
         if self.can_be_changed:
             self._logger.debug("pre_save %s (%s)" % (type(self), str(self.pk)))
             self.on_pre_save()
-            self.on_change_data()
             super().save(*args, **kwargs)
             self.on_post_save()
         else:
@@ -527,10 +526,12 @@ class Base(models.Model):
         self.www_action = "delete"
         if self.can_be_deleted:
             if "pre_delete" not in self.www_action_cancel:
+                self.on_change_data("pre_delete")
                 self._logger.debug("pre_delete %s (%s)" % (type(self), str(self.pk)))
                 self.pre_delete()
             super().delete(*args, **kwargs)
             if "post_delete" not in self.www_action_cancel:
+                self.on_change_data("post_delete")
                 self._logger.debug("post_delete %s (%s)" % (type(self), str(self.pk)))
                 self.post_delete()
         else:
