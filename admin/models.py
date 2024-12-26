@@ -1,4 +1,6 @@
+from django.core.exceptions import PermissionDenied
 from django.contrib import admin, messages
+from django.contrib.admin.exceptions import DisallowedModelAdminToField
 from django.db import router, transaction
 from django.contrib.auth import get_permission_codename
 from django.contrib.admin.options import csrf_protect_m, IS_POPUP_VAR, TO_FIELD_VAR, get_content_type_for_model
@@ -9,31 +11,23 @@ from django.http import HttpResponseRedirect
 from django_json_widget.widgets import JSONEditorWidget
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
-from django.views.decorators.cache import never_cache
 from django.forms.formsets import DELETION_FIELD_NAME, all_valid
 
-from django.contrib.admin import helpers, widgets
-from django.contrib.admin.utils import (
-    construct_change_message,
-    flatten_fieldsets,
-    get_deleted_objects,
-    quote,
-    unquote,
-)
-
+from django.contrib.admin import helpers
+from django.contrib.admin.utils import (flatten_fieldsets, unquote)
 
 from mighty import fields
 from mighty.forms import TimelineForm
 from mighty.fields import JSONField
 from mighty import translates as _m
-from mighty.admin.actions import disable_selected, enable_selected
 from mighty.admin.filters import InAlertListFilter, InErrorListFilter
 from mighty.functions import get_form_model, has_model_activate
 from mighty.models.source import CHOICES_TYPE
-from mighty.forms import TaskForm
 from mighty import decorators as decfields
 
 from functools import update_wrapper
+import json
+
 
 class BaseAdmin(admin.ModelAdmin):
     admin_form_template = None
@@ -100,17 +94,13 @@ class BaseAdmin(admin.ModelAdmin):
             "preserved_filters": self.get_preserved_filters(request),
         }
         if object_id:
-            context.update({ "object_id": object_id })
+            context.update({"object_id": object_id})
         context.update(extra_context or {})
         return self.render_admin_custom(request, context, obj=obj, template=template)
 
     def render_admin_custom(self, request, context, template, obj=None):
         context["object_tools_items"] = self.object_tools_items
         app_label = self.opts.app_label
-        preserved_filters = self.get_preserved_filters(request)
-        form_url = add_preserved_filters(
-            {"preserved_filters": preserved_filters, "opts": self.opts}, None
-        )
         view_on_site_url = self.get_view_on_site_url(obj)
         context.update(
             {
@@ -264,8 +254,6 @@ class BaseAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        import logging
-        logger = logging.getLogger(__name__)
         extra_context['object_tools_items'] = [item for item in self.object_tools_items if item.get("list")]
         return super().changelist_view(request, extra_context=extra_context)
 
@@ -284,11 +272,7 @@ class BaseAdmin(admin.ModelAdmin):
         view_on_site_url = self.get_view_on_site_url(obj)
         has_editable_inline_admin_formsets = False
         for inline in context["inline_admin_formsets"]:
-            if (
-                inline.has_add_permission
-                or inline.has_change_permission
-                or inline.has_delete_permission
-            ):
+            if (inline.has_add_permission or inline.has_change_permission or inline.has_delete_permission):
                 has_editable_inline_admin_formsets = True
                 break
         context.update(
@@ -357,7 +341,8 @@ class BaseAdmin(admin.ModelAdmin):
             return self._adminform_view(request, object_id, form_url, extra_context, template, **kwargs)
 
     def get_queryset(self, request):
-        if self.queryset: return self.queryset
+        if self.queryset:
+            return self.queryset
         return super().get_queryset(request)
 
     def has_permission(self, request):
@@ -367,19 +352,26 @@ class BaseAdmin(admin.ModelAdmin):
         return obj.detail_url or False if self.access_in_front else False
 
     def category_exist(self, category):
-        for i in [i for i,x in enumerate(self.fieldsets) if x[0] == category]:
+        for i in [i for i, x in enumerate(self.fieldsets) if x[0] == category]:
             return i
         return False
 
     def add_field(self, category, fields):
         if self.fieldsets:
             pos = self.category_exist(category)
-            if pos: self.fieldsets[pos][1]['fields'] += fields
-            else: self.fieldsets += ((category, {'classes': ('collapse',), 'fields': fields},),)
+            if pos:
+                self.fieldsets[pos][1]['fields'] += fields
+            else:
+                self.fieldsets += ((category, {'classes': ('collapse',), 'fields': fields},),)
 
-    def custom_fieldset(self, model, admin_site): pass
-    def custom_tasklist(self, model, admin_site): pass
-    def custom_filter(self, model, admin_site): pass
+    def custom_fieldset(self, model, admin_site):
+        pass
+
+    def custom_tasklist(self, model, admin_site):
+        pass
+
+    def custom_filter(self, model, admin_site):
+        pass
 
     def add_some_fields(self, model, admin_site):
         for field in fields.base:
@@ -401,8 +393,10 @@ class BaseAdmin(admin.ModelAdmin):
             self.custom_tasklist(model, admin_site)
         if hasattr(model, "reporting_list"):
             self.add_field("reporting", decfields.reporting_fields)
-        if hasattr(model, 'alerts'): self.list_filter += (InAlertListFilter,)
-        if hasattr(model, 'errors'): self.list_filter += (InErrorListFilter,)
+        if hasattr(model, 'alerts'):
+            self.list_filter += (InAlertListFilter,)
+        if hasattr(model, 'errors'):
+            self.list_filter += (InErrorListFilter,)
         self.custom_filter(model, admin_site)
 
     def add_some_readonly_fields(self, model, admin_site):
@@ -416,7 +410,6 @@ class BaseAdmin(admin.ModelAdmin):
         self.add_some_readonly_fields(model, admin_site)
 
     def task_view(self, request, object_id, extra_context=None):
-        opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
         task = request.POST.get("task_list")
@@ -428,23 +421,13 @@ class BaseAdmin(admin.ModelAdmin):
         return redirect(obj.admin_change_url)
 
     def reporting_view(self, request, object_id, extra_context=None):
-        opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
         response = obj.reporting_execute(request)
-
-        #reporting = request.POST.get("reporting_list")
-        #file_type = request.POST.get("file_type")
-        #response = obj.reporting_process(reporting, file_type)
-        if response: return response
+        if response:
+            return response
         messages.warning(request, 'No reporting to do')
         return redirect(obj.admin_change_url)
-
-    #def save_model(self, request, obj, form, change):
-    #    #if not obj.create_by:
-    #    #    if hasattr(obj, 'create_by'): obj.set_create_by(request.user)
-    #    #if hasattr(obj, 'update_by'):  obj.set_update_by(request.user)
-    #    super().save_model(request, obj, form, change)
 
     def has_enable_permission(self, request, obj=None):
         opts = self.opts
@@ -496,22 +479,6 @@ class BaseAdmin(admin.ModelAdmin):
         for o in queryset:
             o.enable()
 
-    def log_enablion(self, request, object, object_repr):
-        """
-        Log that an object will be deleted. Note that this method must be
-        called before the deletion.
-
-        The default implementation creates an admin LogEntry object.
-        """
-        from django.contrib.admin.models import LogEntry, DELETION
-        return LogEntry.objects.log_action(
-            user_id=request.user.pk,
-            content_type_id=get_content_type_for_model(object).pk,
-            object_id=object.pk,
-            object_repr=object_repr,
-            action_flag=DELETION,
-        )
-
     def get_queryset_by_contenttype(self, model, request):
         qs = model._default_manager.get_queryset()
         ordering = self.get_ordering(request)
@@ -534,8 +501,10 @@ class BaseAdmin(admin.ModelAdmin):
     def wrap(self, view, object_tools=None):
         if object_tools:
             self.object_tools_items.append(object_tools)
+
         def wrapper(*args, **kwargs):
             return self.admin_site.admin_view(view)(*args, **kwargs)
+
         wrapper.model_admin = self
         return update_wrapper(wrapper, view)
 
@@ -604,7 +573,6 @@ class BaseAdmin(admin.ModelAdmin):
         return TemplateResponse(request, 'admin/timeline_list.html', context)
 
     def source_choice_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
-        info = self.model._meta.app_label, self.model._meta.model_name
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
@@ -799,7 +767,8 @@ class BaseAdmin(admin.ModelAdmin):
         disabled_objects, model_count, perms_needed, protected = self.get_deleted_objects([obj], request)
 
         if request.POST and not protected:  # The user has confirmed the deletion.
-            if perms_needed: raise PermissionDenied
+            if perms_needed:
+                raise PermissionDenied
             obj_display = str(obj)
             attr = str(to_field) if to_field else opts.pk.attname
             obj_id = obj.serializable_value(attr)
@@ -866,12 +835,14 @@ class BaseAdmin(admin.ModelAdmin):
         opts = self.model._meta
         app_label = opts.app_label
         request.current_app = self.admin_site.name
-        context.update( to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media,)
+        context.update(to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media,)
         return TemplateResponse(request,
             self.disable_confirmation_template or [
-                "admin/%s/%s/disable_confirmation.html"% (app_label, opts.model_name),
-                "admin/%s/disable_confirmation.html" % app_label ,
-                "admin/disable_confirmation.html",], context,)
+                "admin/%s/%s/disable_confirmation.html" % (app_label, opts.model_name),
+                "admin/%s/disable_confirmation.html" % app_label,
+                "admin/disable_confirmation.html",
+            ],
+            context,)
 
     @csrf_protect_m
     def enable_view(self, request, object_id, extra_context=None):
@@ -950,7 +921,7 @@ class BaseAdmin(admin.ModelAdmin):
                 'popup_response_data': popup_response_data,
             })
 
-        self.message_user(request, _m.enable_ok % {'name': opts.verbose_name,'obj': obj_display,}, messages.SUCCESS, )
+        self.message_user(request, _m.enable_ok % {'name': opts.verbose_name, 'obj': obj_display}, messages.SUCCESS,)
         if self.has_change_permission(request, None):
             post_url = reverse(
                 'admin:%s_%s_changelist' % (opts.app_label, opts.model_name),
@@ -968,9 +939,11 @@ class BaseAdmin(admin.ModelAdmin):
         opts = self.model._meta
         app_label = opts.app_label
         request.current_app = self.admin_site.name
-        context.update( to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media, )
+        context.update(to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media,)
         return TemplateResponse(request,
             self.enable_confirmation_template or [
                 "admin/%s/%s/enable_confirmation.html" % (app_label, opts.model_name),
                 "admin/%s/enable_confirmation.html" % app_label,
-                "admin/enable_confirmation.html",], context,)
+                "admin/enable_confirmation.html",
+            ],
+            context,)
