@@ -1,27 +1,36 @@
-from django.db import models
-from django.urls import reverse
-from django.utils.html import format_html
-from django.db.models.options import Options
-from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
-from django.template.loader import get_template
-from django.core.exceptions import ValidationError
-from django.core.exceptions import FieldDoesNotExist
-
-from mighty.apps import MightyConfig as config
-from mighty.functions import url_domain
-from mighty.fields import JSONField
-from mighty.models import fields
-from mighty.functions import make_searchable, get_request_kept, get_logger, get_model
-from mighty import translates as _
-
+import copy
+import json
+from sys import getsizeof
 from types import FunctionType
 from uuid import uuid4
-from sys import getsizeof
-import copy, json
+
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import FieldDoesNotExist, ValidationError
+from django.db import models
+from django.db.models.options import Options
+from django.template.loader import get_template
+from django.urls import reverse
+from django.utils.html import format_html
+
+from mighty import translates as _
+from mighty.apps import MightyConfig as config
+from mighty.fields import JSONField
+from mighty.functions import (
+    get_logger,
+    get_model,
+    get_request_kept,
+    make_searchable,
+    url_domain,
+)
+from mighty.models import fields
 
 if "mighty.applications.messenger" in settings.INSTALLED_APPS:
-    from mighty.applications.messenger import notify, notify_discord, notify_slack
+    from mighty.applications.messenger import (
+        notify,
+        notify_discord,
+        notify_slack,
+    )
 if "mighty.applications.logger" in settings.INSTALLED_APPS:
     from mighty.applications.logger.notify.discord import DiscordLogger
     from mighty.applications.logger.notify.slack import SlackLogger
@@ -106,8 +115,8 @@ class Base(models.Model):
 
         def save_model_change_log(self):
             if self._unmodified and self.enable_model_change_log:
-                from mighty.functions import models_difference
                 from mighty.fields import base
+                from mighty.functions import models_difference
                 exclude =  base + tuple(self.m2o_fields().keys()) + tuple(self.m2m_fields().keys()) + tuple(self.changelog_exclude)
                 new, old = models_difference(self, self._unmodified, exclude)
                 if len(old) > 0:
@@ -526,12 +535,10 @@ class Base(models.Model):
         self.www_action = "delete"
         if self.can_be_deleted:
             if "pre_delete" not in self.www_action_cancel:
-                self.on_change_data("pre_delete")
                 self._logger.debug("pre_delete %s (%s)" % (type(self), str(self.pk)))
                 self.pre_delete()
             super().delete(*args, **kwargs)
             if "post_delete" not in self.www_action_cancel:
-                self.on_change_data("post_delete")
                 self._logger.debug("post_delete %s (%s)" % (type(self), str(self.pk)))
                 self.post_delete()
         else:
