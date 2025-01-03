@@ -11,21 +11,32 @@ Add [file, name, mimetype] field at the model
 (valid_file_name) get a valid name for filesystem
 (file_extension) return the extension
 """
-from django.db import models
-from django.utils.text import get_valid_filename
-from django.utils.html import format_html
-from django.http import FileResponse
-from django.core.exceptions import  PermissionDenied
+import hashlib
+import logging
+import os
+import tempfile
+from sys import getsizeof
+
+import magic
+import requests
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db import models
+from django.http import FileResponse
+from django.utils.html import format_html
 from django.utils.module_loading import import_string
-from mighty.functions import file_directory_path, pretty_size_long, pretty_size_short
-from mighty.thumbnail import Thumbnail
-from mighty.fields import JSONField
+from django.utils.text import get_valid_filename
 
-from sys import getsizeof
-import os, magic, logging, requests, tempfile, hashlib
+from mighty.fields import JSONField
+from mighty.functions import (
+    file_directory_path,
+    pretty_size_long,
+    pretty_size_short,
+)
+from mighty.thumbnail import Thumbnail
+
 logger = logging.getLogger(__name__)
 
 class File(models.Model):
@@ -122,6 +133,8 @@ class File(models.Model):
         return import_string(self.reader_path) if self.reader_path else None
 
     # PROPERTIES
+    @property
+    def has_extension(self): return True if self.file_extension else False
     @property
     def file_url(self): return self.file.url
     @property
