@@ -260,7 +260,7 @@ class Base(models.Model):
     """
     # Model
     @property
-    def uid_or_pk_arg(self): return 'uid' if hastattr(self, 'uid') else 'pk'
+    def uid_or_pk_arg(self): return 'uid' if hasattr(self, 'uid') else 'pk'
     @property
     def uid_or_pk(self): return getattr(self, self.uid_or_pk_arg)
     @property
@@ -505,6 +505,11 @@ class Base(models.Model):
         self.pre_save()
 
     def on_post_save(self):
+        self._logger.info("on_post_save %s (%s)" % (type(self), str(self.pk)))
+        self._logger.info("www_action %s" % self.www_action)
+        if "post_save" not in self.www_action_cancel:
+            self._logger.debug("post_save %s (%s)" % (type(self), str(self.pk)))
+            self.post_save()
         if self.www_action == "create":
             self._logger.warning("post_create 1 %s" % (type(self)))
             if "post_create" not in self.www_action_cancel:
@@ -518,9 +523,6 @@ class Base(models.Model):
             if "mighty.applications.logger" in settings.INSTALLED_APPS:
                 self._logger.debug("save_model_change_log %s (%s)" % (type(self), str(self.pk)))
                 self.save_model_change_log()
-        if "post_save" not in self.www_action_cancel:
-            self._logger.debug("post_save %s (%s)" % (type(self), str(self.pk)))
-            self.post_save()
 
     def save(self, *args, **kwargs):
         if self.can_be_changed:
