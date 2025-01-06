@@ -1,8 +1,10 @@
 from django.apps import AppConfig
 from django.conf import settings
+from django.contrib.auth import get_user_model
+
 from mighty import over_config
 from mighty.functions import setting
-from django.contrib.auth import get_user_model
+
 
 class Config:
     count_related = "roles_tenant"
@@ -39,6 +41,7 @@ class Config:
     group_api = {
         "uid": "group.uid",
         "image_url": "group.image_url",
+        "since": "group.since",
     }
 
     class ForeignKey:
