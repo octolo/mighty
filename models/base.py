@@ -505,15 +505,12 @@ class Base(models.Model):
         self.pre_save()
 
     def on_post_save(self):
-        self._logger.info("on_post_save %s (%s)" % (type(self), str(self.pk)))
-        self._logger.info("www_action %s" % self.www_action)
         if "post_save" not in self.www_action_cancel:
             self._logger.debug("post_save %s (%s)" % (type(self), str(self.pk)))
             self.post_save()
         if self.www_action == "create":
-            self._logger.warning("post_create 1 %s" % (type(self)))
             if "post_create" not in self.www_action_cancel:
-                self._logger.warning("post_create 2 %s (%s)" % (type(self), str(self.pk)))
+                self._logger.debug("post_create %s (%s)" % (type(self), str(self.pk)))
                 self.post_create()
         else:
             if "post_update" not in self.www_action_cancel:

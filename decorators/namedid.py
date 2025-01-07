@@ -1,6 +1,8 @@
 from django.db import models
 from django.template.defaultfilters import slugify
+
 from mighty.functions import getattr_recursive
+
 
 def NamedIdModel(**kwargs):
     def decorator(obj):
@@ -34,7 +36,7 @@ def NamedIdModel(**kwargs):
                 return self.qs_named_id.filter(named_id=self.named_id).count()
 
             def set_named_id(self, offset=0):
-                base_name = "-".join([str(getattr_recursive(self, field)) for field in self.named_id_fields])
+                base_name = "-".join([str(getattr_recursive(self, field)) for field in self.named_id_fields if getattr_recursive(self, field)])
                 named_id = slugify(base_name)
                 count = self.count_named_id+offset
                 self.named_id = "%s-%s" % (named_id, count+1) if count > 0 else named_id
