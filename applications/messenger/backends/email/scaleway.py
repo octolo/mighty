@@ -1,16 +1,22 @@
-from django.core.mail.message import make_msgid
+import base64
+import json
+import os
+
+import requests
 from django.conf import settings
-from mighty.applications.messenger.backends import MissiveBackend
+from django.core.mail.message import make_msgid
+
 from mighty.applications.messenger import choices as _c
-from mighty.functions import setting
+from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
-import os, base64, json, requests
+from mighty.functions import setting
+
 
 class MissiveBackend(MissiveBackend):
-    SCW_SECRET_KEY = settings.SCALEWAY_SECRET_ACCESS_KEY_TEM
-    SCW_REGION = settings.SCALEWAY_REGION_TEM
-    SCW_PROJECT_ID = settings.SCALEWAY_PROJECT_ID_TEM
-    # SCW_DOMAIN_TEM = settings.SCALEWAY_DOMAIN_TEM
+    SCW_SECRET_KEY = settings.SCALEWAY_SECRET_ACCESS_KEY
+    SCW_REGION = settings.SCALEWAY_REGION
+    SCW_PROJECT_ID = settings.SCALEWAY_PROJECT_ID
+    # SCW_DOMAIN = settings.SCALEWAY_DOMAIN
     APIURL = "https://api.scaleway.com/transactional-email/v1alpha1/regions/%s/emails"
     STATUS = {}
     in_error = False
