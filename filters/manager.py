@@ -1,7 +1,9 @@
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import QueryDict
-from django.core.exceptions import PermissionDenied
+
 from mighty.applications.logger import EnableLogger
+
 
 class FiltersManager(EnableLogger):
     cache_filters = None
@@ -48,13 +50,11 @@ class FiltersManager(EnableLogger):
         if not self.cache_filters:
             self.cache_filters = []
             self.data = list(self.get_data(request).lists())
-            self.logger.debug('URL data: %s' % self.data)
             for param, value in self.data:
                 flt = self.get_filter(param, value)
-                if flt: self.cache_filters.append(flt)
+                if flt:
+                    self.cache_filters.append(flt)
         self.cache_filters += (f.sql() for f in self.flts if f.default_value)
-        #self.cache_filters = [f.sql(request) for f in self.flts if f.sql(request)]
-        self.logger.debug('Filter: %s' % self.cache_filters)
         return self.cache_filters
 
     def add(self, id_, filter_):
