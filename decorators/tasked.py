@@ -12,7 +12,7 @@ TASK_STATUS = (
 
 def TaskedModel(**kwargs):
     def decorator(obj):
-        class TaskedModel(obj):
+        class NewClass(obj):
             task_list = models.CharField(max_length=252, blank=True, null=True, choices=kwargs.get("task_list", ()))
             task_status = models.CharField(max_length=25, choices=TASK_STATUS, default="AVAILABLE")
             task_last = models.CharField(max_length=252, blank=True, null=True)
@@ -52,5 +52,6 @@ def TaskedModel(**kwargs):
             @property
             def admin_task_url(self): return self.get_url('task', self.app_admin, arguments=self.admin_url_args)
 
-        return TaskedModel
+        NewClass.__name__ = obj.__name__
+        return NewClass
     return decorator

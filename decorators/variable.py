@@ -3,7 +3,7 @@ from django.template import Context, Template
 def EnableVariableEditorModel(**kwargs):
     def wrapper(obj):
         from mighty.models import TemplateVariable
-        class EVEmodel(obj):
+        class NewClass(obj):
             eve_variable_to_match = kwargs.get("to_match", "vhtml_")
             eve_variable_fields = kwargs.get("fields", [])
             eve_variable_list = []
@@ -144,5 +144,6 @@ def EnableVariableEditorModel(**kwargs):
                 self.eve_add_template_variable()
                 return self.eve_variable_list
 
-        return EVEmodel
+        NewClass.__name__ = obj.__name__
+        return NewClass
     return wrapper

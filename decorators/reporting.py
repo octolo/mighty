@@ -9,7 +9,7 @@ reporting_fields = ("reporting_frequency", "reporting_task_date", "reporting_ema
 
 def ReportingModel(**kwargs):
     def decorator(obj):
-        class ReportingModel(obj):
+        class NewClass(obj):
             reporting_frequency = models.CharField(_.reporting_frequency, max_length=25, choices=_.FREQUENCY_EXPORT, blank=True, null=True)
             reporting_task_date = models.JSONField(default=dict, blank=True, null=True)
             reporting_email = models.EmailField(_.reporting_email, max_length=254, blank=True, null=True)
@@ -96,5 +96,6 @@ def ReportingModel(**kwargs):
                     spec, reporting = reporting.split(":")
                     return self.reporting_process(spec, reporting, file_type, *args, **kwargs)
 
-        return ReportingModel
+        NewClass.__name__ = obj.__name__
+        return NewClass
     return decorator

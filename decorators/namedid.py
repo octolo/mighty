@@ -42,7 +42,7 @@ def NamedIdModel(**kwargs):
                 self.named_id = "%s-%s" % (named_id, count+1) if count > 0 else named_id
                 if self.named_id_exist: self.set_named_id(offset+1)
 
-            class Meta:
+            class Meta(obj.Meta):
                 abstract = obj._meta.abstract
 
         NewClass.__name__ = obj.__name__
