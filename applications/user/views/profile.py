@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
-from mighty.views import DetailView
-from mighty.applications.user.apps import UserConfig
+
 from mighty.applications.user import fields
+from mighty.applications.user.apps import UserConfig
+from mighty.views import DetailView
 
 UserModel = get_user_model()
 
@@ -31,7 +32,11 @@ class ProfileBaseView:
 
     def get_fields(self):
         user = self.get_object()
-        user_data = {'uid': str(user.uid)}
+        user_data = {
+            'uid': str(user.uid),
+            'email': user.email,
+            'phone': user.phone,
+        }
         user_data.update({field: getattr(user, field) for field in fields.profile})
         if hasattr(user, 'current_tenant') and user.current_tenant:
             user_data.update({'current_tenant': user.current_tenant.uid})
