@@ -82,16 +82,6 @@ if "mighty.applications.grapher" in settings.INSTALLED_APPS:
     urlpatterns += urls_grapher.urlpatterns
 
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-
-api_urlpatterns.append(
-    path('token/', include([
-        path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-        path('obtain/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-        path('verify/', TokenVerifyView.as_view(), name='token_verify'),
-    ]))
-)
-
 #Enable app chat
 #if "mighty.applications.chat" in settings.INSTALLED_APPS:
 #    from mighty.applications.chat.urls import urlpatterns as urls_chat
