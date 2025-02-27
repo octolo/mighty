@@ -1,6 +1,4 @@
 from django.db import models
-from django.utils.module_loading import import_string
-from django.utils.text import get_valid_filename
 
 from mighty.models.base import Base
 from mighty.applications.shop.apps import ShopConfig
@@ -22,7 +20,7 @@ class Bill(Base, PDFModel, ChargeModel):
     # Date
     date_paid = models.DateField(blank=True, null=True)
     date_payment = models.DateTimeField(blank=True, null=True, editable=False)
-    
+
     # Status
     paid = models.BooleanField(default=False, editable=False)
     numero = models.CharField(max_length=10, blank=True, null=True)
@@ -42,7 +40,7 @@ class Bill(Base, PDFModel, ChargeModel):
     end_amount = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
     tva_calc_month = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
     total_calc_month = models.DecimalField(blank=True, null=True, max_digits=9, decimal_places=2)
-    
+
     class Meta(Base.Meta):
         abstract = True
         unique_together = ShopConfig.bill_unique_together

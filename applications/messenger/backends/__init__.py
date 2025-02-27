@@ -1,19 +1,18 @@
-from django.conf import settings
-from django.contrib.auth.backends import ModelBackend
-from django.utils.text import get_valid_filename
-from django.contrib.auth import get_user_model
-from django.core.mail import send_mail, EmailMessage, EmailMultiAlternatives
+import os
+import tempfile
+
+import pdfkit
+from django.core.mail import EmailMessage
 from django.core.mail.message import make_msgid
 from django.template import Context, Template
 
-from mighty.apps import MightyConfig
-from mighty.functions import setting, searchable
-from mighty.models import Missive
-from mighty.applications.messenger import choices
-from mighty.applications.messenger.apps import MessengerConfig as conf
 from mighty.applications.logger import EnableLogger
+from mighty.applications.messenger import choices
+from mighty.applications.messenger.apps import MessengerConfig as conf  # noqa
+from mighty.apps import MightyConfig
+from mighty.functions import setting
+from mighty.models import Missive  # noqa
 
-import datetime, os, tempfile, pdfkit, shutil
 
 class MissiveBackend(EnableLogger):
     in_error = False
@@ -32,21 +31,22 @@ class MissiveBackend(EnableLogger):
 
     @property
     def message(self):
-        return self.missive.txt if self.missive.txt else self.missive.html
+        return self.missive.txt or self.missive.html
 
     def send(self):
         return getattr(self, 'send_%s' % self.missive.mode.lower())()
 
     def send_sms(self):
         over_target = setting('MISSIVE_PHONE', False)
-        self.missive.target = over_target if over_target else self.missive.target
-        self.logger.info("SMS - from : %s, to : %s" %
-            (self.sender_sms, self.missive.target))
+        self.missive.target = over_target or self.missive.target
+        self.logger.info(
+            'SMS - from : %s, to : %s' % (self.sender_sms, self.missive.target)
+        )
         if setting('MISSIVE_SERVICE', False):
             pass
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
-        self.logger.info("send sms: %s" % self.message, extra=self.extra)
+        self.logger.info('send sms: %s' % self.message, extra=self.extra)
         return self.missive.status
 
     def email_attachments(self):
@@ -54,7 +54,11 @@ class MissiveBackend(EnableLogger):
             logs = []
             for document in self.missive.attachments:
                 if setting('MISSIVE_SERVICE', False):
-                    self.email.attach(os.path.basename(document.name), document.read(), 'application/pdf')
+                    self.email.attach(
+                        os.path.basename(document.name),
+                        document.read(),
+                        'application/pdf',
+                    )
                 logs.append(os.path.basename(document.name))
             self.missive.logs['attachments'] = logs
         if setting('MISSIVE_SERVICE', False):
@@ -63,34 +67,36 @@ class MissiveBackend(EnableLogger):
     @property
     def sender_email(self):
         if self.missive.name:
-            return "%s <%s>" % (self.missive.name, self.missive.sender)
+            return '%s <%s>' % (self.missive.name, self.missive.sender)
         return self.missive.sender
 
     @property
     def reply_email(self):
-        return self.missive.reply if self.missive.reply else self.missive.sender
+        return self.missive.reply or self.missive.sender
 
     @property
     def reply_name(self):
-        return self.missive.reply_name if self.missive.reply_name else self.missive.name
+        return self.missive.reply_name or self.missive.name
 
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
-        self.missive.target = over_target if over_target else self.missive.target
-        self.logger.info("Email - from : %s, to : %s, reply : %s" %
-            (self.sender_email, self.missive.target, self.reply_email))
+        self.missive.target = over_target or self.missive.target
+        self.logger.info(
+            'Email - from : %s, to : %s, reply : %s'
+            % (self.sender_email, self.missive.target, self.reply_email)
+        )
         if setting('MISSIVE_SERVICE', False):
             self.missive.msg_id = make_msgid()
             self.email = EmailMessage(
                 self.missive.subject,
-                self.missive.html_format if self.missive.html_format else str(self.missive.txt),
+                self.missive.html_format or str(self.missive.txt),
                 self.sender_email,
                 [self.missive.target],
                 reply_to=[self.reply_email],
-                headers={'Message-Id': self.missive.msg_id}
+                headers={'Message-Id': self.missive.msg_id},
             )
             if self.missive.html_format:
-                self.email.content_subtype = "html"
+                self.email.content_subtype = 'html'
         self.email_attachments()
         self.missive.to_sent()
         self.missive.save()
@@ -125,31 +131,35 @@ class MissiveBackend(EnableLogger):
         # header
         header = self.missive.header_html
         header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        header_html.write(Template(header).render(context).encode("utf-8"))
+        header_html.write(Template(header).render(context).encode('utf-8'))
         header_html.close()
 
         # footer
         footer = self.missive.footer_html
         footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        footer_html.write(Template(footer).render(context).encode("utf-8"))
+        footer_html.write(Template(footer).render(context).encode('utf-8'))
         footer_html.close()
 
         # first file
-        with tempfile.NamedTemporaryFile(suffix='postalfirstpage.pdf', delete=False) as tmp_pdf:
+        with tempfile.NamedTemporaryFile(
+            suffix='postalfirstpage.pdf', delete=False
+        ) as tmp_pdf:
             content_html = self.postal_template(context)
-            pdf = pdfkit.from_string(content_html, tmp_pdf.name, options={
-                'encoding': "UTF-8",
-                '--header-html': header_html.name,
-                '--footer-html': footer_html.name,
-                'page-size':'A4',
-                'margin-top': '0.75in',
-                'margin-right': '0.75in',
-                'margin-bottom': '0.75in',
-                'margin-left': '0.75in',
-                'custom-header' : [
-                    ('Accept-Encoding', 'gzip')
-                ]
-            })
+            pdf = pdfkit.from_string(
+                content_html,
+                tmp_pdf.name,
+                options={
+                    'encoding': 'UTF-8',
+                    '--header-html': header_html.name,
+                    '--footer-html': footer_html.name,
+                    'page-size': 'A4',
+                    'margin-top': '0.75in',
+                    'margin-right': '0.75in',
+                    'margin-bottom': '0.75in',
+                    'margin-left': '0.75in',
+                    'custom-header': [('Accept-Encoding', 'gzip')],
+                },
+            )
             self.postal_add_attachment(tmp_pdf)
         os.remove(footer_html.name)
         os.remove(header_html.name)
@@ -163,22 +173,22 @@ class MissiveBackend(EnableLogger):
         return self.missive.status
 
     def check_documents(self):
-        return "{}"
+        return '{}'
 
     def send_postalar(self):
         return self.send_postal()
 
     def send_web(self):
-        return NotImplementedError("Web mode not implemented")
+        return NotImplementedError('Web mode not implemented')
 
     def send_app(self):
-        raise NotImplementedError("App mode not implemented")
+        raise NotImplementedError('App mode not implemented')
 
     def check(self, missive):
-        return NotImplementedError("Check mode not implemented")
+        return NotImplementedError('Check mode not implemented')
 
     def on_webhook(self, request):
-        return NotImplementedError("Webhook mode not implemented")
+        return NotImplementedError('Webhook mode not implemented')
 
     def cancel(self):
-        return NotImplementedError("Cancel mode not implemented")
+        return NotImplementedError('Cancel mode not implemented')

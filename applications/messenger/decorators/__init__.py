@@ -1,5 +1,6 @@
-from mighty.applications.messenger.decorators.messenger import (
-    HeritToMessenger, AccessToMissive
+from mighty.applications.messenger.decorators.messenger import (  # noqa
+    HeritToMessenger,
+    AccessToMissive,
 )
 
 # TO CLEAN
@@ -8,14 +9,16 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 from mighty.applications.user.apps import UserConfig as user_conf
 from mighty.applications.messenger import choices
-from mighty.applications.messenger import notify, notify_discord, notify_slack
-import hashlib
+
 
 def MissiveFollower(**kwargs):
     def decorator(obj):
         class MFModel(obj):
-            priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
-            missive = models.ForeignKey(user_conf.ForeignKey.missive,
+            priority = models.PositiveIntegerField(
+                default=0, choices=choices.PRIORITIES
+            )
+            missive = models.ForeignKey(
+                user_conf.ForeignKey.missive,
                 on_delete=kwargs.get('on_delete', models.SET_NULL),
                 related_name=kwargs.get('related_name', 'missive_set'),
                 blank=kwargs.get('blank', True),
@@ -27,4 +30,5 @@ def MissiveFollower(**kwargs):
                 abstract = True
 
         return MFModel
+
     return decorator

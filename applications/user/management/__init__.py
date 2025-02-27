@@ -1,12 +1,14 @@
-from django.core.management.base import BaseCommand, CommandError
+import datetime
+import logging
+import sys
+
+from django.core.management.base import BaseCommand
 from django.db.models import Q
-from django.core.exceptions import MultipleObjectsReturned
 
 from mighty import functions
-from mighty.apps import MightyConfig as conf
-from mighty.applications.logger.apps import LoggerConfig
-import datetime, sys, logging
+
 logger = logging.getLogger(__name__)
+
 
 class BaseCommand(BaseCommand):
     help = 'Command Base override by Mighty'
@@ -16,10 +18,10 @@ class BaseCommand(BaseCommand):
     errors = []
 
     def get_total(self):
-        return self.total if self.total else 0
-    
+        return self.total or 0
+
     def set_position(self, pos=1):
-        self.position+=pos
+        self.position += pos
 
     def get_current_info(self):
         return self.current_info
@@ -28,28 +30,19 @@ class BaseCommand(BaseCommand):
         if self.verbosity > 0:
             percent = self.position / self.get_total()
             if self.progressbar:
-                arrow = '-' * int(round(percent * bar_length)-1) + '>'
+                arrow = '-' * int(round(percent * bar_length) - 1) + '>'
                 spaces = ' ' * (bar_length - len(arrow))
-                sys.stdout.write("\r{0}: [{1}] {2}% ({3}/{4}) {5}".format(
-                    self.prefix_bar,
-                    arrow + spaces,
-                    int(round(percent * 100)),
-                    self.position,
-                    self.get_total(),
-                    self.get_current_info(),
-                    )
+                sys.stdout.write(
+                    f'\r{self.prefix_bar}: [{arrow + spaces}] {int(round(percent * 100))}% ({self.position}/{self.get_total()}) {self.get_current_info()}'
                 )
                 sys.stdout.flush()
             else:
-                sys.stdout.write("\r{0}: {1}% ({2}/{3}) {4}".format(
-                    self.prefix_bar,
-                    int(round(percent * 100)),
-                    self.position,
-                    self.get_total(),
-                    self.get_current_info())
+                sys.stdout.write(
+                    f'\r{self.prefix_bar}: {int(round(percent * 100))}% ({self.position}/{self.get_total()}) {self.get_current_info()}'
                 )
                 print()
-            if self.position == self.get_total(): print()
+            if self.position == self.get_total():
+                print()
 
     def create_parser(self, prog_name, subcommand, **kwargs):
         self.subcommand = subcommand
@@ -59,8 +52,15 @@ class BaseCommand(BaseCommand):
         super().add_arguments(parser)
         parser.add_argument('--total', default=0)
         parser.add_argument('--encoding', default='utf8')
-        parser.add_argument('--logfile', default="%s_%s.log" % (str(self.subcommand).lower(), f"{datetime.datetime.now():%Y%m%d_%H%M%S_%f}"))
-        parser.add_argument('--progressbar', action="store_true")
+        parser.add_argument(
+            '--logfile',
+            default='%s_%s.log'
+            % (
+                str(self.subcommand).lower(),
+                f'{datetime.datetime.now():%Y%m%d_%H%M%S_%f}',
+            ),
+        )
+        parser.add_argument('--progressbar', action='store_true')
 
     def handle(self, *args, **options):
         self.encoding = options.get('encoding')
@@ -80,7 +80,8 @@ class BaseCommand(BaseCommand):
             logger.info(error)
 
     def do(self):
-        raise NotImplementedError("Command should implement method do(self)")
+        raise NotImplementedError('Command should implement method do(self)')
+
 
 class ModelBaseCommand(BaseCommand):
     help = 'Commande Model Base'
@@ -90,12 +91,12 @@ class ModelBaseCommand(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument('--create', action="store_true")
+        parser.add_argument('--create', action='store_true')
         parser.add_argument('--label', default=None)
         parser.add_argument('--model', default=None)
         parser.add_argument('--filter', default=None)
         parser.add_argument('--manager', default='objects')
-        parser.add_argument('--search', action="store_true")
+        parser.add_argument('--search', action='store_true')
 
     def handle(self, *args, **options):
         self.create = options.get('create')
@@ -111,7 +112,11 @@ class ModelBaseCommand(BaseCommand):
         model = kwargs.get('model', self.model)
         manager = kwargs.get('manager', self.manager)
         model = functions.get_model(label, model)
-        return getattr(model, manager).filter(**dict(x.split(',') for x in self.filter.split(';')) if self.filter else {})
+        return getattr(model, manager).filter(
+            **dict(x.split(',') for x in self.filter.split(';'))
+            if self.filter
+            else {}
+        )
 
     def do(self):
         self.each_objects()
@@ -126,7 +131,6 @@ class ModelBaseCommand(BaseCommand):
             self.on_object(obj)
 
     def on_object(self, object):
-        raise NotImplementedError("Command should implement method on_object(self, obj)")
-        
-
-        
+        raise NotImplementedError(
+            'Command should implement method on_object(self, obj)'
+        )
