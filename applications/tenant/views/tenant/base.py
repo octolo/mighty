@@ -17,20 +17,27 @@ class TenantBase:
     order_base = []
     forms_desc = []
     tables_desc = []
-    filters = (
-        SearchFilter(**TenantConfig.search_filter),
-    )
+    filters = (SearchFilter(**TenantConfig.search_filter),)
 
     # Queryset
     def get_queryset(self, queryset=None):
-        return self.foxid.filter(*self.manager.params(self.request), user=self.request.user)
+        return self.foxid.filter(
+            *self.manager.params(self.request), user=self.request.user
+        )
 
     @property
     def foxid(self):
-        return Foxid(self.queryset, self.request, f=self.manager.flts, order_base=self.order_base).ready()
+        return Foxid(
+            self.queryset,
+            self.request,
+            f=self.manager.flts,
+            order_base=self.order_base,
+        ).ready()
 
     def foxid_qs(self, qs, flts):
-        return Foxid(qs, self.request, f=flts, order_base=self.order_base).ready()
+        return Foxid(
+            qs, self.request, f=flts, order_base=self.order_base
+        ).ready()
 
     @property
     def manager(self):
@@ -54,10 +61,15 @@ class TenantBase:
             'status': tenant.status,
             'company_representative': tenant.company_representative,
             'sync': tenant.sync,
-            'group': {key: str(get_descendant_value(path, tenant))
+            'group': {
+                key: str(get_descendant_value(path, tenant))
                 for key, path in TenantConfig.group_api.items()
-                    if get_descendant_value(path, tenant)},
-            'roles': [{'uid': role.uid, 'name': role.name} for role in tenant.roles.all()]
+                if get_descendant_value(path, tenant)
+            },
+            'roles': [
+                {'uid': role.uid, 'name': role.name}
+                for role in tenant.roles.all()
+            ],
         }
 
     def get_tenants(self):

@@ -8,7 +8,13 @@ from mighty.applications.shop.models.realprice import RealPrice
 class ShopItem(RealPrice):
     name = models.CharField(max_length=255, unique=True)
     key = models.CharField(max_length=255, blank=True, null=True, db_index=True)
-    service = models.ForeignKey('mighty.ShopService', on_delete=models.SET_NULL, null=True, blank=True, related_name='service_item')
+    service = models.ForeignKey(
+        'mighty.ShopService',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='service_item',
+    )
 
     class Meta(RealPrice.Meta):
         abstract = True

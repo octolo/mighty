@@ -20,7 +20,12 @@ class ListView(FoxidView, ListView):
 class AddView(ModelView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'title': '{} {}'.format(self.model.mighty.perm_title['add'], self.model._meta.verbose_name)})
+        context.update({
+            'title': '{} {}'.format(
+                self.model.mighty.perm_title['add'],
+                self.model._meta.verbose_name,
+            )
+        })
         return context
 
     def get_success_url(self):
@@ -39,7 +44,12 @@ class DetailView(ModelView, DetailView):
 class ChangeView(ModelView, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'title': '{} {}'.format(self.model.mighty.perm_title['change'], self.model._meta.verbose_name)})
+        context.update({
+            'title': '{} {}'.format(
+                self.model.mighty.perm_title['change'],
+                self.model._meta.verbose_name,
+            )
+        })
         return context
 
     def get_success_url(self):
@@ -50,7 +60,12 @@ class ChangeView(ModelView, UpdateView):
 class DeleteView(ModelView, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'title': '{} {}'.format(self.object.mighty.perm_title['delete'], self.object._meta.verbose_name)})
+        context.update({
+            'title': '{} {}'.format(
+                self.object.mighty.perm_title['delete'],
+                self.object._meta.verbose_name,
+            )
+        })
         return context
 
     def get_success_url(self):
@@ -62,7 +77,12 @@ class DeleteView(ModelView, DeleteView):
 class EnableView(DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'title': '{} {}'.format(self.model.mighty.perm_title['enable'], context['fake']._meta.verbose_name)})
+        context.update({
+            'title': '{} {}'.format(
+                self.model.mighty.perm_title['enable'],
+                context['fake']._meta.verbose_name,
+            )
+        })
         return context
 
     def get_success_url(self):
@@ -79,7 +99,12 @@ class EnableView(DeleteView):
 class DisableView(DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'title': '{} {}'.format(self.model.mighty.perm_title['disable'], self.object._meta.verbose_name)})
+        context.update({
+            'title': '{} {}'.format(
+                self.model.mighty.perm_title['disable'],
+                self.object._meta.verbose_name,
+            )
+        })
         return context
 
     def get_success_url(self):

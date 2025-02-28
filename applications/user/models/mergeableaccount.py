@@ -5,8 +5,16 @@ from mighty.models import Base
 
 
 class MergeableAccount(Base):
-    primary_user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='primary_user')
-    secondary_user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='mergeable_user')
+    primary_user = models.ForeignKey(
+        conf.ForeignKey.user,
+        on_delete=models.CASCADE,
+        related_name='primary_user',
+    )
+    secondary_user = models.ForeignKey(
+        conf.ForeignKey.user,
+        on_delete=models.CASCADE,
+        related_name='mergeable_user',
+    )
     reason = models.CharField(max_length=255)
     is_merged = models.BooleanField(default=False)
 

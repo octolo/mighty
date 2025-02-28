@@ -36,11 +36,19 @@ class Foxid:
         self.idorarg = ''
         self.method = kwargs.get('method', 'GET')
         self.method_request = getattr(self.request, self.method)
-        self.filters = {fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])}
-        self.tokens = self.Token._filter + self.Token._family + [self.Token._split, self.Token._or]
+        self.filters = {
+            fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])
+        }
+        self.tokens = (
+            self.Token._filter
+            + self.Token._family
+            + [self.Token._split, self.Token._or]
+        )
         self.include = self.execute(request.GET.get(self.Param._include, False))
         self.exclude = self.execute(request.GET.get(self.Param._exclude, False))
-        self.order = self.method_request.get(self.Param._order, kwargs.get('order', False))
+        self.order = self.method_request.get(
+            self.Param._order, kwargs.get('order', False)
+        )
         self.order_base = kwargs.get('order_base', [])
         self.distinct = kwargs.get('distinct', False)
         self.order_enable = kwargs.get('order_enable', False)
@@ -56,11 +64,13 @@ class Foxid:
                 char = input_str[i]
                 i += 1
                 if char in self.tokens:
-
                     # if filter starting
                     if char == self.Token._filter[0]:
                         # not already in filter
-                        if not len(self.context) or self.context[-1] == self.Token._family[0]:
+                        if (
+                            not len(self.context)
+                            or self.context[-1] == self.Token._family[0]
+                        ):
                             self.context.append(self.Token._filter[0])
                         else:
                             # ID or ARG
@@ -68,10 +78,15 @@ class Foxid:
 
                     # opening form
                     elif char in {self.Token._filter[1], self.Token._family[0]}:
-
                         # opening filter
-                        if len(self.context) and self.context[-1] == self.Token._filter[0] and char == self.Token._filter[1]:
-                            self.context[-1] = self.Token._filter[0] + self.Token._filter[1]
+                        if (
+                            len(self.context)
+                            and self.context[-1] == self.Token._filter[0]
+                            and char == self.Token._filter[1]
+                        ):
+                            self.context[-1] = (
+                                self.Token._filter[0] + self.Token._filter[1]
+                            )
 
                         # opening clause family
                         elif char == self.Token._family[0]:
@@ -80,23 +95,43 @@ class Foxid:
 
                     # closing form
                     elif char in {self.Token._filter[2], self.Token._family[1]}:
-                        if len(self.context) and self.context[-1] == self.Token._idorarg:
+                        if (
+                            len(self.context)
+                            and self.context[-1] == self.Token._idorarg
+                        ):
                             self.add_idorarg()
 
                         # closing filter
-                        if char == self.Token._filter[2] and self.context[-1] == self.Token._filter[0] + self.Token._filter[1]:
+                        if (
+                            char == self.Token._filter[2]
+                            and self.context[-1]
+                            == self.Token._filter[0] + self.Token._filter[1]
+                        ):
                             self.context.pop()
                             self.add_filter(self.get_filter_by_idandargs())
 
                         # closing family
-                        elif char == self.Token._family[1] and self.context[-1] == self.Token._family[0]:
-                            self.add_filter(reduce(self.operators.pop() if len(self.operators) else operator.and_, self.families.pop()))
+                        elif (
+                            char == self.Token._family[1]
+                            and self.context[-1] == self.Token._family[0]
+                        ):
+                            self.add_filter(
+                                reduce(
+                                    self.operators.pop()
+                                    if len(self.operators)
+                                    else operator.and_,
+                                    self.families.pop(),
+                                )
+                            )
                             self.context.pop()
 
                     # split id, arg, family or filter
                     elif char == self.Token._split:
                         # if context is and id or an argument
-                        if len(self.context) and self.context[-1] == self.Token._idorarg:
+                        if (
+                            len(self.context)
+                            and self.context[-1] == self.Token._idorarg
+                        ):
                             self.add_idorarg()
 
                     # if family operator
@@ -105,12 +140,19 @@ class Foxid:
 
                 # No token
                 elif not self.context:
-                    raise SyntaxError('request interepreter need a starting condition')
+                    raise SyntaxError(
+                        'request interepreter need a starting condition'
+                    )
                 else:
                     self.concate_idorarg(char)
 
             if self.compiled:
-                self.compiled = reduce(self.operators.pop() if len(self.operators) else operator.and_, self.compiled)
+                self.compiled = reduce(
+                    self.operators.pop()
+                    if len(self.operators)
+                    else operator.and_,
+                    self.compiled,
+                )
 
         if len(self.context):
             raise SyntaxError('invalid syntax of the request interpreter')
@@ -130,13 +172,22 @@ class Foxid:
 
     def add_filter(self, fltr):
         if fltr:
-            self.families[-1].append(fltr) if len(self.families) else self.compiled.append(fltr)
+            self.families[-1].append(fltr) if len(
+                self.families
+            ) else self.compiled.append(fltr)
 
     def get_filter_by_idandargs(self):
-        if len(self.filter_idandargs) and self.filter_idandargs[0] in self.filters:
+        if (
+            len(self.filter_idandargs)
+            and self.filter_idandargs[0] in self.filters
+        ):
             fltr = self.filters[self.filter_idandargs[0]]
             fltr.request = self.request
-            args = self.filter_idandargs[1] if len(self.filter_idandargs) == 2 else self.Token._split.join(self.filter_idandargs[1:])
+            args = (
+                self.filter_idandargs[1]
+                if len(self.filter_idandargs) == 2
+                else self.Token._split.join(self.filter_idandargs[1:])
+            )
             self.filter_idandargs = []
             return fltr.sql(self.request, method_request={fltr.param: args})
         return False
@@ -155,13 +206,19 @@ class Foxid:
     def order_by(self):
         args = []
         if self.order:
-            args += [o.replace('.', '__') for o in self.order.split(self.separator)]
+            args += [
+                o.replace('.', '__') for o in self.order.split(self.separator)
+            ]
         args_base = [arg.replace('-', '') for arg in args]
         if len(self.order_base):
             for ord_base in self.order_base:
                 if ord_base.replace('-', '') not in args_base:
                     args.append(ord_base)
-        return [result for arg in args if (result := self.get_arg_order(arg)) is not None]
+        return [
+            result
+            for arg in args
+            if (result := self.get_arg_order(arg)) is not None
+        ]
 
     def ready(self):
         if self.include:
@@ -170,7 +227,9 @@ class Foxid:
             self.queryset = self.queryset.exclude(self.exclude)
         if self.distinct:
             if type(self.distinct) == str and self.distinct == 'auto':
-                queryset.filter(id__in=queryset.distinct(*self.qdistinct).values('id'))
+                queryset.filter(
+                    id__in=queryset.distinct(*self.qdistinct).values('id')
+                )
             elif type(self.distinct) == bool:
                 self.queryset = self.queryset.distinct()
             elif type(self.distinct) == list:

@@ -8,7 +8,9 @@ template_engine = engines['django']
 
 
 class Template(Base):
-    template = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    template = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True
+    )
     title = models.CharField(max_length=256, null=True, blank=True)
     raw_template = models.TextField(null=True, blank=True)
     cfg_template = JSONField(blank=True, null=True)

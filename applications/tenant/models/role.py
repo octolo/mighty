@@ -14,9 +14,13 @@ class Role(Base, Image):
     search_fields = ['name']
     name = models.CharField(max_length=255)
     number = models.PositiveIntegerField(default=0, editable=False)
-    three_first = models.CharField(max_length=255, editable=False, blank=True, null=True)
+    three_first = models.CharField(
+        max_length=255, editable=False, blank=True, null=True
+    )
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.SET_NULL, null=True, blank=True
+    )
     object_id = models.PositiveIntegerField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -38,7 +42,9 @@ class Role(Base, Image):
         self.number = self.roles_tenant.count()
 
     def set_three_first(self):
-        self.three_first = ', '.join(t.user.username for t in self.roles_tenant.all()[0:2])
+        self.three_first = ', '.join(
+            t.user.username for t in self.roles_tenant.all()[0:2]
+        )
 
     def set_name(self):
         self.name = self.name.lower()

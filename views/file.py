@@ -26,7 +26,7 @@ class ExportView(ListView):
 
     def get_queryset(self, queryset):
         qs = super().get_queryset(queryset)
-        return qs[0:self.protect_limit] if protect_limit is not None else qs
+        return qs[0 : self.protect_limit] if protect_limit is not None else qs
 
     def render_to_response(self, context, **response_kwargs):
         fileResponse = FileGenerator(

@@ -40,22 +40,35 @@ class TenantAccess(RequestAccess):
 
     # Test
     def is_tenant(self, group, pk=None):
-        if pk: return self.request_access.user.user_tenant.filter(**{'group__' + pk: group}).exists()
+        if pk:
+            return self.request_access.user.user_tenant.filter(**{
+                'group__' + pk: group
+            }).exists()
         return self.request_access.user.user_tenant.filter(group=group).exists()
 
     def has_role(self, role, pk=None):
-        if pk: return self.request_access.user.user_tenant.filter(**{'roles__' + pk: role}).exists()
+        if pk:
+            return self.request_access.user.user_tenant.filter(**{
+                'roles__' + pk: role
+            }).exists()
         return self.request_access.user.user_tenant.filter(roles=role).exists()
 
     def has_one_role(self, roles, pk=None):
-        if pk: return self.request_access.user.user_tenant.filter(**{'roles__' + pk + '__in': roles}).exists()
-        return self.request_access.user.user_tenant.filter(roles__in=roles).exists()
+        if pk:
+            return self.request_access.user.user_tenant.filter(**{
+                'roles__' + pk + '__in': roles
+            }).exists()
+        return self.request_access.user.user_tenant.filter(
+            roles__in=roles
+        ).exists()
 
     # Properties
     @property
     def current_group(self):
         if self.request_access:
-            named_id = self.request_access.parser_context['kwargs'].get('group_named_id')
+            named_id = self.request_access.parser_context['kwargs'].get(
+                'group_named_id'
+            )
             group_uid = self.request_access.data.get('group')
             if named_id:
                 return self.group_model.objects.get(named_id=named_id)
@@ -70,20 +83,31 @@ class TenantAccess(RequestAccess):
 
     @property
     def tenant_roles(self):
-        return self.role_model.objects.filter(roles_tenant__user=self.request_access.user)
+        return self.role_model.objects.filter(
+            roles_tenant__user=self.request_access.user
+        )
 
     @property
     def tenant_roles_pk(self):
-        return self.role_model.objects.filter(roles_tenant__user=self.request_access.user).values_list('pk', flat=True)
+        return self.role_model.objects.filter(
+            roles_tenant__user=self.request_access.user
+        ).values_list('pk', flat=True)
 
     @property
     def current_tenant_group(self):
-        return get_descendant_value('current_tenant.group', self.request_access.user)
+        return get_descendant_value(
+            'current_tenant.group', self.request_access.user
+        )
 
     @property
     def tenant_groups(self):
-        return [tenant.group for tenant in self.request_access.user.user_tenant.all()]
+        return [
+            tenant.group
+            for tenant in self.request_access.user.user_tenant.all()
+        ]
 
     @property
     def tenant_groups_pk(self):
-        return self.request_access.user.user_tenant.values_list('group_id', flat=True)
+        return self.request_access.user.user_tenant.values_list(
+            'group_id', flat=True
+        )

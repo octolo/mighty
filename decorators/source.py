@@ -6,4 +6,5 @@ def EnableSourceModel(model, excludes=()):
         cls.source_model = model
         cls.source_exclude = excludes + base + (str(model.__name__).lower(),)
         return cls
+
     return deco

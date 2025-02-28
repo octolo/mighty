@@ -33,6 +33,7 @@ class PermissionAdmin(admin.ModelAdmin):
 class SessionAdmin(admin.ModelAdmin):
     def _session_data(self, obj):
         return obj.get_decoded()
+
     list_display = ['session_key', '_session_data', 'expire_date']
 
 
@@ -60,16 +61,30 @@ class ReportingAdmin(BaseAdmin):
 class RegisterTaskAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertask}),)
-    list_display = ('__str__', 'content_type', 'how_start_task', 'register_type')
+    list_display = (
+        '__str__',
+        'content_type',
+        'how_start_task',
+        'register_type',
+    )
     search_fields = ('name', 'content_type', 'how_start_task')
 
 
 @admin.register(all_models.RegisterTaskSubscription)
 class RegisterTaskSubscriptionAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertasksubscription}),)
+    fieldsets = (
+        (
+            None,
+            {'classes': ('wide',), 'fields': fields.registertasksubscription},
+        ),
+    )
     list_display = ('register', 'subscribe_to', 'content_type_subscriber')
-    search_fields = ('register__name', 'register__content_type', 'register__how_start_task')
+    search_fields = (
+        'register__name',
+        'register__content_type',
+        'register__how_start_task',
+    )
     readonly_fields = ('last_date_task',)
     raw_id_fields = ('register',)
 
@@ -85,7 +100,15 @@ class ConfigClientAdmin(BaseAdmin):
 @admin.register(all_models.ConfigSimple)
 class ConfigSimpleAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'configchar', 'configbool', 'is_boolean')}),)
+    fieldsets = (
+        (
+            None,
+            {
+                'classes': ('wide',),
+                'fields': ('name', 'configchar', 'configbool', 'is_boolean'),
+            },
+        ),
+    )
     list_display = ('name',)
     readonly_fields = ('url_name',)
 
@@ -93,11 +116,27 @@ class ConfigSimpleAdmin(BaseAdmin):
 @admin.register(all_models.TemplateVariable)
 class TemplateVariableAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'description', 'content_type', 'template', 'hidden', 'version')}),)
+    fieldsets = (
+        (
+            None,
+            {
+                'classes': ('wide',),
+                'fields': (
+                    'name',
+                    'description',
+                    'content_type',
+                    'template',
+                    'hidden',
+                    'version',
+                ),
+            },
+        ),
+    )
     list_display = ('name', 'description', 'content_type', 'hidden')
 
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
+
     @admin.register(all_models.Channel)
     class ChannelAdmin(BaseAdmin):
         list_display = ('channel_name', 'channel_type', 'date_update')
@@ -108,7 +147,9 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 
 class NewsAdmin(admin.StackedInline):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': (*fields.news, 'keywords')}),)
+    fieldsets = (
+        (None, {'classes': ('wide',), 'fields': (*fields.news, 'keywords')}),
+    )
     extra = 0
 
 
@@ -119,52 +160,86 @@ class NewsAdmin(admin.StackedInline):
 # Nationality
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     from mighty.applications.logger import admin as admin_logger
+
     @admin.register(all_models.Log)
-    class LogAdmin(admin_logger.LogAdmin): pass
+    class LogAdmin(admin_logger.LogAdmin):
+        pass
+
     @admin.register(all_models.ModelChangeLog)
-    class ModelChangeLogAdmin(admin_logger.ModelChangeLogAdmin): pass
+    class ModelChangeLogAdmin(admin_logger.ModelChangeLogAdmin):
+        pass
+
 
 # Nationality
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality import admin as admin_nationality
+
     @admin.register(all_models.Nationality)
-    class NationalityAdmin(admin_nationality.NationalityAdmin): pass
-    class TranslateDictAdmin(admin_nationality.TranslateDictAdmin): model = all_models.TranslateDict
+    class NationalityAdmin(admin_nationality.NationalityAdmin):
+        pass
+
+    class TranslateDictAdmin(admin_nationality.TranslateDictAdmin):
+        model = all_models.TranslateDict
+
     @admin.register(all_models.Translator)
     class TranslateDictAdmin(admin_nationality.TranslatorAdmin):
         inlines = [TranslateDictAdmin]
 
+
 # Messenger
 if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
     from mighty.applications.messenger import admin as admin_messenger
+
     @admin.register(all_models.Missive)
-    class NationalityAdmin(admin_messenger.MissiveAdmin): pass
+    class NationalityAdmin(admin_messenger.MissiveAdmin):
+        pass
+
     @admin.register(all_models.Notification)
-    class NotificationAdmin(admin_messenger.NotificationAdmin): pass
+    class NotificationAdmin(admin_messenger.NotificationAdmin):
+        pass
+
     @admin.register(all_models.Template)
-    class NotificationAdmin(admin_messenger.TemplateAdmin): pass
+    class NotificationAdmin(admin_messenger.TemplateAdmin):
+        pass
+
 
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import admin as admin_user
     from mighty.applications.user.apps import UserConfig as user_conf
 
-    class UserAdmin(admin_user.UserAdmin): pass
-    class UserEmailAdmin(admin_user.UserEmailAdmin): model = admin_user.UserEmailAdmin.model or all_models.UserEmail
-    class UserPhoneAdmin(admin_user.UserPhoneAdmin): model = admin_user.UserPhoneAdmin.model or all_models.UserPhone
+    class UserAdmin(admin_user.UserAdmin):
+        pass
+
+    class UserEmailAdmin(admin_user.UserEmailAdmin):
+        model = admin_user.UserEmailAdmin.model or all_models.UserEmail
+
+    class UserPhoneAdmin(admin_user.UserPhoneAdmin):
+        model = admin_user.UserPhoneAdmin.model or all_models.UserPhone
+
     @admin.register(all_models.UserPhone)
     class UserPhoneAdminBase(admin_user.UserPhoneAdminBase):
         pass
-    class InternetProtocolAdmin(admin_user.InternetProtocolAdmin): model = all_models.InternetProtocol
-    class UserAgentAdmin(admin_user.UserAgentAdmin): model = all_models.UserAgent
-    class UserAddressAdmin(admin_user.UserAddressAdminInline): model = all_models.UserAddress
+
+    class InternetProtocolAdmin(admin_user.InternetProtocolAdmin):
+        model = all_models.InternetProtocol
+
+    class UserAgentAdmin(admin_user.UserAgentAdmin):
+        model = all_models.UserAgent
+
+    class UserAddressAdmin(admin_user.UserAddressAdminInline):
+        model = all_models.UserAddress
+
     # Draft
     @admin.register(all_models.MergeableAccount)
-    class MergeableAccountAdmin(admin_user.MergeableAccountAdmin): model = all_models.MergeableAccount
+    class MergeableAccountAdmin(admin_user.MergeableAccountAdmin):
+        model = all_models.MergeableAccount
 
     if 'mighty.applications.logger' in settings.INSTALLED_APPS:
         from mighty.applications.logger.admin import ModelWithLogAdmin
-        class UserAdmin(UserAdmin, ModelWithLogAdmin): pass
+
+        class UserAdmin(UserAdmin, ModelWithLogAdmin):
+            pass
 
     @admin.register(all_models.User)
     class UserAdmin(UserAdmin):
@@ -175,49 +250,86 @@ if 'mighty.applications.user' in settings.INSTALLED_APPS:
             return super(admin_user.UserAdmin, self).add_view(*args, **kwargs)
 
         def change_view(self, *args, **kwargs):
-            self.inlines = [UserEmailAdmin, UserPhoneAdmin, InternetProtocolAdmin, UserAgentAdmin, UserAddressAdmin]
-            return super(admin_user.UserAdmin, self).change_view(*args, **kwargs)
+            self.inlines = [
+                UserEmailAdmin,
+                UserPhoneAdmin,
+                InternetProtocolAdmin,
+                UserAgentAdmin,
+                UserAddressAdmin,
+            ]
+            return super(admin_user.UserAdmin, self).change_view(
+                *args, **kwargs
+            )
 
     if user_conf.protect_trashmail:
+
         @admin.register(all_models.Trashmail)
-        class TrashmailAdmin(admin_user.TrashmailAdmin): pass
+        class TrashmailAdmin(admin_user.TrashmailAdmin):
+            pass
+
 
 # Data protect
 if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:
     from mighty.applications.dataprotect import admin as admin_dataprotect
+
     @admin.register(all_models.ServiceData)
-    class ServiceDataAdmin(admin_dataprotect.ServiceDataAdmin): pass
+    class ServiceDataAdmin(admin_dataprotect.ServiceDataAdmin):
+        pass
+
     @admin.register(all_models.UserDataProtect)
-    class UserDataProtectAdmin(admin_dataprotect.UserDataProtectAdmin): pass
+    class UserDataProtectAdmin(admin_dataprotect.UserDataProtectAdmin):
+        pass
+
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     from mighty.applications.twofactor import admin as admin_twofactor
+
     @admin.register(all_models.Twofactor)
-    class TwofactorAdmin(admin_twofactor.TwofactorAdmin): pass
+    class TwofactorAdmin(admin_twofactor.TwofactorAdmin):
+        pass
+
 
 # Shop
 if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     from mighty.applications.shop import admin as admin_shop
+
     @admin.register(all_models.ShopService)
-    class ShopServiceAdmin(admin_shop.ServiceAdmin): pass
+    class ShopServiceAdmin(admin_shop.ServiceAdmin):
+        pass
+
     @admin.register(all_models.ShopItem)
-    class ShopItemAdmin(admin_shop.ItemAdmin): pass
+    class ShopItemAdmin(admin_shop.ItemAdmin):
+        pass
+
     @admin.register(all_models.Offer)
-    class OfferAdmin(admin_shop.OfferAdmin): pass
+    class OfferAdmin(admin_shop.OfferAdmin):
+        pass
+
     @admin.register(all_models.Subscription)
-    class SubscriptionAdmin(admin_shop.SubscriptionAdmin): pass
+    class SubscriptionAdmin(admin_shop.SubscriptionAdmin):
+        pass
+
     @admin.register(all_models.Bill)
-    class BillAdmin(admin_shop.BillAdmin): pass
+    class BillAdmin(admin_shop.BillAdmin):
+        pass
+
     @admin.register(all_models.Discount)
-    class DiscountAdmin(admin_shop.DiscountAdmin): pass
+    class DiscountAdmin(admin_shop.DiscountAdmin):
+        pass
+
     @admin.register(all_models.PaymentMethod)
-    class PaymentMethodAdmin(admin_shop.PaymentMethodAdmin): pass
+    class PaymentMethodAdmin(admin_shop.PaymentMethodAdmin):
+        pass
+
     @admin.register(all_models.SubscriptionRequest)
-    class SubscriptionRequestAdmin(admin_shop.SubscriptionRequestAdmin): pass
+    class SubscriptionRequestAdmin(admin_shop.SubscriptionRequestAdmin):
+        pass
+
 
 if conf.enable_mimetype:
     from mighty.models import MimeType
+
     @admin.register(MimeType)
     class MimeTypeAdmin(BaseAdmin):
         view_on_site = False

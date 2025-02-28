@@ -33,7 +33,12 @@ class RoleCheckData(CheckData):
 
     def get_queryset(self, queryset=None):
         try:
-            group = self.group_model.objects.get(uid=self.request.GET.get('group'))
-            self.model.objects.get(**{self.test_field: self.request.GET.get('exist'), 'group': group})
+            group = self.group_model.objects.get(
+                uid=self.request.GET.get('group')
+            )
+            self.model.objects.get(**{
+                self.test_field: self.request.GET.get('exist'),
+                'group': group,
+            })
         except self.group_model.DoesNotExist:
             assert ValidationError('group mandatory')

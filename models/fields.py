@@ -5,16 +5,15 @@ from mighty.forms import fields
 
 class DateField(models.DateField):
     def formfield(self, **kwargs):
-        return super().formfield(**{
-            'form_class': fields.DateField,
-            **kwargs})
+        return super().formfield(**{'form_class': fields.DateField, **kwargs})
 
 
 class DateTimeField(models.DateTimeField):
     def formfield(self, **kwargs):
         return super().formfield(**{
             'form_class': fields.DateTimeField,
-            **kwargs})
+            **kwargs,
+        })
 
 
 class ForeignKey(models.ForeignKey):
@@ -25,7 +24,10 @@ class ForeignKey(models.ForeignKey):
         super().__init__(to, on_delete, **kwargs)
 
     def formfield(self, *, using=None, **kwargs):
-        ff = super().formfield(**{'form_class': fields.ModelChoiceField, **kwargs})
+        ff = super().formfield(**{
+            'form_class': fields.ModelChoiceField,
+            **kwargs,
+        })
         ff.create_if_not_exist = self.create_if_not_exist
         return ff
 
@@ -33,4 +35,5 @@ class ForeignKey(models.ForeignKey):
 """ Type """
 
 
-class CommentField(models.TextField): pass
+class CommentField(models.TextField):
+    pass

@@ -30,9 +30,10 @@ method = _('Creation method')
 gender = _('Genre')
 profil = _('Profil')
 cgu = _(
-    "J'accepte les <a href=\"{}\" target=\"blank_\">CGU</a> et la <a href=\"{}\" target=\"blank_\">Politique de Confidentialité</a>".format(
+    'J\'accepte les <a href="{}" target="blank_">CGU</a> et la <a href="{}" target="blank_">Politique de Confidentialité</a>'.format(
         conf.cgu_path, conf.politic_path
-    ))
+    )
+)
 
 
 error_phone_already = _('user with this Phone already exists.')

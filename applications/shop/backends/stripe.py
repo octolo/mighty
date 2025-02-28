@@ -15,13 +15,16 @@ class PaymentBackend(PaymentBackend):
     @property
     def api(self):
         import stripe
+
         stripe.api_key = self.APISECRET
         return stripe
 
     # PAYMENT METHOD
     @property
     def data_cb(self):
-        datepm = datetime.strptime(str(self.payment_method.date_valid), '%Y-%m-%d')
+        datepm = datetime.strptime(
+            str(self.payment_method.date_valid), '%Y-%m-%d'
+        )
         return {
             'billing_details': {'name': str(self.payment_method.uid)},
             'type': 'card',
@@ -29,15 +32,20 @@ class PaymentBackend(PaymentBackend):
                 'number': self.payment_method.cb,
                 'exp_month': datepm.month,
                 'exp_year': datepm.year,
-                'cvc': self.payment_method.cvc}}
+                'cvc': self.payment_method.cvc,
+            },
+        }
 
     @property
     def data_iban(self):
         return {
-            'billing_details': {'name': str(self.payment_method.uid), 'email': 'dev@octolo.tech'},
+            'billing_details': {
+                'name': str(self.payment_method.uid),
+                'email': 'dev@octolo.tech',
+            },
             'type': 'sepa_debit',
-            'sepa_debit': {
-                'iban': self.payment_method.iban}}
+            'sepa_debit': {'iban': self.payment_method.iban},
+        }
 
     def add_pm(self):
         self.payment_method.cache = self.add_payment_method()
@@ -49,17 +57,23 @@ class PaymentBackend(PaymentBackend):
     def get_or_create_customer(self, pm):
         if pm.get('customer'):
             return self.api.Customer.retrieve(pm['customer'])
-        return self.api.Customer.create(payment_method=pm['id'], description=self.group)
+        return self.api.Customer.create(
+            payment_method=pm['id'], description=self.group
+        )
 
     def add_payment_method(self, force=False):
         if not force and self.payment_method.service_id:
-            return self.api.PaymentMethod.retrieve(self.payment_method.service_id)
+            return self.api.PaymentMethod.retrieve(
+                self.payment_method.service_id
+            )
         data_pm = getattr(self, f'data_{self.form_method.lower()}')
         self.logger.info(data_pm)
         return self.api.PaymentMethod.create(**data_pm)
 
     def check_pm_status(self):
-        raise NotImplementedError('Subclasses should implement check_pm_status(self)')
+        raise NotImplementedError(
+            'Subclasses should implement check_pm_status(self)'
+        )
 
     @property
     def pmtype(self):
@@ -101,8 +115,12 @@ class PaymentBackend(PaymentBackend):
         if self.payment_id:
             charge = self.api.PaymentIntent.retrieve(self.payment_id)
             if charge.status not in {'processing', 'canceled', 'succeeded'}:
-                self.bill.add_cache('payment_method', self.add_payment_method(True))
-                return self.api.PaymentIntent.modify(self.payment_id, **self.data_bill)
+                self.bill.add_cache(
+                    'payment_method', self.add_payment_method(True)
+                )
+                return self.api.PaymentIntent.modify(
+                    self.payment_id, **self.data_bill
+                )
             return charge
         return self.api.PaymentIntent.create(**self.data_bill)
         # invoice = self.set_charge()
@@ -123,7 +141,9 @@ class PaymentBackend(PaymentBackend):
             need_action = self.bill.cache['next_action']['type']
             if need_action == 'redirect_to_url':
                 self.bill.need_action = _c.NEED_ACTON_URL
-                self.bill.action = self.bill.cache['next_action'][need_action]['url']
+                self.bill.action = self.bill.cache['next_action'][need_action][
+                    'url'
+                ]
 
     def collect_status(self):
         self.bill.status = _c.NOTHING

@@ -6,7 +6,9 @@ def PositionModel(**kwargs):
         class NewClass(obj):
             Qposition = kwargs.get('Qfields', ())
             position_fields = kwargs.get('fields', ())
-            position = models.PositiveIntegerField(blank=kwargs.get('blank', True), null=kwargs.get('null', True))
+            position = models.PositiveIntegerField(
+                blank=kwargs.get('blank', True), null=kwargs.get('null', True)
+            )
 
             class Meta(obj.Meta):
                 abstract = True
@@ -21,7 +23,10 @@ def PositionModel(**kwargs):
 
             @property
             def Qasfield(self):
-                return {field: getattr(self, field) for field in self.Qpositionfields}
+                return {
+                    field: getattr(self, field)
+                    for field in self.Qpositionfields
+                }
 
             @property
             def count_position(self):
@@ -37,10 +42,14 @@ def PositionModel(**kwargs):
                     self.position = count + offset
 
             def on_delete_position(self):
-                qs = self.position_qs.filter(position__gt=self._unmodified.position)
-                for i, _p in enumerate(qs): qs[i].position -= 1
+                qs = self.position_qs.filter(
+                    position__gt=self._unmodified.position
+                )
+                for i, _p in enumerate(qs):
+                    qs[i].position -= 1
                 type(self).objects.bulk_update(qs, ['position'])
 
         NewClass.__name__ = obj.__name__
         return NewClass
+
     return decorator

@@ -7,12 +7,20 @@ from mighty.applications.messenger import translates as _
 from mighty.applications.messenger.decorators import HeritToMessenger
 
 
-@HeritToMessenger(related_name='missive_to_content_type', backend_blank=False, backend_null=False)
+@HeritToMessenger(
+    related_name='missive_to_content_type',
+    backend_blank=False,
+    backend_null=False,
+)
 class Missive(AddressNoBase):
     msg_id = models.CharField(max_length=255, blank=True, null=True)
     response = models.TextField(blank=True, null=True, editable=False)
-    partner_id = models.CharField(max_length=255, blank=True, null=True, editable=False)
-    code_error = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    partner_id = models.CharField(
+        max_length=255, blank=True, null=True, editable=False
+    )
+    code_error = models.CharField(
+        max_length=255, blank=True, null=True, editable=False
+    )
     trace = models.TextField(blank=True, null=True, editable=False)
     price_config = models.JSONField(default=dict)
     price_info = models.JSONField(default=dict)
@@ -64,6 +72,7 @@ class Missive(AddressNoBase):
     @property
     def url_viewer(self):
         from django.urls import reverse
+
         return reverse('messenger-email-viewer', args=[self.uid])
 
     def on_raw_ready(self):

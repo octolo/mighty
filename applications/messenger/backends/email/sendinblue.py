@@ -42,21 +42,26 @@ class MissiveBackend(MissiveBackend):
 
     def on_webhook(self, request):
         from mighty.models import Missive
+
         data = json.loads(request.body)
         try:
-            self.missive = Missive.objects.get(partner_id=data.get('message-id'))
+            self.missive = Missive.objects.get(
+                partner_id=data.get('message-id')
+            )
             self.update_event(data.get('event'))
         except Missive.DoesNotExist:
             pass
         return data
 
     def check_email(self):
-        data = {
-            'message_id': self.missive.partner_id
-        } if self.missive.partner_id else {
-            'tag': self.missive.msg_id
-        }
-        api_response = self.api_instance.get_email_event_report(**data, email=self.missive.target)
+        data = (
+            {'message_id': self.missive.partner_id}
+            if self.missive.partner_id
+            else {'tag': self.missive.msg_id}
+        )
+        api_response = self.api_instance.get_email_event_report(
+            **data, email=self.missive.target
+        )
         event = api_response.events[0].event
         self.update_event(event)
         return api_response
@@ -67,7 +72,8 @@ class MissiveBackend(MissiveBackend):
             configuration = sib_api_v3_sdk.Configuration()
             configuration.api_key['api-key'] = self.APIKEY
             self.api_instance_cache = sib_api_v3_sdk.TransactionalEmailsApi(
-                sib_api_v3_sdk.ApiClient(configuration))
+                sib_api_v3_sdk.ApiClient(configuration)
+            )
         return self.api_instance_cache
 
     def email_attachments(self):
@@ -77,7 +83,9 @@ class MissiveBackend(MissiveBackend):
             for document in self.missive.attachments:
                 if setting('MISSIVE_SERVICE', False):
                     attachments.append({
-                        'content': base64.b64encode(document.read()).decode('utf-8'),
+                        'content': base64.b64encode(document.read()).decode(
+                            'utf-8'
+                        ),
                         'name': os.path.basename(document.name),
                     })
                 logs.append(os.path.basename(document.name))
@@ -89,16 +97,22 @@ class MissiveBackend(MissiveBackend):
             data['params'] = {
                 'code': self.missive.context['code'],
                 'domain': MightyConfig.domain.upper(),
-                'link':  f'https://{MightyConfig.domain}',
+                'link': f'https://{MightyConfig.domain}',
             }
 
     def forge_email(self, data, attachments):
         data['to'] = [{'email': self.missive.target}]
         data['headers'] = {'charset': 'utf-8'}
         if self.reply_email:
-            data['reply_to'] = {'email': self.reply_email, 'name': self.reply_name}
+            data['reply_to'] = {
+                'email': self.reply_email,
+                'name': self.reply_name,
+            }
         if self.missive.sender:
-            data['sender'] = {'email': self.missive.sender, 'name': self.missive.name}
+            data['sender'] = {
+                'email': self.missive.sender,
+                'name': self.missive.name,
+            }
         if self.missive.subject:
             data['subject'] = self.missive.subject
         if self.missive.context.get('template_id'):
@@ -116,10 +130,14 @@ class MissiveBackend(MissiveBackend):
         data = {}
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target or self.missive.target
-        self.logger.info(f'Email - from : {self.sender_email}, to : {self.missive.target}, reply : {self.reply_email}')
+        self.logger.info(
+            f'Email - from : {self.sender_email}, to : {self.missive.target}, reply : {self.reply_email}'
+        )
         if setting('MISSIVE_SERVICE', False):
             with contextlib.suppress(Exception):
-                self.api_instance.smtp_blocked_contacts_email_delete(self.missive.target)
+                self.api_instance.smtp_blocked_contacts_email_delete(
+                    self.missive.target
+                )
             self.missive.msg_id = make_msgid()
             attachments = self.email_attachments()
             self.forge_email(data, attachments)

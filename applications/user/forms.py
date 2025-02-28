@@ -26,6 +26,7 @@ optional = get_form_fields('optional')
 #        phone = PhoneNumberField(label=_.phone, widget=PhoneNumberPrefixWidget(initial='FR'), required=False)
 
 if 'password1' not in allfields:
+
     class UserCreationForm(UserCreationForm):
         password1 = None
         password2 = None
@@ -57,7 +58,6 @@ class UserCreationForm(UserCreationForm, ModelFormDescriptable):
         fields = allfields
 
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
         for field in allfields:
             if field in required:
@@ -80,8 +80,10 @@ class UserCreationForm(UserCreationForm, ModelFormDescriptable):
         self.fields = new_fields
 
     def add_icon(self):
-        if 'last_name' in self.fields: self.fields['last_name'].icon = 'user'
-        if 'first_name' in self.fields: self.fields['first_name'].icon = 'user'
+        if 'last_name' in self.fields:
+            self.fields['last_name'].icon = 'user'
+        if 'first_name' in self.fields:
+            self.fields['first_name'].icon = 'user'
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -98,6 +100,7 @@ UserModel = get_user_model()
 def get_related_field():
     class Tmp:
         name = 'id'
+
     return Tmp
 
 
@@ -124,7 +127,11 @@ class UserMergeAccountsAdminForm(ModelFormDescriptable):
         kp = self.cleaned_data['account_keep']
         dl = self.cleaned_data['account_delete']
 
-        for data_link in (UserConfig.ForeignKey.email_related_name_attr, 'user_phone', 'user_address'):
+        for data_link in (
+            UserConfig.ForeignKey.email_related_name_attr,
+            'user_phone',
+            'user_address',
+        ):
             with contextlib.suppress(Exception):
                 getattr(dl, data_link).update(user=kp)
 

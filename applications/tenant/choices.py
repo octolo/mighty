@@ -30,7 +30,9 @@ DOMAIN = 'DOMAIN'
 EMAILPREFIX = 'EMAILPREFIX'
 SITEWEB = 'SITEWEB'
 DOMAIN_TR = _('Domaine principal de votre société')
-EMAILPREFIX_TR = _('Préfixe pour les emails envoyé par la plateforme prefix@domain.com')
+EMAILPREFIX_TR = _(
+    'Préfixe pour les emails envoyé par la plateforme prefix@domain.com'
+)
 SITEWEB_TR = _('https://domain.com')
 CONFIG_NAME = (
     (DOMAIN, DOMAIN_TR),

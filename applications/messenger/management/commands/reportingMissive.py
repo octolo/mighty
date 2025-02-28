@@ -44,7 +44,9 @@ class Command(ModelBaseCommand):
     ]
 
     def before_job(self):
-        filename = 'reporting_missive_{}.csv'.format(datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
+        filename = 'reporting_missive_{}.csv'.format(
+            datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        )
         self.csvfile = open(filename, 'w', newline='', encoding='utf-8')
         self.writer = csv.writer(self.csvfile)
         self.writer.writerow([*self.fields, 'pages'])

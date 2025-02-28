@@ -8,4 +8,6 @@ class NotifyBackend(Backend):
         self.user = user
 
     def send_msg_create(self):
-        raise NotImplementedError('Subclasses should implement send_msg_create()')
+        raise NotImplementedError(
+            'Subclasses should implement send_msg_create()'
+        )

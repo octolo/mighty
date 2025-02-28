@@ -7,7 +7,9 @@ from mighty.models.base import Base
 
 
 class Discount(Base):
-    code = models.CharField(max_length=50, default=generate_code_type, unique=True)
+    code = models.CharField(
+        max_length=50, default=generate_code_type, unique=True
+    )
     amount = models.PositiveIntegerField(default=0)
     is_percent = models.BooleanField(default=False)
     date_end = models.DateField(blank=True, null=True)
@@ -28,7 +30,11 @@ class Discount(Base):
         return (self.date_end >= date.today()) if self.date_end else True
 
     def calcul_price(self, base_price):
-        return ((base_price / 100) * self.amount) / 100 if self.is_percent else self.amount / 100
+        return (
+            ((base_price / 100) * self.amount) / 100
+            if self.is_percent
+            else self.amount / 100
+        )
 
     def new_price(self, base_price):
         return base_price - self.calcul_price(base_price)

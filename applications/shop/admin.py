@@ -61,18 +61,26 @@ class SubscriptionAdmin(BaseAdmin):
 
     def render_change_form(self, request, context, *args, **kwargs):
         if hasattr(kwargs['obj'], 'method'):
-            context['adminform'].form.fields['method'].queryset = context['adminform'].form.fields['method']\
+            context['adminform'].form.fields['method'].queryset = (
+                context['adminform']
+                .form.fields['method']
                 .queryset.filter(group=kwargs['obj'].group)
+            )
         else:
-            context['adminform'].form.fields['method'].queryset = context['adminform'].form.fields['method']\
-                .queryset.none()
+            context['adminform'].form.fields['method'].queryset = (
+                context['adminform'].form.fields['method'].queryset.none()
+            )
         return super().render_change_form(request, context, *args, **kwargs)
 
     def exports_view(self, request, object_id=None, extra_context=None):
         current_url = resolve(request.path_info).url_name
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object(request, unquote(object_id), to_field) if object_id else None
+        obj = (
+            self.get_object(request, unquote(object_id), to_field)
+            if object_id
+            else None
+        )
         context = {
             **self.admin_site.each_context(request),
             'current_url': current_url,
@@ -81,7 +89,7 @@ class SubscriptionAdmin(BaseAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         defaults = {
@@ -89,13 +97,18 @@ class SubscriptionAdmin(BaseAdmin):
             'template_name': 'admin/shop_exports.html',
         }
         from mighty.applications.shop.views import ShopExports
+
         return ShopExports.as_view(**defaults)(request)
 
     def export_view(self, request, object_id=None, extra_context=None):
         current_url = resolve(request.path_info).url_name
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object(request, unquote(object_id), to_field) if object_id else None
+        obj = (
+            self.get_object(request, unquote(object_id), to_field)
+            if object_id
+            else None
+        )
         context = {
             **self.admin_site.each_context(request),
             'current_url': current_url,
@@ -104,13 +117,14 @@ class SubscriptionAdmin(BaseAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         defaults = {
             'extra_context': context,
         }
         from mighty.applications.shop.views import ShopExport
+
         return ShopExport.as_view(**defaults)(request)
 
     def dobill_view(self, request, object_id, extra_context=None):
@@ -124,7 +138,7 @@ class SubscriptionAdmin(BaseAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/do_bill.html', context)
@@ -133,12 +147,26 @@ class SubscriptionAdmin(BaseAdmin):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/dobill/', self.wrap(self.dobill_view), name='{}_{}_dobill_subscription'.format(*info)),
-            path('exports/', include([
-                path('', self.exports_view, name='{}_{}_exports_subscription'.format(*info)),
-                path('csv/', self.export_view, name='{}_{}_export_all'.format(*info)),
-            ])),
-
+            path(
+                '<path:object_id>/dobill/',
+                self.wrap(self.dobill_view),
+                name='{}_{}_dobill_subscription'.format(*info),
+            ),
+            path(
+                'exports/',
+                include([
+                    path(
+                        '',
+                        self.exports_view,
+                        name='{}_{}_exports_subscription'.format(*info),
+                    ),
+                    path(
+                        'csv/',
+                        self.export_view,
+                        name='{}_{}_export_all'.format(*info),
+                    ),
+                ]),
+            ),
         ]
         return my_urls + urls
 
@@ -146,7 +174,14 @@ class SubscriptionAdmin(BaseAdmin):
 class BillAdmin(BaseAdmin):
     view_on_site = False
     change_form_template = 'admin/change_form_bill.html'
-    readonly_fields = ('paid', 'payment_id', 'subscription', 'method', 'date_payment', 'backend')
+    readonly_fields = (
+        'paid',
+        'payment_id',
+        'subscription',
+        'method',
+        'date_payment',
+        'backend',
+    )
     search_fields = ('group__search',)
     list_display = ('group', 'paid', 'subscription')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.bill}),)
@@ -170,7 +205,7 @@ class BillAdmin(BaseAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/try_to_charge.html', context)
@@ -183,6 +218,7 @@ class BillAdmin(BaseAdmin):
         import os
 
         from django.http import FileResponse
+
         response = FileResponse(open(pdf, 'rb'), filename=obj.bill_pdf_name)
         os.remove(pdf)
         return response
@@ -191,8 +227,16 @@ class BillAdmin(BaseAdmin):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/pdf/', self.billpdf_view, name='{}_{}_pdf_bill'.format(*info)),
-            path('<path:object_id>/trytocharge/', self.wrap(self.trytocharge_view), name='{}_{}_trytocharge_bill'.format(*info)),
+            path(
+                '<path:object_id>/pdf/',
+                self.billpdf_view,
+                name='{}_{}_pdf_bill'.format(*info),
+            ),
+            path(
+                '<path:object_id>/trytocharge/',
+                self.wrap(self.trytocharge_view),
+                name='{}_{}_trytocharge_bill'.format(*info),
+            ),
         ]
         return my_urls + urls
 
@@ -212,7 +256,9 @@ class SubscriptionRequestAdmin(BaseAdmin):
     readonly_fields = ('backend', 'service_id', 'service_detail')
     search_fields = ('group__search',)
     list_display = ('user', 'offer', 'form_method')
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.subscription_request}),)
+    fieldsets = (
+        (None, {'classes': ('wide',), 'fields': fields.subscription_request}),
+    )
 
 
 class SubscriptionAdminInline(admin.StackedInline):

@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.db import models
 from django.template.defaultfilters import slugify
@@ -9,7 +8,9 @@ from mighty.models.base import Base
 
 class ServiceData(Base):
     name = models.CharField(max_length=255)
-    category = models.CharField(max_length=15, choices=_c.CATEGORY, default=_c.STRICTLY)
+    category = models.CharField(
+        max_length=15, choices=_c.CATEGORY, default=_c.STRICTLY
+    )
     code = models.CharField(max_length=255, blank=True, null=True, unique=True)
     desc = models.TextField(blank=True, null=True)
     keywords = models.CharField(max_length=255, blank=True, null=True)
@@ -50,7 +51,12 @@ class ServiceData(Base):
 
 class UserDataProtect(Base):
     session_id = models.TextField()
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
     cookie = models.CharField(max_length=255)
 
     class Meta(Base.Meta):

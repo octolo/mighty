@@ -11,7 +11,9 @@ from mighty.applications.shop.models.subscription import Subscription
 
 __all__ = (
     Offer,
-    Discount, ShopService, ShopItem,
+    Discount,
+    ShopService,
+    ShopItem,
     Subscription,
     Bill,
     PaymentMethod,

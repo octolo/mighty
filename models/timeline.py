@@ -1,4 +1,3 @@
-
 from django.db import models
 
 from mighty import translates as _
@@ -25,7 +24,11 @@ class TimelineModel(Base):
 
     @property
     def is_init(self):
-        return type(self).objects.filter(object_id=self.object_id, field=self.field).first()
+        return (
+            type(self)
+            .objects.filter(object_id=self.object_id, field=self.field)
+            .first()
+        )
 
     def replace_value(self):
         setattr(self.object_id, self.field, self.value)
@@ -39,11 +42,13 @@ class TimelineModel(Base):
                 field=self.field,
                 value=str(getattr(self.object_id, self.field)),
                 date_begin=self.object_id.date_create,
-                date_end=self.date_begin
+                date_end=self.date_begin,
             )
             init.to_init = True
             init.save()
-        last = type(self).objects.filter(object_id=self.object_id, field=self.field, date_end__isnull=True)
+        last = type(self).objects.filter(
+            object_id=self.object_id, field=self.field, date_end__isnull=True
+        )
         last.update(date_end=self.date_begin)
         self.replace_value()
         super().save(*args, **kwargs)

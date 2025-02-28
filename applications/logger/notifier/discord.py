@@ -16,17 +16,24 @@ class DiscordEventNotifier:
             message_template += f'\nURL: {url}'
 
         # Format the message with the event name, data, and URL
-        message = message_template.format(event_name=event_name, event_data=event_data, url=url)
+        message = message_template.format(
+            event_name=event_name, event_data=event_data, url=url
+        )
 
         # Create the payload for the Discord webhook
         payload = {'content': message}
 
         try:
-        # Send the payload to the Discord webhook
-            response = requests.post(self.webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})
+            # Send the payload to the Discord webhook
+            response = requests.post(
+                self.webhook_url,
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'},
+            )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(f'Error sending message: {e}')
+
 
 # Usage
 # notifier = DiscordEventNotifier('your-discord-webhook-url')

@@ -32,7 +32,9 @@ class StripeTestCase(TestCase):
         self.offer.save()
 
     def create_subscription(self):
-        self.subscription = Subscription(offer=self.offer, method=self.payment_method)
+        self.subscription = Subscription(
+            offer=self.offer, method=self.payment_method
+        )
         self.subscription.save()
 
     def setUp(self):
@@ -43,7 +45,9 @@ class StripeTestCase(TestCase):
         print('-- Basic cards date ok --')
         now = datetime.today() + relativedelta(months=1)
         for cb in ShopConfig.bank_card_conf.basic_cards:
-            self.payment_method = PaymentMethod(cb=cb['number'], cvc=cb['cvc'], month=now, year=now)
+            self.payment_method = PaymentMethod(
+                cb=cb['number'], cvc=cb['cvc'], month=now, year=now
+            )
             self.set_group_or_user = self.get_group_or_user()
             self.payment_method.save()
             print(f'pm: {self.payment_method}')
@@ -59,7 +63,9 @@ class StripeTestCase(TestCase):
         print('-- Basic cards date ko --')
         now = datetime.today() - relativedelta(months=12)
         for cb in StripeConfTest.basic_cards:
-            self.payment_method = PaymentMethod(cb=cb['number'], cvc=cb['cvc'], month=now, year=now)
+            self.payment_method = PaymentMethod(
+                cb=cb['number'], cvc=cb['cvc'], month=now, year=now
+            )
             self.set_group_or_user = self.get_group_or_user()
             self.payment_method.save()
             print(f'pm: {self.payment_method}')
@@ -78,7 +84,9 @@ class StripeTestCase(TestCase):
         print('-- Basic cards date ok --')
         now = datetime.today() + relativedelta(months=1)
         for cb in ShopConfig.bank_card_conf.cards_3ds:
-            self.payment_method = PaymentMethod(cb=cb['number'], cvc=cb['cvc'], month=now, year=now)
+            self.payment_method = PaymentMethod(
+                cb=cb['number'], cvc=cb['cvc'], month=now, year=now
+            )
             self.set_group_or_user = self.get_group_or_user()
             self.payment_method.save()
             print(f'pm: {self.payment_method}')

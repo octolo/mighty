@@ -13,11 +13,16 @@ from mighty.applications.shop.views.paymentmethod import (
 from mighty.applications.shop.views.webhooks.stripe import StripeCheckStatus
 
 __all__ = (
-    ShopExports, ShopExport,
-    BillPDF, BillList,
+    ShopExports,
+    ShopExport,
+    BillPDF,
+    BillList,
     BicCalculJSON,
-    CBFormDescView, CheckCB,
-    IbanFormDescView, CheckIban,
-    PaymentMethodFormDescView, FrequencyFormDescView,
+    CBFormDescView,
+    CheckCB,
+    IbanFormDescView,
+    CheckIban,
+    PaymentMethodFormDescView,
+    FrequencyFormDescView,
     StripeCheckStatus,
 )

@@ -24,7 +24,9 @@ class TokenAuthMiddleware:
         except (InvalidToken, TokenError):
             return None
         else:
-            decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            decoded_data = jwt_decode(
+                token, settings.SECRET_KEY, algorithms=['HS256']
+            )
             user = get_user_model().objects.get(id=decoded_data['user_id'])
 
         # Return the inner application directly and let it run everything else

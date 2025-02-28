@@ -12,8 +12,8 @@ class SearchBackend(SearchBackend):
         address = self.get_dict('geopy')
         if data:
             address['raw'] = data.address
-            address['latitude'] = data.latitude,
-            address['longitude'] = data.longitude,
+            address['latitude'] = (data.latitude,)
+            address['longitude'] = (data.longitude,)
         return address
 
     @property

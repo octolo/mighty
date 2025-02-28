@@ -19,7 +19,7 @@ class RoleBase(FoxidView):
     filters = [
         filters.SearchFilter(),
         tenant_filters.SearchByGroupUid(),
-        tenant_filters.SearchByRoleUid(id='uid', field='uid')
+        tenant_filters.SearchByRoleUid(id='uid', field='uid'),
     ]
 
     @property
@@ -36,4 +36,7 @@ class RoleBase(FoxidView):
         return self.get_queryset().get(uid=uid)
 
     def get_fields(self, role):
-        return {field: str(getattr(role, field)) for field in ('uid', *tenant_fields.role)}
+        return {
+            field: str(getattr(role, field))
+            for field in ('uid', *tenant_fields.role)
+        }

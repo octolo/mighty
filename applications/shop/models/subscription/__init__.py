@@ -11,20 +11,48 @@ from mighty.applications.shop.models.subscription.service import Service
 from mighty.models.base import Base
 
 
-@GroupOrUser(related_name='group_subscription', on_delete=models.SET_NULL, null=True, blank=True)
+@GroupOrUser(
+    related_name='group_subscription',
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+)
 class Subscription(Base, Bill, Service, PriceDatePaid):
-    offer = models.ForeignKey('mighty.Offer', on_delete=models.CASCADE, related_name='offer_subscription')
-    bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='bill_subscription', blank=True, null=True, editable=False)
-    method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_subscription')
-    discount = models.ManyToManyField('mighty.Discount', blank=True, related_name='discount_subscription')
+    offer = models.ForeignKey(
+        'mighty.Offer',
+        on_delete=models.CASCADE,
+        related_name='offer_subscription',
+    )
+    bill = models.ForeignKey(
+        'mighty.Bill',
+        on_delete=models.SET_NULL,
+        related_name='bill_subscription',
+        blank=True,
+        null=True,
+        editable=False,
+    )
+    method = models.ForeignKey(
+        'mighty.PaymentMethod',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='method_subscription',
+    )
+    discount = models.ManyToManyField(
+        'mighty.Discount', blank=True, related_name='discount_subscription'
+    )
     next_paid = models.DateField(blank=True, null=True, editable=False)
     date_start = models.DateField(blank=True, null=True, editable=False)
     date_end = models.DateField(blank=True, null=True, editable=False)
     coin = models.PositiveIntegerField(default=0)
     is_used = models.BooleanField(default=False)
     advance = models.PositiveIntegerField(default=0)
-    frequency = models.CharField(max_length=255, choices=_c.FREQUENCIES, default=_c.MONTH)
-    status = models.CharField(max_length=255, choices=_c.SUB_STATUS, default=_c.PREPARATION)
+    frequency = models.CharField(
+        max_length=255, choices=_c.FREQUENCIES, default=_c.MONTH
+    )
+    status = models.CharField(
+        max_length=255, choices=_c.SUB_STATUS, default=_c.PREPARATION
+    )
 
     class Meta(Base.Meta):
         abstract = True
@@ -36,7 +64,9 @@ class Subscription(Base, Bill, Service, PriceDatePaid):
     @property
     def is_active(self):
         if self.offer.frequency != 'ONUSE':
-            return bool(self.next_paid and self.next_paid >= timezone.now().date())
+            return bool(
+                self.next_paid and self.next_paid >= timezone.now().date()
+            )
         return self.coin > 0
 
     @property

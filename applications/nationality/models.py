@@ -13,7 +13,9 @@ class Nationality(Base, Image):
     alpha2 = models.CharField(_.alpha2, max_length=2)
     alpha3 = models.CharField(_.alpha3, max_length=3, blank=True, null=True)
     numeric = models.CharField(_.numeric, max_length=3, blank=True, null=True)
-    numbering = models.PositiveSmallIntegerField(_.numbering, blank=True, null=True)
+    numbering = models.PositiveSmallIntegerField(
+        _.numbering, blank=True, null=True
+    )
 
     class Meta(Base.Meta):
         abstract = True
@@ -46,7 +48,11 @@ class TranslateDict(Base):
     one_dim = {}
     search_fields = ['precision', 'split_precision']
     language = models.ForeignKey('mighty.nationality', on_delete=models.CASCADE)
-    translator = models.ForeignKey('mighty.translator', on_delete=models.CASCADE, related_name='translator_dict')
+    translator = models.ForeignKey(
+        'mighty.translator',
+        on_delete=models.CASCADE,
+        related_name='translator_dict',
+    )
     precision = models.CharField(max_length=5)
     translates = JSONField(blank=True, null=True)
 

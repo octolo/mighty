@@ -10,6 +10,7 @@ Add an image field at the model.
 (valid_image_name) get a valid name for filesystem
 (image_extension) return the extension
 """
+
 import base64
 import mimetypes
 import os
@@ -25,25 +26,44 @@ IMAGE_DEFAULT = 'none.jpg'
 
 class Image(models.Model):
     default_image = 'img/soon.jpg'
-    image = models.FileField(upload_to=image_directory_path, blank=True, null=True)
+    image = models.FileField(
+        upload_to=image_directory_path, blank=True, null=True
+    )
     model_activate_image = True
 
     class Meta:
         abstract = True
 
     @property
-    def image_url(self): return self.image.url if self.image else static(self.default_image)
+    def image_url(self):
+        return self.image.url if self.image else static(self.default_image)
+
     @property
-    def get_mime_type(self): return mimetypes.guess_type()[1]
+    def get_mime_type(self):
+        return mimetypes.guess_type()[1]
+
     @property
-    def image_html(self): return format_html(f'<img src="{self.image.url}" title="{self!s}">')
+    def image_html(self):
+        return format_html(f'<img src="{self.image.url}" title="{self!s}">')
+
     @property
-    def image_name(self): return os.path.basename(self.image.name)
+    def image_name(self):
+        return os.path.basename(self.image.name)
+
     @property
-    def valid_image_name(self): return get_valid_filename(self.imagename)
+    def valid_image_name(self):
+        return get_valid_filename(self.imagename)
+
     @property
-    def image_extension(self): return os.path.splitext(self.imagename)[1]
+    def image_extension(self):
+        return os.path.splitext(self.imagename)[1]
+
     @property
-    def imagex16_html(self): return format_html(f'<img src="{self.image_url}" title="{self!s}" style="max-height: 16px">')
+    def imagex16_html(self):
+        return format_html(
+            f'<img src="{self.image_url}" title="{self!s}" style="max-height: 16px">'
+        )
+
     @property
-    def image_b64(self): return base64.b64encode(self.image.read()).decode('utf-8')
+    def image_b64(self):
+        return base64.b64encode(self.image.read()).decode('utf-8')

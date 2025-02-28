@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django_json_widget.widgets import JSONEditorWidget
 
@@ -29,11 +28,14 @@ class TranslatorAdmin(BaseAdmin):
     def csv_view(self, request, object_id=None, extra_context=None):
         from mighty.filegenerator import FileGenerator
         from mighty.models import TranslateDict
+
         items = []
         for td in TranslateDict.objects.all():
             for key, tr in td.one_dim_format.items():
                 items.append([key, tr])
-        fg = FileGenerator(filename='exporttr', items=items, fields=('path', 'translation'))
+        fg = FileGenerator(
+            filename='exporttr', items=items, fields=('path', 'translation')
+        )
         return fg.response_http('csv')
         # import csv
         # from django.http import StreamingHttpResponse
@@ -41,6 +43,7 @@ class TranslatorAdmin(BaseAdmin):
         #    content_type='text/csv',
         #    headers={'Content-Disposition': 'attachment; filename="somefilename.csv"'},
         # )
+
     #    writer = csv.writer(response)
     #    writer.writerow(['path', 'translation'])
     #    from mighty.models import TranslateDict
@@ -52,8 +55,13 @@ class TranslatorAdmin(BaseAdmin):
 
     def get_urls(self):
         from django.urls import path
+
         urls = super().get_urls()
         my_urls = [
-            path('export/csv/', self.csv_view, name='translators_admin_export_csv'),
+            path(
+                'export/csv/',
+                self.csv_view,
+                name='translators_admin_export_csv',
+            ),
         ]
         return my_urls + urls

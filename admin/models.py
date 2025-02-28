@@ -58,18 +58,27 @@ class BaseAdmin(admin.ModelAdmin):
 
     def is_urlname_temporary(self, request):
         from django.urls import resolve
+
         url_name = resolve(request.path_info).url_name
         return self.temporary_urlname == url_name
 
     def temporary_fields_or_fieldsets(self, request, field):
-        if field and hasattr(self.model, field) and self.is_urlname_temporary(request):
+        if (
+            field
+            and hasattr(self.model, field)
+            and self.is_urlname_temporary(request)
+        ):
             return getattr(self, getattr(self, field))
         return None
 
-    def _admincustom_view(self, request, object_id, extra_context, template, **kwargs):
+    def _admincustom_view(
+        self, request, object_id, extra_context, template, **kwargs
+    ):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
-            raise DisallowedModelAdminToField(f'The field {to_field} cannot be referenced.')
+            raise DisallowedModelAdminToField(
+                f'The field {to_field} cannot be referenced.'
+            )
 
         obj = None
         if object_id:
@@ -82,7 +91,9 @@ class BaseAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if obj is None and object_id:
-            return self._get_obj_does_not_exist_redirect(request, self.opts, object_id)
+            return self._get_obj_does_not_exist_redirect(
+                request, self.opts, object_id
+            )
 
         media = self.media
         title = _('View %s')
@@ -91,7 +102,8 @@ class BaseAdmin(admin.ModelAdmin):
             'title': kwargs.get('title', title % self.opts.verbose_name),
             'subtitle': str(obj) if obj else None,
             'original': obj,
-            'is_popup': IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET,
+            'is_popup': IS_POPUP_VAR in request.POST
+            or IS_POPUP_VAR in request.GET,
             'to_field': to_field,
             'media': media,
             'preserved_filters': self.get_preserved_filters(request),
@@ -99,43 +111,55 @@ class BaseAdmin(admin.ModelAdmin):
         if object_id:
             context.update({'object_id': object_id})
         context.update(extra_context or {})
-        return self.render_admin_custom(request, context, obj=obj, template=template)
+        return self.render_admin_custom(
+            request, context, obj=obj, template=template
+        )
 
     def render_admin_custom(self, request, context, template, obj=None):
         context['object_tools_items'] = self.object_tools_items
         app_label = self.opts.app_label
         view_on_site_url = self.get_view_on_site_url(obj)
-        context.update(
-            {
-                'add': False,
-                'change': True,
-                'custom': True,
-                'has_view_permission': self.has_view_permission(request, obj),
-                'has_add_permission': self.has_add_permission(request),
-                'has_change_permission': self.has_change_permission(request, obj),
-                'has_delete_permission': self.has_delete_permission(request, obj),
-                'has_absolute_url': view_on_site_url is not None,
-                'absolute_url': view_on_site_url,
-                'opts': self.opts,
-                'content_type_id': get_content_type_for_model(self.model).pk,
-                'save_as': self.save_as,
-                'save_on_top': self.save_on_top,
-                'to_field_var': TO_FIELD_VAR,
-                'is_popup_var': IS_POPUP_VAR,
-                'app_label': app_label,
-            }
-        )
+        context.update({
+            'add': False,
+            'change': True,
+            'custom': True,
+            'has_view_permission': self.has_view_permission(request, obj),
+            'has_add_permission': self.has_add_permission(request),
+            'has_change_permission': self.has_change_permission(request, obj),
+            'has_delete_permission': self.has_delete_permission(request, obj),
+            'has_absolute_url': view_on_site_url is not None,
+            'absolute_url': view_on_site_url,
+            'opts': self.opts,
+            'content_type_id': get_content_type_for_model(self.model).pk,
+            'save_as': self.save_as,
+            'save_on_top': self.save_on_top,
+            'to_field_var': TO_FIELD_VAR,
+            'is_popup_var': IS_POPUP_VAR,
+            'app_label': app_label,
+        })
         request.current_app = self.admin_site.name
         return TemplateResponse(request, template, context)
 
     @csrf_protect_m
-    def admincustom_view(self, request, object_id=None, extra_context=None, **kwargs):
+    def admincustom_view(
+        self, request, object_id=None, extra_context=None, **kwargs
+    ):
         self.temporary_urlname = kwargs.get('urlname')
         template = kwargs.pop('template')
         with transaction.atomic(using=router.db_for_write(self.model)):
-            return self._admincustom_view(request, object_id, extra_context, template, **kwargs)
+            return self._admincustom_view(
+                request, object_id, extra_context, template, **kwargs
+            )
 
-    def _adminform_view(self, request, object_id, form_url, extra_context, template=None, **kwargs):
+    def _adminform_view(
+        self,
+        request,
+        object_id,
+        form_url,
+        extra_context,
+        template=None,
+        **kwargs,
+    ):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
             raise DisallowedModelAdminToField(
@@ -164,7 +188,11 @@ class BaseAdmin(admin.ModelAdmin):
         self.raw_id_fields = kwargs.get('raw_id_fields', self.raw_id_fields)
         fieldsets = kwargs.get('fields', self.get_fieldsets(request, obj))
         ModelForm = self.get_form(
-            request, obj, change=True, fields=flatten_fieldsets(fieldsets), form=kwargs.get('form')
+            request,
+            obj,
+            change=True,
+            fields=flatten_fieldsets(fieldsets),
+            form=kwargs.get('form'),
         )
 
         if request.method == 'POST':
@@ -228,7 +256,8 @@ class BaseAdmin(admin.ModelAdmin):
             'adminform': admin_form,
             'object_id': object_id,
             'original': obj,
-            'is_popup': IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET,
+            'is_popup': IS_POPUP_VAR in request.POST
+            or IS_POPUP_VAR in request.GET,
             'to_field': to_field,
             'media': media,
             'inline_admin_formsets': inline_formsets,
@@ -248,60 +277,75 @@ class BaseAdmin(admin.ModelAdmin):
 
         context.update(extra_context or {})
 
-        return self.render_admin_form(request, context, obj=obj, form_url=form_url, template=template)
+        return self.render_admin_form(
+            request, context, obj=obj, form_url=form_url, template=template
+        )
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        extra_context['object_tools_items'] = [item for item in self.object_tools_items if item.get('list')]
+        extra_context['object_tools_items'] = [
+            item for item in self.object_tools_items if item.get('list')
+        ]
         return super().changelist_view(request, extra_context=extra_context)
 
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+    def changeform_view(
+        self, request, object_id=None, form_url='', extra_context=None
+    ):
         extra_context = extra_context or {}
-        extra_context['object_tools_items'] = [item for item in self.object_tools_items if not item.get('list')]
-        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
+        extra_context['object_tools_items'] = [
+            item for item in self.object_tools_items if not item.get('list')
+        ]
+        return super().changeform_view(
+            request, object_id, form_url, extra_context=extra_context
+        )
 
-    def render_admin_form(self, request, context, form_url='', obj=None, template=None):
+    def render_admin_form(
+        self, request, context, form_url='', obj=None, template=None
+    ):
         context['object_tools_items'] = self.object_tools_items
         app_label = self.opts.app_label
         preserved_filters = self.get_preserved_filters(request)
         form_url = add_preserved_filters(
-            {'preserved_filters': preserved_filters, 'opts': self.opts}, form_url
+            {'preserved_filters': preserved_filters, 'opts': self.opts},
+            form_url,
         )
         view_on_site_url = self.get_view_on_site_url(obj)
         has_editable_inline_admin_formsets = False
         for inline in context['inline_admin_formsets']:
-            if (inline.has_add_permission or inline.has_change_permission or inline.has_delete_permission):
+            if (
+                inline.has_add_permission
+                or inline.has_change_permission
+                or inline.has_delete_permission
+            ):
                 has_editable_inline_admin_formsets = True
                 break
-        context.update(
-            {
-                'add': False,
-                'change': True,
-                'custom': True,
-                'has_view_permission': self.has_view_permission(request, obj),
-                'has_add_permission': self.has_add_permission(request),
-                'has_change_permission': self.has_change_permission(request, obj),
-                'has_delete_permission': self.has_delete_permission(request, obj),
-                'has_editable_inline_admin_formsets': (
-                    has_editable_inline_admin_formsets
-                ),
-                'has_file_field': context['adminform'].form.is_multipart()
-                or any(
-                    admin_formset.formset.is_multipart()
-                    for admin_formset in context['inline_admin_formsets']
-                ),
-                'has_absolute_url': view_on_site_url is not None,
-                'absolute_url': view_on_site_url,
-                'form_url': form_url,
-                'opts': self.opts,
-                'content_type_id': get_content_type_for_model(self.model).pk,
-                'save_as': self.save_as,
-                'save_on_top': self.save_on_top,
-                'to_field_var': TO_FIELD_VAR,
-                'is_popup_var': IS_POPUP_VAR,
-                'app_label': app_label,
-            }
-        )
+        context.update({
+            'add': False,
+            'change': True,
+            'custom': True,
+            'has_view_permission': self.has_view_permission(request, obj),
+            'has_add_permission': self.has_add_permission(request),
+            'has_change_permission': self.has_change_permission(request, obj),
+            'has_delete_permission': self.has_delete_permission(request, obj),
+            'has_editable_inline_admin_formsets': (
+                has_editable_inline_admin_formsets
+            ),
+            'has_file_field': context['adminform'].form.is_multipart()
+            or any(
+                admin_formset.formset.is_multipart()
+                for admin_formset in context['inline_admin_formsets']
+            ),
+            'has_absolute_url': view_on_site_url is not None,
+            'absolute_url': view_on_site_url,
+            'form_url': form_url,
+            'opts': self.opts,
+            'content_type_id': get_content_type_for_model(self.model).pk,
+            'save_as': self.save_as,
+            'save_on_top': self.save_on_top,
+            'to_field_var': TO_FIELD_VAR,
+            'is_popup_var': IS_POPUP_VAR,
+            'app_label': app_label,
+        })
         form_template = template or self.admin_form_template
         request.current_app = self.admin_site.name
 
@@ -326,17 +370,23 @@ class BaseAdmin(admin.ModelAdmin):
 
     def get_fieldsets(self, request, obj=None):
         if self.is_urlname_temporary(request):
-            return self.temporary_fieldsets or super().get_fieldsets(request, obj)
+            return self.temporary_fieldsets or super().get_fieldsets(
+                request, obj
+            )
         return super().get_fieldsets(request, obj)
 
     @csrf_protect_m
-    def adminform_view(self, request, object_id=None, form_url='', extra_context=None, **kwargs):
+    def adminform_view(
+        self, request, object_id=None, form_url='', extra_context=None, **kwargs
+    ):
         self.temporary_urlname = kwargs.get('urlname')
         self.temporary_fields = kwargs.get('fields')
         self.temporary_fieldsets = kwargs.get('fieldsets')
         template = kwargs.pop('template')
         with transaction.atomic(using=router.db_for_write(self.model)):
-            return self._adminform_view(request, object_id, form_url, extra_context, template, **kwargs)
+            return self._adminform_view(
+                request, object_id, form_url, extra_context, template, **kwargs
+            )
 
     def get_queryset(self, request):
         if self.queryset:
@@ -360,7 +410,9 @@ class BaseAdmin(admin.ModelAdmin):
             if pos:
                 self.fieldsets[pos][1]['fields'] += fields
             else:
-                self.fieldsets += ((category, {'classes': ('collapse',), 'fields': fields}),)
+                self.fieldsets += (
+                    (category, {'classes': ('collapse',), 'fields': fields}),
+                )
 
     def custom_fieldset(self, model, admin_site):
         pass
@@ -455,6 +507,7 @@ class BaseAdmin(admin.ModelAdmin):
         The default implementation creates an admin LogEntry object.
         """
         from django.contrib.admin.models import DELETION, LogEntry
+
         return LogEntry.objects.log_action(
             user_id=request.user.pk,
             content_type_id=get_content_type_for_model(object).pk,
@@ -480,12 +533,19 @@ class BaseAdmin(admin.ModelAdmin):
             qs = qs.order_by(*ordering)
         return qs
 
-    def get_object_by_contenttype(self, request, contenttype_id, object_id, from_field=None):
+    def get_object_by_contenttype(
+        self, request, contenttype_id, object_id, from_field=None
+    ):
         from django.contrib.contenttypes.models import ContentType
         from django.core.exceptions import ValidationError
+
         model = ContentType.objects.get(id=contenttype_id).model_class()
         queryset = self.get_queryset_by_contenttype(model, request)
-        field = model._meta.pk if from_field is None else model._meta.get_field(from_field)
+        field = (
+            model._meta.pk
+            if from_field is None
+            else model._meta.get_field(from_field)
+        )
         try:
             object_id = field.to_python(object_id)
             return queryset.get(**{field.name: object_id})
@@ -505,10 +565,14 @@ class BaseAdmin(admin.ModelAdmin):
     ##########################
     # timeline Admin
     ##########################
-    def timeline_view(self, request, contenttype_id, object_id, extra_context=None):
+    def timeline_view(
+        self, request, contenttype_id, object_id, extra_context=None
+    ):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        obj = self.get_object_by_contenttype(
+            request, contenttype_id, unquote(object_id), to_field
+        )
         context = {
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
@@ -517,21 +581,32 @@ class BaseAdmin(admin.ModelAdmin):
             'timeline': obj.timeline_model.objects.filter(object_id=obj),
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         return TemplateResponse(request, 'admin/timeline_list.html', context)
 
-    def timeline_addfield_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
+    def timeline_addfield_view(
+        self, request, contenttype_id, object_id, fieldname, extra_context=None
+    ):
         info = self.model._meta.app_label, self.model._meta.model_name
-        form_conf = {'form_class': TimelineForm, 'form_fields': ['date_begin', 'date_end']}
+        form_conf = {
+            'form_class': TimelineForm,
+            'form_fields': ['date_begin', 'date_end'],
+        }
         form = get_form_model(self.model.timeline_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        obj = self.get_object_by_contenttype(
+            request, contenttype_id, unquote(object_id), to_field
+        )
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:{}_{}_timeline'.format(*info), object_id=object_id, contenttype_id=contenttype_id)
+                return redirect(
+                    'admin:{}_{}_timeline'.format(*info),
+                    object_id=object_id,
+                    contenttype_id=contenttype_id,
+                )
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -543,17 +618,23 @@ class BaseAdmin(admin.ModelAdmin):
             'fake': obj.timeline_model(),
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
-        return TemplateResponse(request, 'admin/timeline_addfield.html', context)
+        return TemplateResponse(
+            request, 'admin/timeline_addfield.html', context
+        )
 
     ##########################
     # Source Admin
     ##########################
-    def source_view(self, request, contenttype_id, object_id, extra_context=None):
+    def source_view(
+        self, request, contenttype_id, object_id, extra_context=None
+    ):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        obj = self.get_object_by_contenttype(
+            request, contenttype_id, unquote(object_id), to_field
+        )
         context = {
             **self.admin_site.each_context(request),
             'object_name': str(opts.verbose_name),
@@ -562,14 +643,18 @@ class BaseAdmin(admin.ModelAdmin):
             'histories': obj.timeline_model.objects.filter(model_id=object_id),
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         return TemplateResponse(request, 'admin/timeline_list.html', context)
 
-    def source_choice_view(self, request, contenttype_id, object_id, fieldname, extra_context=None):
+    def source_choice_view(
+        self, request, contenttype_id, object_id, fieldname, extra_context=None
+    ):
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        obj = self.get_object_by_contenttype(
+            request, contenttype_id, unquote(object_id), to_field
+        )
         context = {
             **self.admin_site.each_context(request),
             'choices': CHOICES_TYPE,
@@ -579,21 +664,36 @@ class BaseAdmin(admin.ModelAdmin):
             'fake': obj.source_model(),
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         return TemplateResponse(request, 'admin/source_choice.html', context)
 
-    def source_addfield_view(self, request, contenttype_id, object_id, fieldname, sourcetype, extra_context=None):
+    def source_addfield_view(
+        self,
+        request,
+        contenttype_id,
+        object_id,
+        fieldname,
+        sourcetype,
+        extra_context=None,
+    ):
         info = self.model._meta.app_label, self.model._meta.model_name
-        form_conf = {'form_class': TimelineForm, 'form_fields': ['date_begin', 'date_end']}
+        form_conf = {
+            'form_class': TimelineForm,
+            'form_fields': ['date_begin', 'date_end'],
+        }
         form = get_form_model(self.model.timeline_model, **form_conf)
         opts = self.model._meta
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object_by_contenttype(request, contenttype_id, unquote(object_id), to_field)
+        obj = self.get_object_by_contenttype(
+            request, contenttype_id, unquote(object_id), to_field
+        )
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:{}_{}_timeline'.format(*info), object_id=object_id)
+                return redirect(
+                    'admin:{}_{}_timeline'.format(*info), object_id=object_id
+                )
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -606,7 +706,7 @@ class BaseAdmin(admin.ModelAdmin):
             'fake': obj.source_model(),
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         return TemplateResponse(request, 'admin/source_addfield.html', context)
 
@@ -624,7 +724,7 @@ class BaseAdmin(admin.ModelAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/file_metadata.html', context)
@@ -640,43 +740,114 @@ class BaseAdmin(admin.ModelAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
-        return TemplateResponse(request, 'admin/template_variable.html', context)
+        return TemplateResponse(
+            request, 'admin/template_variable.html', context
+        )
 
     def get_urls(self):
         from django.urls import path
+
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/disable/', self.wrap(self.disable_view), name='{}_{}_disable'.format(*info)),
-            path('<path:object_id>/enable/', self.wrap(self.enable_view), name='{}_{}_enable'.format(*info)),
-            path('<path:object_id>/cachefield/', self.wrap(self.cachefield_view), name='{}_{}_cache_field'.format(*info)),
-            path('<path:object_id>/logsfield/', self.wrap(self.logsfield_view), name='{}_{}_logs_field'.format(*info)),
-            path('<path:object_id>/task/', self.wrap(self.task_view), name='{}_{}_task'.format(*info)),
-            path('<path:object_id>/reporting/', self.wrap(self.reporting_view), name='{}_{}_reporting'.format(*info)),
+            path(
+                '<path:object_id>/disable/',
+                self.wrap(self.disable_view),
+                name='{}_{}_disable'.format(*info),
+            ),
+            path(
+                '<path:object_id>/enable/',
+                self.wrap(self.enable_view),
+                name='{}_{}_enable'.format(*info),
+            ),
+            path(
+                '<path:object_id>/cachefield/',
+                self.wrap(self.cachefield_view),
+                name='{}_{}_cache_field'.format(*info),
+            ),
+            path(
+                '<path:object_id>/logsfield/',
+                self.wrap(self.logsfield_view),
+                name='{}_{}_logs_field'.format(*info),
+            ),
+            path(
+                '<path:object_id>/task/',
+                self.wrap(self.task_view),
+                name='{}_{}_task'.format(*info),
+            ),
+            path(
+                '<path:object_id>/reporting/',
+                self.wrap(self.reporting_view),
+                name='{}_{}_reporting'.format(*info),
+            ),
         ]
 
-        if hasattr(self.model, 'has_eve_variable_template') and self.model.has_eve_variable_template:
-            my_urls.append(path('<path:object_id>/variables/', self.wrap(self.variables_view), name='{}_{}_variables'.format(*info)))
+        if (
+            hasattr(self.model, 'has_eve_variable_template')
+            and self.model.has_eve_variable_template
+        ):
+            my_urls.append(
+                path(
+                    '<path:object_id>/variables/',
+                    self.wrap(self.variables_view),
+                    name='{}_{}_variables'.format(*info),
+                )
+            )
 
-        if hasattr(self.model, 'enable_model_change_log') and self.model.enable_model_change_log:
-            my_urls.append(path('<path:object_id>/modelchangelog/', self.wrap(self.modelchangelog_view), name='{}_{}_modelchangelog'.format(*info)))
+        if (
+            hasattr(self.model, 'enable_model_change_log')
+            and self.model.enable_model_change_log
+        ):
+            my_urls.append(
+                path(
+                    '<path:object_id>/modelchangelog/',
+                    self.wrap(self.modelchangelog_view),
+                    name='{}_{}_modelchangelog'.format(*info),
+                )
+            )
 
         if has_model_activate(self.model, 'file'):
-            my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='{}_{}_filemetadata'.format(*info)))
+            my_urls.append(
+                path(
+                    '<path:object_id>/filemetadata/',
+                    self.wrap(self.filemetadata_view),
+                    name='{}_{}_filemetadata'.format(*info),
+                )
+            )
 
         if hasattr(self.model, 'timeline_model'):
             my_urls += [
-                path('ct-<int:contenttype_id>/<path:object_id>/timeline/', self.wrap(self.timeline_view), name='{}_{}_timeline'.format(*info)),
-                path('ct-<int:contenttype_id>/<path:object_id>/timeline/<str:fieldname>/', self.wrap(self.timeline_addfield_view), name='{}_{}_timeline_addfield'.format(*info)),
+                path(
+                    'ct-<int:contenttype_id>/<path:object_id>/timeline/',
+                    self.wrap(self.timeline_view),
+                    name='{}_{}_timeline'.format(*info),
+                ),
+                path(
+                    'ct-<int:contenttype_id>/<path:object_id>/timeline/<str:fieldname>/',
+                    self.wrap(self.timeline_addfield_view),
+                    name='{}_{}_timeline_addfield'.format(*info),
+                ),
             ]
         if hasattr(self.model, 'source_model'):
             my_urls += [
-                path('ct-<int:contenttype_id>/<path:object_id>/source/', self.wrap(self.source_view), name='{}_{}_source'.format(*info)),
-                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/', self.wrap(self.source_choice_view), name='{}_{}_source_choice'.format(*info)),
-                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/<str:sourcetype>/', self.wrap(self.source_addfield_view), name='{}_{}_source_addfield'.format(*info)),
+                path(
+                    'ct-<int:contenttype_id>/<path:object_id>/source/',
+                    self.wrap(self.source_view),
+                    name='{}_{}_source'.format(*info),
+                ),
+                path(
+                    'ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/',
+                    self.wrap(self.source_choice_view),
+                    name='{}_{}_source_choice'.format(*info),
+                ),
+                path(
+                    'ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/<str:sourcetype>/',
+                    self.wrap(self.source_addfield_view),
+                    name='{}_{}_source_addfield'.format(*info),
+                ),
             ]
         return my_urls + urls
 
@@ -690,7 +861,7 @@ class BaseAdmin(admin.ModelAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/cache_field.html', context)
@@ -705,7 +876,7 @@ class BaseAdmin(admin.ModelAdmin):
             'object': obj,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/logs_field.html', context)
@@ -714,6 +885,7 @@ class BaseAdmin(admin.ModelAdmin):
         from django.core.paginator import Paginator
 
         from mighty.models import ModelChangeLog
+
         opts = self.model._meta
         fake = ModelChangeLog()
         optslog = fake._meta
@@ -730,7 +902,7 @@ class BaseAdmin(admin.ModelAdmin):
             'optslog': optslog,
             'app_label': opts.app_label,
             'media': self.media,
-            'fake': fake
+            'fake': fake,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/change_logs.html', context)
@@ -747,7 +919,9 @@ class BaseAdmin(admin.ModelAdmin):
 
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
-            raise DisallowedModelAdminToField(f'The field {to_field} cannot be referenced.')
+            raise DisallowedModelAdminToField(
+                f'The field {to_field} cannot be referenced.'
+            )
 
         obj = self.get_object(request, unquote(object_id), to_field)
 
@@ -755,13 +929,19 @@ class BaseAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if obj is None:
-            return self._get_obj_does_not_exist_redirect(request, opts, object_id)
+            return self._get_obj_does_not_exist_redirect(
+                request, opts, object_id
+            )
 
         # Populate disabled_objects, a data structure of all related objects that
         # will also be disabled.
-        disabled_objects, model_count, perms_needed, protected = self.get_deleted_objects([obj], request)
+        disabled_objects, model_count, perms_needed, protected = (
+            self.get_deleted_objects([obj], request)
+        )
 
-        if request.POST and not protected:  # The user has confirmed the deletion.
+        if (
+            request.POST and not protected
+        ):  # The user has confirmed the deletion.
             if perms_needed:
                 raise PermissionDenied
             obj_display = str(obj)
@@ -773,7 +953,11 @@ class BaseAdmin(admin.ModelAdmin):
             return self.response_disable(request, obj_display, obj_id)
 
         object_name = str(opts.verbose_name)
-        title = _m.can % {'name': object_name} if perms_needed or protected else _m.are_you_sure
+        title = (
+            _m.can % {'name': object_name}
+            if perms_needed or protected
+            else _m.are_you_sure
+        )
 
         context = {
             **self.admin_site.each_context(request),
@@ -787,7 +971,8 @@ class BaseAdmin(admin.ModelAdmin):
             'opts': opts,
             'app_label': app_label,
             'preserved_filters': self.get_preserved_filters(request),
-            'is_popup': IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET,
+            'is_popup': IS_POPUP_VAR in request.POST
+            or IS_POPUP_VAR in request.GET,
             'to_field': to_field,
             **(extra_context or {}),
         }
@@ -802,15 +987,24 @@ class BaseAdmin(admin.ModelAdmin):
                 'action': 'disable',
                 'value': str(obj_id),
             })
-            return TemplateResponse(request, self.popup_response_template or [
-                f'admin/{opts.app_label}/{opts.model_name}/popup_response.html',
-                f'admin/{opts.app_label}/popup_response.html',
-                'admin/popup_response.html',
-            ], {
-                'popup_response_data': popup_response_data,
-            })
+            return TemplateResponse(
+                request,
+                self.popup_response_template
+                or [
+                    f'admin/{opts.app_label}/{opts.model_name}/popup_response.html',
+                    f'admin/{opts.app_label}/popup_response.html',
+                    'admin/popup_response.html',
+                ],
+                {
+                    'popup_response_data': popup_response_data,
+                },
+            )
 
-        self.message_user(request, _m.disable_ok % {'name': opts.verbose_name, 'obj': obj_display}, messages.SUCCESS)
+        self.message_user(
+            request,
+            _m.disable_ok % {'name': opts.verbose_name, 'obj': obj_display},
+            messages.SUCCESS,
+        )
         if self.has_change_permission(request, None):
             post_url = reverse(
                 f'admin:{opts.app_label}_{opts.model_name}_changelist',
@@ -828,14 +1022,21 @@ class BaseAdmin(admin.ModelAdmin):
         opts = self.model._meta
         app_label = opts.app_label
         request.current_app = self.admin_site.name
-        context.update(to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media)
-        return TemplateResponse(request,
-            self.disable_confirmation_template or [
+        context.update(
+            to_field_var=TO_FIELD_VAR,
+            is_popup_var=IS_POPUP_VAR,
+            media=self.media,
+        )
+        return TemplateResponse(
+            request,
+            self.disable_confirmation_template
+            or [
                 f'admin/{app_label}/{opts.model_name}/disable_confirmation.html',
                 f'admin/{app_label}/disable_confirmation.html',
                 'admin/disable_confirmation.html',
             ],
-            context)
+            context,
+        )
 
     @csrf_protect_m
     def enable_view(self, request, object_id, extra_context=None):
@@ -849,7 +1050,9 @@ class BaseAdmin(admin.ModelAdmin):
 
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
-            raise DisallowedModelAdminToField(f'The field {to_field} cannot be referenced.')
+            raise DisallowedModelAdminToField(
+                f'The field {to_field} cannot be referenced.'
+            )
 
         obj = self.get_object(request, unquote(object_id), to_field)
 
@@ -857,13 +1060,19 @@ class BaseAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if obj is None:
-            return self._get_obj_does_not_exist_redirect(request, opts, object_id)
+            return self._get_obj_does_not_exist_redirect(
+                request, opts, object_id
+            )
 
         # Populate enabled_objects, a data structure of all related objects that
         # will also be enabled.
-        enabled_objects, model_count, perms_needed, protected = self.get_deleted_objects([obj], request)
+        enabled_objects, model_count, perms_needed, protected = (
+            self.get_deleted_objects([obj], request)
+        )
 
-        if request.POST and not protected:  # The user has confirmed the deletion.
+        if (
+            request.POST and not protected
+        ):  # The user has confirmed the deletion.
             if perms_needed:
                 raise PermissionDenied
             obj_display = str(obj)
@@ -875,7 +1084,11 @@ class BaseAdmin(admin.ModelAdmin):
             return self.response_enable(request, obj_display, obj_id)
 
         object_name = str(opts.verbose_name)
-        title = _m.cannot_enable % {'name': object_name} if perms_needed or protected else _m.are_you_sure
+        title = (
+            _m.cannot_enable % {'name': object_name}
+            if perms_needed or protected
+            else _m.are_you_sure
+        )
 
         context = {
             **self.admin_site.each_context(request),
@@ -889,7 +1102,8 @@ class BaseAdmin(admin.ModelAdmin):
             'opts': opts,
             'app_label': app_label,
             'preserved_filters': self.get_preserved_filters(request),
-            'is_popup': IS_POPUP_VAR in request.POST or IS_POPUP_VAR in request.GET,
+            'is_popup': IS_POPUP_VAR in request.POST
+            or IS_POPUP_VAR in request.GET,
             'to_field': to_field,
             **(extra_context or {}),
         }
@@ -904,15 +1118,24 @@ class BaseAdmin(admin.ModelAdmin):
                 'action': 'enable',
                 'value': str(obj_id),
             })
-            return TemplateResponse(request, self.popup_response_template or [
-                f'admin/{opts.app_label}/{opts.model_name}/popup_response.html',
-                f'admin/{opts.app_label}/popup_response.html',
-                'admin/popup_response.html',
-            ], {
-                'popup_response_data': popup_response_data,
-            })
+            return TemplateResponse(
+                request,
+                self.popup_response_template
+                or [
+                    f'admin/{opts.app_label}/{opts.model_name}/popup_response.html',
+                    f'admin/{opts.app_label}/popup_response.html',
+                    'admin/popup_response.html',
+                ],
+                {
+                    'popup_response_data': popup_response_data,
+                },
+            )
 
-        self.message_user(request, _m.enable_ok % {'name': opts.verbose_name, 'obj': obj_display}, messages.SUCCESS)
+        self.message_user(
+            request,
+            _m.enable_ok % {'name': opts.verbose_name, 'obj': obj_display},
+            messages.SUCCESS,
+        )
         if self.has_change_permission(request, None):
             post_url = reverse(
                 f'admin:{opts.app_label}_{opts.model_name}_changelist',
@@ -930,11 +1153,18 @@ class BaseAdmin(admin.ModelAdmin):
         opts = self.model._meta
         app_label = opts.app_label
         request.current_app = self.admin_site.name
-        context.update(to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media)
-        return TemplateResponse(request,
-            self.enable_confirmation_template or [
+        context.update(
+            to_field_var=TO_FIELD_VAR,
+            is_popup_var=IS_POPUP_VAR,
+            media=self.media,
+        )
+        return TemplateResponse(
+            request,
+            self.enable_confirmation_template
+            or [
                 f'admin/{app_label}/{opts.model_name}/enable_confirmation.html',
                 f'admin/{app_label}/enable_confirmation.html',
                 'admin/enable_confirmation.html',
             ],
-            context)
+            context,
+        )

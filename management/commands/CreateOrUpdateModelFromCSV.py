@@ -57,4 +57,6 @@ class Command(ModelBaseCommand):
                 self.on_row(row)
 
     def on_row(self, row):
-        raise NotImplementedError('Command should implement method on_object(self, obj)')
+        raise NotImplementedError(
+            'Command should implement method on_object(self, obj)'
+        )

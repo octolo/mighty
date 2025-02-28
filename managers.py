@@ -17,11 +17,15 @@ class RequestManager:
         self.request = request
         self.Config.method = kwargs.get('method', self.Config.method)
         self.Config.filters = kwargs.get('filters', self.Config.filters)
-        self.Config.url_filters = kwargs.get('url_filters', self.Config.url_filters)
+        self.Config.url_filters = kwargs.get(
+            'url_filters', self.Config.url_filters
+        )
 
     def add_filter(self, filtr):
         self.filters.append(filtr)
 
     def objects(self, request, op=operator.and_):
-        filters = reduce(op, (filtr.F(request) for filtr in self.filters if filtr.F(request)))
+        filters = reduce(
+            op, (filtr.F(request) for filtr in self.filters if filtr.F(request))
+        )
         return self.queryset.filter(filters)

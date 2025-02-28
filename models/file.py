@@ -11,6 +11,7 @@ Add [file, name, mimetype] field at the model.
 (valid_file_name) get a valid name for filesystem
 (file_extension) return the extension
 """
+
 import hashlib
 import logging
 import os
@@ -51,19 +52,29 @@ class File(models.Model):
         '.pdf': 'mighty.readers.pdf.ReaderPDF',
     }
 
-    file = models.FileField(upload_to=file_directory_path, blank=True, null=True)
+    file = models.FileField(
+        upload_to=file_directory_path, blank=True, null=True
+    )
     filename = models.CharField(max_length=255, blank=True, null=True)
-    filemimetype = models.CharField(max_length=255, blank=True, null=True, editable=False)
-    charset = models.CharField(max_length=255, blank=True, null=True, editable=False)
+    filemimetype = models.CharField(
+        max_length=255, blank=True, null=True, editable=False
+    )
+    charset = models.CharField(
+        max_length=255, blank=True, null=True, editable=False
+    )
     extracontenttype = JSONField(blank=True, null=True)
     metadata = JSONField(blank=True, null=True)
     size = models.BigIntegerField(default=0, editable=False)
     client_date = models.DateTimeField(null=True, blank=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, blank=True, null=True)
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.SET_NULL, blank=True, null=True
+    )
     object_id = models.PositiveBigIntegerField(blank=True, null=True)
     content_object = GenericForeignKey('content_type', 'object_id')
     thumbnail = models.TextField(null=True, blank=True)
-    hashid = models.CharField(max_length=40, db_index=True, blank=True, null=True)
+    hashid = models.CharField(
+        max_length=40, db_index=True, blank=True, null=True
+    )
 
     # CONFIG
     enable_hashid = False
@@ -82,7 +93,11 @@ class File(models.Model):
         kwargs.get('fltr', {})
         size = []
         for key, type_ in self.concrete_fields(excludes).items():
-            data = getattr(self, f'{key}_id') if type_ == 'ForeignKey' else getattr(self, key)
+            data = (
+                getattr(self, f'{key}_id')
+                if type_ == 'ForeignKey'
+                else getattr(self, key)
+            )
             size.append(getsizeof(data))
         # for key,type_ in self.m2m_fields(excludes).items():
         #    size += [getsizeof(key) for key,obj in getattr(self, key).in_bulk(**fltr).items()]
@@ -108,7 +123,9 @@ class File(models.Model):
         if self.local_available:
             self.tmp_file = self.file.path
         else:
-            with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as tmp_file:
+            with tempfile.NamedTemporaryFile(
+                mode='w+b', delete=False
+            ) as tmp_file:
                 for chunk in self.cloud_file.iter_content(self.chunk_size):
                     tmp_file.write(chunk)
                 self.tmp_file = tmp_file
@@ -119,7 +136,9 @@ class File(models.Model):
     def http_download(self):
         todl_file = self.cloud_file if self.proxy_cloud_streaming else self.file
         response = FileResponse(todl_file)
-        response['Content-Disposition'] = f'attachment; filename="{self.file_name}"'
+        response['Content-Disposition'] = (
+            f'attachment; filename="{self.file_name}"'
+        )
         return response
 
     @property
@@ -132,46 +151,83 @@ class File(models.Model):
 
     # PROPERTIES
     @property
-    def has_extension(self): return bool(self.file_extension)
+    def has_extension(self):
+        return bool(self.file_extension)
+
     @property
-    def file_url(self): return self.file.url
+    def file_url(self):
+        return self.file.url
+
     @property
-    def file_name(self): return self.filename or os.path.basename(self.file.name)
+    def file_name(self):
+        return self.filename or os.path.basename(self.file.name)
+
     @property
-    def valid_file_name(self): return get_valid_filename(self.file.name)
+    def valid_file_name(self):
+        return get_valid_filename(self.file.name)
+
     @property
-    def file_extension(self): return os.path.splitext(self.file_name)[-1]
+    def file_extension(self):
+        return os.path.splitext(self.file_name)[-1]
+
     @property
-    def download_url(self): return self.get_url('download', arguments={self.uid_or_pk_arg: self.uid_or_pk})
+    def download_url(self):
+        return self.get_url(
+            'download', arguments={self.uid_or_pk_arg: self.uid_or_pk}
+        )
+
     @property
-    def pdf_url(self): return self.get_url('pdf', arguments={self.uid_or_pk_arg: self.uid_or_pk})
+    def pdf_url(self):
+        return self.get_url(
+            'pdf', arguments={self.uid_or_pk_arg: self.uid_or_pk}
+        )
+
     @property
-    def name(self): return self.filename
+    def name(self):
+        return self.filename
+
     @property
-    def mime_or_ext(self): return self.filemimetype or self.file_extension[1:]
+    def mime_or_ext(self):
+        return self.filemimetype or self.file_extension[1:]
+
     @property
-    def reader_path(self): return self.readers.get(self.mime_or_ext, None)
+    def reader_path(self):
+        return self.readers.get(self.mime_or_ext, None)
 
     # MEMORY FILE
-    def InMemoryUploadedFile_filemimetype(self): return self.file._file.content_type
-    def InMemoryUploadedFile_size(self): return self.file._file.size
-    def InMemoryUploadedFile_charset(self): return self.file._file.charset
-    def InMemoryUploadedFile_extracontenttype(self): return self.file._file.content_type_extra
-    def InMemoryUploadedFile_filename(self): return os.path.basename(self.file._file.name)
+    def InMemoryUploadedFile_filemimetype(self):
+        return self.file._file.content_type
+
+    def InMemoryUploadedFile_size(self):
+        return self.file._file.size
+
+    def InMemoryUploadedFile_charset(self):
+        return self.file._file.charset
+
+    def InMemoryUploadedFile_extracontenttype(self):
+        return self.file._file.content_type_extra
+
+    def InMemoryUploadedFile_filename(self):
+        return os.path.basename(self.file._file.name)
 
     # SIZE
-    def size_long(self, unit=None): return pretty_size_long(self.size, unit) if self.size else None
-    def size_short(self, unit=None): return pretty_size_short(self.size, unit) if self.size else None
+    def size_long(self, unit=None):
+        return pretty_size_long(self.size, unit) if self.size else None
+
+    def size_short(self, unit=None):
+        return pretty_size_short(self.size, unit) if self.size else None
 
     # HASHID
-    def get_hashid(self): return hashlib.sha1(self.file.read()).hexdigest()
+    def get_hashid(self):
+        return hashlib.sha1(self.file.read()).hexdigest()
 
     def set_hashid(self):
         if self.enable_hashid:
             self.hashid = self.get_hashid()
 
     # THUMBNAIL
-    def get_thumbnail(self): return Thumbnail(self.file, self.mime_or_ext)
+    def get_thumbnail(self):
+        return Thumbnail(self.file, self.mime_or_ext)
 
     def set_thumbnail(self):
         if self.enable_thumbnail:
@@ -182,11 +238,20 @@ class File(models.Model):
             tmp_file_class = self.file._file.__class__.__name__
             for field in self.auto_complete_fields:
                 if hasattr(self, tmp_file_class + '_' + field):
-                    setattr(self, field, getattr(self, tmp_file_class + '_' + field)())
+                    setattr(
+                        self,
+                        field,
+                        getattr(self, tmp_file_class + '_' + field)(),
+                    )
 
     def set_metadata(self):
         if self.has_reader:
-            reader = self.reader(file=self.usable_file, filename=self.filename, extension=self.file_extension, reader=True)
+            reader = self.reader(
+                file=self.usable_file,
+                filename=self.filename,
+                extension=self.file_extension,
+                reader=True,
+            )
             self.metadata = reader.get_meta_data()
 
     def set_filename(self):

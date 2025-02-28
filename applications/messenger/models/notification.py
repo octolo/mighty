@@ -1,4 +1,3 @@
-
 from django.db import models
 
 from mighty.applications.logger import choices
@@ -29,7 +28,9 @@ fields_shared = (
 @MissiveFollower(related_name='missive_to_notification')
 class Notification(models.Model):
     is_read = models.BooleanField(default=True)
-    level = models.PositiveSmallIntegerField(choices=choices.LEVEL, default=choices.INFO)
+    level = models.PositiveSmallIntegerField(
+        choices=choices.LEVEL, default=choices.INFO
+    )
 
     class Meta:
         abstract = True

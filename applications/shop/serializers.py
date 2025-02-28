@@ -17,7 +17,13 @@ from mighty.models import (
 class ShopServiceSerializer(ModelSerializer):
     class Meta:
         model = ShopService
-        fields = (*fields.service, 'real_tax', 'calc_tax', 'price_ht', 'price_ttc')
+        fields = (
+            *fields.service,
+            'real_tax',
+            'calc_tax',
+            'price_ht',
+            'price_ttc',
+        )
 
 
 class ShopItemSerializer(ModelSerializer):
@@ -42,7 +48,15 @@ class OfferSerializer(ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = (*fields.offer, 'image_url', 'real_tax', 'calc_tax', 'price_ht', 'price_ttc', 'service_tenant')
+        fields = (
+            *fields.offer,
+            'image_url',
+            'real_tax',
+            'calc_tax',
+            'price_ht',
+            'price_ttc',
+            'service_tenant',
+        )
 
 
 class SubscriptionSerializer(ModelSerializer):
@@ -51,7 +65,15 @@ class SubscriptionSerializer(ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ('uid', 'next_paid', 'date_end', 'date_start', 'offer', 'service', 'is_active')
+        fields = (
+            'uid',
+            'next_paid',
+            'date_end',
+            'date_start',
+            'offer',
+            'service',
+            'is_active',
+        )
 
     def get_service(self, obj):
         return obj.cache

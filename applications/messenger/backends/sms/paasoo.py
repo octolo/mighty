@@ -1,4 +1,3 @@
-
 import requests
 
 from mighty.applications.messenger import choices

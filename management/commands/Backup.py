@@ -40,7 +40,8 @@ class Command(BaseCommand):
         super().handle(*args, **options)
 
     def get_dir(self):
-        if not os.path.isdir(self.backupdir): os.makedirs(self.backupdir)
+        if not os.path.isdir(self.backupdir):
+            os.makedirs(self.backupdir)
         return self.backupdir
 
     def get_header(self, model):
@@ -53,7 +54,9 @@ class Command(BaseCommand):
         field_names = {field.name for field in obj._meta.fields}
         m2mfield_names = {field.name for field in obj._meta.many_to_many}
         for field in field_names:
-            if type(obj._meta.get_field(field)) == models.ForeignKey and hasattr(getattr(obj, field), 'uid'):
+            if type(
+                obj._meta.get_field(field)
+            ) == models.ForeignKey and hasattr(getattr(obj, field), 'uid'):
                 row.append(getattr(obj, field).uid)
             else:
                 row.append(getattr(obj, field))
@@ -71,21 +74,33 @@ class Command(BaseCommand):
             fullpath = self.backupdir + f'/{tablefile}'
             model = ct.model_class()
             with open(fullpath, self.mode) as csvfile:
-                writer = csv.writer(csvfile, delimiter=self.delimiter, quotechar=self.quotechar, quoting=self.quoting)
+                writer = csv.writer(
+                    csvfile,
+                    delimiter=self.delimiter,
+                    quotechar=self.quotechar,
+                    quoting=self.quoting,
+                )
                 writer.writerow(self.get_header(model))
-                for obj in model.objects.all(): writer.writerow(self.get_line(obj))
+                for obj in model.objects.all():
+                    writer.writerow(self.get_line(obj))
             archive.add(fullpath, arcname=f'db/{tablefile}')
             os.remove(fullpath)
 
     def backup_cloud(self, archive):
-        cloudstorage = + '/%s' % conf.Directory.cloud
+        cloudstorage = +'/%s' % conf.Directory.cloud
         if os.path.isdir(cloudstorage):
             archive.add(cloudstorage, arcname=conf.Directory.cloud[:-1])
             shutil.rmtree(cloudstorage)
 
     def do(self):
         self.get_dir()
-        with tarfile.open(self.backupdir + '/backup_{}.tar.gz'.format(datetime.datetime.now().strftime('%Y%m%d_%H%M%S')), 'w:gz') as archive:
+        with tarfile.open(
+            self.backupdir
+            + '/backup_{}.tar.gz'.format(
+                datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            ),
+            'w:gz',
+        ) as archive:
             if 'csv' in self.backup:
                 self.backup_csv(archive)
             if 'cloud' in self.backup:

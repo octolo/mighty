@@ -19,7 +19,9 @@ def start_task(ct, pk, task, task_id, *args, **kwargs):
     except Exception:
         obj.task_status = 'ERROR'
         obj.save()
-        logger.warning(f'error task ({obj.task_status}) {model}: {task} -> {task_id}')
+        logger.warning(
+            f'error task ({obj.task_status}) {model}: {task} -> {task_id}'
+        )
         raise
     obj.task_status = 'FINISH'
     obj.can_use_task = False

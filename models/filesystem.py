@@ -26,10 +26,18 @@ FILETYPE = ['d', '-', '-']
 class MimeType(Base, Image):
     mime = models.CharField(max_length=255)
     extension = models.CharField(max_length=255)
-    image24 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
-    image48 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
-    image64 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
-    image128 = models.ImageField(upload_to=file_directory_path, blank=True, null=True)
+    image24 = models.ImageField(
+        upload_to=file_directory_path, blank=True, null=True
+    )
+    image48 = models.ImageField(
+        upload_to=file_directory_path, blank=True, null=True
+    )
+    image64 = models.ImageField(
+        upload_to=file_directory_path, blank=True, null=True
+    )
+    image128 = models.ImageField(
+        upload_to=file_directory_path, blank=True, null=True
+    )
     is_vector = models.BooleanField(default=False)
     model_activate_filesystem = True
 
@@ -75,8 +83,12 @@ class MimeType(Base, Image):
 class FileSystem(models.Model):
     db_size = models.BigIntegerField(blank=True, null=True)
     direction = models.PositiveSmallIntegerField(choices=DIRECTION, default=2)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, blank=True, null=True)
-    owner = models.ForeignKey(userModel, on_delete=models.SET_NULL, blank=True, null=True)
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, blank=True, null=True
+    )
+    owner = models.ForeignKey(
+        userModel, on_delete=models.SET_NULL, blank=True, null=True
+    )
 
     class Meta:
         abstract = True
@@ -86,10 +98,17 @@ class FileSystem(models.Model):
         fltr = kwargs.get('fltr', {})
         size = []
         for key, type_ in self.concrete_fields(excludes).items():
-            data = getattr(self, f'{key}_id') if type_ == 'ForeignKey' else getattr(self, key)
+            data = (
+                getattr(self, f'{key}_id')
+                if type_ == 'ForeignKey'
+                else getattr(self, key)
+            )
             size.append(getsizeof(data))
         for key, type_ in self.many_fields(excludes).items():
-            size += [getsizeof(key) for key, obj in getattr(self, key).in_bulk(**fltr).items()]
+            size += [
+                getsizeof(key)
+                for key, obj in getattr(self, key).in_bulk(**fltr).items()
+            ]
         return sum(size) if size else None
 
     def save(self, *args, **kwargs):
@@ -128,7 +147,9 @@ class FileSystem(models.Model):
 
     def init_owner(self):
         if not self.owner and (self.create_by or self.update_by):
-            userid, _username = getattr(self, 'create_by', self.update_by).split('.')
+            userid, _username = getattr(
+                self, 'create_by', self.update_by
+            ).split('.')
             with contextlib.suppress(userModel.DoesNotExist):
                 self.owner = userModel.objects.get(id=userid)
 
@@ -140,8 +161,12 @@ class FileSystem(models.Model):
             oneline, manyline = self.data_for_file(excludes)
         biggest_name = biggest_value = ''
         for name, value in oneline.items():
-            biggest_name = name if len(name) > len(biggest_name) else biggest_name
-            biggest_value = value if len(value) > len(biggest_value) else biggest_value
+            biggest_name = (
+                name if len(name) > len(biggest_name) else biggest_name
+            )
+            biggest_value = (
+                value if len(value) > len(biggest_value) else biggest_value
+            )
         return biggest_name, biggest_value
 
     def data_for_file(self, excludes):
@@ -150,19 +175,25 @@ class FileSystem(models.Model):
             for key, type_ in self.concrete_fields(excludes).items()
         }
         manyline = {
-            self.field_config(key).verbose_name.upper(): [str(data) for data in getattr(self, key).all()]
+            self.field_config(key).verbose_name.upper(): [
+                str(data) for data in getattr(self, key).all()
+            ]
             for key, type_ in self.many_fields(excludes).items()
         }
         return oneline, manyline
 
     def file_format(self, *args, **kwargs):
         excludes = kwargs.get('excludes', [])
-        return getattr(self, 'file_{}'.format(kwargs.get('fileformat', 'txt')))(excludes)
+        return getattr(self, 'file_{}'.format(kwargs.get('fileformat', 'txt')))(
+            excludes
+        )
 
     def file_txt(self, excludes):
         oneline, manyline = self.data_for_file(excludes)
         line = []
-        biggest_name, biggest_value = self.biggest_name_value(oneline=oneline, manyline=manyline, excludes=excludes)
+        biggest_name, biggest_value = self.biggest_name_value(
+            oneline=oneline, manyline=manyline, excludes=excludes
+        )
         size_name = len(biggest_name)
         size_value = len(biggest_value)
         space_name = ' ' * size_name
@@ -172,11 +203,21 @@ class FileSystem(models.Model):
         line_template = conf.FileSystem.line_template
         for name, value in oneline.items():
             space = ' ' * (size_name - len(name))
-            tpl = line_template % ({'space': space, 'label': name, 'data': value})
+            tpl = line_template % ({
+                'space': space,
+                'label': name,
+                'data': value,
+            })
             line.append(tpl)
         for name, value in manyline.items():
             space = ' ' * (size_name - len(name))
-            line.extend((line_template % {'space': space, 'label': name, 'data': minus_value}, '\n'.join([space_name + '  - ' + str(d) for d in value]) if value else ''))
+            line.extend((
+                line_template
+                % {'space': space, 'label': name, 'data': minus_value},
+                '\n'.join([space_name + '  - ' + str(d) for d in value])
+                if value
+                else '',
+            ))
         return '\n'.join(line)
 
     def file_json(self, excludes):

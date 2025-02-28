@@ -40,7 +40,9 @@ class FiltersManager(EnableLogger):
         try:
             flt = next(x for x in self.flts if param in x.params_choices)
             if self.request.user.is_authenticated:
-                return flt.sql({param: value}, user=self.request.user, bdata=self.data)
+                return flt.sql(
+                    {param: value}, user=self.request.user, bdata=self.data
+                )
             return flt.sql({param: value}, bdata=self.data)
         except StopIteration:
             return None

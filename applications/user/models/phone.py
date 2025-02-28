@@ -1,4 +1,3 @@
-
 import logging
 import re
 
@@ -32,7 +31,11 @@ class UserPhoneManager(models.Manager):
 
 # FIXME: This model will be changed to Phones soon, as a copy from EmailAddress from Django Allauth, with a real phonenumbers field
 class UserPhone(models.Model):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_phone')
+    user = models.ForeignKey(
+        conf.ForeignKey.user,
+        on_delete=models.CASCADE,
+        related_name='user_phone',
+    )
     phone = models.CharField(_user.phone, unique=True, max_length=255)
     search_fields = ('phone',)
     # Until we create a model like Django Allauth
@@ -62,13 +65,13 @@ class UserPhone(models.Model):
 
     # Django-allauth implementation
     def can_set_verified(self):
-
         if self.verified:
             return True
         # conflict = False
         # if app_settings.UNIQUE_EMAIL:
         conflict = (
-            type(self).objects.exclude(pk=self.pk)
+            type(self)
+            .objects.exclude(pk=self.pk)
             .filter(verified=True, phone__iexact=self.phone)
             .exists()
         )

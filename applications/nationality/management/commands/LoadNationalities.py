@@ -5,11 +5,21 @@ from mighty.models import Nationality
 
 
 class Command(CSVModelCommand):
-    fields = {'country': 'Country', 'alpha2': 'Alpha2', 'alpha3': 'Alpha3', 'numeric': 'Numeric', 'numbering': 'Numbering'}
+    fields = {
+        'country': 'Country',
+        'alpha2': 'Alpha2',
+        'alpha3': 'Alpha3',
+        'numeric': 'Numeric',
+        'numbering': 'Numbering',
+    }
     number_total = 0
 
     def get_current_info(self):
-        return self.current_object if self.ftotal == 'total' else self.current_row['country']
+        return (
+            self.current_object
+            if self.ftotal == 'total'
+            else self.current_row['country']
+        )
 
     def on_row(self, row):
         obj, _create = Nationality.objects.get_or_create(country=row['country'])
@@ -36,7 +46,9 @@ class Command(CSVModelCommand):
             self.logger.info('Import phone number')
             qs = []
             for prefix, values in _COUNTRY_CODE_TO_REGION_CODE.items():
-                qs.extend({'alpha': value, 'numbering': prefix} for value in values)
+                qs.extend(
+                    {'alpha': value, 'numbering': prefix} for value in values
+                )
             self.ftotal = 'total'
             self.each_objects(qs)
 

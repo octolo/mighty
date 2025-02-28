@@ -58,7 +58,9 @@ class FileMakerPDF:
         return '\n'.join([
             '@font-face {',
             f"    font-family: '{name}';",
-            '    src: url(file://{});'.format(find_static_file(f'fonts/{font}')),
+            '    src: url(file://{});'.format(
+                find_static_file(f'fonts/{font}')
+            ),
             '}',
         ])
 
@@ -105,7 +107,9 @@ class FileMakerPDF:
 
     def write_pdf(self, **kwargs):
         self.init_options(**kwargs)
-        self.current_pdf = self.write_html(html=self.get_html_string()).write_pdf(kwargs.get(buffer))
+        self.current_pdf = self.write_html(
+            html=self.get_html_string()
+        ).write_pdf(kwargs.get(buffer))
         return self.current_pdf
 
     def as_content_file(self, filename):

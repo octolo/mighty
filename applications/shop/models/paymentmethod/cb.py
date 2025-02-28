@@ -9,7 +9,7 @@ from mighty.applications.shop.apps import ShopConfig, cards_test
 class CBModel:
     @property
     def readable_cb(self):
-        return ' '.join([self.cb[i:i + 4] for i in range(0, len(self.cb), 4)])
+        return ' '.join([self.cb[i : i + 4] for i in range(0, len(self.cb), 4)])
 
     @property
     def str_cb(self):
@@ -17,7 +17,11 @@ class CBModel:
 
     @property
     def mask_cb(self):
-        cb = self.readable_cb[0:4] + re.sub(r'\d', '*', self.readable_cb[4:-4]) + self.readable_cb[-4:]
+        cb = (
+            self.readable_cb[0:4]
+            + re.sub(r'\d', '*', self.readable_cb[4:-4])
+            + self.readable_cb[-4:]
+        )
         return f'{cb} {self.cvc} {self.date_valid.month}/{str(self.date_valid.year)[-2:]}'
 
     def sum_digits(self, digit):
@@ -37,7 +41,9 @@ class CBModel:
                 doubled_second_digit_list.append(digit * 2)
             else:
                 doubled_second_digit_list.append(digit)
-        doubled_second_digit_list = [self.sum_digits(x) for x in doubled_second_digit_list]
+        doubled_second_digit_list = [
+            self.sum_digits(x) for x in doubled_second_digit_list
+        ]
         sum_of_digits = sum(doubled_second_digit_list)
         return sum_of_digits % 10 == 0
 
@@ -48,10 +54,21 @@ class CBModel:
     @property
     def is_exist_cb(self):
         if ShopConfig.subscription_for == 'group':
-            qs = type(self).objects.filter(cvc=self.cvc, cb=self.cb, date_valid=self.date_valid, group=self.group)
+            qs = type(self).objects.filter(
+                cvc=self.cvc,
+                cb=self.cb,
+                date_valid=self.date_valid,
+                group=self.group,
+            )
         else:
-            qs = type(self).objects.filter(cvc=self.cvc, cb=self.cb, date_valid=self.date_valid, user=self.user)
-        if self.pk: qs = qs.exclude(pk=self.pk)
+            qs = type(self).objects.filter(
+                cvc=self.cvc,
+                cb=self.cb,
+                date_valid=self.date_valid,
+                user=self.user,
+            )
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
         return not qs.exists()
 
     @property
@@ -62,7 +79,9 @@ class CBModel:
         if not self.is_valid_date:
             raise ValidationError(code='invalid_date', message='invalid date')
         if not self.cb or not self.validate_luhn(self.cb):
-            raise ValidationError(code='invalid_number', message='invalid number')
+            raise ValidationError(
+                code='invalid_number', message='invalid number'
+            )
         if not self.is_valid_cvc:
             raise ValidationError(code='invalid_cvc', message='invalid cvc')
         if not self.is_exist_cb:

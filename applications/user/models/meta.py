@@ -5,7 +5,9 @@ from mighty.models import Base
 
 
 class InternetProtocol(models.Model):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_ip')
+    user = models.ForeignKey(
+        conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_ip'
+    )
     ip = models.GenericIPAddressField(editable=False)
 
     class Meta(Base.Meta):
@@ -13,7 +15,11 @@ class InternetProtocol(models.Model):
 
 
 class UserAgent(models.Model):
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_useragent')
+    user = models.ForeignKey(
+        conf.ForeignKey.user,
+        on_delete=models.CASCADE,
+        related_name='user_useragent',
+    )
     useragent = models.CharField(max_length=255, editable=False)
 
     class Meta(Base.Meta):

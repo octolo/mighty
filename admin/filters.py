@@ -11,7 +11,8 @@ class InAlertListFilter(admin.SimpleListFilter):
         return (('inalert', _.is_in_alert),)
 
     def queryset(self, request, queryset):
-        if self.value() == 'inalert': return queryset.filter(logfields__icontains='alert')
+        if self.value() == 'inalert':
+            return queryset.filter(logfields__icontains='alert')
         return None
 
 
@@ -23,5 +24,6 @@ class InErrorListFilter(admin.SimpleListFilter):
         return (('inerror', _.is_in_error),)
 
     def queryset(self, request, queryset):
-        if self.value() == 'inerror': return queryset.filter(logfields__icontains='error')
+        if self.value() == 'inerror':
+            return queryset.filter(logfields__icontains='error')
         return None

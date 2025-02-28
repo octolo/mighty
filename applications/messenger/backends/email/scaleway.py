@@ -27,22 +27,27 @@ class MissiveBackend(MissiveBackend):
         pass
 
     @property
-    def api_url(self): return self.APIURL % self.SCW_REGION
+    def api_url(self):
+        return self.APIURL % self.SCW_REGION
 
     @property
     def email_data(self):
         data = {
             'subject': self.missive.subject,
-            'from': {'email': self.missive.sender, 'name':  self.missive.name},
+            'from': {'email': self.missive.sender, 'name': self.missive.name},
             'project_id': self.SCW_PROJECT_ID,
-            'to': [{'email': self.missive.target, 'name': self.missive.fullname}],
+            'to': [
+                {'email': self.missive.target, 'name': self.missive.fullname}
+            ],
             'attachments': self.email_attachments,
             # "reply_to": [
             #    {"email": self.reply_email, "name": self.reply_name}
             # ],
         }
-        if self.missive.html_format: data['html'] = self.missive.html_format
-        if self.missive.txt: data['text'] = str(self.missive.txt)
+        if self.missive.html_format:
+            data['html'] = self.missive.html_format
+        if self.missive.txt:
+            data['text'] = str(self.missive.txt)
         return data
 
     def email_attachments(self):
@@ -52,7 +57,9 @@ class MissiveBackend(MissiveBackend):
             for document in self.missive.attachments:
                 if setting('MISSIVE_SERVICE', False):
                     attachments.append({
-                        'content': base64.b64encode(document.read()).decode('utf-8'),
+                        'content': base64.b64encode(document.read()).decode(
+                            'utf-8'
+                        ),
                         'name': os.path.basename(document.name),
                     })
                 logs.append(os.path.basename(document.name))
@@ -62,9 +69,14 @@ class MissiveBackend(MissiveBackend):
     def send_email(self):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target or self.missive.target
-        self.logger.info(f'Email - from: {self.sender_email}, to : {self.missive.target}, reply : {self.reply_email}')
+        self.logger.info(
+            f'Email - from: {self.sender_email}, to : {self.missive.target}, reply : {self.reply_email}'
+        )
         if setting('MISSIVE_SERVICE', False):
-            headers = {'X-Auth-Token': self.SCW_SECRET_KEY, 'Content-Type': 'application/json'}
+            headers = {
+                'X-Auth-Token': self.SCW_SECRET_KEY,
+                'Content-Type': 'application/json',
+            }
             requests.post(self.api_url, headers=headers, json=self.email_data)
         self.missive.to_sent()
         self.missive.save()

@@ -45,10 +45,7 @@ class ReaderXLSX(EnableLogger):
         row = next(self.reader)
         self.line_num += 1
 
-        while (
-            self.skip_blank_lines and
-            all(cell is None for cell in row)
-        ):
+        while self.skip_blank_lines and all(cell is None for cell in row):
             row = next(self.reader)
 
         d = dict(zip(self.fieldnames, row, strict=False))

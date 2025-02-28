@@ -9,6 +9,7 @@ def terminal_width():
         import fcntl
         import struct
         import termios
+
         s = struct.pack('HHHH', 0, 0, 0, 0)
         x = fcntl.ioctl(1, termios.TIOCGWINSZ, s)
         width = struct.unpack('HHHH', x)[1]
@@ -48,4 +49,5 @@ def SqlPrintingMiddleware(get_response):
         # print("%s\033[1;32m[TOTAL TIME: %s seconds]\033[0m" % replace_tuple)
         # print("%s\033[1;32m[TOTAL QUERIES: %s]\033[0m" % (" " * indentation, len(connection.queries)))
         # return response
+
     return middleware

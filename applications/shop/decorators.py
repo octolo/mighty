@@ -8,17 +8,21 @@ def GroupOrUser(**kwargs):
     def decorator(obj):
         class GOUModel(obj):
             if ShopConfig.subscription_for == 'group':
-                group = models.ForeignKey(ShopConfig.group,
+                group = models.ForeignKey(
+                    ShopConfig.group,
                     on_delete=kwargs.get('on_delete', models.SET_NULL),
                     related_name=kwargs.get('related_name', 'group_set'),
                     blank=kwargs.get('blank', False),
-                    null=kwargs.get('null', False))
+                    null=kwargs.get('null', False),
+                )
             else:
-                user = models.ForeignKey(get_user_model(),
+                user = models.ForeignKey(
+                    get_user_model(),
                     on_delete=kwargs.get('on_delete', models.SET_NULL),
                     related_name=kwargs.get('related_name', 'user_set'),
                     blank=kwargs.get('blank', False),
-                    null=kwargs.get('null', False))
+                    null=kwargs.get('null', False),
+                )
 
             class Meta(obj.Meta):
                 abstract = True
@@ -34,21 +38,26 @@ def GroupOrUser(**kwargs):
                     self.user = obj
 
         return GOUModel
+
     return decorator
 
 
 def EnableSubscription(**kwargs):
     def decorator(obj):
-
         class SUBModel(obj):
-            subscription = models.ForeignKey('mighty.Subscription',
+            subscription = models.ForeignKey(
+                'mighty.Subscription',
                 on_delete=kwargs.get('on_delete', models.SET_NULL),
                 related_name=kwargs.get('related_name', 'subscription_set'),
                 blank=kwargs.get('blank', True),
                 null=kwargs.get('null', True),
             )
-            valid_payment_methods = models.DateField(blank=True, null=True, editable=False)
-            valid_subscription = models.DateField(blank=True, null=True, editable=False)
+            valid_payment_methods = models.DateField(
+                blank=True, null=True, editable=False
+            )
+            valid_subscription = models.DateField(
+                blank=True, null=True, editable=False
+            )
 
             class Meta(obj.Meta):
                 abstract = True
@@ -71,4 +80,5 @@ def EnableSubscription(**kwargs):
                 super().save(*args, **kwargs)
 
         return SUBModel
+
     return decorator

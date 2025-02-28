@@ -13,8 +13,14 @@ class Bill:
             method=self.method,
             date_payment=self.next_paid,
         )
-        bill.discount.add(*self.discount.filter(date_end__gt=datetime.now()).order_by('-amount'))
-        bill.status = _c.CHARGE if bill.date_payment <= date.today() else _c.NOTHING
+        bill.discount.add(
+            *self.discount.filter(date_end__gt=datetime.now()).order_by(
+                '-amount'
+            )
+        )
+        bill.status = (
+            _c.CHARGE if bill.date_payment <= date.today() else _c.NOTHING
+        )
         bill.save()
         self.bill = bill
         self.save()

@@ -1,4 +1,3 @@
-
 from mighty.applications.logger import settings
 
 

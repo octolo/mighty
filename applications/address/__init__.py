@@ -25,4 +25,5 @@ fields = (
     'index',
     'latitude',
     'longitude',
-    'raw')
+    'raw',
+)

@@ -97,25 +97,61 @@ class MissiveBackend(MissiveBackend):
         self.color_next_c4 = kwargs.get('color_next_c4', self.color_next_c4)
         self.nb_first_c4 = kwargs.get('nb_first_c4', self.nb_first_c4)
         self.nb_next_c4 = kwargs.get('nb_next_c4', self.nb_next_c4)
-        self.archiving_lte3_first = kwargs.get('archiving_lte3_first', self.archiving_lte3_first)
-        self.archiving_lte6_first = kwargs.get('archiving_lte6_first', self.archiving_lte6_first)
-        self.archiving_lte10_first = kwargs.get('archiving_lte10_first', self.archiving_lte10_first)
-        self.archiving_lte3_next = kwargs.get('archiving_lte3_next', self.archiving_lte3_next)
-        self.archiving_lte6_next = kwargs.get('archiving_lte6_next', self.archiving_lte6_next)
-        self.archiving_lte10_next = kwargs.get('archiving_lte10_next', self.archiving_lte10_next)
+        self.archiving_lte3_first = kwargs.get(
+            'archiving_lte3_first', self.archiving_lte3_first
+        )
+        self.archiving_lte6_first = kwargs.get(
+            'archiving_lte6_first', self.archiving_lte6_first
+        )
+        self.archiving_lte10_first = kwargs.get(
+            'archiving_lte10_first', self.archiving_lte10_first
+        )
+        self.archiving_lte3_next = kwargs.get(
+            'archiving_lte3_next', self.archiving_lte3_next
+        )
+        self.archiving_lte6_next = kwargs.get(
+            'archiving_lte6_next', self.archiving_lte6_next
+        )
+        self.archiving_lte10_next = kwargs.get(
+            'archiving_lte10_next', self.archiving_lte10_next
+        )
         self.color_printing = kwargs.get('color_printing', self.color_printing)
-        self.duplex_printing = kwargs.get('duplex_printing', self.duplex_printing)
-        self.optional_address_sheet = kwargs.get('optional_address_sheet', self.optional_address_sheet)
-        self.archiving_duration = kwargs.get('archiving_duration', self.archiving_duration)
-        self.notification_email = kwargs.get('notification_email', self.notification_email)
-        self.sender_address_line_1 = kwargs.get('sender_address_line_1', self.sender_address_line_1)
-        self.sender_address_line_2 = kwargs.get('sender_address_line_2', self.sender_address_line_2)
-        self.sender_address_line_3 = kwargs.get('sender_address_line_3', self.sender_address_line_3)
-        self.sender_address_line_4 = kwargs.get('sender_address_line_4', self.sender_address_line_4)
-        self.sender_address_line_5 = kwargs.get('sender_address_line_5', self.sender_address_line_5)
-        self.sender_address_line_6 = kwargs.get('sender_address_line_6', self.sender_address_line_6)
-        self.sender_country_code = kwargs.get('sender_country_code', self.sender_country_code)
-        self.notification_treat_undelivered_mail = kwargs.get('notification_treat_undelivered_mail', [])
+        self.duplex_printing = kwargs.get(
+            'duplex_printing', self.duplex_printing
+        )
+        self.optional_address_sheet = kwargs.get(
+            'optional_address_sheet', self.optional_address_sheet
+        )
+        self.archiving_duration = kwargs.get(
+            'archiving_duration', self.archiving_duration
+        )
+        self.notification_email = kwargs.get(
+            'notification_email', self.notification_email
+        )
+        self.sender_address_line_1 = kwargs.get(
+            'sender_address_line_1', self.sender_address_line_1
+        )
+        self.sender_address_line_2 = kwargs.get(
+            'sender_address_line_2', self.sender_address_line_2
+        )
+        self.sender_address_line_3 = kwargs.get(
+            'sender_address_line_3', self.sender_address_line_3
+        )
+        self.sender_address_line_4 = kwargs.get(
+            'sender_address_line_4', self.sender_address_line_4
+        )
+        self.sender_address_line_5 = kwargs.get(
+            'sender_address_line_5', self.sender_address_line_5
+        )
+        self.sender_address_line_6 = kwargs.get(
+            'sender_address_line_6', self.sender_address_line_6
+        )
+        self.sender_country_code = kwargs.get(
+            'sender_country_code', self.sender_country_code
+        )
+        self.notification_treat_undelivered_mail = kwargs.get(
+            'notification_treat_undelivered_mail', []
+        )
 
     @property
     def sender_height(self):
@@ -183,7 +219,10 @@ class MissiveBackend(MissiveBackend):
     def user_webhook(self):
         if not self.user_cache:
             from oauth2_provider.models import Application
-            self.user_cache = Application.objects.get(user__email=setting('MAILEVA_OAUTH_EMAIL'))
+
+            self.user_cache = Application.objects.get(
+                user__email=setting('MAILEVA_OAUTH_EMAIL')
+            )
         return self.user_cache
 
     @property
@@ -196,10 +235,13 @@ class MissiveBackend(MissiveBackend):
     @property
     def target_data(self):
         data = {
-            'custom_id':  self.missive.msg_id,
+            'custom_id': self.missive.msg_id,
             'custom_data': self.missive.msg_id,
             'address_line_6': self.missive.city,
-            'address_line_5': self.missive.cedex or self.missive.cedex_code or self.missive.special or '',
+            'address_line_5': self.missive.cedex
+            or self.missive.cedex_code
+            or self.missive.special
+            or '',
             'country_code': self.missive.country_code.upper(),
         }
         for i, field in enumerate(self.fields):
@@ -246,7 +288,11 @@ class MissiveBackend(MissiveBackend):
         return False
 
     def create_sending(self):
-        response = requests.post(self.api_url['sendings'], headers=self.api_headers, json=self.postal_data)
+        response = requests.post(
+            self.api_url['sendings'],
+            headers=self.api_headers,
+            json=self.postal_data,
+        )
         self.sending_id = response.json()['id']
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)
@@ -264,7 +310,12 @@ class MissiveBackend(MissiveBackend):
         headers = self.api_headers
         doc_name = os.path.basename(attachment.name)
         files = {'document': (doc_name, attachment)}
-        data = {'metadata': json.dumps({'priority': self.priority, 'name': doc_name})}
+        data = {
+            'metadata': json.dumps({
+                'priority': self.priority,
+                'name': doc_name,
+            })
+        }
         response = requests.post(api, headers=headers, files=files, data=data)
         self.valid_response(response)
         self.add_log_array('attachments', doc_name)
@@ -277,7 +328,9 @@ class MissiveBackend(MissiveBackend):
 
     def add_recipients(self):
         api = self.api_url['recipients'] % self.sending_id
-        response = requests.post(api, headers=self.api_headers, json=self.target_data)
+        response = requests.post(
+            api, headers=self.api_headers, json=self.target_data
+        )
         return self.valid_response(response)
 
     def submit(self):
@@ -330,16 +383,23 @@ class MissiveBackend(MissiveBackend):
         if not archive or not page:
             return 0
         if archive <= 3:
-            return self.archiving_lte3_first + (self.archiving_lte3_next * (page - 1))
+            return self.archiving_lte3_first + (
+                self.archiving_lte3_next * (page - 1)
+            )
         if archive <= 6:
-            return self.archiving_lte6_first + (self.archiving_lte6_next * (page - 1))
+            return self.archiving_lte6_first + (
+                self.archiving_lte6_next * (page - 1)
+            )
         if archive <= 10:
-            return self.archiving_lte10_first + (self.archiving_lte10_next * (page - 1))
+            return self.archiving_lte10_first + (
+                self.archiving_lte10_next * (page - 1)
+            )
         return None
 
     def price_page(self, count_page, color=False, archive=0):
         price, pnext, _parchive = (0.73, 0.48) if color else (0.48, 0.23)
-        if count_page > 1: price += (pnext * (count_page - 1))
+        if count_page > 1:
+            price += pnext * (count_page - 1)
         price += self.price_archive(count_page, archive)
         return price
 
@@ -363,7 +423,7 @@ class MissiveBackend(MissiveBackend):
             'duplex_printing': self.duplex_printing,
             'color_printing': self.color_printing,
             'archiving_duration': self.archiving_duration,
-            'optional_address_sheet': self.optional_address_sheet
+            'optional_address_sheet': self.optional_address_sheet,
         }
 
     def price(self):
@@ -372,7 +432,7 @@ class MissiveBackend(MissiveBackend):
         self.price_page(
             count_page=pages,
             color=self.price_info['color_printing'],
-            archive=self.prince_info['archiving_duration']
+            archive=self.prince_info['archiving_duration'],
         )
 
     def check_postal(self):

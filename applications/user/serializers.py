@@ -47,6 +47,7 @@ class UserSerializer(ModelSerializer):
 
 
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
+
     class UserSerializer(UserSerializer):
         nationalities = nationality_serializers.NationalitySerializer(many=True)
 

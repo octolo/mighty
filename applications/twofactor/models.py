@@ -16,8 +16,15 @@ def generate_code():
 
 class Twofactor(Base):
     changelog_exclude = ['missive']
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='twofactor_user')
-    missive = models.ForeignKey('mighty.Missive', on_delete=models.SET_NULL, null=True, related_name='twofactor_missive')
+    user = models.ForeignKey(
+        UserModel, on_delete=models.CASCADE, related_name='twofactor_user'
+    )
+    missive = models.ForeignKey(
+        'mighty.Missive',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='twofactor_missive',
+    )
     email_or_phone = models.CharField(max_length=255)
     code = models.PositiveIntegerField(default=generate_code, db_index=True)
     is_consumed = models.BooleanField(default=False)
@@ -43,6 +50,7 @@ class Twofactor(Base):
     @property
     def slack_notify(self):
         from mighty.applications.twofactor.notify.slack import SlackTwoFactor
+
         return SlackTwoFactor(self)
 
     @property
@@ -50,4 +58,5 @@ class Twofactor(Base):
         from mighty.applications.twofactor.notify.discord import (
             DiscordTwoFactor,
         )
+
         return DiscordTwoFactor(self)

@@ -47,7 +47,10 @@ class FormJsonDescriptor:
         self.generate_desc()
 
     def generate_desc(self):
-        self.form_desc['fields'] = [self.get_field_desc(field, name) for name, field in self.form.fields.items()]
+        self.form_desc['fields'] = [
+            self.get_field_desc(field, name)
+            for name, field in self.form.fields.items()
+        ]
 
     def get_error_messages(self, field):
         errors = field.error_messages
@@ -69,19 +72,21 @@ class FormJsonDescriptor:
     def option(self, field, name, key):
         if all([
             name in self.form.Options.fields,
-            key in self.form.Options.fields[name]]):
+            key in self.form.Options.fields[name],
+        ]):
             return self.form.Options.fields[name][key]
         if all([
             hasattr(field, 'Options'),
             hasattr(field.Options, key),
-            getattr(field.Options, key)]):
+            getattr(field.Options, key),
+        ]):
             return getattr(field.Options, key)
         raise Exception(f'{name} option in error')
 
     def disable_choice(self, obj, field, choice):
         if hasattr(self.form, self.current_field + '_disable'):
             cfg = getattr(self.form, self.current_field + '_disable')
-            return (choice in cfg)
+            return choice in cfg
         return None
 
     def get_options(self, field, name):
@@ -89,14 +94,24 @@ class FormJsonDescriptor:
             if hasattr(field, 'api') and field.api:
                 return []
             if hasattr(field.choices, 'queryset'):
-                return [{
-                    'label': getattr(obj, self.option(field, name, 'label')),
-                    'value': getattr(obj, self.option(field, name, 'value')),
-                } for obj in field.choices.queryset]
-            return [{
+                return [
+                    {
+                        'label': getattr(
+                            obj, self.option(field, name, 'label')
+                        ),
+                        'value': getattr(
+                            obj, self.option(field, name, 'value')
+                        ),
+                    }
+                    for obj in field.choices.queryset
+                ]
+            return [
+                {
                     'label': choice[1],
                     'value': choice[0],
-                } for choice in field.choices]
+                }
+                for choice in field.choices
+            ]
         return None
 
     def get_dependencies(self, name):

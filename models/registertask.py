@@ -56,8 +56,14 @@ CHOICES_PERIOD = (
 class RegisterTask(Base):
     name = models.CharField(max_length=255, unique=True)
     desc = models.TextField(blank=True, null=True)
-    register_type = models.CharField(max_length=10, choices=CHOICES_TYPE, default=TYPE_ALERT)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='registertask_to_content_type')
+    register_type = models.CharField(
+        max_length=10, choices=CHOICES_TYPE, default=TYPE_ALERT
+    )
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        related_name='registertask_to_content_type',
+    )
     is_enable_test = models.TextField(blank=True, null=True)
     how_start_task = models.TextField()
 
@@ -77,16 +83,32 @@ class RegisterTask(Base):
 
 
 class RegisterTaskSubscription(Base):
-    register = models.ForeignKey('mighty.RegisterTask', on_delete=models.CASCADE)
-    status = models.CharField(max_length=11, choices=_c.CHOICES_STATUS, default=_c.STATUS_INITIALIZED)
+    register = models.ForeignKey(
+        'mighty.RegisterTask', on_delete=models.CASCADE
+    )
+    status = models.CharField(
+        max_length=11, choices=_c.CHOICES_STATUS, default=_c.STATUS_INITIALIZED
+    )
     last_date_task = models.DateTimeField(auto_now_add=True)
-    period = models.CharField(max_length=10, choices=CHOICES_PERIOD, default=PERIOD_EVERYDAY)
-    choiceday = models.CharField(max_length=10, choices=CHOICES_DAY, blank=True, null=True)
+    period = models.CharField(
+        max_length=10, choices=CHOICES_PERIOD, default=PERIOD_EVERYDAY
+    )
+    choiceday = models.CharField(
+        max_length=10, choices=CHOICES_DAY, blank=True, null=True
+    )
     object_id = models.PositiveIntegerField(null=True, blank=True)
 
-    content_type_subscriber = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True, related_name='registertask_to_subscriber')
+    content_type_subscriber = models.ForeignKey(
+        ContentType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='registertask_to_subscriber',
+    )
     object_id_subscriber = models.PositiveIntegerField(null=True, blank=True)
-    content_object_subscriber = GenericForeignKey('content_type_subscriber', 'object_id_subscriber')
+    content_object_subscriber = GenericForeignKey(
+        'content_type_subscriber', 'object_id_subscriber'
+    )
 
     class Meta(Base.Meta):
         abstract = True
@@ -95,7 +117,9 @@ class RegisterTaskSubscription(Base):
     @property
     def content_object(self):
         if self.object_id:
-            return self.register.content_type.get_object_for_this_type(id=self.object_id)
+            return self.register.content_type.get_object_for_this_type(
+                id=self.object_id
+            )
         return self.register.content_type
 
     @property
@@ -112,22 +136,30 @@ class RegisterTaskSubscription(Base):
 
     @property
     def is_register_enable(self):
-        if self.object_id and hasattr(self.content_object, self.register.is_enable_test):
-                enable = getattr(self.content_object, self.register.is_enable_test)
-                return enable() if callable(enable) else enable
+        if self.object_id and hasattr(
+            self.content_object, self.register.is_enable_test
+        ):
+            enable = getattr(self.content_object, self.register.is_enable_test)
+            return enable() if callable(enable) else enable
         return True
 
     def start_task(self):
         if self.is_register_enable:
             if self.is_delta_date_ok:
                 try:
-                    self._logger.info(f'start register task - sub: {self.pk}, model: {self.register}, object_id: {self.object_id}')
-                    getattr(self.content_object, self.register.how_start_task)(self.subscriber)
+                    self._logger.info(
+                        f'start register task - sub: {self.pk}, model: {self.register}, object_id: {self.object_id}'
+                    )
+                    getattr(self.content_object, self.register.how_start_task)(
+                        self.subscriber
+                    )
                     self.status = _c.STATUS_FINISHED
                     self.last_date_task = timezone.now()
                 except Exception:
                     self.status = _c.STATUS_ERROR
-                    self._logger.warning(f"register task can't be started - sub: {self.pk}, model: {self.register}, object_id: {self.object_id}")
+                    self._logger.warning(
+                        f"register task can't be started - sub: {self.pk}, model: {self.register}, object_id: {self.object_id}"
+                    )
         else:
             self.status = _c.STATUS_EXPIRED
             self.last_date_task = timezone.now()

@@ -31,7 +31,7 @@ class SearchBackend:
             'index': None,
             'latitude': None,
             'longitude': None,
-            'source': source
+            'source': source,
         }
 
     def get_location(self, search):
@@ -43,5 +43,9 @@ class SearchBackend:
     def give_list(self, search, offset=0, limit=10):
         address_list = self.get_list(search, offset, limit)
         if address_list:
-            return address_list[offset:limit] if len(address_list) > limit else address_list
+            return (
+                address_list[offset:limit]
+                if len(address_list) > limit
+                else address_list
+            )
         return []

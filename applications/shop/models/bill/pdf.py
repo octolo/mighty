@@ -1,4 +1,3 @@
-
 from django.utils.text import get_valid_filename
 
 from mighty.applications.shop.apps import ShopConfig
@@ -21,7 +20,9 @@ class PDFModel:
 
     @property
     def bill_pdf_name(self):
-        return get_valid_filename(f'{self.group_or_user}_{self.bill_numero}.pdf')
+        return get_valid_filename(
+            f'{self.group_or_user}_{self.bill_numero}.pdf'
+        )
 
     @property
     def bill_pdf_content(self):

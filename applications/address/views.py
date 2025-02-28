@@ -18,7 +18,9 @@ class AddresFormDescView(FormDescView):
 class LocationDetail(TemplateView):
     @property
     def location(self):
-        input_str = self.request.GET.get('location', self.request.GET.get('search'))
+        input_str = self.request.GET.get(
+            'location', self.request.GET.get('search')
+        )
         return address_backend.get_location(input_str) if input_str else {}
 
     def render_to_response(self, context, **response_kwargs):
@@ -29,7 +31,9 @@ class LocationDetail(TemplateView):
 class LocationList(TemplateView):
     @property
     def locations(self):
-        input_str = self.request.GET.get('location', self.request.GET.get('search'))
+        input_str = self.request.GET.get(
+            'location', self.request.GET.get('search')
+        )
         return address_backend.give_list(input_str) if input_str else []
 
     def render_to_response(self, context, **response_kwargs):
@@ -42,7 +46,9 @@ if 'rest_framework' in settings.INSTALLED_APPS:
 
     class LocationDetail(RetrieveAPIView):
         def get_object(self, queryset=None):
-            input_str = self.request.GET.get('location', self.request.GET.get('search'))
+            input_str = self.request.GET.get(
+                'location', self.request.GET.get('search')
+            )
             return address_backend.get_list(input_str) if input_str else {}
 
         def get(self, request, uid, action=None, format=None):
@@ -50,7 +56,9 @@ if 'rest_framework' in settings.INSTALLED_APPS:
 
     class LocationList(ListAPIView):
         def get_queryset(self, queryset=None):
-            input_str = self.request.GET.get('location', self.request.GET.get('search'))
+            input_str = self.request.GET.get(
+                'location', self.request.GET.get('search')
+            )
             return address_backend.give_list(input_str) if input_str else []
 
         def get(self, request, format=None):

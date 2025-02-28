@@ -6,7 +6,9 @@ from mighty.models.base import Base
 
 class Config(Base):
     name = models.CharField(max_length=255, unique=True)
-    url_name = models.CharField(max_length=255, null=True, blank=True, editable=False)
+    url_name = models.CharField(
+        max_length=255, null=True, blank=True, editable=False
+    )
 
     class Meta(Base.Meta):
         abstract = True

@@ -1,4 +1,3 @@
-
 import base64
 import datetime
 import hashlib
@@ -43,8 +42,10 @@ class MissiveBackend(MissiveBackend):
     files_attach = []
     format_date = '%Y-%m-%d %H:%M:%S'  # -> YYYY-MM-DD HH:MM:SS
 
-    __pad = lambda self, s: s + (AES.block_size - len(s) % AES.block_size) * chr(AES.block_size - len(s) % AES.block_size)
-    __unpad = lambda self, s: s[:-ord(s[len(s) - 1:])]
+    __pad = lambda self, s: s + (
+        AES.block_size - len(s) % AES.block_size
+    ) * chr(AES.block_size - len(s) % AES.block_size)
+    __unpad = lambda self, s: s[: -ord(s[len(s) - 1 :])]
 
     @property
     def api_url(self):
@@ -95,7 +96,9 @@ class MissiveBackend(MissiveBackend):
 
     def decrypt_data(self, data, add=''):
         raw = base64.b64decode(data)
-        return self.__unpad(self.cipher(self.init_vector, self.date_send).decrypt(raw))
+        return self.__unpad(
+            self.cipher(self.init_vector, self.date_send).decrypt(raw)
+        )
 
     @property
     def base_headers(self):
@@ -121,8 +124,16 @@ class MissiveBackend(MissiveBackend):
 
     def is_confirmed(self):
         if not self.user['confirmed'] and not self.in_error:
-            response = requests.post(self.api_url['user'], headers=self.api_headers, data=self.data_confirm)
-            response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
+            response = requests.post(
+                self.api_url['user'],
+                headers=self.api_headers,
+                data=self.data_confirm,
+            )
+            response = (
+                self.decrypt_data(response.content)
+                if self.valid_response(response)
+                else response.content
+            )
             if not self.in_error:
                 self.logger.info(f'Confirmed user: {response}')
             return False
@@ -137,15 +148,30 @@ class MissiveBackend(MissiveBackend):
 
     def create_user(self):
         self.in_error = False
-        response = requests.post(self.api_url['user'], headers=self.api_headers, data=self.data_user)
-        response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
+        response = requests.post(
+            self.api_url['user'], headers=self.api_headers, data=self.data_user
+        )
+        response = (
+            self.decrypt_data(response.content)
+            if self.valid_response(response)
+            else response.content
+        )
         self.logger.info(f'Create user: {response}')
         return response
 
     def get_user(self):
-        response = requests.get(self.api_url['user'], headers=self.api_headers, params=self.data_user)
-        response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
-        if self.in_error: response = self.create_user()
+        response = requests.get(
+            self.api_url['user'],
+            headers=self.api_headers,
+            params=self.data_user,
+        )
+        response = (
+            self.decrypt_data(response.content)
+            if self.valid_response(response)
+            else response.content
+        )
+        if self.in_error:
+            response = self.create_user()
         self.user = json.loads(response.decode())['result']
         self.logger.info(f'Get user: {self.user}')
         self.is_confirmed()
@@ -166,9 +192,7 @@ class MissiveBackend(MissiveBackend):
         })
         i = 0
         for attach in self.list_attach:
-            data.update({
-                f'attachment[{i!s}]': attach['file_id']
-            })
+            data.update({f'attachment[{i!s}]': attach['file_id']})
             i += 1
         return data
 
@@ -184,11 +208,22 @@ class MissiveBackend(MissiveBackend):
     def email_attachments(self):
         if self.missive.attachments:
             for document in self.missive.attachments:
-                response = requests.post(self.api_url['attachment'],
+                response = requests.post(
+                    self.api_url['attachment'],
                     headers=self.api_headers,
-                    files={'file': (os.path.basename(document.name), open(document.name, 'rb'))},
-                    data=self.data_attachment(document))
-                response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
+                    files={
+                        'file': (
+                            os.path.basename(document.name),
+                            open(document.name, 'rb'),
+                        )
+                    },
+                    data=self.data_attachment(document),
+                )
+                response = (
+                    self.decrypt_data(response.content)
+                    if self.valid_response(response)
+                    else response.content
+                )
                 if not self.in_error:
                     response = json.loads(response)['result']
                     self.list_attach.append(response)
@@ -201,8 +236,14 @@ class MissiveBackend(MissiveBackend):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target or self.missive.target
         self.email_attachments()
-        response = requests.post(self.api_url['email'], headers=self.api_headers, data=self.data_ar())
-        response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
+        response = requests.post(
+            self.api_url['email'], headers=self.api_headers, data=self.data_ar()
+        )
+        response = (
+            self.decrypt_data(response.content)
+            if self.valid_response(response)
+            else response.content
+        )
         if not self.in_error:
             response = json.loads(response)['result']
             self.missive.msg_id = response['id']
@@ -217,6 +258,8 @@ class MissiveBackend(MissiveBackend):
         self.missive.last_name = 'Mighty-Lastname'
         self.missive.first_name = 'Mighty-Firstname'
         self.missive.target = ''
-        self.missive.attachments = [open(os.path.realpath(__file__), encoding='utf-8')]
+        self.missive.attachments = [
+            open(os.path.realpath(__file__), encoding='utf-8')
+        ]
         self.send_email()
         self.logger.info(f'Send email: {self.missive.cache}')

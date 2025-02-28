@@ -19,4 +19,6 @@ class Command(ModelBaseCommand):
             addr = addr_list[0]
             data = {field: addr[field] for field in fields}
             if self.fkmodel:
-                getattr(obj, self.fkmodel).update_or_create(addr_backend_id=data['addr_backend_id'], defaults=data)
+                getattr(obj, self.fkmodel).update_or_create(
+                    addr_backend_id=data['addr_backend_id'], defaults=data
+                )

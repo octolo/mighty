@@ -19,7 +19,9 @@ class BicCalculJSON(TemplateView):
     test_field = 'iban'
 
     def get_iban(self):
-        return re.sub(r'\s+', '', self.request.GET.get(self.test_field), flags=re.UNICODE)
+        return re.sub(
+            r'\s+', '', self.request.GET.get(self.test_field), flags=re.UNICODE
+        )
 
     def check_data(self):
         newiban = self.get_iban()

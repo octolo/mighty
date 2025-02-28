@@ -65,7 +65,9 @@ class MissiveBackend(MissiveBackend):
         self.missive.target = over_target or self.missive.target
         self.missive.status = choices.STATUS_SENT
         if setting('MISSIVE_SERVICE', False):
-            response = requests.post(self.APIURL + 'send', json=self.post_fields)
+            response = requests.post(
+                self.APIURL + 'send', json=self.post_fields
+            )
             if self.valid_response(response):
                 self.missive.partner_id = response.json()['message_id']
 

@@ -9,7 +9,10 @@ from mighty.applications.shop.forms.widgets.paymentmethod import (
 )
 
 __all__ = (
-    CBNumberInput, CBCVCInput, CBDateInput,
-    IbanInput, BicInput,
+    CBNumberInput,
+    CBCVCInput,
+    CBDateInput,
+    IbanInput,
+    BicInput,
     PaymentmethodInput,
 )

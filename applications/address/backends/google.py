@@ -27,7 +27,10 @@ class SearchBackend(SearchBackend):
                 address['country_code'] = component.get('short_name')
             elif 'postal_code' in component['types']:
                 address['postal_code'] = component['long_name']
-            elif 'locality' in component['types'] or 'postal_town' in component['types']:
+            elif (
+                'locality' in component['types']
+                or 'postal_town' in component['types']
+            ):
                 address['locality'] = component['long_name']
             else:
                 continue

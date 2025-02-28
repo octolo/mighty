@@ -9,43 +9,48 @@ class SlackLogger(NotifyBackend):
 
     @property
     def text_data_help(self):
-        return [{
-            'type': 'section',
-            'text': {
-                'type': 'plain_text',
-                'text': ':warning: ' + data,
-                'emoji': True
+        return [
+            {
+                'type': 'section',
+                'text': {
+                    'type': 'plain_text',
+                    'text': ':warning: ' + data,
+                    'emoji': True,
+                },
             }
-        } for data in self.help_data]
+            for data in self.help_data
+        ]
 
     @property
     def slack_msg_error(self):
         data = [
-        {
-            'type': 'section',
-            'text': {
-                'type': 'plain_text',
-                'text': f':exclamation: {self.msg}',
-                'emoji': True
-            }
-        },
-        {'type': 'divider'},
-        {
-            'type': 'section',
-            'text': {
-                'type': 'plain_text',
-                'text': '\n'.join(self.help_data),
-                'emoji': True
-            }
-        },
-        {'type': 'divider'}]
+            {
+                'type': 'section',
+                'text': {
+                    'type': 'plain_text',
+                    'text': f':exclamation: {self.msg}',
+                    'emoji': True,
+                },
+            },
+            {'type': 'divider'},
+            {
+                'type': 'section',
+                'text': {
+                    'type': 'plain_text',
+                    'text': '\n'.join(self.help_data),
+                    'emoji': True,
+                },
+            },
+            {'type': 'divider'},
+        ]
         if self.dblog:
             data.append({
                 'type': 'section',
                 'text': {
                     'type': 'mrkdwn',
                     'text': f'<access error| {self.url_domain(self.dblog.admin_change_url)} :link:>',
-            }})
+                },
+            })
         return data
 
     def send_msg_error(self):

@@ -52,9 +52,11 @@ def username_generator_v2(first_name=None, last_name=None, email=None):
         local_part, domain = email.split('@')
 
         # Use a combination of parts of the local part and domain for the prefix
-        prefix = f"{local_part[:3].lower()}-{domain.split('.')[0][:3].lower()}"
+        prefix = f'{local_part[:3].lower()}-{domain.split(".")[0][:3].lower()}'
     else:
-        raise ValueError('Insufficient information: provide either first name and surname, or email')
+        raise ValueError(
+            'Insufficient information: provide either first name and surname, or email'
+        )
 
     # Get the user model
     UserModel = get_user_model()

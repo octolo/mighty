@@ -10,6 +10,7 @@ Add [sources] JSON field at the model.
 (delete_extend_source) delete an extended source to a field
 (clean_sources) clean souces with the configuration sources
 """
+
 import operator
 
 from django.db import models
@@ -31,12 +32,15 @@ CHOICES_TYPE = (
     (TYPE_IMAGE, _.TYPE_IMAGE),
     (TYPE_FLUX, _.TYPE_FLUX),
     (TYPE_EVENT, _.TYPE_EVENT),
-    (TYPE_OTHER, _.TYPE_OTHER))
+    (TYPE_OTHER, _.TYPE_OTHER),
+)
 CHOICES_TYPE = sorted(CHOICES_TYPE, key=operator.itemgetter(1))
 
 
 class SourceModel(Base, File):
-    sourcetype = models.CharField(max_length=10, choices=CHOICES_TYPE, default=TYPE_OTHER)
+    sourcetype = models.CharField(
+        max_length=10, choices=CHOICES_TYPE, default=TYPE_OTHER
+    )
     object_id = models.ForeignKey('', on_delete=models.CASCADE)
     field = models.CharField(_.field, max_length=255, db_index=True)
     desc = JSONField(blank=True, null=True)
@@ -54,6 +58,7 @@ class SourceModel(Base, File):
     @property
     def get_value(self):
         return self.value.decode('utf-8')
+
 
 # from django.db import models
 # from mighty.models import JSONField

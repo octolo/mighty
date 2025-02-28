@@ -22,10 +22,15 @@ class Reader(EnableLogger):
     def __init__(self, file, *args, **kwargs):
         self.file = file
         self.filename = kwargs.get('filename', os.path.basename(file.name))
-        self.extension = kwargs.get('extension', os.path.splitext(self.filename)[-1])
-        for k, v in kwargs.items(): setattr(self, k, v)
-        if kwargs.get('reader'): self.prepare_reader()
-        if kwargs.get('writer'): self.prepare_writer()
+        self.extension = kwargs.get(
+            'extension', os.path.splitext(self.filename)[-1]
+        )
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        if kwargs.get('reader'):
+            self.prepare_reader()
+        if kwargs.get('writer'):
+            self.prepare_writer()
 
     def prepare_reader(self):
         pass

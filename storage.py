@@ -20,13 +20,17 @@ Usefull for cost service.
 
 class CloudStorage(Storage):
     def __init__(self, **settings):
-        todel = [name for name, value in settings.items() if not hasattr(self, name)]
+        todel = [
+            name for name, value in settings.items() if not hasattr(self, name)
+        ]
         logger.info(f'CloudStorage: delete settings: {todel}')
-        for field in todel: del settings[field]
+        for field in todel:
+            del settings[field]
         super().__init__(**settings)
 
 
 if storage_choice != storage_default:
+
     class CloudStorage(CloudStorage):
         def _save_backup(self, name, content):
             content.seek(0)

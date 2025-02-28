@@ -14,8 +14,15 @@ TASK_STATUS = (
 def TaskedModel(**kwargs):
     def decorator(obj):
         class NewClass(obj):
-            task_list = models.CharField(max_length=252, blank=True, null=True, choices=kwargs.get('task_list', ()))
-            task_status = models.CharField(max_length=25, choices=TASK_STATUS, default='AVAILABLE')
+            task_list = models.CharField(
+                max_length=252,
+                blank=True,
+                null=True,
+                choices=kwargs.get('task_list', ()),
+            )
+            task_status = models.CharField(
+                max_length=25, choices=TASK_STATUS, default='AVAILABLE'
+            )
             task_last = models.CharField(max_length=252, blank=True, null=True)
             can_use_task = True
 
@@ -28,14 +35,18 @@ def TaskedModel(**kwargs):
                 self.task_list = None
 
             def backend_task(self, task, *args, **kwargs):
-                return import_string(f'{MightyConfig.backend_task}.TaskBackend')(
+                return import_string(
+                    f'{MightyConfig.backend_task}.TaskBackend'
+                )(
                     ct=self.get_content_type().id,
                     pk=self.pk,
                     task=task,
-                    *args, **kwargs)
+                    *args,
+                    **kwargs,
+                )
 
             def task_is_running(self, task):
-                return (self.task_status == 'RUNNING' and self.task_last == task)
+                return self.task_status == 'RUNNING' and self.task_last == task
 
             def start_task(self, task, *args, **kwargs):
                 if not self.task_is_running(task) and self.can_use_task:
@@ -49,11 +60,16 @@ def TaskedModel(**kwargs):
                     class Meta:
                         model = type(self)
                         fields = ('task_list',)
+
                 return TaskForm()
 
             @property
-            def admin_task_url(self): return self.get_url('task', self.app_admin, arguments=self.admin_url_args)
+            def admin_task_url(self):
+                return self.get_url(
+                    'task', self.app_admin, arguments=self.admin_url_args
+                )
 
         NewClass.__name__ = obj.__name__
         return NewClass
+
     return decorator

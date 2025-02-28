@@ -23,7 +23,9 @@ class CheckData(TemplateView):
         return self.request.GET
 
     def get_data(self):
-        return self.get_request_type().get('check', self.request.GET.get('check'))
+        return self.get_request_type().get(
+            'check', self.request.GET.get('check')
+        )
 
     def get_queryset(self, queryset=None):
         return self.model.objects.get(**{self.test_field: self.get_data()})
@@ -48,8 +50,12 @@ class CheckData(TemplateView):
             return self.msg_errors(e)
 
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(self.check_data(),
-            safe=False, status=self.http_status, **response_kwargs)
+        return JsonResponse(
+            self.check_data(),
+            safe=False,
+            status=self.http_status,
+            **response_kwargs,
+        )
 
 
 class CheckSynchro(CheckData):

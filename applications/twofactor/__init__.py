@@ -8,14 +8,21 @@ from mighty.applications.twofactor.apps import TwofactorConfig
 
 
 class CantIdentifyError(ValidationError):
-    def __init__(self, message='We are unable to identify you. Please verify your information or contact support.'):
+    def __init__(
+        self,
+        message='We are unable to identify you. Please verify your information or contact support.',
+    ):
         self.message = message
         self.code = 'CantIdentify'
         super().__init__(self.message)
 
 
 class SpamException(Exception):
-    def __init__(self, date, message="[SPAM PROTECTION] You can't send a new message so early. You must wait %s"):
+    def __init__(
+        self,
+        date,
+        message="[SPAM PROTECTION] You can't send a new message so early. You must wait %s",
+    ):
         self.message = message % date
         self.code = 'Spam'
         super().__init__(self.message)

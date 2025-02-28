@@ -12,7 +12,11 @@ class ReaderPDF(Reader):
         return self.writer
 
     def prepare_reader(self):
-        self.reader = PdfReader(self.file if type(self.file) == InMemoryUploadedFile else self.file.name)
+        self.reader = PdfReader(
+            self.file
+            if type(self.file) == InMemoryUploadedFile
+            else self.file.name
+        )
         return self.reader
 
     def get_meta_data(self):

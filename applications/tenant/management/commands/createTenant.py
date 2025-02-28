@@ -20,7 +20,9 @@ class Command(CSVModelCommand):
         self.tenant = options.get('tenant')
         self.group = options.get('group')
         self.groupfield = options.get('groupfield')
-        self.group = TenantModel.group.get_queryset().get(**{self.groupfield: self.group})
+        self.group = TenantModel.group.get_queryset().get(**{
+            self.groupfield: self.group
+        })
         super().handle(*args, **options)
 
     def add_role(self, tenant):
@@ -39,5 +41,7 @@ class Command(CSVModelCommand):
 
     def create_tenant(self, tenant):
         user = self.get_user(tenant)
-        tenant, _create = TenantModel.objects.get_or_create(user=user, group=self.group)
+        tenant, _create = TenantModel.objects.get_or_create(
+            user=user, group=self.group
+        )
         self.add_role(tenant)

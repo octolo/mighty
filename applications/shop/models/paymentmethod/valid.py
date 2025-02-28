@@ -6,7 +6,9 @@ class PMValid:
     def is_valid_date(self):
         if not self.date_valid:
             return False
-        date_valid = datetime.datetime.strptime(self.date_valid, '%Y-%m-%d').date()
+        date_valid = datetime.datetime.strptime(
+            self.date_valid, '%Y-%m-%d'
+        ).date()
         return not date_valid < datetime.date.today()
 
     @property

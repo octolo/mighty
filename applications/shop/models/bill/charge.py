@@ -9,7 +9,8 @@ class ChargeModel:
             ShopConfig.invoice_backend,
             bill=self,
             payment_method=self.method,
-            subscription=self.subscription)
+            subscription=self.subscription,
+        )
 
     def try_to_charge(self):
         if not self.paid and self.method is not None and self.method.is_valid:

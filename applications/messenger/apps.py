@@ -11,7 +11,11 @@ class Config:
     reply_email = None
     missive = 'mighty.Missive'
     delimiter = '__'
-    missive_backend = settings.MISSIVE_BACKEND if hasattr(settings, 'MISSIVE_BACKEND') else 'mighty.applications.messenger.backends'
+    missive_backend = (
+        settings.MISSIVE_BACKEND
+        if hasattr(settings, 'MISSIVE_BACKEND')
+        else 'mighty.applications.messenger.backends'
+    )
 
     class enable:
         email = True
@@ -19,7 +23,8 @@ class Config:
         postal = False
 
 
-if hasattr(settings, 'MESSENGER'): over_config(Config, settings.MESSENGER)
+if hasattr(settings, 'MESSENGER'):
+    over_config(Config, settings.MESSENGER)
 
 
 class MessengerConfig(AppConfig, Config):

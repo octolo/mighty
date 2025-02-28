@@ -18,7 +18,9 @@ class LogAdmin(BaseAdmin):
 
 class ModelChangeLogAdmin(BaseAdmin):
     change_form_template = 'admin/change_form_modelchangelog.html'
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.modelchangelog}),)
+    fieldsets = (
+        (None, {'classes': ('wide',), 'fields': fields.modelchangelog}),
+    )
     list_display = fields.modelchangelog
     list_filter = ('content_type', 'date_begin', 'date_end')
     search_fields = ('object_id', 'field', 'value')
@@ -33,7 +35,9 @@ class ModelWithLogAdmin(BaseAdmin):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
         try:
-            ctype = ContentType.objects.get(app_label=obj.app_label, model=obj.model_name)
+            ctype = ContentType.objects.get(
+                app_label=obj.app_label, model=obj.model_name
+            )
             logs = Log.objects.filter(content_type=ctype, object_id=obj.id)
         except ContentType.DoesNotExist:
             logs = None
@@ -47,16 +51,21 @@ class ModelWithLogAdmin(BaseAdmin):
             'logs': logs,
             'opts': opts,
             'app_label': opts.app_label,
-            'media': self.media
+            'media': self.media,
         }
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/logs.html', context)
 
     def get_urls(self):
         from django.urls import path
+
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/logs/', self.wrap(self.logs_view), name='{}_{}_logs'.format(*info)),
+            path(
+                '<path:object_id>/logs/',
+                self.wrap(self.logs_view),
+                name='{}_{}_logs'.format(*info),
+            ),
         ]
         return my_urls + urls

@@ -46,4 +46,7 @@ class Sesame(GenericAPIView):
 
             return Response({'token': token}, status=status.HTTP_200_OK)
         except AttributeError:
-            return Response({'error': 'Tenant or user not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'error': 'Tenant or user not found'},
+                status=status.HTTP_404_NOT_FOUND,
+            )

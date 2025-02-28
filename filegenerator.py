@@ -17,7 +17,8 @@ from mighty.functions import make_searchable
 
 
 class StreamingBuffer:
-    def write(self, value): return value
+    def write(self, value):
+        return value
 
 
 class FileGenerator:
@@ -57,7 +58,9 @@ class FileGenerator:
 
     def response_file(self, ct):
         items_method = f'iter_items_{ct}'
-        getattr(self, items_method)(self.items, open(self.get_filename(ct), 'w', encoding='utf-8'))
+        getattr(self, items_method)(
+            self.items, open(self.get_filename(ct), 'w', encoding='utf-8')
+        )
 
     # EXCEL
     def iter_items_xls(self, items, ws):
@@ -90,7 +93,9 @@ class FileGenerator:
             tmp.seek(0)
             stream = tmp.read()
         response = HttpResponse(content=stream, content_type=ct)
-        response['Content-Disposition'] = 'attachment;filename=' + self.get_filename(ext)
+        response['Content-Disposition'] = (
+            'attachment;filename=' + self.get_filename(ext)
+        )
         return response
 
     # CSV
@@ -112,9 +117,14 @@ class FileGenerator:
 
     def http_csv(self, ext, ct):
         response = StreamingHttpResponse(
-            streaming_content=self.iter_stream_csv(self.items, StreamingBuffer()),
-            content_type=ct)
-        response['Content-Disposition'] = 'attachment;filename=' + self.get_filename(ext)
+            streaming_content=self.iter_stream_csv(
+                self.items, StreamingBuffer()
+            ),
+            content_type=ct,
+        )
+        response['Content-Disposition'] = (
+            'attachment;filename=' + self.get_filename(ext)
+        )
         return response
 
     def response_file(self, ct):
@@ -140,19 +150,29 @@ def generate_pdf(**kwargs):
 
     # header
     if header:
-        header_tpl = kwargs.get('conf_header', get_template(conf.pdf_header).render({'header': header}))
+        header_tpl = kwargs.get(
+            'conf_header',
+            get_template(conf.pdf_header).render({'header': header}),
+        )
         context.update({'header_html': header})
         header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        header_html.write(Template(header_tpl).render(Context(context)).encode('utf-8'))
+        header_html.write(
+            Template(header_tpl).render(Context(context)).encode('utf-8')
+        )
         header_html.close()
         header = header_html
         options['--header-html'] = header_html.name
 
     if footer:
-        footer_tpl = kwargs.get('conf_footer', get_template(conf.pdf_footer).render({'footer': footer}))
+        footer_tpl = kwargs.get(
+            'conf_footer',
+            get_template(conf.pdf_footer).render({'footer': footer}),
+        )
         context.update({'footer_html': footer})
         footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        footer_html.write(Template(footer_tpl).render(Context(context)).encode('utf-8'))
+        footer_html.write(
+            Template(footer_tpl).render(Context(context)).encode('utf-8')
+        )
         footer_html.close()
         footer = footer_html
         options['--footer-html'] = footer_html.name
@@ -163,7 +183,10 @@ def generate_pdf(**kwargs):
             content_html = Template(content_html).render(Context(context))
         else:
             content_html = get_template(content).render(context)
-        content_tpl = kwargs.get('conf_content', get_template(conf.pdf_content).render({'content': content_html}))
+        content_tpl = kwargs.get(
+            'conf_content',
+            get_template(conf.pdf_content).render({'content': content_html}),
+        )
         content_html = Template(content_tpl).render(Context(context))
         pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
@@ -181,6 +204,7 @@ def generate_pdf(**kwargs):
         os.remove(final_pdf)
         return content_html
     return final_pdf, tmp_pdf
+
 
 # def remove_tmpdf(files):
 #    for f in files:

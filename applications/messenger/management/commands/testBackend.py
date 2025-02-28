@@ -1,4 +1,3 @@
-
 from mighty.applications.messenger.apps import MessengerConfig
 from mighty.functions import get_backends
 from mighty.management import BaseCommand
@@ -12,7 +11,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument('--backend_path', default=MessengerConfig.missive_backend)
+        parser.add_argument(
+            '--backend_path', default=MessengerConfig.missive_backend
+        )
         parser.add_argument('--target', default='test@mighty-py.com')
 
     def handle(self, *args, **options):
@@ -22,7 +23,12 @@ class Command(BaseCommand):
 
     @property
     def backend(self):
-        return get_backends([self.backend_path], return_tuples=True, path_extend='.MissiveBackend', missive=self.fakeMissive)[0][0]
+        return get_backends(
+            [self.backend_path],
+            return_tuples=True,
+            path_extend='.MissiveBackend',
+            missive=self.fakeMissive,
+        )[0][0]
 
     @property
     def fakeMissive(self):

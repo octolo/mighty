@@ -2,7 +2,16 @@ from django.db.models import Q
 
 from mighty.functions import setting
 
-base_action = ['list', 'detail', 'delete', 'retrieve', 'create', 'update', 'partial_update', 'destroy']
+base_action = [
+    'list',
+    'detail',
+    'delete',
+    'retrieve',
+    'create',
+    'update',
+    'partial_update',
+    'destroy',
+]
 base_permission = ['is_superuser', 'is_staff', 'is_me']
 
 
@@ -28,6 +37,7 @@ class MightyPermission:
         return Q(**{prefix + self.user_way: self.request.user})
 
     """ Properties """
+
     @property
     def user(self):
         return self.request.user
@@ -56,6 +66,7 @@ class MightyPermission:
         raise NotImplementedError('Subclasses should implement is_me')
 
     """ Permissions by action """
+
     def can_list(self):
         return self.check_user_permissions('list')
 
@@ -81,6 +92,7 @@ class MightyPermission:
         return False
 
     """ Check if action has permission """
+
     def can_check_action(self, action):
         check_action = getattr(self, 'check_' + action)
         if len(check_action):
@@ -88,12 +100,21 @@ class MightyPermission:
         return any(getattr(self, check) for check in self.check_others)
 
     """ Loop on permission action """
+
     def check_user_permissions(self, action):
         user_perms = 'user_perms_' + action
-        if action != 'default' and hasattr(self, user_perms) and len(getattr(self, user_perms)):
-            return any(getattr(self, perm)() for perm in getattr(self, user_perms))
+        if (
+            action != 'default'
+            and hasattr(self, user_perms)
+            and len(getattr(self, user_perms))
+        ):
+            return any(
+                getattr(self, perm)() for perm in getattr(self, user_perms)
+            )
         if len(self.user_perms_default):
-            return any(getattr(self, perm)() for perm in self.user_perms_default)
+            return any(
+                getattr(self, perm)() for perm in self.user_perms_default
+            )
         return True
 
     def check_by_action(self, action):

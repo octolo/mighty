@@ -24,7 +24,9 @@ email_html = _('HTML used to generate the email')
 
 file_name_help = _('File name will be stringified with the date of the report')
 content_type_help = _('Object used to start, he can be used in filter_related')
-target_help = _('Object targeted by the report, he can be used in filter_config and manager field')
+target_help = _(
+    'Object targeted by the report, he can be used in filter_config and manager field'
+)
 manager_help = _("You can change the manager, default is 'objects'")
 config_help = _("""You can config every fields used.
     - data: field name

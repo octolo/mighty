@@ -17,19 +17,24 @@ from mighty.models.variable import TemplateVariable
 ###########################
 # Models in mighty
 ###########################
-class Backend(Backend): pass
+class Backend(Backend):
+    pass
 
 
-class Reporting(Reporting): pass
+class Reporting(Reporting):
+    pass
 
 
-class RegisterTask(RegisterTask): pass
+class RegisterTask(RegisterTask):
+    pass
 
 
-class RegisterTaskSubscription(RegisterTaskSubscription): pass
+class RegisterTaskSubscription(RegisterTaskSubscription):
+    pass
 
 
-class TemplateVariable(TemplateVariable): pass
+class TemplateVariable(TemplateVariable):
+    pass
 
 
 class ConfigClient(Config):
@@ -50,6 +55,7 @@ class ConfigSimple(Config):
 
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
+
     class Channel(Base):
         channel_name = models.CharField(max_length=255, null=True, blank=True)
         channel_type = models.CharField(max_length=255)
@@ -62,7 +68,7 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
                 'model': obj._meta.model_name,
                 'label': obj._meta.app_label,
                 'channel_name': channel_name,
-                'state': 'connected'
+                'state': 'connected',
             }
             self.save()
 
@@ -71,12 +77,14 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
             self.save()
 
         def historize(self, _id, event, datas):
-            if _id not in self.history: self.history[_id] = []
+            if _id not in self.history:
+                self.history[_id] = []
             self.history[_id].append({event: datas})
             self.save()
 
         def save(self, *args, **kwargs):
-            if not self.from_id: self.from_id = next(iter(self.objs))
+            if not self.from_id:
+                self.from_id = next(iter(self.objs))
             super().save(*args, **kwargs)
 
 
@@ -86,67 +94,135 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 
 # Logger
 if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-    class Log(models_logger.Log): pass
-    class ModelChangeLog(models_logger.ModelChangeLog): pass
+
+    class Log(models_logger.Log):
+        pass
+
+    class ModelChangeLog(models_logger.ModelChangeLog):
+        pass
+
 
 # Nationality
 if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality import models as models_nationality
-    class Nationality(models_nationality.Nationality): pass
-    class Translator(models_nationality.Translator): pass
-    class TranslateDict(models_nationality.TranslateDict): pass
+
+    class Nationality(models_nationality.Nationality):
+        pass
+
+    class Translator(models_nationality.Translator):
+        pass
+
+    class TranslateDict(models_nationality.TranslateDict):
+        pass
+
 
 # Messenger
 if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
     from mighty.applications.messenger import models as models_messenger
-    class Missive(models_messenger.Missive): pass
-    class Notification(models_messenger.Notification): pass
-    class Template(models_messenger.Template): pass
+
+    class Missive(models_messenger.Missive):
+        pass
+
+    class Notification(models_messenger.Notification):
+        pass
+
+    class Template(models_messenger.Template):
+        pass
+
 
 # User
 if 'mighty.applications.user' in settings.INSTALLED_APPS:
     from mighty.applications.user import models as models_user
     from mighty.applications.user.apps import UserConfig as user_conf
-    class User(models_user.User): pass
+
+    class User(models_user.User):
+        pass
+
     if not apps.is_installed('allauth'):
-        class UserEmail(models_user.UserEmail): pass
-    class UserPhone(models_user.UserPhone): pass
-    class InternetProtocol(models_user.InternetProtocol): pass
-    class UserAgent(models_user.UserAgent): pass
-    class UserAddress(models_user.UserAddress): pass
+
+        class UserEmail(models_user.UserEmail):
+            pass
+
+    class UserPhone(models_user.UserPhone):
+        pass
+
+    class InternetProtocol(models_user.InternetProtocol):
+        pass
+
+    class UserAgent(models_user.UserAgent):
+        pass
+
+    class UserAddress(models_user.UserAddress):
+        pass
+
     if user_conf.protect_trashmail:
-        class Trashmail(models_user.Trashmail): pass
+
+        class Trashmail(models_user.Trashmail):
+            pass
+
     # Draft
-    class MergeableAccount(models_user.MergeableAccount): pass
+    class MergeableAccount(models_user.MergeableAccount):
+        pass
+
 
 # Data protect
 if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:
     from mighty.applications.dataprotect import models as models_dataprotect
-    class ServiceData(models_dataprotect.ServiceData): pass
-    class UserDataProtect(models_dataprotect.UserDataProtect): pass
+
+    class ServiceData(models_dataprotect.ServiceData):
+        pass
+
+    class UserDataProtect(models_dataprotect.UserDataProtect):
+        pass
+
 
 # Twofactor
 if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
     from mighty.applications.twofactor.models import Twofactor
-    class Twofactor(Twofactor): pass
+
+    class Twofactor(Twofactor):
+        pass
+
 
 # Extend
 if 'mighty.applications.extend' in settings.INSTALLED_APPS:
     from mighty.applications.extend import models as models_extend
-    class Key(models_extend.Key): pass
+
+    class Key(models_extend.Key):
+        pass
+
 
 # Shop
 if 'mighty.applications.shop' in settings.INSTALLED_APPS:
     from mighty.applications.shop import models as models_shop
-    class ShopService(models_shop.ShopService): pass
-    class Offer(models_shop.Offer): pass
-    class Subscription(models_shop.Subscription): pass
-    class Discount(models_shop.Discount): pass
-    class ShopItem(models_shop.ShopItem): pass
-    class Bill(models_shop.Bill): pass
-    class PaymentMethod(models_shop.PaymentMethod): pass
-    class SubscriptionRequest(models_shop.SubscriptionRequest): pass
+
+    class ShopService(models_shop.ShopService):
+        pass
+
+    class Offer(models_shop.Offer):
+        pass
+
+    class Subscription(models_shop.Subscription):
+        pass
+
+    class Discount(models_shop.Discount):
+        pass
+
+    class ShopItem(models_shop.ShopItem):
+        pass
+
+    class Bill(models_shop.Bill):
+        pass
+
+    class PaymentMethod(models_shop.PaymentMethod):
+        pass
+
+    class SubscriptionRequest(models_shop.SubscriptionRequest):
+        pass
+
 
 if conf.enable_mimetype:
     from mighty.models.filesystem import MimeType
-    class MimeType(MimeType): pass
+
+    class MimeType(MimeType):
+        pass

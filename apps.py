@@ -74,7 +74,7 @@ class Config:
         ],
         'Websocket': [
             'Channel',
-        ]
+        ],
     }
     pdf_options = {
         'encoding': 'UTF-8',
@@ -83,9 +83,7 @@ class Config:
         'margin-right': '0.75in',
         'margin-bottom': '0.75in',
         'margin-left': '0.75in',
-        'custom-header': [
-            ('Accept-Encoding', 'gzip')
-        ]
+        'custom-header': [('Accept-Encoding', 'gzip')],
     }
     urls_admin_to_add = []
     pdf_header = 'document_header_template.html'
@@ -101,10 +99,33 @@ class Config:
         process = 'process/'
 
     class Test:
-        search = ['none', '', 0, 'na', 'n/a', '-', '/', '\\', '?', '??', '#n/a', '#value!', 'nc', 'n/c', 'ns']
+        search = [
+            'none',
+            '',
+            0,
+            'na',
+            'n/a',
+            '-',
+            '/',
+            '\\',
+            '?',
+            '??',
+            '#n/a',
+            '#value!',
+            'nc',
+            'n/c',
+            'ns',
+        ]
         replace = ['_', ';', ',']
         intflt_toreplace = [' ', ',', '€', '$', '%']
-        intnotint = ['IntegerField', 'FloatField', 'DecimalField', 'SmallIntegerField', 'PositiveIntegerField', 'PositiveSmallIntegerField']
+        intnotint = [
+            'IntegerField',
+            'FloatField',
+            'DecimalField',
+            'SmallIntegerField',
+            'PositiveIntegerField',
+            'PositiveSmallIntegerField',
+        ]
         forbidden = ['id', 'display']
         retrieve = ['id']
         mandatory = []
@@ -115,7 +136,9 @@ class Config:
 
     class Service:
         services = ['server']
-        uptime = "ps -u %s -o etimes,cmd | awk '{print $1}' | tail -n1  | tr -d '\n'"
+        uptime = (
+            "ps -u %s -o etimes,cmd | awk '{print $1}' | tail -n1  | tr -d '\n'"
+        )
         cpu = 'ps -u %s -o %%cpu --no-headers'
         memory = 'ps -u %s -o %%mem --no-headers'
 
@@ -132,7 +155,7 @@ class Config:
             'GB': [1 << 30, 'gigabytes', 'gigabyte'],
             'MB': [1 << 20, 'megabytes', 'megabyte'],
             'KB': [1 << 10, 'kilobytes', 'kilobyte'],
-            'B':  [1 << 0, 'bytes', 'byte'],
+            'B': [1 << 0, 'bytes', 'byte'],
         }
 
     class Interpreter:
@@ -147,7 +170,8 @@ class Config:
         BS = 16
 
 
-if hasattr(settings, 'MIGHTY'): over_config(Config, settings.MIGHTY)
+if hasattr(settings, 'MIGHTY'):
+    over_config(Config, settings.MIGHTY)
 
 
 class MightyConfig(AppConfig, Config):

@@ -13,16 +13,54 @@ from mighty.translates import reporting as _
 
 class Reporting(Base):
     name = models.CharField(_.name, max_length=255)
-    file_name = models.TextField(_.file_name, help_text=_.file_name_help, blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, blank=True, null=True,
-        related_name='ct_to_reporting', verbose_name=_.content_type, help_text=_.content_type_help)
-    target = models.ForeignKey(ContentType, on_delete=models.CASCADE, blank=True, null=True,
-        related_name='ct_to_target', verbose_name=_.target, help_text=_.target_help)
-    manager = models.CharField(_.manager, max_length=255, default='objects', help_text=_.manager_help)
-    config = JSONField(default=list, blank=True, null=True, help_text=_.config_help)
-    filter_config = JSONField(_.filter_config, default=dict, blank=True, null=True, help_text=_.filter_config_help)
-    filter_related = JSONField(_.filter_related, default=dict, blank=True, null=True, help_text=_.filter_related_help)
-    filter_request = JSONField(_.filter_request, default=dict, blank=True, null=True, help_text=_.filter_request_help)
+    file_name = models.TextField(
+        _.file_name, help_text=_.file_name_help, blank=True, null=True
+    )
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='ct_to_reporting',
+        verbose_name=_.content_type,
+        help_text=_.content_type_help,
+    )
+    target = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='ct_to_target',
+        verbose_name=_.target,
+        help_text=_.target_help,
+    )
+    manager = models.CharField(
+        _.manager, max_length=255, default='objects', help_text=_.manager_help
+    )
+    config = JSONField(
+        default=list, blank=True, null=True, help_text=_.config_help
+    )
+    filter_config = JSONField(
+        _.filter_config,
+        default=dict,
+        blank=True,
+        null=True,
+        help_text=_.filter_config_help,
+    )
+    filter_related = JSONField(
+        _.filter_related,
+        default=dict,
+        blank=True,
+        null=True,
+        help_text=_.filter_related_help,
+    )
+    filter_request = JSONField(
+        _.filter_request,
+        default=dict,
+        blank=True,
+        null=True,
+        help_text=_.filter_request_help,
+    )
     is_detail = models.BooleanField(_.is_detail, default=False)
     can_excel = models.BooleanField(_.can_excel, default=True)
     cfg_excel = JSONField(_.cfg_excel, default=dict, blank=True, null=True)
@@ -50,20 +88,36 @@ class Reporting(Base):
 
     @property
     def reporting_export_name(self):
-        return '{}_{}'.format(self.file_name or self.name, timezone.now().strftime('%Y%m%d-%Hh%Ms%S'))
+        return '{}_{}'.format(
+            self.file_name or self.name,
+            timezone.now().strftime('%Y%m%d-%Hh%Ms%S'),
+        )
 
     @property
     def max_fields(self):
         return [mf for mf in self.config if mf.get('multiple')]
 
     def get_manager(self):
-        manager = getattr_recursive(self.target.model_class(), self.manager) or self.target.objects
-        return manager() if manager != models.Manager and callable(manager) else manager
+        manager = (
+            getattr_recursive(self.target.model_class(), self.manager)
+            or self.target.objects
+        )
+        return (
+            manager()
+            if manager != models.Manager and callable(manager)
+            else manager
+        )
 
     @cached_property
     def reporting_max_aggregate(self):
-        count_data = {'count_' + mf['data']: models.Count(mf['data'], distinct=True) for mf in self.max_fields}
-        max_data = {mf['data']: models.Max('count_' + mf['data']) for mf in self.max_fields}
+        count_data = {
+            'count_' + mf['data']: models.Count(mf['data'], distinct=True)
+            for mf in self.max_fields
+        }
+        max_data = {
+            mf['data']: models.Max('count_' + mf['data'])
+            for mf in self.max_fields
+        }
         qs = self.get_manager().filter(**self.reporting_filter)
         return qs.annotate(**count_data).aggregate(**max_data)
 
@@ -73,11 +127,16 @@ class Reporting(Base):
         if self.filter_config:
             Qfilter.update(self.filter_config)
         if self.filter_related:
-            Qfilter.update({k: self.reporting_data_obj(v, self.related_obj)
-                for k, v in self.filter_related.items()})
+            Qfilter.update({
+                k: self.reporting_data_obj(v, self.related_obj)
+                for k, v in self.filter_related.items()
+            })
         if self.filter_request:
-            Qfilter.update({v: self.kwargs.get(k)
-                for k, v in self.filter_request.items() if k in self.kwargs})
+            Qfilter.update({
+                v: self.kwargs.get(k)
+                for k, v in self.filter_request.items()
+                if k in self.kwargs
+            })
         return Qfilter
 
     @property
@@ -92,13 +151,17 @@ class Reporting(Base):
             if cfg.get('multiple'):
                 max = self.reporting_max_aggregate.get(cfg['data'])
                 if cfg.get('fields'):
-                    data += [field + str(i + 1) for i in range(max) for field in cfg['fields']]
+                    data += [
+                        field + str(i + 1)
+                        for i in range(max)
+                        for field in cfg['fields']
+                    ]
                 else:
                     data += [head + str(i + 1) for i in range(max)]
             elif cfg.get('fields'):
                 data += list(cfg['fields'])
             else:
-                 data += [head]
+                data += [head]
         return data
 
     def reporting_data_obj(self, field, obj, multiple=None):
@@ -135,14 +198,16 @@ class Reporting(Base):
 
     @property
     def reporting_items(self):
-        return [self.reporting_line_detail(obj) for obj in self.reporting_queryset]
+        return [
+            self.reporting_line_detail(obj) for obj in self.reporting_queryset
+        ]
 
     @property
     def reporting_file_generator(self):
         return FileGenerator(
             filename=self.reporting_export_name,
             items=self.reporting_items,
-            fields=self.reporting_fields
+            fields=self.reporting_fields,
         )
 
     def reporting_file_response(self, response, file_type, *args, **kwargs):
@@ -154,6 +219,7 @@ class Reporting(Base):
             from django.template import Context, Template
 
             from mighty.models import Missive
+
             file = self.reporting_file_generator.file_csv(file_type, None)
             missive = Missive(
                 target=self.email_target,

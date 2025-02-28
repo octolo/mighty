@@ -20,8 +20,13 @@ UserModel = get_user_model()
 class TwoFactorSearchForm(FormDescriptable):
     # A corriger
     # username = forms.CharField(label=_.search, required=True)
-    username = forms.CharField(label='Votre email', required=True)  # Need to be fixed
-    error_messages = {'invalid_search': _.invalid_search, 'inactive': _.inactive}
+    username = forms.CharField(
+        label='Votre email', required=True
+    )  # Need to be fixed
+    error_messages = {
+        'invalid_search': _.invalid_search,
+        'inactive': _.inactive,
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,16 +36,24 @@ class TwoFactorSearchForm(FormDescriptable):
         return ''.join(filter(lambda c: c not in string.whitespace, target))
 
     def Qfilters(self, search):
-        return Q(username=search) | Q(**{UserConfig.ForeignKey.email_related_name + '__email': search}) | Q(user_phone__phone=search)
+        return (
+            Q(username=search)
+            | Q(**{
+                UserConfig.ForeignKey.email_related_name + '__email': search
+            })
+            | Q(user_phone__phone=search)
+        )
 
     def get_user_target(self, target):
         target = self.clean_target(target)
         user = UserModel.objects.filter(self.Qfilters(target)).distinct()
-        if len(user) == 1: return user[0]
+        if len(user) == 1:
+            return user[0]
         raise UserModel.DoesNotExist
 
     def set_session_with_uid(self, uid):
-        if self.request: self.request.session['login_uid'] = uid
+        if self.request:
+            self.request.session['login_uid'] = uid
 
     def clean(self):
         search = self.cleaned_data.get('username')
@@ -49,26 +62,36 @@ class TwoFactorSearchForm(FormDescriptable):
                 self.user_cache = self.get_user_target(search)
                 self.confirm_login_allowed(self.user_cache)
             except UserModel.DoesNotExist:
-                raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search')
+                raise forms.ValidationError(
+                    self.error_messages['invalid_search'], code='invalid_search'
+                )
             self.set_session_with_uid(str(self.user_cache.uid))
         return self.cleaned_data
 
     def confirm_login_allowed(self, user):
         if not user.is_active:
-            raise forms.ValidationError(self.error_messages['inactive'], code='inactive')
+            raise forms.ValidationError(
+                self.error_messages['inactive'], code='inactive'
+            )
 
 
 class TwoFactorChoicesForm(FormDescriptable):
     receiver = forms.CharField(widget=forms.HiddenInput)
-    error_messages = {'inactive': _.inactive, 'cant_send': _.cant_send, 'method_not_allowed': _.method_not_allowed}
+    error_messages = {
+        'inactive': _.inactive,
+        'cant_send': _.cant_send,
+        'method_not_allowed': _.method_not_allowed,
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.uid = self.request.session['login_uid']
         self.user_cache = UserModel.objects.get(uid=self.uid)
         self.emails, self.phones = [], []
-        if self.email_authorized: self.get_emails()
-        if self.phone_authorized: self.get_phones()
+        if self.email_authorized:
+            self.get_emails()
+        if self.phone_authorized:
+            self.get_phones()
 
     @property
     def smss(self):
@@ -83,14 +106,16 @@ class TwoFactorChoicesForm(FormDescriptable):
         return TwofactorConfig.method.sms
 
     def get_emails(self):
-        if self.user_cache.email: self.emails.append(self.user_cache.email)
+        if self.user_cache.email:
+            self.emails.append(self.user_cache.email)
 
     @property
     def emails_masking(self):
         return [masking_email(email) for email in self.emails]
 
     def get_phones(self):
-        if self.user_cache.phone: self.phones.append(self.user_cache.phone)
+        if self.user_cache.phone:
+            self.phones.append(self.user_cache.phone)
 
     @property
     def phones_masking(self):
@@ -103,14 +128,18 @@ class TwoFactorChoicesForm(FormDescriptable):
     def clean(self):
         receiver, status = self.cleaned_data.get('receiver'), False
         if receiver:
-            dev, pos = receiver.split('_') if '_' in receiver else (receiver, -1)
+            dev, pos = (
+                receiver.split('_') if '_' in receiver else (receiver, -1)
+            )
             if 'password' in dev:
                 status = TwofactorConfig.method.basic
             else:
                 receiver = getattr(self, f'{dev}s')[int(pos)]
                 status = use_twofactor(receiver)
             if not status:
-                raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send')
+                raise forms.ValidationError(
+                    self.error_messages['cant_send'], code='cant_send'
+                )
         return self.cleaned_data
 
 
@@ -128,7 +157,9 @@ class TwoFactorCodeForm(AuthenticationForm):
         if self.request.session:
             self.uid = self.request.session.get('login_uid')
         if not self.uid:
-            raise forms.ValidationError(self.error_messages['cant_found'], code='cant_found')
+            raise forms.ValidationError(
+                self.error_messages['cant_found'], code='cant_found'
+            )
 
     def del_session_with_uid(self):
         del self.request.session['login_uid']
@@ -137,9 +168,16 @@ class TwoFactorCodeForm(AuthenticationForm):
         self.init_uid()
         password = self.cleaned_data.get('password')
         if password:
-            self.user_cache = authenticate(self.request, username=self.uid, password=password, field_type='uid')
+            self.user_cache = authenticate(
+                self.request,
+                username=self.uid,
+                password=password,
+                field_type='uid',
+            )
             if self.user_cache is None:
-                username_field_verbose_name = getattr(self, 'username_field', 'Username').verbose_name
+                username_field_verbose_name = getattr(
+                    self, 'username_field', 'Username'
+                ).verbose_name
                 raise forms.ValidationError(
                     self.error_messages['invalid_login'],
                     code='invalid_login',
@@ -164,5 +202,8 @@ class SignUpForm(UserCreationForm):
 
     def save(self, commit=True):
         if not self.use_password:
-            self.cleaned_data['password1'] = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(20))
+            self.cleaned_data['password1'] = ''.join(
+                secrets.choice(string.ascii_letters + string.digits)
+                for i in range(20)
+            )
         return super().save(commit)

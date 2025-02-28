@@ -21,9 +21,15 @@ from mighty.models.base import Base
 
 class MessengerModel(Base):
     in_test = False
-    mode = models.CharField(max_length=8, choices=choices.MODE, default=choices.MODE_EMAIL)
-    status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=9)
-    priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
+    mode = models.CharField(
+        max_length=8, choices=choices.MODE, default=choices.MODE_EMAIL
+    )
+    status = models.CharField(
+        choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=9
+    )
+    priority = models.PositiveIntegerField(
+        default=0, choices=choices.PRIORITIES
+    )
     # address_window = models.BooleanField(default=False)
 
     name = models.CharField(max_length=255, blank=True, null=True)
@@ -46,7 +52,9 @@ class MessengerModel(Base):
     txt = models.TextField(blank=True, null=True)
     preheader = models.TextField(blank=True, null=True)
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.SET_NULL, null=True, blank=True
+    )
     object_id = models.PositiveIntegerField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -177,4 +185,11 @@ class MessengerModel(Base):
 
     @property
     def html_format(self):
-        return render_to_string(self.template, {'object': self, 'domain_url': url_domain('', http=True)}) if self.template else self.html
+        return (
+            render_to_string(
+                self.template,
+                {'object': self, 'domain_url': url_domain('', http=True)},
+            )
+            if self.template
+            else self.html
+        )

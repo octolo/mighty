@@ -30,19 +30,22 @@ class BillList(ListView):
     model = Bill
 
     def get_context_data(self, **kwargs):
-        return [{
-            'uid': bill.uid,
-            'end_amount': bill.end_amount,
-            'date_payment': bill.date_payment,
-            'paid': bill.paid,
-            'subscription': str(bill.subscription),
-            'method': str(bill.method.get_form_method_display()),
-            'end_discount': bill.end_discount,
-            'need_action': bill.need_action,
-            'action': bill.action,
-            'items': bill.items_list,
-            'name': bill.name,
-        } for bill in self.get_queryset()]
+        return [
+            {
+                'uid': bill.uid,
+                'end_amount': bill.end_amount,
+                'date_payment': bill.date_payment,
+                'paid': bill.paid,
+                'subscription': str(bill.subscription),
+                'method': str(bill.method.get_form_method_display()),
+                'end_discount': bill.end_discount,
+                'need_action': bill.need_action,
+                'action': bill.action,
+                'items': bill.items_list,
+                'name': bill.name,
+            }
+            for bill in self.get_queryset()
+        ]
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs, safe=False)

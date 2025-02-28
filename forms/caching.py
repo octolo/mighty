@@ -25,10 +25,15 @@ class CachingModelChoicesFormSet(forms.BaseInlineFormSet):
         else:
             for field_name in model_choice_fields:
                 if field_name in sample_form.fields and not isinstance(
-                    sample_form.fields[field_name].widget, forms.HiddenInput):
+                    sample_form.fields[field_name].widget, forms.HiddenInput
+                ):
                     if hasattr(self, f'{field_name}_queryset'):
-                        sample_form.fields[field_name].queryset = getattr(self, f'{field_name}_queryset')
-                    self.cached_choices[field_name] = list(sample_form.fields[field_name].choices)
+                        sample_form.fields[field_name].queryset = getattr(
+                            self, f'{field_name}_queryset'
+                        )
+                    self.cached_choices[field_name] = list(
+                        sample_form.fields[field_name].choices
+                    )
 
     def get_form_kwargs(self, index):
         kwargs = super().get_form_kwargs(index)
@@ -39,7 +44,13 @@ class CachingModelChoicesFormSet(forms.BaseInlineFormSet):
 class CachingModelChoicesForm(forms.ModelForm):
     @property
     def model_choice_fields(self):
-        return [fn for fn, f in self.fields.items() if isinstance(f, forms.ModelChoiceField | forms.ModelMultipleChoiceField)]
+        return [
+            fn
+            for fn, f in self.fields.items()
+            if isinstance(
+                f, forms.ModelChoiceField | forms.ModelMultipleChoiceField
+            )
+        ]
 
     def __init__(self, *args, **kwargs):
         cached_choices = kwargs.pop('cached_choices', {})
@@ -53,6 +64,7 @@ class CachingModelChoicesForm(forms.ModelForm):
             class Meta:
                 model = type(self._obj)
                 fields = (self.fieldname,)
+
         mf = ModelForm()
         self.fields['value'] = mf.fields[self.fieldname]
 

@@ -75,13 +75,23 @@ class Base(models.Model):
     is_immutable_delete = True
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
     logs = JSONField(blank=True, null=True, default=dict)
-    is_disable = models.BooleanField(_.is_disable, default=False, editable=False)
+    is_disable = models.BooleanField(
+        _.is_disable, default=False, editable=False
+    )
     is_immutable = models.BooleanField(default=False)
     search = models.TextField(db_index=True, blank=True, null=True)
-    date_create = models.DateTimeField(_.date_create, auto_now_add=True, editable=False)
-    create_by = models.CharField(_.create_by, blank=True, editable=False, max_length=254, null=True)
-    date_update = models.DateTimeField(_.date_update, auto_now=True, editable=False)
-    update_by = models.CharField(_.update_by, blank=True, editable=False, max_length=254, null=True)
+    date_create = models.DateTimeField(
+        _.date_create, auto_now_add=True, editable=False
+    )
+    create_by = models.CharField(
+        _.create_by, blank=True, editable=False, max_length=254, null=True
+    )
+    date_update = models.DateTimeField(
+        _.date_update, auto_now=True, editable=False
+    )
+    update_by = models.CharField(
+        _.update_by, blank=True, editable=False, max_length=254, null=True
+    )
     update_count = models.PositiveBigIntegerField(default=0)
     note = models.TextField(blank=True, null=True)
     cache = JSONField(blank=True, null=True, default=dict)
@@ -111,21 +121,41 @@ class Base(models.Model):
         @property
         def model_change_log(self):
             from mighty.models import ModelChangeLog
+
             return ModelChangeLog
 
         @property
         def model_change_logs(self):
-            return self.get_content_type().modelchangelog_set.filter(object_id=self.pk)
+            return self.get_content_type().modelchangelog_set.filter(
+                object_id=self.pk
+            )
 
         def save_model_change_log(self):
             if self._unmodified and self.enable_model_change_log:
                 from mighty.fields import base
                 from mighty.functions import models_difference
-                exclude = base + tuple(self.m2o_fields().keys()) + tuple(self.m2m_fields().keys()) + tuple(self.changelog_exclude)
+
+                exclude = (
+                    base
+                    + tuple(self.m2o_fields().keys())
+                    + tuple(self.m2m_fields().keys())
+                    + tuple(self.changelog_exclude)
+                )
                 _new, old = models_difference(self, self._unmodified, exclude)
                 if len(old) > 0:
                     self.model_change_log.objects.bulk_create([
-                        self.model_change_log(content_type=self.get_content_type(), object_id=getattr(self, self.pk_field), field=field, value=bytes(str(value), 'utf-8'), fmodel=self.fields()[field], date_begin=self._unmodified.date_update, date_end=self.date_update, user=self._user) for field, value in old.items()])
+                        self.model_change_log(
+                            content_type=self.get_content_type(),
+                            object_id=getattr(self, self.pk_field),
+                            field=field,
+                            value=bytes(str(value), 'utf-8'),
+                            fmodel=self.fields()[field],
+                            date_begin=self._unmodified.date_update,
+                            date_end=self.date_update,
+                            user=self._user,
+                        )
+                        for field, value in old.items()
+                    ])
 
     @property
     def method_list(self):
@@ -136,42 +166,63 @@ class Base(models.Model):
 
     @property
     def property_list(self):
-        return [p for p in dir(self) if not callable(getattr(self, p)) and not p.startswith('__')]
+        return [
+            p
+            for p in dir(self)
+            if not callable(getattr(self, p)) and not p.startswith('__')
+        ]
 
     def properties_startswith(self, prefix):
         return [p for p in self.property_list if p.startswith(prefix)]
 
     # QUERYSET
     @property
-    def model(self): return type(self)
-    def queryset(self): return type(self).objects.all()
-    def history_queryset(self): return self.queryset().order_by('-date_create')
+    def model(self):
+        return type(self)
+
+    def queryset(self):
+        return type(self).objects.all()
+
+    def history_queryset(self):
+        return self.queryset().order_by('-date_create')
 
     @property
     def history(self):
-        if not len(self._history): self._history = self.history_queryset()
+        if not len(self._history):
+            self._history = self.history_queryset()
         return self._history
 
     @property
     def history_last(self):
-        if not self._hlast: self._hlast = self.history.last()
+        if not self._hlast:
+            self._hlast = self.history.last()
         return self._hlast
 
     @property
     def history_first(self):
-        if not self._hfirst: self._hfirst = self.history.first()
+        if not self._hfirst:
+            self._hfirst = self.history.first()
         return self._hfirst
 
     @property
-    def qs_not_self(self): return self.queryset().exclude(pk=self.pk) if self.pk else self.queryset().all()
+    def qs_not_self(self):
+        return (
+            self.queryset().exclude(pk=self.pk)
+            if self.pk
+            else self.queryset().all()
+        )
+
     @property
-    def history_not_self(self): return self.history.exclude(pk=self.pk) if self.pk else self.history
+    def history_not_self(self):
+        return self.history.exclude(pk=self.pk) if self.pk else self.history
 
     # LOGGER
     @property
-    def logger(self): return self._logger
+    def logger(self):
+        return self._logger
 
     if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
+
         def notify(self, subject, content_type, object_id, **kwargs):
             return notify(subject, content_type, object_id, **kwargs)
 
@@ -204,12 +255,15 @@ class Base(models.Model):
         if self.is_immutable:
             if self.fields_can_be_changed == '*':
                 return True
-            return all(field in self.fields_can_be_changed for field in self.fields_changed)
+            return all(
+                field in self.fields_can_be_changed
+                for field in self.fields_changed
+            )
         return True
 
     @property
     def can_be_deleted(self):
-        return (not self.is_immutable or self.is_immutable_delete)
+        return not self.is_immutable or self.is_immutable_delete
 
     class mighty:
         perm_title = actions
@@ -223,6 +277,7 @@ class Base(models.Model):
     def raise_error(self, message, code=None):
         if config.use_rest and config.rest_error and self.from_rest:
             from django.utils.module_loading import import_string
+
             SzValidationError = import_string(config.rest_error)
             raise SzValidationError(detail=message, code=code)
         raise ValidationError(message=message, code=code)
@@ -259,68 +314,129 @@ class Base(models.Model):
     """
     Properties
     """
+
     # Model
     @property
-    def uid_or_pk_arg(self): return 'uid' if hasattr(self, 'uid') else 'pk'
+    def uid_or_pk_arg(self):
+        return 'uid' if hasattr(self, 'uid') else 'pk'
+
     @property
-    def uid_or_pk(self): return getattr(self, self.uid_or_pk_arg)
+    def uid_or_pk(self):
+        return getattr(self, self.uid_or_pk_arg)
+
     @property
-    def app_label(self): return str(self._meta.app_label)
+    def app_label(self):
+        return str(self._meta.app_label)
+
     @property
-    def model_name(self): return str(self.__class__.__name__)
+    def model_name(self):
+        return str(self.__class__.__name__)
+
     @property
-    def app_model(self): return self.app_label + '.' + self.model_name
+    def app_model(self):
+        return self.app_label + '.' + self.model_name
+
     @property
-    def is_enable(self): return self.is_disable is False
+    def is_enable(self):
+        return self.is_disable is False
+
     @property
-    def all_permissions(self): return self._meta.default_permissions + tuple(perm[0] for perm in self._meta.permissions)
+    def all_permissions(self):
+        return self._meta.default_permissions + tuple(
+            perm[0] for perm in self._meta.permissions
+        )
+
     @property
-    def cache_json(self): return json.dumps(self.cache)
+    def cache_json(self):
+        return json.dumps(self.cache)
+
     @property
-    def logs_json(self): return json.dumps(self.logs)
+    def logs_json(self):
+        return json.dumps(self.logs)
 
     # Admin URL
-    def url_domain(self, url): return url_domain(url)
+    def url_domain(self, url):
+        return url_domain(url)
+
     @property
-    def admin_url_args(self): return {'object_id': self.pk}
+    def admin_url_args(self):
+        return {'object_id': self.pk}
+
     @property
-    def app_admin(self): return 'admin:%s_%s_%s'
+    def app_admin(self):
+        return 'admin:%s_%s_%s'
+
     @property
-    def admin_list_url(self): return self.get_url('changelist', self.app_admin)
+    def admin_list_url(self):
+        return self.get_url('changelist', self.app_admin)
+
     @property
-    def admin_add_url(self): return self.get_url('add', self.app_admin)
+    def admin_add_url(self):
+        return self.get_url('add', self.app_admin)
+
     @property
-    def admin_change_url(self): return self.get_url('change', self.app_admin, arguments=self.admin_url_args)
+    def admin_change_url(self):
+        return self.get_url(
+            'change', self.app_admin, arguments=self.admin_url_args
+        )
+
     @property
-    def admin_disable_url(self): return self.get_url('disable', self.app_admin, arguments=self.admin_url_args)
+    def admin_disable_url(self):
+        return self.get_url(
+            'disable', self.app_admin, arguments=self.admin_url_args
+        )
+
     @property
-    def admin_enable_url(self): return self.get_url('enable', self.app_admin, arguments=self.admin_url_args)
+    def admin_enable_url(self):
+        return self.get_url(
+            'enable', self.app_admin, arguments=self.admin_url_args
+        )
 
     # Front URL
     @property
-    def url_args(self): return {self.mighty.url_field: getattr(self, self.mighty.url_field)}
+    def url_args(self):
+        return {self.mighty.url_field: getattr(self, self.mighty.url_field)}
+
     @property
-    def add_url(self): return self.get_url('add')
+    def add_url(self):
+        return self.get_url('add')
+
     @property
-    def list_url(self): return self.get_url('list')
+    def list_url(self):
+        return self.get_url('list')
+
     @property
-    def detail_url(self): return self.get_url('view', arguments=self.url_args)
+    def detail_url(self):
+        return self.get_url('view', arguments=self.url_args)
+
     @property
-    def change_url(self): return self.get_url('change', arguments=self.url_args)
+    def change_url(self):
+        return self.get_url('change', arguments=self.url_args)
+
     @property
-    def delete_url(self): return self.get_url('delete', arguments=self.url_args)
+    def delete_url(self):
+        return self.get_url('delete', arguments=self.url_args)
+
     @property
-    def disable_url(self): return self.get_url('disable', arguments=self.url_args)
+    def disable_url(self):
+        return self.get_url('disable', arguments=self.url_args)
+
     @property
-    def enable_url(self): return self.get_url('enable', arguments=self.url_args)
+    def enable_url(self):
+        return self.get_url('enable', arguments=self.url_args)
 
     # Question for disable, enable, delete
     @property
-    def question_delete(self): return _d.are_you_sure_delete % self
+    def question_delete(self):
+        return _d.are_you_sure_delete % self
+
     @property
-    def question_disable(self): return _d.are_you_sure_disable % self
+    def question_disable(self):
+        return _d.are_you_sure_disable % self
+
     @property
-    def question_enable(self): return _d.are_you_sure_enable % self
+    def question_enable(self):
+        return _d.are_you_sure_enable % self
 
     @property
     def log_status(self):
@@ -344,6 +460,7 @@ class Base(models.Model):
     def getattr_recursive(self, strtoget, split='.'):
         if strtoget:
             from functools import reduce
+
             return reduce(getattr, [self, *strtoget.split(split)])
         return strtoget
 
@@ -366,44 +483,77 @@ class Base(models.Model):
     def fields(self, excludes=None):
         if excludes is None:
             excludes = []
-        return {field.name: field.__class__.__name__ for field in self._meta.get_fields() if field.__class__.__name__ not in excludes}
+        return {
+            field.name: field.__class__.__name__
+            for field in self._meta.get_fields()
+            if field.__class__.__name__ not in excludes
+        }
 
     def concrete_fields(self, excludes=None):
         if excludes is None:
             excludes = []
-        return {field.name: field.__class__.__name__ for field in self._meta.concrete_fields if field.__class__.__name__ not in excludes}
+        return {
+            field.name: field.__class__.__name__
+            for field in self._meta.concrete_fields
+            if field.__class__.__name__ not in excludes
+        }
 
     def m2o_fields(self, excludes=None):
         if excludes is None:
             excludes = []
-        return {field.name: field.__class__.__name__ for field in self._meta.related_objects if field.__class__.__name__ not in excludes}
+        return {
+            field.name: field.__class__.__name__
+            for field in self._meta.related_objects
+            if field.__class__.__name__ not in excludes
+        }
 
     def m2m_fields(self, excludes=None):
         if excludes is None:
             excludes = []
-        return {field.name: field.__class__.__name__ for field in self._meta.many_to_many if field.__class__.__name__ not in excludes}
+        return {
+            field.name: field.__class__.__name__
+            for field in self._meta.many_to_many
+            if field.__class__.__name__ not in excludes
+        }
 
     # Url facilities
     def get_url_html(self, url, title):
         return format_html(f'<a href="{url}">{title}</a>')
 
     def get_url(self, action, mask='%s:%s-%s', arguments=None):
-        return reverse(mask % (self.app_label.lower(), self.model_name.lower(), action), kwargs=arguments)
+        return reverse(
+            mask % (self.app_label.lower(), self.model_name.lower(), action),
+            kwargs=arguments,
+        )
 
     # Search facilities
     def get_search_fields(self):
-        return ' '.join([make_searchable(str(getattr(self, field))) for field in self.search_fields if getattr(self, field)] + self.timeline_search()).split()
+        return ' '.join(
+            [
+                make_searchable(str(getattr(self, field)))
+                for field in self.search_fields
+                if getattr(self, field)
+            ]
+            + self.timeline_search()
+        ).split()
 
     def timeline_relate(self):
         return str(self.__class__.__name__).lower() + 'timeline_set'
 
     def timeline_search(self):
         if hasattr(self, self.timeline_relate()):
-            return [make_searchable(field.value) for field in getattr(self, self.timeline_relate()).filter(field__in=self.search_fields)]
+            return [
+                make_searchable(field.value)
+                for field in getattr(self, self.timeline_relate()).filter(
+                    field__in=self.search_fields
+                )
+            ]
         return []
 
     def set_search(self):
-        self.search = '_' + '_'.join(list(dict.fromkeys(self.get_search_fields())))
+        self.search = '_' + '_'.join(
+            list(dict.fromkeys(self.get_search_fields()))
+        )
 
     # Log facilities
     def get_log(self, lvl, field=None):
@@ -458,7 +608,11 @@ class Base(models.Model):
 
     @property
     def fields_changed(self):
-        return (field for field in self.fields() if hasattr(self, field) and self.property_change(field))
+        return (
+            field
+            for field in self.fields()
+            if hasattr(self, field) and self.property_change(field)
+        )
 
     def set_create_by(self, user=None):
         if user and self.use_create_by:
@@ -469,7 +623,9 @@ class Base(models.Model):
             self.update_by = f'{user.id}.{user.username}'
 
     def property_change(self, prop):
-        return (not self._unmodified or getattr(self._unmodified, prop) != getattr(self, prop))
+        return not self._unmodified or getattr(
+            self._unmodified, prop
+        ) != getattr(self, prop)
 
     def get_model(self, label, app):
         return get_model(label, app)
@@ -477,6 +633,7 @@ class Base(models.Model):
     """
     Actions
     """
+
     def disable(self, *args, **kwargs):
         self.is_disable = True
         self.save()
@@ -524,7 +681,9 @@ class Base(models.Model):
                 self._logger.debug(f'post_update {type(self)} ({self.pk!s})')
                 self.post_update()
             if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-                self._logger.debug(f'save_model_change_log {type(self)} ({self.pk!s})')
+                self._logger.debug(
+                    f'save_model_change_log {type(self)} ({self.pk!s})'
+                )
                 self.save_model_change_log()
 
     def save(self, *args, **kwargs):

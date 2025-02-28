@@ -8,7 +8,10 @@ class TableDescriptor:
         self.generate_desc()
 
     def as_json(self):
-        return json.dumps([{
-            'name': name,
-            'template': getattr(self.Meta.templates, name),
-        } for name, field in self.form.fields.items()])
+        return json.dumps([
+            {
+                'name': name,
+                'template': getattr(self.Meta.templates, name),
+            }
+            for name, field in self.form.fields.items()
+        ])

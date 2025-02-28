@@ -13,6 +13,7 @@ register = template.Library()
 guardian = False
 if 'guardian' in settings.INSTALLED_APPS:
     from guardian.core import ObjectPermissionChecker
+
     guardian = True
 
 """
@@ -23,7 +24,11 @@ Simple tag
 @register.simple_tag(name='has_perm')
 def has_perm(obj, user, perm):
     if hasattr(obj, 'perm'):
-        return ObjectPermissionChecker(user).has_perm(perm, obj) if guardian else user.has_perm(obj.perm(perm))
+        return (
+            ObjectPermissionChecker(user).has_perm(perm, obj)
+            if guardian
+            else user.has_perm(obj.perm(perm))
+        )
     return False
 
 
@@ -74,7 +79,11 @@ def add_attr(field, attr, value):
 
 @register.simple_tag(name='number_hread')
 def number_hread(number, separator=None):
-    return f'{int(number):,}'.replace(',', separator) if separator else f'{int(number):,}'
+    return (
+        f'{int(number):,}'.replace(',', separator)
+        if separator
+        else f'{int(number):,}'
+    )
 
 
 @register.simple_tag(name='is_type')
@@ -84,7 +93,7 @@ def is_type(data):
 
 @register.simple_tag(name='define')
 def define(val=None):
-  return val
+    return val
 
 
 @register.simple_tag(name='convert_date')
@@ -100,6 +109,7 @@ Filter based templatetag
 @register.simple_tag(name='get_most_used_apps')
 def get_most_used_apps(parser, limit=10):
     from mighty.apps import MightyConfig
+
     apps = []
     for app in MightyConfig.most_used_app:
         bm = get_model(*app.split('.'))()
@@ -135,7 +145,7 @@ def indexkey(dct, key):
 
 @register.filter(name='split')
 def split(value, key):
-  return value.split(key)
+    return value.split(key)
 
 
 @register.filter(name='has_m2m')
@@ -150,7 +160,9 @@ from django.contrib.contenttypes.models import ContentType
 @register.filter(name='contenttype_id')
 def contenttype_id(model):
     try:
-        return ContentType.objects.get(app_label=model._meta.app_label, model=model._meta.model_name).id
+        return ContentType.objects.get(
+            app_label=model._meta.app_label, model=model._meta.model_name
+        ).id
     except ContentType.DoesNotExist:
         return None
 

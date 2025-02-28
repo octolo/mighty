@@ -14,7 +14,8 @@ def TenantAssociation(**kwargs):
             tenant_field = kwargs.get('tenant_field', 'tenant')
 
             group_relations = kwargs.get('group_relations', [])
-            group = models.ForeignKey(conf.ForeignKey.group,
+            group = models.ForeignKey(
+                conf.ForeignKey.group,
                 on_delete=kwargs.get('on_delete', models.CASCADE),
                 related_name=kwargs.get('related_name', 'group_set'),
                 blank=kwargs.get('blank', False),
@@ -22,12 +23,16 @@ def TenantAssociation(**kwargs):
             )
 
             if kwargs.get('user_related'):
-                user = models.ForeignKey(get_user_model(),
+                user = models.ForeignKey(
+                    get_user_model(),
                     related_name=class_name + '_user_related',
-                    on_delete=models.SET_NULL, blank=True, null=True,
+                    on_delete=models.SET_NULL,
+                    blank=True,
+                    null=True,
                 )
             if kwargs.get('roles_related'):
-                roles = models.ManyToManyField(conf.ForeignKey.role,
+                roles = models.ManyToManyField(
+                    conf.ForeignKey.role,
                     related_name=class_name + '_roles_related',
                     blank=True,
                 )
@@ -48,7 +53,10 @@ def TenantAssociation(**kwargs):
                         else:
                             groups.append(getattr(self, rel).id)
                     groups = list(dict.fromkeys(groups))
-                    return bool(not len(groups) or (len(groups) == 1 and groups[0] == self.group.id))
+                    return bool(
+                        not len(groups)
+                        or (len(groups) == 1 and groups[0] == self.group.id)
+                    )
                 return True
 
             def check_group_coherence(self):
@@ -57,7 +65,11 @@ def TenantAssociation(**kwargs):
 
             # User related (direct relation)
             def get_user_related(self):
-                return getattr(self, self.tenant_field) if hasattr(self, self.tenant_field) else None
+                return (
+                    getattr(self, self.tenant_field)
+                    if hasattr(self, self.tenant_field)
+                    else None
+                )
 
             def set_user_related(self):
                 if kwargs.get('user_related') and not self.user:
@@ -80,7 +92,9 @@ def TenantAssociation(**kwargs):
             def tenant_pre_save(self):
                 if self.group:
                     for field in kwargs.get('duplicate_db_charfields', ()):
-                        setattr(self, 'group_' + field, getattr(self.group, field))
+                        setattr(
+                            self, 'group_' + field, getattr(self.group, field)
+                        )
 
             # def save(self, *args, **kwargs):
             #    if not self.group:
@@ -92,17 +106,23 @@ def TenantAssociation(**kwargs):
             #    super().save(*args, **kwargs)
 
         for field in kwargs.get('duplicate_db_charfields', ()):
-            NewClass.add_to_class('group_' + field, models.CharField(max_length=255, blank=True, null=True))
+            NewClass.add_to_class(
+                'group_' + field,
+                models.CharField(max_length=255, blank=True, null=True),
+            )
 
         NewClass.__name__ = obj.__name__
         return NewClass
+
     return decorator
 
 
 def TenantGroup(**kwargs):
     def decorator(obj):
         class NewClass(obj):
-            nbr_tenant = models.PositiveBigIntegerField(default=1, editable=False)
+            nbr_tenant = models.PositiveBigIntegerField(
+                default=1, editable=False
+            )
 
             def set_nbr_tenant(self):
                 if self.pk:
@@ -117,4 +137,5 @@ def TenantGroup(**kwargs):
 
         NewClass.__name__ = obj.__name__
         return NewClass
+
     return decorator

@@ -9,7 +9,9 @@ RoleModel = get_tenant_model(conf.ForeignKey.role)
 
 
 class RoleSerializer(ModelSerializer):
-    group = SlugRelatedField(slug_field='uid', queryset=TenantGroup.objects.all())
+    group = SlugRelatedField(
+        slug_field='uid', queryset=TenantGroup.objects.all()
+    )
 
     class Meta:
         model = RoleModel
@@ -17,9 +19,19 @@ class RoleSerializer(ModelSerializer):
 
 
 class TenantSerializer(ModelSerializer):
-    group = SlugRelatedField(slug_field='uid', queryset=TenantGroup.objects.all())
+    group = SlugRelatedField(
+        slug_field='uid', queryset=TenantGroup.objects.all()
+    )
     roles = RoleSerializer(many=True)
 
     class Meta:
         model = TenantModel
-        fields = ('uid', 'fullname', 'str_group', 'uid_group', 'roles', 'sync', 'group')
+        fields = (
+            'uid',
+            'fullname',
+            'str_group',
+            'uid_group',
+            'roles',
+            'sync',
+            'group',
+        )

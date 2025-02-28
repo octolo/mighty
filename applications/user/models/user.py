@@ -41,33 +41,61 @@ validate_phone = validators.validate_phone
 class User(AbstractUser, Base, Image, AddressNoBase):
     enable_model_change_log = True
     search_fields = fields.search
-    username = models.CharField(_user.username, max_length=254, unique=True, default='WILL_BE_GENERATED')
-    email = models.EmailField(_user.email, blank=True, null=True, db_index=True, validators=[validate_trashmail])
-    phone = models.CharField(_user.phone, blank=True, null=True, db_index=True, max_length=255)
+    username = models.CharField(
+        _user.username, max_length=254, unique=True, default='WILL_BE_GENERATED'
+    )
+    email = models.EmailField(
+        _user.email,
+        blank=True,
+        null=True,
+        db_index=True,
+        validators=[validate_trashmail],
+    )
+    phone = models.CharField(
+        _user.phone, blank=True, null=True, db_index=True, max_length=255
+    )
 
     @staticmethod
     def validate_unique_email(email, pk=None):
-        if not email: return email
+        if not email:
+            return email
         UserModel = get_user_model()
         qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
-        if qs.filter(Q(email__iexact=email) | Q(**{conf.ForeignKey.email_related_name + '__email__iexact': email})).exists():
+        if qs.filter(
+            Q(email__iexact=email)
+            | Q(**{
+                conf.ForeignKey.email_related_name + '__email__iexact': email
+            })
+        ).exists():
             raise ValidationError(_user.error_email_already)
         return email
 
     @staticmethod
     def validate_unique_phone(phone, pk=None):
-        if not phone: return phone
+        if not phone:
+            return phone
         UserModel = get_user_model()
         qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
-        if qs.filter(Q(phone__iexact=phone) | Q(user_phone__phone__iexact=phone)).exists():
+        if qs.filter(
+            Q(phone__iexact=phone) | Q(user_phone__phone__iexact=phone)
+        ).exists():
             raise ValidationError(_user.error_phone_already)
         return phone
 
-    method = models.CharField(_user.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
-    method_backend = models.CharField(_user.method, max_length=255, blank=True, null=True)
+    method = models.CharField(
+        _user.method,
+        choices=choices.METHOD,
+        default=choices.METHOD_FRONTEND,
+        max_length=15,
+    )
+    method_backend = models.CharField(
+        _user.method, max_length=255, blank=True, null=True
+    )
     gender = fields.GenderField(blank=True, null=True)
     style = models.CharField(max_length=255, default='clear')
-    channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
+    channel = models.CharField(
+        max_length=255, editable=False, blank=True, null=True
+    )
     first_connection = models.DateTimeField(blank=True, null=True)
     sentry_replay = models.BooleanField(default=False)
 
@@ -77,34 +105,82 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         cgv = models.BooleanField(_user.cgu, default=False)
 
     if conf.ForeignKey.optional:
-        optional = models.ForeignKey(conf.ForeignKey.optional, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional_user')
+        optional = models.ForeignKey(
+            conf.ForeignKey.optional,
+            on_delete=models.SET_NULL,
+            blank=True,
+            null=True,
+            related_name='optional_user',
+        )
     if conf.ForeignKey.optional2:
-        optional = models.ForeignKey(conf.ForeignKey.optional2, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional2_user')
+        optional = models.ForeignKey(
+            conf.ForeignKey.optional2,
+            on_delete=models.SET_NULL,
+            blank=True,
+            null=True,
+            related_name='optional2_user',
+        )
     if conf.ForeignKey.optional3:
-        optional = models.ForeignKey(conf.ForeignKey.optional3, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional3_user')
+        optional = models.ForeignKey(
+            conf.ForeignKey.optional3,
+            on_delete=models.SET_NULL,
+            blank=True,
+            null=True,
+            related_name='optional3_user',
+        )
     if conf.ForeignKey.optional4:
-        optional = models.ForeignKey(conf.ForeignKey.optional4, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional4_user')
+        optional = models.ForeignKey(
+            conf.ForeignKey.optional4,
+            on_delete=models.SET_NULL,
+            blank=True,
+            null=True,
+            related_name='optional4_user',
+        )
     if conf.ForeignKey.optional5:
-        optional = models.ForeignKey(conf.ForeignKey.optional5, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional5_user')
+        optional = models.ForeignKey(
+            conf.ForeignKey.optional5,
+            on_delete=models.SET_NULL,
+            blank=True,
+            null=True,
+            related_name='optional5_user',
+        )
 
     # missives = GenericRelation("mighty.Missive")
 
     if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
-        nationalities = models.ManyToManyField(conf.ForeignKey.nationalities, blank=True)
-        language = models.ForeignKey(conf.ForeignKey.nationalities, on_delete=models.SET_NULL, blank=True, null=True, related_name='language_user')
+        nationalities = models.ManyToManyField(
+            conf.ForeignKey.nationalities, blank=True
+        )
+        language = models.ForeignKey(
+            conf.ForeignKey.nationalities,
+            on_delete=models.SET_NULL,
+            blank=True,
+            null=True,
+            related_name='language_user',
+        )
 
         @property
         def language_pref(self):
             return self.language.alpha2.lower() if self.language else None
 
     if 'mighty.applications.tenant' in settings.INSTALLED_APPS:
-        current_tenant = models.ForeignKey(TenantConfig.ForeignKey.tenant, on_delete=models.SET_NULL, blank=True, null=True, related_name='current_tenant')
+        current_tenant = models.ForeignKey(
+            TenantConfig.ForeignKey.tenant,
+            on_delete=models.SET_NULL,
+            blank=True,
+            null=True,
+            related_name='current_tenant',
+        )
 
         @property
         def all_nationalities(self):
             return {
-                getattr(nat, fields_nationality[0]): {field: getattr(nat, field) for field in fields_nationality[1:]}
-                for nat in self.nationalities.all()}
+                getattr(nat, fields_nationality[0]): {
+                    field: getattr(nat, field)
+                    for field in fields_nationality[1:]
+                }
+                for nat in self.nationalities.all()
+            }
 
     class Meta(Base.Meta):
         db_table = 'auth_user'
@@ -128,7 +204,8 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         self.save()
 
     @property
-    def image_url(self): return self.image.url if self.image else static('img/avatar.svg')
+    def image_url(self):
+        return self.image.url if self.image else static('img/avatar.svg')
 
     @property
     def user(self):
@@ -136,7 +213,11 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     @property
     def fullname(self):
-        return f'{self.first_name} {self.last_name}' if all([self.last_name, self.first_name]) else ''
+        return (
+            f'{self.first_name} {self.last_name}'
+            if all([self.last_name, self.first_name])
+            else ''
+        )
 
     @property
     def logname(self):
@@ -144,13 +225,15 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     @property
     def representation(self):
-        if self.fullname: return self.fullname
-        if self.username: return self.username
+        if self.fullname:
+            return self.fullname
+        if self.username:
+            return self.username
         return self.uid
 
     @property
     def is_first_login(self):
-        return (self.first_connection == self.last_login)
+        return self.first_connection == self.last_login
 
     def __str__(self):
         if self.last_name and self.first_name:
@@ -161,16 +244,31 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         return super().has_perm(perm, obj=None)
 
     def get_client_ip(self, request):
-        ip = request.META.get('HTTP_X_FORWARDED_FOR').split(',')[0] if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR')
+        ip = (
+            request.META.get('HTTP_X_FORWARDED_FOR').split(',')[0]
+            if request.META.get('HTTP_X_FORWARDED_FOR')
+            else request.META.get('REMOTE_ADDR')
+        )
         if ip is not None:
-            internetprotocol = ContentType.objects.get(app_label='mighty', model='internetprotocol').model_class()
-            _obj, _created = internetprotocol.objects.get_or_create(ip=ip, user=self)
+            internetprotocol = ContentType.objects.get(
+                app_label='mighty', model='internetprotocol'
+            ).model_class()
+            _obj, _created = internetprotocol.objects.get_or_create(
+                ip=ip, user=self
+            )
             logger.info(f'connected from ip: {ip}', extra={'user': self})
 
     def get_user_agent(self, request):
-        useragent = ContentType.objects.get(app_label='mighty', model='useragent').model_class()
-        _obj, _created = useragent.objects.get_or_create(useragent=request.META['HTTP_USER_AGENT'], user=self)
-        logger.info('usereagent: {}'.format(request.META['HTTP_USER_AGENT']), extra={'user': self})
+        useragent = ContentType.objects.get(
+            app_label='mighty', model='useragent'
+        ).model_class()
+        _obj, _created = useragent.objects.get_or_create(
+            useragent=request.META['HTTP_USER_AGENT'], user=self
+        )
+        logger.info(
+            'usereagent: {}'.format(request.META['HTTP_USER_AGENT']),
+            extra={'user': self},
+        )
 
     def get_emails(self, flat=True):
         email_manager = getattr(self, conf.ForeignKey.email_related_name_attr)
@@ -209,13 +307,18 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     @property
     def slack_notify(self):
         from mighty.applications.user.notify.slack import SlackUser
+
         return SlackUser(self)
 
     def pre_save(self):
         logger.info('UserModel: pre_save')
 
-        if self.username == 'WILL_BE_GENERATED' or not re.match(USERNAME_REGEX, self.username):
-            self.username = username_generator_v2(self.first_name, self.last_name, self.email)
+        if self.username == 'WILL_BE_GENERATED' or not re.match(
+            USERNAME_REGEX, self.username
+        ):
+            self.username = username_generator_v2(
+                self.first_name, self.last_name, self.email
+            )
 
         # Handle umique email and phone
         self.validate_unique_email(self.email, self.pk)

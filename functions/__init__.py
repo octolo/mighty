@@ -126,11 +126,11 @@ List of default tempates
 
 def tpl(a, n, t):
     return [
-    f'{a}/{n}/{t}.html',
-    f'{n}/{t}.html',
-    f'{a}/{t}.html',
-    f'{t}.html',
-]
+        f'{a}/{n}/{t}.html',
+        f'{n}/{t}.html',
+        f'{a}/{t}.html',
+        f'{t}.html',
+    ]
 
 
 """
@@ -140,10 +140,10 @@ List of default templates AJAX
 
 def tplx(a, n, t):
     return [
-    f'{a}/{n}/ajax/{t}.html',
-    f'{n}/ajax/{t}.html',
-    f'ajax/{t}.html',
-]
+        f'{a}/{n}/ajax/{t}.html',
+        f'{n}/ajax/{t}.html',
+        f'ajax/{t}.html',
+    ]
 
 
 """
@@ -169,9 +169,7 @@ Return True/False if input not in search list
 def test(input_str=None, search=conf.Test.search, *args, **kwargs):
     if 'positive' in kwargs and input_str in kwargs['positive']:
         return True
-    return (
-        str(input_str).strip().lower().replace(' ', '') not in search
-    )
+    return str(input_str).strip().lower().replace(' ', '') not in search
 
 
 def mask(inpt, start=2, limit=10):
@@ -214,6 +212,7 @@ def key(size=32, generator=string.hexdigits):
 def hex_color_rand():
     def r():
         return random.randint(0, 255)
+
     return f'#{r():02X}{r():02X}{r():02X}'
 
 

@@ -31,4 +31,8 @@ class Command(BaseCommand):
 
     def do(self):
         if self.service:
-            print(render_to_string(f'services/{self.service}.service', self.context))
+            print(
+                render_to_string(
+                    f'services/{self.service}.service', self.context
+                )
+            )

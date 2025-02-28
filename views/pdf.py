@@ -1,4 +1,3 @@
-
 import json
 import os
 import tempfile
@@ -42,9 +41,19 @@ class PDFView(DetailView):
 
     def build_header_html(self):
         if not self.header_html:
-            with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as header_html:
-                header = self.get_header() if self.has_option('header_enable') else ''
-                header_html.write(Template(header).render(self.get_context_data()).encode('utf-8'))
+            with tempfile.NamedTemporaryFile(
+                suffix='.html', delete=False
+            ) as header_html:
+                header = (
+                    self.get_header()
+                    if self.has_option('header_enable')
+                    else ''
+                )
+                header_html.write(
+                    Template(header)
+                    .render(self.get_context_data())
+                    .encode('utf-8')
+                )
             self.header_html = header_html
         return self.header_html
 
@@ -53,14 +62,26 @@ class PDFView(DetailView):
 
     def build_footer_html(self):
         if not self.footer_html:
-            with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as footer_html:
-                footer = self.get_footer() if self.has_option('footer_enable') else ''
-                footer_html.write(Template(footer).render(self.get_context_data()).encode('utf-8'))
+            with tempfile.NamedTemporaryFile(
+                suffix='.html', delete=False
+            ) as footer_html:
+                footer = (
+                    self.get_footer()
+                    if self.has_option('footer_enable')
+                    else ''
+                )
+                footer_html.write(
+                    Template(footer)
+                    .render(self.get_context_data())
+                    .encode('utf-8')
+                )
             self.footer_html = footer_html
         return self.footer_html
 
     def get_css_print(self):
-        return os.path.join(setting('STATIC_ROOT', '/static'), 'css', 'print.css')
+        return os.path.join(
+            setting('STATIC_ROOT', '/static'), 'css', 'print.css'
+        )
 
     def get_context_data(self, **kwargs):
         return Context({'obj': self.get_object()})
@@ -77,7 +98,9 @@ class PDFView(DetailView):
             '--footer-html': self.build_footer_html().name,
         })
 
-        self.options.update({'orientation': self.get_config().get('orientation', 'Portrait')})
+        self.options.update({
+            'orientation': self.get_config().get('orientation', 'Portrait')
+        })
         return self.options
 
     def get_pdf_name(self):
@@ -88,8 +111,14 @@ class PDFView(DetailView):
             config = {}
         self.config_override = config
         if not self.tmp_pdf:
-            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
-                pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.options)
+            with tempfile.NamedTemporaryFile(
+                suffix='.pdf', delete=False
+            ) as tmp_pdf:
+                pdfkit.from_string(
+                    self.get_template(context),
+                    tmp_pdf.name,
+                    options=self.options,
+                )
                 self.tmp_pdf = tmp_pdf
         return self.tmp_pdf
 
@@ -110,12 +139,18 @@ class PDFView(DetailView):
             os.remove(self.tmp_pdf.name)
 
     def render_to_word(self, context):
-        html_content = Template(self.post_data.get('raw_template')).render(context)
+        html_content = Template(self.post_data.get('raw_template')).render(
+            context
+        )
         # Créer un fichier temporaire pour stocker le fichier DOCX
-        with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as tmp_file:
+        with tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False
+        ) as tmp_file:
             output_path = tmp_file.name
             # Utiliser pypandoc pour convertir le HTML en DOCX et écrire dans le fichier temporaire
-            pypandoc.convert_text(html_content, 'docx', format='html', outputfile=output_path)
+            pypandoc.convert_text(
+                html_content, 'docx', format='html', outputfile=output_path
+            )
         # Ouvrir le fichier temporaire pour le lire
         with open(output_path, 'rb') as docx_file:
             # Lire le contenu du fichier DOCX
@@ -123,8 +158,13 @@ class PDFView(DetailView):
         # Supprimer le fichier temporaire après lecture
         os.remove(output_path)
         # Préparer la réponse HTTP avec le fichier DOCX
-        response = HttpResponse(docx_content, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(self.get_pdf_name().replace('pdf', 'docx'))
+        response = HttpResponse(
+            docx_content,
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        )
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+            self.get_pdf_name().replace('pdf', 'docx')
+        )
         return response
 
     def render_to_response(self, context, **response_kwargs):
@@ -134,12 +174,24 @@ class PDFView(DetailView):
         if self.post_data.get('action', False) == 'word':
             return self.render_to_word(context)
         if self.in_browser:
-            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=True) as tmp_pdf:
-                pdf = pdfkit.from_string(self.get_template(context), tmp_pdf.name, options=self.options)
+            with tempfile.NamedTemporaryFile(
+                suffix='.pdf', delete=True
+            ) as tmp_pdf:
+                pdf = pdfkit.from_string(
+                    self.get_template(context),
+                    tmp_pdf.name,
+                    options=self.options,
+                )
                 self.clean_tmp()
-                return FileResponse(open(tmp_pdf.name, 'rb'), filename=self.get_pdf_name())
-        pdf = pdfkit.from_string(self.get_template(context), False, options=self.options)
+                return FileResponse(
+                    open(tmp_pdf.name, 'rb'), filename=self.get_pdf_name()
+                )
+        pdf = pdfkit.from_string(
+            self.get_template(context), False, options=self.options
+        )
         response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{self.get_pdf_name()}"'
+        response['Content-Disposition'] = (
+            f'attachment; filename="{self.get_pdf_name()}"'
+        )
         self.clean_tmp()
         return response

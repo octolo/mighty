@@ -19,7 +19,9 @@ class AuthBasicBackend(ModelBackend):
         except UserModel.DoesNotExist:
             UserModel().set_password(password)
         else:
-            if user.check_password(password) and self.user_can_authenticate(user):
+            if user.check_password(password) and self.user_can_authenticate(
+                user
+            ):
                 if hasattr(request, 'META'):
                     user.get_client_ip(request)
                     user.get_user_agent(request)

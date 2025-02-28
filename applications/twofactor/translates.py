@@ -11,16 +11,24 @@ STATUS_RECEIVED = _('received')
 STATUS_ERROR = _('error')
 
 search = _("""phone number, email or username""")
-invalid_search = _('please enter a correct email, phone or username. Note that both fields may be case-sensitive.')
-invalid_login = _('please enter a correct %s and password. Note that both fields may be case-sensitive.')
+invalid_search = _(
+    'please enter a correct email, phone or username. Note that both fields may be case-sensitive.'
+)
+invalid_login = _(
+    'please enter a correct %s and password. Note that both fields may be case-sensitive.'
+)
 inactive = _('this account is inactive.')
 cant_send = _('unable to send message')
 method_not_allowed = _('This authentication method is not allowed')
 cant_found = _("Can't found user")
 
 tpl_subject = _('%(domain)s - Code de connexion')
-tpl_html = _('%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s')
-tpl_preheader = _('Afin de vous authentifier et accéder à votre espace  %(domain)s, veuillez copier le code suivant : %(code)s')
+tpl_html = _(
+    '%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s'
+)
+tpl_preheader = _(
+    'Afin de vous authentifier et accéder à votre espace  %(domain)s, veuillez copier le code suivant : %(code)s'
+)
 tpl_txt = _("""%(domain)s  - Code de connexion
 Cher utilisateur,
 Vous venez de demander un code d'authentification afin de vous connecter sur %(domain)s.

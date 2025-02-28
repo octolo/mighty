@@ -1,4 +1,3 @@
-
 import functools
 import operator
 import re
@@ -12,16 +11,20 @@ from django.urls import URLPattern, URLResolver  # type: ignore
 from django.utils import translation
 
 
-class RegexURLPattern: pass
+class RegexURLPattern:
+    pass
 
 
-class RegexURLResolver: pass
+class RegexURLResolver:
+    pass
 
 
-class LocaleRegexURLResolver: pass
+class LocaleRegexURLResolver:
+    pass
 
 
-def describe_pattern(p): return str(p.pattern)
+def describe_pattern(p):
+    return str(p.pattern)
 
 
 def _dummy_style_func(msg):
@@ -30,7 +33,15 @@ def _dummy_style_func(msg):
 
 def no_style():
     style = color.no_style()
-    for role in ('INFO', 'WARN', 'BOLD', 'URL', 'MODULE', 'MODULE_NAME', 'URL_NAME'):
+    for role in (
+        'INFO',
+        'WARN',
+        'BOLD',
+        'URL',
+        'MODULE',
+        'MODULE_NAME',
+        'URL_NAME',
+    ):
         setattr(style, role, _dummy_style_func)
     return style
 
@@ -41,7 +52,7 @@ FMTR = {
     'aligned': '{url},{module},{url_name},{decorator}',
     'verbose': '{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n',
     'json': '',
-    'pretty-json': ''
+    'pretty-json': '',
 }
 
 
@@ -59,9 +70,13 @@ class ShowUrls:
         language = opt_language
         if language is not None:
             translation.activate(language)
-            self.LANGUAGES = [(code, name) for code, name in getattr(settings, 'LANGUAGES', []) if code == language]
+            self.LANGUAGES = [
+                (code, name)
+                for code, name in getattr(settings, 'LANGUAGES', [])
+                if code == language
+            ]
         else:
-            self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None), ))
+            self.LANGUAGES = getattr(settings, 'LANGUAGES', ((None, None),))
 
         decorator = opt_decorator
         if not decorator:
@@ -84,18 +99,25 @@ class ShowUrls:
 
         views = []
         if not hasattr(settings, urlconf):
-            raise CommandError(f'Settings module {settings} does not have the attribute {urlconf}.')
+            raise CommandError(
+                f'Settings module {settings} does not have the attribute {urlconf}.'
+            )
 
         try:
             urlconf = __import__(getattr(settings, urlconf), {}, {}, [''])
         except Exception as e:
             if options['traceback']:
                 import traceback
-                traceback.print_exc()
-            raise CommandError(f'Error occurred while trying to load {getattr(settings, urlconf)}: {e!s}')
 
-        view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
-        for (func, regex, url_name) in view_functions:
+                traceback.print_exc()
+            raise CommandError(
+                f'Error occurred while trying to load {getattr(settings, urlconf)}: {e!s}'
+            )
+
+        view_functions = self.extract_views_from_urlpatterns(
+            urlconf.urlpatterns
+        )
+        for func, regex, url_name in view_functions:
             if hasattr(func, '__globals__'):
                 func_globals = func.__globals__
             elif hasattr(func, 'func_globals'):
@@ -123,10 +145,20 @@ class ShowUrls:
             url = simplify_regex(regex)
             decorator = ', '.join(decorators)
 
-            views.append({'url': str(url), 'module': str(module), 'name': str(url_name)})
+            views.append({
+                'url': str(url),
+                'module': str(module),
+                'name': str(url_name),
+            })
         if options.get('search'):
-            views = [d for d in views if all(word in d['module'] or word in d['url'] or word in d['name']
-                for word in options.get('search').split(' '))]
+            views = [
+                d
+                for d in views
+                if all(
+                    word in d['module'] or word in d['url'] or word in d['name']
+                    for word in options.get('search').split(' ')
+                )
+            ]
         views = sorted(views, key=operator.itemgetter('url'))
         # if not opt_unsorted and format_style != 'json':
 
@@ -165,7 +197,9 @@ class ShowUrls:
 
         return list(views)
 
-    def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None):
+    def extract_views_from_urlpatterns(
+        self, urlpatterns, base='', namespace=None
+    ):
         """
         Return a list of views from a list of urlpatterns.
 
@@ -193,17 +227,31 @@ class ShowUrls:
                 if namespace and p.namespace:
                     namespace_ = f'{namespace}:{p.namespace}'
                 else:
-                    namespace_ = (p.namespace or namespace)
+                    namespace_ = p.namespace or namespace
                 pattern = describe_pattern(p)
                 if isinstance(p, LocaleRegexURLResolver):
                     for language in self.LANGUAGES:
                         with translation.override(language[0]):
-                            views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=namespace_))
+                            views.extend(
+                                self.extract_views_from_urlpatterns(
+                                    patterns,
+                                    base + pattern,
+                                    namespace=namespace_,
+                                )
+                            )
                 else:
-                    views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=namespace_))
+                    views.extend(
+                        self.extract_views_from_urlpatterns(
+                            patterns, base + pattern, namespace=namespace_
+                        )
+                    )
             elif hasattr(p, '_get_callback'):
                 try:
-                    views.append((p._get_callback(), base + describe_pattern(p), p.name))
+                    views.append((
+                        p._get_callback(),
+                        base + describe_pattern(p),
+                        p.name,
+                    ))
                 except ViewDoesNotExist:
                     continue
             elif hasattr(p, 'url_patterns') or hasattr(p, '_get_url_patterns'):
@@ -211,7 +259,15 @@ class ShowUrls:
                     patterns = p.url_patterns
                 except ImportError:
                     continue
-                views.extend(self.extract_views_from_urlpatterns(patterns, base + describe_pattern(p), namespace=namespace))
+                views.extend(
+                    self.extract_views_from_urlpatterns(
+                        patterns,
+                        base + describe_pattern(p),
+                        namespace=namespace,
+                    )
+                )
             else:
-                raise TypeError(f'{p} does not appear to be a urlpattern object')
+                raise TypeError(
+                    f'{p} does not appear to be a urlpattern object'
+                )
         return views

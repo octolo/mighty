@@ -12,7 +12,9 @@ def maskedSerializer(except_mask=(), full_mask=()):
             mask_enable = False
 
             def mask(self, field, value):
-                return mask(value, 0) if field in self.full_mask else mask(value)
+                return (
+                    mask(value, 0) if field in self.full_mask else mask(value)
+                )
 
             def mask_dict(self, field, value):
                 if isinstance(value, bool | type(None)):
@@ -27,20 +29,30 @@ def maskedSerializer(except_mask=(), full_mask=()):
                 if isinstance(value, bool | type(None)):
                     return (field, False)
                 if isinstance(value, dict):
-                    return (field, {f: self.mask_dict(f, v) for f, v in value.items()})
+                    return (
+                        field,
+                        {f: self.mask_dict(f, v) for f, v in value.items()},
+                    )
                 if isinstance(value, list | OrderedDict):
                     return (field, value)
                 return (field, self.mask(field, value))
 
             def to_representation(self, instance):
-                if hasattr(self.parent, 'context') and hasattr(self._context, 'mask_enable'):
-                    self._context['mask_enable'] = self.parent.context['mask_enable']
+                if hasattr(self.parent, 'context') and hasattr(
+                    self._context, 'mask_enable'
+                ):
+                    self._context['mask_enable'] = self.parent.context[
+                        'mask_enable'
+                    ]
                 ret = super().to_representation(instance)
                 if self._context.get('mask_enable', False):
-                    return OrderedDict([self.mask_field(field, ret[field]) for field in ret])
+                    return OrderedDict([
+                        self.mask_field(field, ret[field]) for field in ret
+                    ])
                 return ret
 
         return Masked
+
     return deco
 
 
@@ -67,4 +79,5 @@ def maskedView(masked_for=()):
                 return context
 
         return Masked
+
     return deco

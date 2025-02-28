@@ -18,11 +18,17 @@ class FoxidView(ModelView):
 
     @property
     def manager(self):
-        self.cache_manager = self.cache_manager or FiltersManager(flts=self.filters, mandatories=self.mandatories)
+        self.cache_manager = self.cache_manager or FiltersManager(
+            flts=self.filters, mandatories=self.mandatories
+        )
         return self.cache_manager
 
     def get_object(self):
-        return self.foxid(super().get_queryset()).get(*self.manager.params(self.request))
+        return self.foxid(super().get_queryset()).get(
+            *self.manager.params(self.request)
+        )
 
     def get_queryset(self, queryset=None):
-        return self.foxid(super().get_queryset()).filter(*self.manager.params(self.request))
+        return self.foxid(super().get_queryset()).filter(
+            *self.manager.params(self.request)
+        )

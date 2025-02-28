@@ -52,7 +52,11 @@ class NotifyBackend(Backend):
 
     @property
     def help_data(self):
-        list_data = [f'{data}: {getattr(self.record, data)}' for data in self.data_ok if hasattr(self.record, data)]
+        list_data = [
+            f'{data}: {getattr(self.record, data)}'
+            for data in self.data_ok
+            if hasattr(self.record, data)
+        ]
 
         list_data.append('file error: ' + str(self.pathname))
         if hasattr(self.record, 'request'):

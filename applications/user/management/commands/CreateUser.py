@@ -41,7 +41,7 @@ class Command(CSVModelCommand):
             'is_staff': bool(row.get('is_staff')),
             'first_name': row.get('firstname'),
             'last_name': row.get('lastname'),
-            'username': self.get_username(row)
+            'username': self.get_username(row),
         }
         self.create_user(data)
 
@@ -49,7 +49,9 @@ class Command(CSVModelCommand):
         if data.get('username'):
             return data['username']
         if data.get('firstname') and data.get('lastname'):
-            return username_generator_v2(first_name=data.get('firstname'), last_name=data.get('lastname'))
+            return username_generator_v2(
+                first_name=data.get('firstname'), last_name=data.get('lastname')
+            )
         return username_generator_v2(email=data.get('email'))
 
     def create_user_arg(self):
@@ -60,7 +62,8 @@ class Command(CSVModelCommand):
             'is_staff': self.is_staff,
             'first_name': self.firstname,
             'last_name': self.lastname,
-            'username': self.username or username_generator_v2(email=self.email)
+            'username': self.username
+            or username_generator_v2(email=self.email),
         }
         self.create_user(data)
 

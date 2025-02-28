@@ -7,6 +7,7 @@ generate a unique code from a list of fields.
 (get_code) get the code generate
 (set_code) set the code generate
 """
+
 import re
 
 from django.db import models
@@ -15,7 +16,9 @@ from mighty.functions import generate_code, make_searchable
 
 
 class Code(models.Model):
-    code = models.CharField(max_length=50, blank=True, null=True, editable=False)
+    code = models.CharField(
+        max_length=50, blank=True, null=True, editable=False
+    )
     model_activate_code = True
 
     class Meta:
@@ -47,7 +50,15 @@ class BasedFields(Code):
         abstract = True
 
     def get_code(self):
-        fields = [getattr(self, field) for field in self.code_fields if hasattr(self, field)]
-        code = ''.join([field[0] for field in fields if re.match(re.compile(r'[a-zA-Z0-9]+'), field)])
+        fields = [
+            getattr(self, field)
+            for field in self.code_fields
+            if hasattr(self, field)
+        ]
+        code = ''.join([
+            field[0]
+            for field in fields
+            if re.match(re.compile(r'[a-zA-Z0-9]+'), field)
+        ])
         code = make_searchable(code).upper()
         return generate_code(self, code=code, rule=self.unique_rule)

@@ -24,6 +24,7 @@ class ProfileBaseView:
         if newlang != user.language_pref:
             try:
                 from mighty.models import Nationality
+
                 newlang = Nationality.objects.get(alpha2__icontains=newlang)
                 user.language = newlang
                 user.save()
@@ -38,7 +39,9 @@ class ProfileBaseView:
             'email': user.email,
             'phone': user.phone,
         }
-        user_data.update({field: getattr(user, field) for field in fields.profile})
+        user_data.update({
+            field: getattr(user, field) for field in fields.profile
+        })
         if hasattr(user, 'current_tenant') and user.current_tenant:
             user_data.update({'current_tenant': user.current_tenant.uid})
         return user_data

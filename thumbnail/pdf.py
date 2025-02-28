@@ -1,4 +1,3 @@
-
 import subprocess
 
 from mighty.thumbnail.thumbnail import ThumbnailBackend
@@ -38,10 +37,13 @@ class ThumbnailBackend(ThumbnailBackend):
 
     @property
     def base64(self):
-        process = subprocess.Popen([self.command],
+        process = subprocess.Popen(
+            [self.command],
             shell=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE,
+        )
         stdout, stderr = process.communicate()
-        if not stderr: return stdout.decode()
+        if not stderr:
+            return stdout.decode()
         raise Exception(stderr)

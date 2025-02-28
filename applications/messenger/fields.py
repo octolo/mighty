@@ -23,8 +23,7 @@ missive = (
     'msg_id',
     'partner_id',
     'trace',
-    'code_error'
-    'price_config',
+    'code_errorprice_config',
     'price_info',
 )
 

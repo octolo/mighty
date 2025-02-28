@@ -28,7 +28,9 @@ class TableDescriptable:
         self.request = requeslt
         self.fields = copy.deepcopy(self.base_fields)
         self._bound_fields_cache = {}
-        self.order_fields(self.field_order if field_order is None else field_order)
+        self.order_fields(
+            self.field_order if field_order is None else field_order
+        )
 
     def order_fields(self, field_order):
         if field_order is None:
@@ -61,7 +63,7 @@ class TableModelDescriptor(TableDescriptable):
                 raise ImproperlyConfigured(
                     "Creating a ModelForm without either the 'fields' attribute "
                     f"or the 'exclude' attribute is prohibited; form {name} "
-                    "needs updating."
+                    'needs updating.'
                 )
             if opts.fields == ALL_FIELDS:
                 opts.fields = None
@@ -80,7 +82,9 @@ class TableModelDescriptor(TableDescriptable):
             )
 
             none_model_fields = {k for k, v in fields.items() if not v}
-            missing_fields = none_model_fields.difference(new_class.declared_fields)
+            missing_fields = none_model_fields.difference(
+                new_class.declared_fields
+            )
             if missing_fields:
                 message = 'Unknown field(s) (%s) specified for %s'
                 message %= (', '.join(missing_fields), opts.model.__name__)

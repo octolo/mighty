@@ -20,13 +20,19 @@ logger = logging.getLogger(__name__)
 
 
 def send_missive(missive):
-    for backend, _backend_path in get_backends([missive.backend], return_tuples=True, path_extend='.MissiveBackend', missive=missive):
+    for backend, _backend_path in get_backends(
+        [missive.backend],
+        return_tuples=True,
+        path_extend='.MissiveBackend',
+        missive=missive,
+    ):
         return backend.send()
     return False
 
 
 def send_missive_type(**kwargs):
     from mighty.models import Missive
+
     logger.debug(kwargs)
     missive = Missive(
         header_html=kwargs.get('header_html'),
@@ -68,7 +74,11 @@ def send_sms(**kwargs):
 
 
 def send_postal(ar=False, **kwargs):
-    return send_missive_type(**kwargs, mode=MODE_POSTALAR if ar else MODE_POSTAL, txt='empty_for_postal')
+    return send_missive_type(
+        **kwargs,
+        mode=MODE_POSTALAR if ar else MODE_POSTAL,
+        txt='empty_for_postal',
+    )
 
 
 # ** kwargs:
@@ -85,36 +95,70 @@ def send_postal(ar=False, **kwargs):
 # notify("sujet de la notification", model.get_content_type(), model.id, mode="email", target="contact@domain.com", txt="mon text", html="mon text html")
 def notify(subject, content_type, object_id, **kwargs):
     from mighty.models import Notification
-    notif = Notification(**kwargs, subject=subject, content_type=content_type, object_id=object_id)
+
+    notif = Notification(
+        **kwargs,
+        subject=subject,
+        content_type=content_type,
+        object_id=object_id,
+    )
     notif.save()
 
 
 def missive_backend_postal():
-    return settings.MISSIVE_BACKEND_POSTAL if hasattr(settings, 'MISSIVE_BACKEND_POSTAL') else conf.missive_backend
+    return (
+        settings.MISSIVE_BACKEND_POSTAL
+        if hasattr(settings, 'MISSIVE_BACKEND_POSTAL')
+        else conf.missive_backend
+    )
 
 
 def missive_backend_postalar():
-    return settings.MISSIVE_BACKEND_POSTALAR if hasattr(settings, 'MISSIVE_BACKEND_POSTALAR') else conf.missive_backend
+    return (
+        settings.MISSIVE_BACKEND_POSTALAR
+        if hasattr(settings, 'MISSIVE_BACKEND_POSTALAR')
+        else conf.missive_backend
+    )
 
 
 def missive_backend_email():
-    return settings.MISSIVE_BACKEND_EMAIL if hasattr(settings, 'MISSIVE_BACKEND_EMAIL') else conf.missive_backend
+    return (
+        settings.MISSIVE_BACKEND_EMAIL
+        if hasattr(settings, 'MISSIVE_BACKEND_EMAIL')
+        else conf.missive_backend
+    )
 
 
 def missive_backend_emailar():
-    return settings.MISSIVE_BACKEND_EMAILAR if hasattr(settings, 'MISSIVE_BACKEND_EMAILAR') else conf.missive_backend
+    return (
+        settings.MISSIVE_BACKEND_EMAILAR
+        if hasattr(settings, 'MISSIVE_BACKEND_EMAILAR')
+        else conf.missive_backend
+    )
 
 
 def missive_backend_sms():
-    return settings.MISSIVE_BACKEND_SMS if hasattr(settings, 'MISSIVE_BACKEND_SMS') else conf.missive_backend
+    return (
+        settings.MISSIVE_BACKEND_SMS
+        if hasattr(settings, 'MISSIVE_BACKEND_SMS')
+        else conf.missive_backend
+    )
 
 
 def missive_backend_web():
-    return settings.MISSIVE_BACKEND_WEB if hasattr(settings, 'MISSIVE_BACKEND_WEB') else conf.missive_backend
+    return (
+        settings.MISSIVE_BACKEND_WEB
+        if hasattr(settings, 'MISSIVE_BACKEND_WEB')
+        else conf.missive_backend
+    )
 
 
 def missive_backend_app():
-    return settings.MISSIVE_BACKEND_APP if hasattr(settings, 'MISSIVE_BACKEND_APP') else conf.missive_backend
+    return (
+        settings.MISSIVE_BACKEND_APP
+        if hasattr(settings, 'MISSIVE_BACKEND_APP')
+        else conf.missive_backend
+    )
 
 
 def notify_slack(hookname, **kwargs):
@@ -135,7 +179,10 @@ def notify_slack(hookname, **kwargs):
 def notify_discord(hookname, **kwargs):
     hook = False
     if getattr(settings, 'DISCORD_NOTIFY', False):
-        if hasattr(settings, 'DISCORD_HOOK') and hookname in settings.DISCORD_HOOK:
+        if (
+            hasattr(settings, 'DISCORD_HOOK')
+            and hookname in settings.DISCORD_HOOK
+        ):
             hook = settings.DISCORD_HOOK[hookname]
     if hook:
         data = {}
@@ -159,13 +206,17 @@ def generate_event_url(date, event, service=None):
 
     def svg_to_base64(service):
         from django.contrib.staticfiles.finders import find
+
         svg = find(f'logo/{service}_simple.svg')
         with open(svg, 'rb') as image_file:
             return base64.b64encode(image_file.read()).decode()
 
     url = 'https://calndr.link/d/event/?service=%s&start=%s&title=%s'
-    return [{
-        'name': s,
-        'link': url % (s, str(date)[:16], event),
-        'b64img': svg_to_base64(s),
-    } for s in service]
+    return [
+        {
+            'name': s,
+            'link': url % (s, str(date)[:16], event),
+            'b64img': svg_to_base64(s),
+        }
+        for s in service
+    ]

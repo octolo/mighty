@@ -34,7 +34,11 @@ class Command(ModelBaseCommand):
         with open(self.json, encoding=self.encoding) as json_file:
             languages = json.load(json_file)
             for lang, translates in languages.items():
-                nat = Nationality.objects.get(alpha2__icontains=lang.split('_')[-1])
-                td, _status = TranslateDict.objects.get_or_create(language=nat, precision=lang, translator=tr)
+                nat = Nationality.objects.get(
+                    alpha2__icontains=lang.split('_')[-1]
+                )
+                td, _status = TranslateDict.objects.get_or_create(
+                    language=nat, precision=lang, translator=tr
+                )
                 td.translates = translates
                 td.save()

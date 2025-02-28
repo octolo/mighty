@@ -8,7 +8,11 @@ from mighty.models import Base
 
 class UserAddress(Address):
     enable_model_change_log = True
-    user = models.ForeignKey(conf.ForeignKey.user, on_delete=models.CASCADE, related_name='user_address')
+    user = models.ForeignKey(
+        conf.ForeignKey.user,
+        on_delete=models.CASCADE,
+        related_name='user_address',
+    )
     enable_clean_fields = True
 
     def __str__(self):

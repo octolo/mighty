@@ -88,19 +88,37 @@ class Filter(Verify):
 
     @property
     def is_positive(self):
-        return self.param if self.request and self.request.get(self.param, False) else False
+        return (
+            self.param
+            if self.request and self.request.get(self.param, False)
+            else False
+        )
 
     @property
     def is_negative(self):
-        return self.negative_param if self.request and self.request.get(self.negative_param, False) else False
+        return (
+            self.negative_param
+            if self.request and self.request.get(self.negative_param, False)
+            else False
+        )
 
     @property
     def is_array_positive(self):
-        return self.positive_array_param if self.request and self.request.get(self.positive_array_param, False) else False
+        return (
+            self.positive_array_param
+            if self.request
+            and self.request.get(self.positive_array_param, False)
+            else False
+        )
 
     @property
     def is_array_negative(self):
-        return self.negative_array_param if self.request and self.request.get(self.negative_array_param, False) else False
+        return (
+            self.negative_array_param
+            if self.request
+            and self.request.get(self.negative_array_param, False)
+            else False
+        )
 
     @property
     def used(self):
@@ -124,7 +142,14 @@ class Filter(Verify):
     # Dependency
     #################
     def get_dependencies(self):
-        return reduce(operator.and_, [dep.sql(self.request) for dep in self.dependencies]) if self.dependencies else False
+        return (
+            reduce(
+                operator.and_,
+                [dep.sql(self.request) for dep in self.dependencies],
+            )
+            if self.dependencies
+            else False
+        )
 
     ################
     # Value
@@ -138,7 +163,9 @@ class Filter(Verify):
                         for value in self.request.get(self.param_used):
                             values += value.split(self.delimiter)
                     else:
-                        values += self.request.get(self.param_used).split(self.delimiter)
+                        values += self.request.get(self.param_used).split(
+                            self.delimiter
+                        )
                 return values
             if self.regex_delimiter:
                 for value in self.request.get(self.param_used):
@@ -171,21 +198,37 @@ class Filter(Verify):
 
     def get_orQ(self):
         if len(self.or_extend):
-            return reduce(operator.or_, [self.usedQ(**{self.get_field_extend(ext): value}) for value in self.extend_value()
-                for ext in self.or_extend])
+            return reduce(
+                operator.or_,
+                [
+                    self.usedQ(**{self.get_field_extend(ext): value})
+                    for value in self.extend_value()
+                    for ext in self.or_extend
+                ],
+            )
         return Q()
 
     def get_andQ(self):
         if len(self.and_extend):
-            return reduce(operator.and_, [self.usedQ(**{self.get_field_extend(ext): value}) for value in self.extend_value()
-                for ext in self.and_extend])
+            return reduce(
+                operator.and_,
+                [
+                    self.usedQ(**{self.get_field_extend(ext): value})
+                    for value in self.extend_value()
+                    for ext in self.and_extend
+                ],
+            )
         return Q()
 
     ###############
     # Sql
     ##############
     def usedQ(self, **kwargs):
-        return ~Q(**kwargs) if self.is_negative or self.is_array_negative else Q(**kwargs)
+        return (
+            ~Q(**kwargs)
+            if self.is_negative or self.is_array_negative
+            else Q(**kwargs)
+        )
 
     def baseQ(self):
         baseQ = Q(**{self.get_field(): self.format_value()})
@@ -196,7 +239,11 @@ class Filter(Verify):
         return baseQ
 
     def get_Q(self):
-        return ~self.baseQ() if self.is_negative or self.is_array_negative else self.baseQ()
+        return (
+            ~self.baseQ()
+            if self.is_negative or self.is_array_negative
+            else self.baseQ()
+        )
 
     def sql(self, request=None, *args, **kwargs):
         self.request = request
@@ -220,7 +267,9 @@ class ParamChoicesFilter(ParamFilter):
         self.mask = kwargs.get('mask', '__iexact')
 
     def verify_param(self):
-        if self.choices_required and (not self.choices or type(self.choices) != list):
+        if self.choices_required and (
+            not self.choices or type(self.choices) != list
+        ):
             return "choices can't be empty and must be a list of choices"
         return None
 
@@ -238,7 +287,9 @@ class ParamMultiChoicesFilter(ParamFilter):
         self.choices_required = kwargs.get('choices_required', False)
 
     def verify_param(self):
-        if self.choices_required and (not self.choices or type(self.choices) != list):
+        if self.choices_required and (
+            not self.choices or type(self.choices) != list
+        ):
             return "choices can't be empty and must be a list of choices"
         return None
 
@@ -261,11 +312,23 @@ class MultiParamFilter(ParamFilter):
         return super().get_value().split(SEPARATOR)
 
     def fieldQ(self):
-        return reduce(self.operator, [self.usedQ(**{self.get_field(): value}) for value in self.get_value()])
+        return reduce(
+            self.operator,
+            [
+                self.usedQ(**{self.get_field(): value})
+                for value in self.get_value()
+            ],
+        )
 
     def fieldsQ(self):
-        return reduce(self.operator, [self.usedQ(**{self.get_field_extend(f): value}) for value in self.get_value()
-            for f in self.fields])
+        return reduce(
+            self.operator,
+            [
+                self.usedQ(**{self.get_field_extend(f): value})
+                for value in self.get_value()
+                for f in self.fields
+            ],
+        )
 
     def get_Q(self):
         return self.fieldsQ() if len(self.fields) else self.fieldQ()
@@ -297,7 +360,10 @@ class SearchFilter(ParamFilter):
         if len(values):
             if self.only_extend:
                 return self.get_andQ() | self.get_orQ()
-            searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value}) for value in values])
+            searchQ = reduce(
+                self.operator,
+                [self.usedQ(**{self.get_field(): value}) for value in values],
+            )
             return (searchQ | self.get_andQ()) | self.get_orQ()
         return Q()
 
@@ -333,9 +399,17 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
 
     def get_field(self, value, field):
         if value[0:3] in {'gte', 'lte'}:
-            return self.prefix + field + '__gte' if value[0:3] == 'gte' else self.prefix + field + '__lte'
+            return (
+                self.prefix + field + '__gte'
+                if value[0:3] == 'gte'
+                else self.prefix + field + '__lte'
+            )
         if value[0:2] in {'gt', 'lt'}:
-            return self.prefix + field + '__gt' if value[0:2] == 'gt' else self.prefix + field + '__lt'
+            return (
+                self.prefix + field + '__gt'
+                if value[0:2] == 'gt'
+                else self.prefix + field + '__lt'
+            )
         return self.prefix + field + self.mask
 
     def format_value(self, value):
@@ -348,12 +422,22 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
         for value in self.get_value():
             if '-' in value:
                 value = value.split('-')
-                theQ.append(Q(**{
-                    self.prefix + field + '__gte': self.format_value(value[0]),
-                    self.prefix + field + '__lte': self.format_value(value[1])
-                }))
+                theQ.append(
+                    Q(**{
+                        self.prefix + field + '__gte': self.format_value(
+                            value[0]
+                        ),
+                        self.prefix + field + '__lte': self.format_value(
+                            value[1]
+                        ),
+                    })
+                )
             else:
-                theQ.append(Q(**{self.get_field(value, field): self.format_value(value)}))
+                theQ.append(
+                    Q(**{
+                        self.get_field(value, field): self.format_value(value)
+                    })
+                )
         if self.is_negative or self.is_array_negative:
             return ~reduce(self.operator, theQ)
         return reduce(self.operator, theQ)

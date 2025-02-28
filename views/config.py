@@ -18,7 +18,8 @@ base_config = {
         'basic': TwofactorConfig.method.basic,
         'languages': NationalityConfig.availables,
         'fields': get_form_fields(),
-    }}
+    }
+}
 base_config.update(setting('BASE_CONFIG', {}))
 
 
@@ -39,12 +40,16 @@ class ConfigListView(ListView):
     model = ConfigClient
 
     def get_queryset(self):
-        return [ConfigClient.objects.filter(is_disable=False), ConfigSimple.objects.filter(is_disable=False)]
+        return [
+            ConfigClient.objects.filter(is_disable=False),
+            ConfigSimple.objects.filter(is_disable=False),
+        ]
 
     def render_to_response(self, context):
         cfg = base_config
         if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
             from mighty.applications.nationality import conf_prefix_numbering
+
             cfg.update({'phones': conf_prefix_numbering()})
         for cfgs in context['object_list']:
             cfg.update({cfg.url_name: cfg.config for cfg in cfgs})

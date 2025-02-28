@@ -18,7 +18,8 @@ class Config:
         mapbox = setting('MAPBOX_ACCESS_TOKEN')
 
 
-if hasattr(settings, 'ADDRESS'): over_config(Config, settings.ADDRESS)
+if hasattr(settings, 'ADDRESS'):
+    over_config(Config, settings.ADDRESS)
 
 
 class AddressConfig(AppConfig, Config):

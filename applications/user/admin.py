@@ -27,6 +27,7 @@ UserPhoneModel = get_user_phone_model()
 
 if apps.is_installed('allauth'):
     from allauth.account.models import EmailAddress
+
     class UserEmailAdminFormset(BaseInlineFormSet):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -38,7 +39,9 @@ if apps.is_installed('allauth'):
             if commit:
                 for instance in instances:
                     if not instance.primary:
-                        logger.info(f'UserEmailAdminFormset: save {instance.email}')
+                        logger.info(
+                            f'UserEmailAdminFormset: save {instance.email}'
+                        )
                         instance.save()
                 self.save_m2m()
 
@@ -57,7 +60,9 @@ if apps.is_installed('allauth'):
 
         def clean_email(self):
             email = self.cleaned_data['email']
-            return get_user_model().validate_unique_email(email, self.instance.user_id)
+            return get_user_model().validate_unique_email(
+                email, self.instance.user_id
+            )
 
     class UserEmailAdmin(admin.TabularInline):
         form = UserEmailAdminForm
@@ -67,7 +72,9 @@ if apps.is_installed('allauth'):
         raw_id_fields = ('user',)
         model = EmailAddress  # FIXME: Will be removed when old email models are removed (Messing up with __init__)
         formset = UserEmailAdminFormset
+
 else:
+
     class UserEmailAdmin(admin.TabularInline):
         fields = ('email', 'default')
         extra = 0
@@ -106,7 +113,9 @@ class UserPhoneAdminForm(forms.ModelForm):
 
     def clean_phone(self):
         phone = self.cleaned_data['phone']
-        return get_user_model().validate_unique_phone(phone, self.instance.user_id)
+        return get_user_model().validate_unique_phone(
+            phone, self.instance.user_id
+        )
 
 
 class UserPhoneAdmin(admin.TabularInline):
@@ -156,7 +165,9 @@ class UserPhoneAdminBase(BaseAdmin):
     def make_verified(self, request, queryset):
         queryset.update(verified=True)
 
-    make_verified.short_description = 'Mark selected phone addresses as verified'
+    make_verified.short_description = (
+        'Mark selected phone addresses as verified'
+    )
 
 
 class InternetProtocolAdmin(admin.TabularInline):
@@ -183,15 +194,21 @@ class UserAdmin(UserAdmin, BaseAdmin):
     # formfield_overrides = {PhoneNumberField: {'widget': PhoneNumberPrefixWidget}}
     add_form = UserCreationForm
     form = UserChangeForm
-    add_fieldsets = ((None, {
-        'classes': ('wide',),
-        'fields': get_form_fields()}),)
+    add_fieldsets = (
+        (None, {'classes': ('wide',), 'fields': get_form_fields()}),
+    )
     readonly_fields = ('method', 'channel', 'addr_backend_id')
     list_display = ('username', 'email', 'phone', 'date_create', 'is_active')
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender', 'sentry_replay', *address_fields)
+        self.fieldsets[1][1]['fields'] += (
+            'phone',
+            'style',
+            'gender',
+            'sentry_replay',
+            *address_fields,
+        )
         self.fieldsets[3][1]['fields'] += ('first_connection',)
         if UserConfig.ForeignKey.optional:
             self.fieldsets[1][1]['fields'] += ('optional',)
@@ -209,7 +226,8 @@ class UserAdmin(UserAdmin, BaseAdmin):
         self.raw_id_fields += UserConfig.ForeignKey.raw_id_fields
 
     def save_model(self, request, obj, form, change):
-        if not change: obj.method = METHOD_BACKEND
+        if not change:
+            obj.method = METHOD_BACKEND
         super().save_model(request, obj, form, change)
 
     def mergeaccounts_view(self, request):
@@ -218,16 +236,26 @@ class UserAdmin(UserAdmin, BaseAdmin):
             template='admin/merge_accounts.html',
             title='Merge accounts',
             form=UserMergeAccountsAdminForm,
-            fields=((None, {'classes': ('wide',), 'fields': ('account_keep', 'account_delete')}),),
+            fields=(
+                (
+                    None,
+                    {
+                        'classes': ('wide',),
+                        'fields': ('account_keep', 'account_delete'),
+                    },
+                ),
+            ),
             raw_id_fields=('account_keep', 'account_delete'),
             log_msg='Merge success',
         )
 
     def get_urls(self):
         from django.urls import path
+
         urls = super().get_urls()
         my_urls = [
-            path('mergeaccounts/',
+            path(
+                'mergeaccounts/',
                 self.wrap(self.mergeaccounts_view),
                 name=self.get_admin_urlname('mergeaccounts'),
             ),
@@ -235,14 +263,14 @@ class UserAdmin(UserAdmin, BaseAdmin):
         return my_urls + urls
 
     def save_formset(self, request, form, formset, change):
-            instances = formset.save(commit=False)
-            for instance in formset.deleted_objects:
-                instance.delete()
-            for instance in instances:
-                instance.save()
-            formset.save_m2m()
+        instances = formset.save(commit=False)
+        for instance in formset.deleted_objects:
+            instance.delete()
+        for instance in instances:
+            instance.save()
+        formset.save_m2m()
 
-            super().save_formset(request, form, formset, change)
+        super().save_formset(request, form, formset, change)
 
 
 class TrashmailAdmin(BaseAdmin):
@@ -255,7 +283,20 @@ class TrashmailAdmin(BaseAdmin):
 # Draft
 class MergeableAccountAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': ('primary_user', 'secondary_user', 'reason', 'is_merged')}),)
+    fieldsets = (
+        (
+            None,
+            {
+                'classes': ('wide',),
+                'fields': (
+                    'primary_user',
+                    'secondary_user',
+                    'reason',
+                    'is_merged',
+                ),
+            },
+        ),
+    )
     list_display = ('__str__', 'is_merged')
     search_fields = ('primary_user', 'secondary_user', 'reason')
     raw_id_fields = ['primary_user', 'secondary_user']

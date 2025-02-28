@@ -96,7 +96,11 @@ class LoginStepCode(BaseView, LoginView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'submit': _.submit_code, 'howto': _.howto_basic_code, 'help': _.help_basic})
+        context.update({
+            'submit': _.submit_code,
+            'howto': _.howto_basic_code,
+            'help': _.help_basic,
+        })
         if self.request.GET.get('email'):
             context.update({
                 'howto': _.howto_email_code,
@@ -124,7 +128,11 @@ class Logout(BaseView, LogoutView):
 
 class Register(LoginStepSearch):
     form_class = SignUpForm
-    over_add_to_context = {'register': _.register, 'submit': _.submit_register, 'help': _.help_register}
+    over_add_to_context = {
+        'register': _.register,
+        'submit': _.submit_register,
+        'help': _.help_register,
+    }
 
     def form_valid(self, form):
         user = form.save()
@@ -148,12 +156,20 @@ class APISendCode(TemplateView):
     status = 200
 
     def send_code(self, request):
-        data = {'username': request.POST.get('identity', request.GET.get('identity', False)).lower()}
+        data = {
+            'username': request.POST.get(
+                'identity', request.GET.get('identity', False)
+            ).lower()
+        }
         form = TwoFactorSearchForm(data)
         if form.is_valid():
             missive = use_twofactor(form.data['username'])
             device = missive.mode
-            target = masking_email(missive.target) if device == choices.MODE_EMAIL else masking_phone(missive.target)
+            target = (
+                masking_email(missive.target)
+                if device == choices.MODE_EMAIL
+                else masking_phone(missive.target)
+            )
             return {'mode': device, 'target': target}
         self.status = 400
         return dict(form.errors.items())

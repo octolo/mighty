@@ -29,19 +29,31 @@ class TenantRolePermission(MightyPermission, TenantAccess):
 
     # Tenant test
     def is_tenant(self, group, pk=None):
-        if pk: return self.user.user_tenant.filter(**{self.group_way + '__' + pk: group}).exists()
+        if pk:
+            return self.user.user_tenant.filter(**{
+                self.group_way + '__' + pk: group
+            }).exists()
         return self.user.user_tenant.filter(**{self.group_way: group}).exists()
 
     def has_role(self, role, pk=None):
-        if pk: return self.user.user_tenant.filter(**{self.role_way + '__' + pk: role}).exists()
+        if pk:
+            return self.user.user_tenant.filter(**{
+                self.role_way + '__' + pk: role
+            }).exists()
         return self.user.user_tenant.filter(**{self.role_way: role}).exists()
 
     def has_one_role(self, roles, pk=None):
-        if pk: return self.user.user_tenant.filter(**{self.role_way + '__' + pk + '__in': roles}).exists()
-        return self.user.user_tenant.filter(**{self.role_way + '__in': roles}).exists()
+        if pk:
+            return self.user.user_tenant.filter(**{
+                self.role_way + '__' + pk + '__in': roles
+            }).exists()
+        return self.user.user_tenant.filter(**{
+            self.role_way + '__in': roles
+        }).exists()
 
 
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from mighty.permissions import MightyPermissionDrf
 
-    class TenantRolePermissionDrf(MightyPermissionDrf, TenantRolePermission): pass
+    class TenantRolePermissionDrf(MightyPermissionDrf, TenantRolePermission):
+        pass

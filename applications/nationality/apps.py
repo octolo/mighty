@@ -18,7 +18,8 @@ class Config:
     availables = ['fr']
 
 
-if hasattr(settings, 'NATIONALITY'): over_config(Config, settings.NATIONALITY)
+if hasattr(settings, 'NATIONALITY'):
+    over_config(Config, settings.NATIONALITY)
 
 
 class NationalityConfig(AppConfig, Config):

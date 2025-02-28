@@ -1,4 +1,3 @@
-
 from mighty.management import CSVModelCommand
 from mighty.models import Trashmail
 

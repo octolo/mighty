@@ -1,4 +1,3 @@
-
 from django.apps import AppConfig
 from django.conf import settings
 
@@ -40,7 +39,8 @@ class Config:
         debug = 10
 
 
-if hasattr(settings, 'LOGGER'): over_config(Config, settings.LOGGER)
+if hasattr(settings, 'LOGGER'):
+    over_config(Config, settings.LOGGER)
 
 
 class LoggerConfig(AppConfig, Config):

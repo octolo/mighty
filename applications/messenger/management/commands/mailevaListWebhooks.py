@@ -1,4 +1,3 @@
-
 import requests
 
 from mighty.functions import setting
@@ -42,9 +41,14 @@ class Command(BaseCommand):
         response = requests.post(self.api['auth_sandbox'], data=self.auth_data)
         access_token = response.json()['access_token']
 
-        list_webhooks = requests.get(self.api['list_sandbox'], headers=self.api_headers(access_token)).json()
+        list_webhooks = requests.get(
+            self.api['list_sandbox'], headers=self.api_headers(access_token)
+        ).json()
         if self.action == 'list':
             print(list_webhooks)
         if self.action == 'remove':
             for wbh in list_webhooks['subscriptions']:
-                requests.delete(self.api['list_sandbox'] + '/' + wbh['id'], headers=self.api_headers(access_token))
+                requests.delete(
+                    self.api['list_sandbox'] + '/' + wbh['id'],
+                    headers=self.api_headers(access_token),
+                )

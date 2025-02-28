@@ -14,11 +14,17 @@ class ChatConsumer(Consumer):
     def dispatch(self, cmd, args):
         if cmd[1] == 'message':
             if args['msg'] and args['to']:
-                self.message_send(args['to'], args['msg']) if cmd[2] == 'send' else self.message_receive(args['to'], args['msg'])
+                self.message_send(args['to'], args['msg']) if cmd[
+                    2
+                ] == 'send' else self.message_receive(args['to'], args['msg'])
         elif cmd[1] == 'join':
-            self.join_init(args['to']) if cmd[2] == 'init' else self.join_accept(args['from'])
+            self.join_init(args['to']) if cmd[
+                2
+            ] == 'init' else self.join_accept(args['from'])
         elif cmd[1] == 'leave':
-            self.leave_init(args['to'], args) if cmd[2] == 'init' else self.leave_accept(args['from'], args)
+            self.leave_init(args['to'], args) if cmd[
+                2
+            ] == 'init' else self.leave_accept(args['from'], args)
 
     def join(self, channel):
         self._ws.join_channel('chat', channel)
@@ -41,8 +47,14 @@ class ChatConsumer(Consumer):
 
     def message_send(self, to, msg):
         channel = f'{self._ws.uid}{self._ws.delimiter}{to}'
-        self._ws.send_to_channel(channel, 'chat.message.receive', {'chat': to, 'msg': msg, 'from': self._ws.user_representation})
+        self._ws.send_to_channel(
+            channel,
+            'chat.message.receive',
+            {'chat': to, 'msg': msg, 'from': self._ws.user_representation},
+        )
 
     def message_receive(self, to, msg):
         channel = f'{self._ws.uid}{self._ws.delimiter}{to}'
-        self._ws.send_to_channel(channel, 'chat.message.receive', {'chat': to, 'msg': msg})
+        self._ws.send_to_channel(
+            channel, 'chat.message.receive', {'chat': to, 'msg': msg}
+        )

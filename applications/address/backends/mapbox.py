@@ -12,7 +12,10 @@ class SearchBackend(SearchBackend):
         address = self.get_dict('mapbox')
         address['addr_backend_id'] = data.get('id')
         address['raw'] = data.get('place_name')
-        address['address'] = ' '.join([data.get('address', ''), data.get('text', '')])
+        address['address'] = ' '.join([
+            data.get('address', ''),
+            data.get('text', ''),
+        ])
         geometry = data.get('geometry')
         if geometry:
             address['longitude'] = geometry['coordinates'][0]

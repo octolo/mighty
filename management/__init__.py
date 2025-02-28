@@ -42,7 +42,9 @@ class BaseCommand(BaseCommand, EnableLogger):
     command_date_start = timezone.now()
 
     def init_importer(self, importer):
-        self.importer = import_string(self.importer_path + f'.importers.{importer}.Importer')()
+        self.importer = import_string(
+            self.importer_path + f'.importers.{importer}.Importer'
+        )()
 
     def get_object_unique_from_qs(self, qs, assoc, values):
         for k, v in assoc.items():
@@ -61,12 +63,23 @@ class BaseCommand(BaseCommand, EnableLogger):
             try:
                 Qparams = Q(id=int(info))
             except ValueError:
-                Qparams = Q(**{UserConfig.ForeignKey.email_related_name + '__email': info}) | Q(user_phone__phone=info) | Q(username=info)
+                Qparams = (
+                    Q(**{
+                        UserConfig.ForeignKey.email_related_name
+                        + '__email': info
+                    })
+                    | Q(user_phone__phone=info)
+                    | Q(username=info)
+                )
             try:
                 return self.user_model.objects.get(Qparams)
             except self.user_model.DoesNotExist:
                 pass
-        return self.user_model.objects.filter(is_superuser=True).first() if forlog else None
+        return (
+            self.user_model.objects.filter(is_superuser=True).first()
+            if forlog
+            else None
+        )
 
     def set_position(self, pos=1):
         self.position += pos
@@ -81,14 +94,17 @@ class BaseCommand(BaseCommand, EnableLogger):
             if self.progressbar:
                 arrow = '-' * int(round(percent * bar_length) - 1) + '>'
                 spaces = ' ' * (bar_length - len(arrow))
-                sys.stdout.write(f'\r{self.prefix_bar}: [{arrow + spaces}] {round(percent * 100)}% ({self.position}/{total}) {self.get_current_info()}'
+                sys.stdout.write(
+                    f'\r{self.prefix_bar}: [{arrow + spaces}] {round(percent * 100)}% ({self.position}/{total}) {self.get_current_info()}'
                 )
                 sys.stdout.flush()
             else:
-                sys.stdout.write(f'\r{self.prefix_bar}: {round(percent * 100)}% ({self.position}/{total}) {self.get_current_info()}'
+                sys.stdout.write(
+                    f'\r{self.prefix_bar}: {round(percent * 100)}% ({self.position}/{total}) {self.get_current_info()}'
                 )
                 print()
-            if self.position == total: print()
+            if self.position == total:
+                print()
 
     def create_parser(self, prog_name, subcommand, **kwargs):
         self.subcommand = subcommand
@@ -96,8 +112,19 @@ class BaseCommand(BaseCommand, EnableLogger):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument('--importer', type=str, help='Importer type', required=self.importer_required)
-        parser.add_argument('--logfile', default='{}_{}.log'.format(str(self.subcommand).lower(), f'{datetime.datetime.now():%Y%m%d_%H%M%S_%f}'))
+        parser.add_argument(
+            '--importer',
+            type=str,
+            help='Importer type',
+            required=self.importer_required,
+        )
+        parser.add_argument(
+            '--logfile',
+            default='{}_{}.log'.format(
+                str(self.subcommand).lower(),
+                f'{datetime.datetime.now():%Y%m%d_%H%M%S_%f}',
+            ),
+        )
         parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--userlog', default=None)
         for field in self.string_arguments + self.default_string_arguments:
@@ -109,15 +136,25 @@ class BaseCommand(BaseCommand, EnableLogger):
 
     @property
     def default_fields(self):
-        return self.default_string_arguments + self.default_integer_arguments + self.default_boolean_arguments
+        return (
+            self.default_string_arguments
+            + self.default_integer_arguments
+            + self.default_boolean_arguments
+        )
 
     @property
     def working_fields(self):
-        return self.string_arguments + self.integer_arguments + self.boolean_arguments
+        return (
+            self.string_arguments
+            + self.integer_arguments
+            + self.boolean_arguments
+        )
 
     @property
     def auto_fields(self):
-        return self.default_fields + self.working_fields + ('logfile', 'encoding')
+        return (
+            self.default_fields + self.working_fields + ('logfile', 'encoding')
+        )
 
     def handle(self, *args, **options):
         self.importer = options.get('importer')
@@ -133,6 +170,7 @@ class BaseCommand(BaseCommand, EnableLogger):
     def prepare_request(self):
         class request:
             user = self.userlog_cache
+
         request_kept.request = request
 
     def makeJob(self):
@@ -141,8 +179,11 @@ class BaseCommand(BaseCommand, EnableLogger):
         self.do()
         self.after_job()
 
-    def before_job(self): pass
-    def after_job(self): pass
+    def before_job(self):
+        pass
+
+    def after_job(self):
+        pass
 
     def showErrors(self):
         for error in self.errors:
@@ -187,7 +228,11 @@ class ModelBaseCommand(BaseCommand):
         return self.model
 
     def get_queryset_filter(self):
-        return dict(x.split(',') for x in self.filter.split(';')) if self.filter else {}
+        return (
+            dict(x.split(',') for x in self.filter.split(';'))
+            if self.filter
+            else {}
+        )
 
     def get_queryset(self, *args, **kwargs):
         manager = kwargs.get('manager', self.manager)
@@ -211,7 +256,9 @@ class ModelBaseCommand(BaseCommand):
             getattr(self, do)(obj)
 
     def on_object(self, object):
-        raise NotImplementedError('Command should implement method on_object(self, obj)')
+        raise NotImplementedError(
+            'Command should implement method on_object(self, obj)'
+        )
 
 
 class ImportModelCommand(ModelBaseCommand):
@@ -232,7 +279,7 @@ class ImportModelCommand(ModelBaseCommand):
         self.need_reset_reader = True
 
     def is_required(self, name):
-        return (name in self.required_fields)
+        return name in self.required_fields
 
     def field(self, name):
         try:
@@ -285,7 +332,10 @@ class ImportModelCommand(ModelBaseCommand):
             getattr(self, do)(row)
 
     def on_row(self, row):
-        raise NotImplementedError('Command should implement method on_object(self, obj)')
+        raise NotImplementedError(
+            'Command should implement method on_object(self, obj)'
+        )
+
 
 # class XLSModelCommand(ImportModelCommand):
 #    xlsmandatory = True
@@ -388,7 +438,8 @@ class CSVModelCommand(ImportModelCommand):
     def reader_csv(self):
         if not self._reader or self.need_reset_reader:
             csvfile = open(self.csvfile, encoding=self.encoding)
-            for _i in range(self.skiprows): next(csvfile)
+            for _i in range(self.skiprows):
+                next(csvfile)
             self._reader = csv.DictReader(csvfile, delimiter=self.delimiter)
             self.need_reset_reader = False
         return self._reader
@@ -400,7 +451,9 @@ class CSVModelCommand(ImportModelCommand):
     @property
     def import_total(self):
         if not self._total:
-            self._total = len(open(self.csvfile, encoding='utf-8').readlines()) - 1
+            self._total = (
+                len(open(self.csvfile, encoding='utf-8').readlines()) - 1
+            )
         return self._total
 
 
@@ -437,7 +490,9 @@ class ImporterCommand(AnyDataFileCommand):
 
     def get_queryset(self, *args, **kwargs):
         if hasattr(self.importer, 'get_queryset'):
-            return self.importer.get_queryset(*args, **kwargs).filter(**self.get_queryset_filter())
+            return self.importer.get_queryset(*args, **kwargs).filter(
+                **self.get_queryset_filter()
+            )
         return super().get_queryset(*args, **kwargs)
 
     @property
@@ -464,4 +519,6 @@ class ImporterCommand(AnyDataFileCommand):
             self.do_action(self.action, data)
 
     def do_action(self, action, data):
-        raise NotImplementedError('Command should implement method do_action(self, action, data)')
+        raise NotImplementedError(
+            'Command should implement method do_action(self, action, data)'
+        )

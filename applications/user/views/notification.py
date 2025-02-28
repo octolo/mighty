@@ -24,13 +24,17 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
             model = get_model(*model.split('.'))
             return {
                 'content_type': ContentType.objects.get_for_model(model()),
-                'object_id__in': model.objects.filter(**{relation: self.request.user}).values_list('id', flat=True),
+                'object_id__in': model.objects.filter(**{
+                    relation: self.request.user
+                }).values_list('id', flat=True),
             }
 
         @property
         def Qfilter(self):
             user_content_type = ContentType.objects.get_for_model(UserModel())
-            baseQ = Q(content_type=user_content_type, object_id=self.request.user.id)
+            baseQ = Q(
+                content_type=user_content_type, object_id=self.request.user.id
+            )
             for m, r in UserConfig.notification_optional_relation.items():
                 baseQ |= Q(**self.get_Qrelation(m, r))
             return baseQ
@@ -49,10 +53,17 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
             }
 
         def get_stats(self):
-            return {'unread': self.get_queryset().exclude(status=choices.STATUS_OPEN).count()}
+            return {
+                'unread': self.get_queryset()
+                .exclude(status=choices.STATUS_OPEN)
+                .count()
+            }
 
         def get_results(self):
-            return [self.get_object_serialized(notif) for notif in self.get_queryset()]
+            return [
+                self.get_object_serialized(notif)
+                for notif in self.get_queryset()
+            ]
 
         def get_serialized_data(self):
             return {'stats': self.get_stats(), 'results': self.get_results()}

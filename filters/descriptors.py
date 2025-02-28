@@ -33,8 +33,10 @@ class FilterDescriptor:
     #    }
 
     def get_fields(self):
-        return {name: self.field_definition(field)
-            for name, field in self.form.fields.items()}
+        return {
+            name: self.field_definition(field)
+            for name, field in self.form.fields.items()
+        }
 
     def as_json(self):
         return self.get_fields()

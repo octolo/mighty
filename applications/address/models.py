@@ -14,17 +14,41 @@ CHOICES_WAYS = sorted(_.WAYS, key=operator.itemgetter(1))
 
 
 class AddressNoBase(models.Model):
-    addr_backend_id = models.CharField(max_length=255, null=True, blank=True, editable=False)
+    addr_backend_id = models.CharField(
+        max_length=255, null=True, blank=True, editable=False
+    )
     address = models.CharField(_.address, max_length=255, null=True, blank=True)
-    complement = models.CharField(_.complement, max_length=255, null=True, blank=True)
-    locality = models.CharField(_.locality, max_length=255, null=True, blank=True)
-    postal_code = models.CharField(_.postal_code, max_length=255, null=True, blank=True)
+    complement = models.CharField(
+        _.complement, max_length=255, null=True, blank=True
+    )
+    locality = models.CharField(
+        _.locality, max_length=255, null=True, blank=True
+    )
+    postal_code = models.CharField(
+        _.postal_code, max_length=255, null=True, blank=True
+    )
     state = models.CharField(_.state, max_length=255, null=True, blank=True)
-    state_code = models.CharField(_.state_code, max_length=255, null=True, blank=True)
-    country = models.CharField(_.country, max_length=255, default=conf.Default.country, blank=True, null=True)
-    country_code = models.CharField(_.country_code, max_length=255, default=conf.Default.country_code, blank=True, null=True)
+    state_code = models.CharField(
+        _.state_code, max_length=255, null=True, blank=True
+    )
+    country = models.CharField(
+        _.country,
+        max_length=255,
+        default=conf.Default.country,
+        blank=True,
+        null=True,
+    )
+    country_code = models.CharField(
+        _.country_code,
+        max_length=255,
+        default=conf.Default.country_code,
+        blank=True,
+        null=True,
+    )
     cedex = models.CharField(_.cedex, max_length=255, null=True, blank=True)
-    cedex_code = models.CharField(_.cedex_code, max_length=255, null=True, blank=True)
+    cedex_code = models.CharField(
+        _.cedex_code, max_length=255, null=True, blank=True
+    )
     special = models.CharField(max_length=255, null=True, blank=True)
     index = models.CharField(max_length=255, null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)
@@ -50,7 +74,11 @@ class AddressNoBase(models.Model):
         if not self.address_is_empty:
             if self.country_code:
                 formatting = f'format_{self.country_code.lower()}'
-                self.raw = getattr(self, formatting)() if hasattr(self, formatting) else self.format_universal()
+                self.raw = (
+                    getattr(self, formatting)()
+                    if hasattr(self, formatting)
+                    else self.format_universal()
+                )
             else:
                 self.raw = self.format_universal()
 
@@ -75,7 +103,9 @@ class AddressNoBase(models.Model):
 
     def clean_address(self):
         if not self.has_address:
-            raise ValidationError(code='invalid_address', message='invalid address')
+            raise ValidationError(
+                code='invalid_address', message='invalid address'
+            )
 
     @property
     def has_locality(self):
@@ -83,7 +113,9 @@ class AddressNoBase(models.Model):
 
     def clean_locality(self):
         if not self.has_locality:
-            raise ValidationError(code='invalid_locality', message='invalid locality')
+            raise ValidationError(
+                code='invalid_locality', message='invalid locality'
+            )
 
     def clean_address_fields(self):
         if self.enable_clean_fields:
@@ -103,8 +135,11 @@ class AddressNoBase(models.Model):
 
     @property
     def address_is_empty(self):
-        nb_fields = sum(1 if getattr(self, field) and field != 'raw' else 0 for field in fields)
-        return (nb_fields < 2)
+        nb_fields = sum(
+            1 if getattr(self, field) and field != 'raw' else 0
+            for field in fields
+        )
+        return nb_fields < 2
 
     def only_raw(self):
         if self.address_is_empty and self.raw:
@@ -126,16 +161,26 @@ class AddressNoBase(models.Model):
     @property
     def city(self):
         formatting = f'city_{self.country_code.lower()}'
-        return getattr(self, formatting) if hasattr(self, formatting) else self.city_default
+        return (
+            getattr(self, formatting)
+            if hasattr(self, formatting)
+            else self.city_default
+        )
 
     @property
     def city_fr(self):
         cedex = f'CEDEX {self.cedex_code}' if self.cedex_code else ''
-        return ' '.join([str(ad) for ad in [self.state_or_postal_code, self.locality, cedex] if ad]).strip()
+        return ' '.join([
+            str(ad)
+            for ad in [self.state_or_postal_code, self.locality, cedex]
+            if ad
+        ]).strip()
 
     @property
     def city_default(self):
-        return ' '.join([str(ad) for ad in [self.state_or_postal_code, self.locality] if ad]).strip()
+        return ' '.join([
+            str(ad) for ad in [self.state_or_postal_code, self.locality] if ad
+        ]).strip()
 
     @property
     def representation(self):
@@ -148,11 +193,17 @@ class AddressNoBase(models.Model):
     @property
     def address_without_country(self):
         tpl = ''
-        if self.address: tpl += '%(address)s'
-        if self.postal_code: tpl += ', %(postal_code)s' if len(tpl) else '%(postal_code)s'
-        if self.locality: tpl += ', %(locality)s' if len(tpl) else '%(locality)s'
-        if self.state: tpl += ', %(state)s' if len(tpl) else '%(state)s'
-        return tpl % ({field: getattr(self, field) for field in self.fields_used})
+        if self.address:
+            tpl += '%(address)s'
+        if self.postal_code:
+            tpl += ', %(postal_code)s' if len(tpl) else '%(postal_code)s'
+        if self.locality:
+            tpl += ', %(locality)s' if len(tpl) else '%(locality)s'
+        if self.state:
+            tpl += ', %(state)s' if len(tpl) else '%(state)s'
+        return tpl % ({
+            field: getattr(self, field) for field in self.fields_used
+        })
 
     @property
     def fields_used(self):
@@ -160,12 +211,19 @@ class AddressNoBase(models.Model):
 
     def format_universal(self):
         tpl = ''
-        if self.address: tpl += '%(address)s'
-        if self.postal_code: tpl += ', %(postal_code)s' if len(tpl) else '%(postal_code)s'
-        if self.locality: tpl += ', %(locality)s' if len(tpl) else '%(locality)s'
-        if self.state: tpl += ', %(state)s' if len(tpl) else '%(state)s'
-        if self.country: tpl += ', %(country)s' if len(tpl) else '%(country)s'
-        return tpl % ({field: getattr(self, field) for field in self.fields_used})
+        if self.address:
+            tpl += '%(address)s'
+        if self.postal_code:
+            tpl += ', %(postal_code)s' if len(tpl) else '%(postal_code)s'
+        if self.locality:
+            tpl += ', %(locality)s' if len(tpl) else '%(locality)s'
+        if self.state:
+            tpl += ', %(state)s' if len(tpl) else '%(state)s'
+        if self.country:
+            tpl += ', %(country)s' if len(tpl) else '%(country)s'
+        return tpl % ({
+            field: getattr(self, field) for field in self.fields_used
+        })
 
 
 class Address(AddressNoBase, Base):
