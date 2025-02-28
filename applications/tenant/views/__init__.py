@@ -20,7 +20,7 @@ if 'rest_framework' in settings.INSTALLED_APPS:
     from mighty.applications.tenant.views.role.drf import (
         RoleList as RoleList,
     )
-    from mighty.applications.tenant.views.tenant.drf import (
+    from mighty.applications.tenant.views.tenant.drf import (  # noqa
         CurrentTenant,
         Sesame,
         TenantDetail,
