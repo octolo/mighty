@@ -1,8 +1,10 @@
 from django.db import models
+
 from mighty import fields
-from mighty.functions import setting
+from mighty.applications.user import choices as _c
+from mighty.applications.user import translates as _
 from mighty.applications.user.apps import UserConfig as conf
-from mighty.applications.user import choices as _c, translates as _
+from mighty.functions import setting
 
 search = ('username', 'email', 'last_name', 'first_name')
 serializer = ('uid',) + fields.image_url + (
@@ -16,8 +18,8 @@ serializer = ('uid',) + fields.image_url + (
     'is_staff',
     'sentry_replay',
 )
-if conf.cgu: serializer+('cgu',)
-if conf.cgv: serializer+('cgv',)
+if conf.cgu: serializer + ('cgu',)
+if conf.cgv: serializer + ('cgv',)
 
 profile = fields.image_url + (
     'username',
@@ -36,6 +38,7 @@ profile = fields.image_url + (
 if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
     serializer += ('nationalities',)
     profile += ('all_nationalities',)
+
 
 class GenderField(models.CharField):
     description = _.gender_desc

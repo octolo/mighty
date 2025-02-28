@@ -17,9 +17,9 @@ STATE = (
     (3, _('refused')),
 )
 
-MY = "MY"
-ALL = "ALL"
-NO = "NO"
+MY = 'MY'
+ALL = 'ALL'
+NO = 'NO'
 SYNC = (
     (MY, _('my direction')),
     (ALL, _('all directions')),

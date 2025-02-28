@@ -9,9 +9,9 @@ STATUS = (
     (STATUS_ACCEPTED, _('accepted')),
 )
 
-GSTATUS_INACTIVE = "INACTIVE"
-GSTATUS_ACTIVE = "ACTIVE"
-GSTATUS_BLOCKED = "BLOCKED"
+GSTATUS_INACTIVE = 'INACTIVE'
+GSTATUS_ACTIVE = 'ACTIVE'
+GSTATUS_BLOCKED = 'BLOCKED'
 GSTATUS = (
     (GSTATUS_INACTIVE, _('inactive')),
     (GSTATUS_ACTIVE, _('active')),
@@ -26,12 +26,12 @@ ALTERNATE = (
     (ALTERNATE_DEPUTY, _('deputy')),
 )
 
-DOMAIN = "DOMAIN"
-EMAILPREFIX = "EMAILPREFIX"
-SITEWEB = "SITEWEB"
-DOMAIN_TR = _("Domaine principal de votre société")
-EMAILPREFIX_TR = _("Préfixe pour les emails envoyé par la plateforme prefix@domain.com")
-SITEWEB_TR = _("https://domain.com")
+DOMAIN = 'DOMAIN'
+EMAILPREFIX = 'EMAILPREFIX'
+SITEWEB = 'SITEWEB'
+DOMAIN_TR = _('Domaine principal de votre société')
+EMAILPREFIX_TR = _('Préfixe pour les emails envoyé par la plateforme prefix@domain.com')
+SITEWEB_TR = _('https://domain.com')
 CONFIG_NAME = (
     (DOMAIN, DOMAIN_TR),
     (EMAILPREFIX, EMAILPREFIX_TR),

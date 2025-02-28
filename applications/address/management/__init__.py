@@ -1,5 +1,6 @@
-from mighty.management import ModelBaseCommand
 from mighty.applications.address import fields
+from mighty.management import ModelBaseCommand
+
 
 class AddressCommand(ModelBaseCommand):
     address_fields = fields
@@ -7,7 +8,7 @@ class AddressCommand(ModelBaseCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         for field in fields:
-            parser.add_argument('--%s'%field, default=None)
+            parser.add_argument('--%s' % field, default=None)
 
     def handle(self, *args, **options):
         for field in fields:

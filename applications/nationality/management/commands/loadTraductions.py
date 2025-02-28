@@ -1,15 +1,13 @@
-from django.conf import settings
 from mighty.management import CSVModelCommand
-from mighty.applications.nationality.apps import NationalityConfig as conf
-from mighty.models import Translator, TranslateDict
-import os.path
+from mighty.models import TranslateDict
+
 
 class Command(CSVModelCommand):
     curr_translator = None
 
     def get_dict_filter(self, path):
         try:
-            cf = path.split(".")[0]
+            cf = path.split('.')[0]
             if self.curr_translator is None or self.curr_translator.translator.name != cf:
                 if self.curr_translator:
                     self.curr_translator.save()
@@ -20,8 +18,8 @@ class Command(CSVModelCommand):
         return False
 
     def change_trad(self, row):
-        trad_path = row["path"].split(".")[1:]
-        trad_en = row["new"]
+        trad_path = row['path'].split('.')[1:]
+        trad_en = row['new']
         if len(trad_path) == 1:
             self.curr_translator.translates[trad_path[0]] = trad_en
         elif len(trad_path) == 2:
@@ -47,6 +45,6 @@ class Command(CSVModelCommand):
         self.curr_translator.save()
 
     def on_row(self, row):
-        if row["path"]:
-            if self.get_dict_filter(row["path"]):
+        if row['path']:
+            if self.get_dict_filter(row['path']):
                 self.change_trad(row)

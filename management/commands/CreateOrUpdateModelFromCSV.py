@@ -1,6 +1,10 @@
+import csv
+import os.path
+
 from django.core.management.base import CommandError
+
 from mighty.management import ModelBaseCommand
-import csv, os.path
+
 
 class Command(ModelBaseCommand):
     column_for_current = None
@@ -41,7 +45,7 @@ class Command(ModelBaseCommand):
         self.do()
 
     def do(self):
-        self.total = len(open(self.csvfile).readlines())-1
+        self.total = len(open(self.csvfile).readlines()) - 1
         with open(self.csvfile, encoding=self.encoding) as csvfile:
             reader = csv.DictReader(csvfile, delimiter=self.delimiter)
             self.prepare_fields(reader.fieldnames)
@@ -53,5 +57,4 @@ class Command(ModelBaseCommand):
                 self.on_row(row)
 
     def on_row(self, row):
-        raise NotImplementedError("Command should implement method on_object(self, obj)")
-        
+        raise NotImplementedError('Command should implement method on_object(self, obj)')

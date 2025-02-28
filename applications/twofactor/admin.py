@@ -1,6 +1,7 @@
 from mighty.admin.models import BaseAdmin
 from mighty.applications.twofactor import fields
 
+
 class TwofactorAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.twofactor}),)

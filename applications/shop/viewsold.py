@@ -1,17 +1,18 @@
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.template import Context, Template
 from django.http import JsonResponse
-
-from mighty.views import TemplateView, ExportView, PDFView
-from mighty.filters import FiltersManager, Foxid
-from mighty.models import Subscription, Bill
-from mighty.applications.shop import translates as _
+from django.template import Context, Template
+from django.utils.decorators import method_decorator
 from schwifty import IBAN
+
+from mighty.applications.shop import translates as _
+from mighty.models import Bill, Subscription
+from mighty.views import ExportView, PDFView, TemplateView
+
 
 @method_decorator(login_required, name='dispatch')
 class ShopExports(TemplateView):
-    template_name = "admin/shop_exports.html"
+    template_name = 'admin/shop_exports.html'
+
 
 @method_decorator(login_required, name='dispatch')
 class ShopExport(ExportView):
@@ -19,13 +20,13 @@ class ShopExport(ExportView):
     queryset = Subscription.objects.all()
     fields = ['group', 'amount']
 
+
 @method_decorator(login_required, name='dispatch')
 class ShopInvoicePDF(PDFView):
     model = Bill
     slug_field = 'object_id'
     slug_url_kwarg = 'object_id'
     in_browser = True
-
 
     def get_context_data(self, **kwargs):
         return Context(self.get_object().bill_pdf_context)
@@ -36,9 +37,10 @@ class ShopInvoicePDF(PDFView):
     def get_template(self, context):
         return Template(self.bill_content_pdf).render(context)
 
+
 @method_decorator(login_required, name='dispatch')
 class BicCalculJSON(TemplateView):
-    test_field = "iban"
+    test_field = 'iban'
 
     def get_iban(self):
         return self.request.GET.get(self.test_field)
@@ -48,9 +50,9 @@ class BicCalculJSON(TemplateView):
         if newiban:
             newiban = IBAN(newiban).bic
             if newiban:
-                return {"bic": str(newiban.bic)}
-            return { "code": "002", "error": _.error_bic_empty }
-        return { "code": "001", "error": _.error_iban_empty }
+                return {'bic': str(newiban.bic)}
+            return {'code': '002', 'error': _.error_bic_empty}
+        return {'code': '001', 'error': _.error_iban_empty}
 
     def get(self, request, format=None):
         return JsonResponse(self.check_data())

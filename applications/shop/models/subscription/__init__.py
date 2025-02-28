@@ -1,15 +1,17 @@
 from django.db import models
 from django.utils import timezone
 
-from mighty.models.base import Base
 from mighty.applications.shop import choices as _c
 from mighty.applications.shop.decorators import GroupOrUser
-
 from mighty.applications.shop.models.subscription.bill import Bill
+from mighty.applications.shop.models.subscription.pricedatepaid import (
+    PriceDatePaid,
+)
 from mighty.applications.shop.models.subscription.service import Service
-from mighty.applications.shop.models.subscription.pricedatepaid import PriceDatePaid
+from mighty.models.base import Base
 
-@GroupOrUser(related_name="group_subscription", on_delete=models.SET_NULL, null=True, blank=True)
+
+@GroupOrUser(related_name='group_subscription', on_delete=models.SET_NULL, null=True, blank=True)
 class Subscription(Base, Bill, Service, PriceDatePaid):
     offer = models.ForeignKey('mighty.Offer', on_delete=models.CASCADE, related_name='offer_subscription')
     bill = models.ForeignKey('mighty.Bill', on_delete=models.SET_NULL, related_name='bill_subscription', blank=True, null=True, editable=False)
@@ -22,21 +24,21 @@ class Subscription(Base, Bill, Service, PriceDatePaid):
     is_used = models.BooleanField(default=False)
     advance = models.PositiveIntegerField(default=0)
     frequency = models.CharField(max_length=255, choices=_c.FREQUENCIES, default=_c.MONTH)
-    status = models.CharField(max_length=255, choices=_c.SUB_STATUS, default=_c.PREPARATION, )
+    status = models.CharField(max_length=255, choices=_c.SUB_STATUS, default=_c.PREPARATION)
 
     class Meta(Base.Meta):
         abstract = True
         ordering = ['date_start', 'next_paid']
 
     def __str__(self):
-        return "%s - %s" % (self.offer, self.next_paid)
+        return '%s - %s' % (self.offer, self.next_paid)
 
     @property
     def is_active(self):
         if self.offer.frequency != 'ONUSE':
             return True if self.next_paid and self.next_paid >= timezone.now().date() else False
         return self.coin > 0
- 
+
     @property
     def subscription_usage(self):
         return self.subscription.uid if self.valid_method else False
@@ -45,7 +47,7 @@ class Subscription(Base, Bill, Service, PriceDatePaid):
         self.set_on_use_count()
         self.set_cache_service()
 
-    #def pre_update(self):
+    # def pre_update(self):
     #    #self.update_bill()
     #    self.set_date_on_paid()
 

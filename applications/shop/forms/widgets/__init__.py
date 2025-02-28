@@ -1,6 +1,12 @@
-from mighty.applications.shop.forms.widgets.cb import CBNumberInput, CBCVCInput, CBDateInput
-from mighty.applications.shop.forms.widgets.iban import IbanInput, BicInput
-from mighty.applications.shop.forms.widgets.paymentmethod import PaymentmethodInput
+from mighty.applications.shop.forms.widgets.cb import (
+    CBCVCInput,
+    CBDateInput,
+    CBNumberInput,
+)
+from mighty.applications.shop.forms.widgets.iban import BicInput, IbanInput
+from mighty.applications.shop.forms.widgets.paymentmethod import (
+    PaymentmethodInput,
+)
 
 __all__ = (
     CBNumberInput, CBCVCInput, CBDateInput,

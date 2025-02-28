@@ -1,32 +1,42 @@
 from django.apps import apps
 from django.conf import settings
-from django.db import  models
-from django.utils.text import get_valid_filename
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.utils.text import get_valid_filename
 
+from mighty.applications.logger import models as models_logger
 from mighty.apps import MightyConfig as conf
 from mighty.fields import JSONField
-from mighty.models.base import Base
-from mighty.models.news import News
-from mighty.models.config import Config
 from mighty.models.backend import Backend
+from mighty.models.base import Base
+from mighty.models.config import Config
+from mighty.models.news import News as News
+from mighty.models.registertask import RegisterTask, RegisterTaskSubscription
 from mighty.models.reporting import Reporting
 from mighty.models.variable import TemplateVariable
-from mighty.models.registertask import RegisterTask, RegisterTaskSubscription
-from mighty.applications.logger import models as models_logger
 
 
 ###########################
 # Models in mighty
 ###########################
 class Backend(Backend): pass
+
+
 class Reporting(Reporting): pass
+
+
 class RegisterTask(RegisterTask): pass
+
+
 class RegisterTaskSubscription(RegisterTaskSubscription): pass
+
+
 class TemplateVariable(TemplateVariable): pass
+
 
 class ConfigClient(Config):
     config = JSONField(null=True, blank=True)
+
 
 class ConfigSimple(Config):
     configchar = models.CharField(max_length=255, null=True, blank=True)
@@ -39,6 +49,7 @@ class ConfigSimple(Config):
 
     class Meta(Base.Meta):
         ordering = ('date_create', 'name')
+
 
 if hasattr(settings, 'CHANNEL_LAYERS'):
     class Channel(Base):

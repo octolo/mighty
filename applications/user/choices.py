@@ -20,8 +20,8 @@ GENDER = (
     (GENDER_MAN, _('man')),
     (GENDER_WOMAN, _('woman')),
     (GENDER_COMPANY, _('company')),
-    (GENDER_ENTITY, _("Entity")),
-    (GENDER_UNDIVIDED, _("Undivided")),
+    (GENDER_ENTITY, _('Entity')),
+    (GENDER_UNDIVIDED, _('Undivided')),
 )
 
 

@@ -1,6 +1,6 @@
-from django.conf import settings
 from mighty.management import ModelBaseCommand
 from mighty.models import Missive
+
 
 class Command(ModelBaseCommand):
     model = Missive

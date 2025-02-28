@@ -10,13 +10,14 @@ from mighty.views import DetailView
 
 UserModel = get_user_model()
 
+
 class ProfileBaseView:
     model = UserModel
 
     def get_object(self, queryset=None):
         user = self.request.user
         newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
-        #if newstyle != user.style:
+        # if newstyle != user.style:
         #    user.style = newstyle
         #    user.save()
         newlang = self.request.GET.get('lang')
@@ -42,6 +43,7 @@ class ProfileBaseView:
             user_data.update({'current_tenant': user.current_tenant.uid})
         return user_data
 
+
 @method_decorator(login_required, name='dispatch')
 class ProfileView(ProfileBaseView, DetailView):
     def get_context_data(self, **kwargs):
@@ -49,6 +51,7 @@ class ProfileView(ProfileBaseView, DetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs)
+
 
 if 'rest_framework' in settings.INSTALLED_APPS:
     from rest_framework.generics import RetrieveAPIView

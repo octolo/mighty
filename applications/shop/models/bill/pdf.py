@@ -1,7 +1,9 @@
 
-from mighty.filegenerator import generate_pdf
 from django.utils.text import get_valid_filename
+
 from mighty.applications.shop.apps import ShopConfig
+from mighty.filegenerator import generate_pdf
+
 
 class PDFModel:
     @property
@@ -11,15 +13,15 @@ class PDFModel:
     @property
     def bill_pdf_context(self):
         return {
-            "group_or_user": self.group_or_user,
-            "offer": self.offer,
-            "subscription": self.subscription,
-            "bill": self,
+            'group_or_user': self.group_or_user,
+            'offer': self.offer,
+            'subscription': self.subscription,
+            'bill': self,
         }
 
     @property
     def bill_pdf_name(self):
-        return get_valid_filename("%s_%s.pdf" % (self.group_or_user, self.bill_numero))
+        return get_valid_filename('%s_%s.pdf' % (self.group_or_user, self.bill_numero))
 
     @property
     def bill_pdf_content(self):
@@ -28,9 +30,9 @@ class PDFModel:
     @property
     def bill_pdf_data(self):
         return {
-            "file_name": self.bill_pdf_name,
-            "context": self.bill_pdf_context,
-            "content": self.bill_pdf_content,
+            'file_name': self.bill_pdf_name,
+            'context': self.bill_pdf_context,
+            'content': self.bill_pdf_content,
         }
 
     def bill_to_pdf(self):

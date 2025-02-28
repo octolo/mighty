@@ -1,31 +1,37 @@
+import base64
+import json
+import os
+
+import sib_api_v3_sdk
 from django.core.mail.message import make_msgid
-from mighty.applications.messenger.backends import MissiveBackend
+
 from mighty.applications.messenger import choices as _c
-from mighty.functions import setting
+from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
-import os, base64, sib_api_v3_sdk, json
+from mighty.functions import setting
+
 
 class MissiveBackend(MissiveBackend):
     APIKEY = setting('SENDINBLUE_KEY', False)
-    APIURL = "https://api.sendinblue.com/v3/smtp/email"
+    APIURL = 'https://api.sendinblue.com/v3/smtp/email'
     in_error = False
     api_instance_cache = None
 
     STATUS = {
-        "bounces": _c.STATUS_ERROR,
-        "hardBounces": _c.STATUS_ERROR,
-        "softBounces": _c.STATUS_ERROR,
-        "delivered": _c.STATUS_SENT,
-        "spam": _c.STATUS_ERROR,
-        "requests": _c.STATUS_PROCESSED,
-        "opened": _c.STATUS_OPEN,
-        "clicks": _c.STATUS_OPEN,
-        "invalid": _c.STATUS_SENT,
-        "deferred": _c.STATUS_ERROR,
-        "blocked": _c.STATUS_ERROR,
-        "unsubscribed": _c.STATUS_REJECTED,
-        "error": _c.STATUS_ERROR,
-        "loadedByProxy": _c.STATUS_SENT,
+        'bounces': _c.STATUS_ERROR,
+        'hardBounces': _c.STATUS_ERROR,
+        'softBounces': _c.STATUS_ERROR,
+        'delivered': _c.STATUS_SENT,
+        'spam': _c.STATUS_ERROR,
+        'requests': _c.STATUS_PROCESSED,
+        'opened': _c.STATUS_OPEN,
+        'clicks': _c.STATUS_OPEN,
+        'invalid': _c.STATUS_SENT,
+        'deferred': _c.STATUS_ERROR,
+        'blocked': _c.STATUS_ERROR,
+        'unsubscribed': _c.STATUS_REJECTED,
+        'error': _c.STATUS_ERROR,
+        'loadedByProxy': _c.STATUS_SENT,
     }
 
     def update_event(self, event):
@@ -37,17 +43,17 @@ class MissiveBackend(MissiveBackend):
         from mighty.models import Missive
         data = json.loads(request.body)
         try:
-            self.missive = Missive.objects.get(partner_id=data.get("message-id"))
-            self.update_event(data.get("event"))
+            self.missive = Missive.objects.get(partner_id=data.get('message-id'))
+            self.update_event(data.get('event'))
         except Missive.DoesNotExist:
             pass
         return data
 
     def check_email(self):
         data = {
-            "message_id": self.missive.partner_id
+            'message_id': self.missive.partner_id
         } if self.missive.partner_id else {
-            "tag": self.missive.msg_id
+            'tag': self.missive.msg_id
         }
         api_response = self.api_instance.get_email_event_report(**data, email=self.missive.target)
         event = api_response.events[0].event
@@ -70,46 +76,46 @@ class MissiveBackend(MissiveBackend):
             for document in self.missive.attachments:
                 if setting('MISSIVE_SERVICE', False):
                     attachments.append({
-                        "content": base64.b64encode(document.read()).decode('utf-8'),
-                        "name": os.path.basename(document.name),
+                        'content': base64.b64encode(document.read()).decode('utf-8'),
+                        'name': os.path.basename(document.name),
                     })
                 logs.append(os.path.basename(document.name))
             self.missive.logs['attachments'] = logs
         return attachments
 
     def setup_template_params(self, data):
-        if data["template_id"] == 1:
-            data["params"] = {
-                "code": self.missive.context["code"],
-                "domain": MightyConfig.domain.upper(),
-                "link":  "https://%s" % MightyConfig.domain,
+        if data['template_id'] == 1:
+            data['params'] = {
+                'code': self.missive.context['code'],
+                'domain': MightyConfig.domain.upper(),
+                'link':  'https://%s' % MightyConfig.domain,
             }
 
     def forge_email(self, data, attachments):
-        data["to"] = [{"email": self.missive.target}]
-        data["headers"] = {"charset": "utf-8"}
+        data['to'] = [{'email': self.missive.target}]
+        data['headers'] = {'charset': 'utf-8'}
         if self.reply_email:
-            data["reply_to"] = {"email": self.reply_email, "name": self.reply_name}
+            data['reply_to'] = {'email': self.reply_email, 'name': self.reply_name}
         if self.missive.sender:
-            data["sender"] = {"email": self.missive.sender, "name": self.missive.name}
+            data['sender'] = {'email': self.missive.sender, 'name': self.missive.name}
         if self.missive.subject:
-            data["subject"] = self.missive.subject
-        if 'template_id' in self.missive.context and self.missive.context["template_id"]:
-            data["template_id"] = self.missive.context["template_id"]
+            data['subject'] = self.missive.subject
+        if self.missive.context.get('template_id'):
+            data['template_id'] = self.missive.context['template_id']
             self.setup_template_params(data)
         else:
             if self.missive.html_format:
-                data["html_content"] = self.missive.html_format
+                data['html_content'] = self.missive.html_format
             if self.missive.txt:
-                data["text_content"] = str(self.missive.txt)
+                data['text_content'] = str(self.missive.txt)
         if len(attachments):
-            data["attachment"] = attachments
+            data['attachment'] = attachments
 
     def send_email(self):
         data = {}
         over_target = setting('MISSIVE_EMAIL', False)
-        self.missive.target = over_target if over_target else self.missive.target
-        self.logger.info("Email - from : %s, to : %s, reply : %s" % (self.sender_email, self.missive.target, self.reply_email))
+        self.missive.target = over_target or self.missive.target
+        self.logger.info('Email - from : %s, to : %s, reply : %s' % (self.sender_email, self.missive.target, self.reply_email))
         if setting('MISSIVE_SERVICE', False):
             try:
                 self.api_instance.smtp_blocked_contacts_email_delete(self.missive.target)

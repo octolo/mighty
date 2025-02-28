@@ -1,5 +1,7 @@
-from mighty.applications.logger import settings
 from django.utils.module_loading import import_string
+
+from mighty.applications.logger import settings
+
 
 class GlobalNotifier:
     def __init__(self, notifiers=None):
@@ -9,6 +11,6 @@ class GlobalNotifier:
         for notifier in self.notifiers:
             notifier.send_event(event_name, event_data, url)
 
-global_notifier = GlobalNotifier()
-#global_notifier.send_event('Test Event', 'This is some test data', 'http://example.com')
 
+global_notifier = GlobalNotifier()
+# global_notifier.send_event('Test Event', 'This is some test data', 'http://example.com')

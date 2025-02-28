@@ -1,5 +1,7 @@
-from datetime import datetime, date
+from datetime import date, datetime
+
 from mighty.applications.shop import choices as _c
+
 
 class Bill:
     def create_bill(self):
@@ -21,8 +23,8 @@ class Bill:
     def prepare_bill(self):
         if not self.bill or self.bill.date_paid != self.next_paid:
             return self.create_bill()
-        return False    
-            
+        return False
+
     def should_bill(self):
         if not self.bill:
             self.next_paid = date.today()

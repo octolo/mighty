@@ -1,15 +1,16 @@
 from django.db import models
 
-from mighty.models.base import Base
-from mighty.applications.shop.apps import ShopConfig
-from mighty.applications.shop import translates as _
 from mighty.applications.shop import choices as _c
+from mighty.applications.shop import translates as _
+from mighty.applications.shop.apps import ShopConfig
 from mighty.applications.shop.decorators import GroupOrUser
-from mighty.fields import JSONField
-from mighty.applications.shop.models.bill.pdf import PDFModel
 from mighty.applications.shop.models.bill.charge import ChargeModel
+from mighty.applications.shop.models.bill.pdf import PDFModel
+from mighty.fields import JSONField
+from mighty.models.base import Base
 
-@GroupOrUser(related_name="group_bill", on_delete=models.SET_NULL, null=True, blank=True)
+
+@GroupOrUser(related_name='group_bill', on_delete=models.SET_NULL, null=True, blank=True)
 class Bill(Base, PDFModel, ChargeModel):
     # Related
     subscription = models.ForeignKey('mighty.Subscription', on_delete=models.SET_NULL, blank=True, null=True, related_name='subscription_bill', editable=False)
@@ -46,7 +47,7 @@ class Bill(Base, PDFModel, ChargeModel):
         unique_together = ShopConfig.bill_unique_together
 
     def __str__(self):
-        return "%s - %s" % (self.group, self.subscription)
+        return '%s - %s' % (self.group, self.subscription)
 
     @property
     def offer(self):
@@ -55,29 +56,30 @@ class Bill(Base, PDFModel, ChargeModel):
     @property
     def add_item(self, *args, **kwargs):
         self.items.append({
-            "description": kwargs.get("description", None),
-            "reference": kwargs.get("reference", None),
-            "quantity": kwargs.get("quantity", None),
-            "unique_price_ht_month": kwargs.get("unique_price_ht_month", None),
-            "amount_ht_month": kwargs.get("amount_ht_month", None),
-            "tva": kwargs.get("tva", None),
-            "amount_ttc_month": kwargs.get("amount_ttc_month", None),
+            'description': kwargs.get('description'),
+            'reference': kwargs.get('reference'),
+            'quantity': kwargs.get('quantity'),
+            'unique_price_ht_month': kwargs.get('unique_price_ht_month'),
+            'amount_ht_month': kwargs.get('amount_ht_month'),
+            'tva': kwargs.get('tva'),
+            'amount_ttc_month': kwargs.get('amount_ttc_month'),
         })
-
 
     @property
     def tva_month_items(self):
         return sum([amount_ht_month for item in self.items])
+
     @property
     def tva_calc_year(self):
-        return self.tva_month_items*12
+        return self.tva_month_items * 12
 
     @property
     def total_month_items(self):
         return sum([amount_ttc_month for item in self.items])
+
     @property
     def total_calc_year(self):
-        return self.total_month_items*12
+        return self.total_month_items * 12
 
     def calcul_from_items(self):
         self.tva_calc_month = self.tva_month_items
@@ -85,21 +87,21 @@ class Bill(Base, PDFModel, ChargeModel):
 
     def set_numero(self):
         if not self.numero:
-            nbr = type(self).objects.filter(group=self.group).count()+1
+            nbr = type(self).objects.filter(group=self.group).count() + 1
             if nbr > 100:
-                self.numero = "0"+str(nbr)
+                self.numero = '0' + str(nbr)
             elif nbr > 10:
-                self.numero = "00"+str(nbr)
+                self.numero = '00' + str(nbr)
             else:
-                self.numero = "000"+str(nbr)
+                self.numero = '000' + str(nbr)
 
     @property
     def follow_id(self):
-        return "msbID_%s.%s" % (self.uid, self.pk)
+        return 'msbID_%s.%s' % (self.uid, self.pk)
 
     @property
     def bill_numero(self):
-        return "%s-%s%s" % (self.date_payment.year, self.date_payment.month, self.numero)
+        return '%s-%s%s' % (self.date_payment.year, self.date_payment.month, self.numero)
 
     def calcul_discount(self):
         if self.override_price:
@@ -108,9 +110,9 @@ class Bill(Base, PDFModel, ChargeModel):
             amount = self.amount
             amount -= sum([discount.amount for discount in self.discount.filter(is_percent=False)])
             for discount in self.discount.filter(is_percent=True).order_by('-amount'):
-                amount -= (amount/100*discount.amount)
+                amount -= (amount / 100 * discount.amount)
             self.end_amount = round(amount, 2)
-            self.end_discount = round(self.amount-self.end_amount, 2)
+            self.end_discount = round(self.amount - self.end_amount, 2)
 
     def pre_save(self):
         self.set_numero()

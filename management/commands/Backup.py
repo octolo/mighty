@@ -1,10 +1,16 @@
-from mighty.management import BaseCommand
-from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
-from django.db import models
-from mighty.apps import MightyConfig as conf
+import csv
+import datetime
+import os
+import shutil
+import tarfile
 from itertools import chain
-import datetime, csv, os, tarfile, shutil
+
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
+
+from mighty.apps import MightyConfig as conf
+from mighty.management import BaseCommand
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -48,15 +54,15 @@ class Command(BaseCommand):
         m2mfield_names = set([field.name for field in obj._meta.many_to_many])
         for field in field_names:
             if type(obj._meta.get_field(field)) == models.ForeignKey and hasattr(getattr(obj, field), 'uid'):
-                row.append(getattr(getattr(obj, field), 'uid'))
+                row.append(getattr(obj, field).uid)
             else:
                 row.append(getattr(obj, field))
         for field in m2mfield_names:
             m2ms = getattr(obj, field).all()
             if m2ms and hasattr(m2ms[0], 'uid'):
-                row.append(",".join([str(m2m.uid) for m2m in m2ms]))
+                row.append(','.join([str(m2m.uid) for m2m in m2ms]))
             else:
-                row.append(",".join([str(m2m.id) for m2m in m2ms]))
+                row.append(','.join([str(m2m.id) for m2m in m2ms]))
         return row
 
     def backup_csv(self, archive):
@@ -72,14 +78,14 @@ class Command(BaseCommand):
             os.remove(fullpath)
 
     def backup_cloud(self, archive):
-        cloudstorage =  + '/%s' % conf.Directory.cloud
+        cloudstorage = + '/%s' % conf.Directory.cloud
         if os.path.isdir(cloudstorage):
             archive.add(cloudstorage, arcname=conf.Directory.cloud[:-1])
             shutil.rmtree(cloudstorage)
 
     def do(self):
         self.get_dir()
-        with tarfile.open(self.backupdir + "/backup_%s.tar.gz" % datetime.datetime.now().strftime('%Y%m%d_%H%M%S'), "w:gz") as archive:
+        with tarfile.open(self.backupdir + '/backup_%s.tar.gz' % datetime.datetime.now().strftime('%Y%m%d_%H%M%S'), 'w:gz') as archive:
             if 'csv' in self.backup:
                 self.backup_csv(archive)
             if 'cloud' in self.backup:

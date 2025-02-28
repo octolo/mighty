@@ -1,5 +1,6 @@
-from functools import reduce
 import operator
+from functools import reduce
+
 
 class RequestManager:
     queryset = None

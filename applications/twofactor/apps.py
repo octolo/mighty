@@ -1,6 +1,8 @@
 from django.apps import AppConfig
 from django.conf import settings
+
 from mighty import over_config
+
 
 class Config:
     groups_onsave = []
@@ -19,8 +21,11 @@ class Config:
         basic = False
 
     class regex:
-        phone = r"^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"
+        phone = r'^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$'
+
 
 if hasattr(settings, 'TWOFACTOR'): over_config(Config, settings.TWOFACTOR)
+
+
 class TwofactorConfig(AppConfig, Config):
     name = 'mighty.applications.twofactor'

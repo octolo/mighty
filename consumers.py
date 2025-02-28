@@ -1,12 +1,11 @@
-from django.contrib.contenttypes.models import ContentType
-import json, logging
+import logging
+
 # from asgiref.sync import async_to_sync
 # from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 # from channels.db import database_sync_to_async
 
-from mighty.apps import MightyConfig as conf
-from mighty.models import Channel
 logger = logging.getLogger(__name__)
+
 
 class Consumer:
     def __init__(self, ws):
@@ -19,7 +18,8 @@ class Consumer:
         pass
 
     def dispatch(self, cmd, args):
-        self._ws.send_event({'status': False, 'event': ".".join(cmd)})
+        self._ws.send_event({'status': False, 'event': '.'.join(cmd)})
+
 
 class DefaultConsumer(Consumer):
     def dispatch(self, cmd, args):
@@ -27,12 +27,14 @@ class DefaultConsumer(Consumer):
             self._ws.send_event({'status': True, 'event': 'default.ping'})
         super().dispatch(cmd, args)
 
+
 class SupervisionConsumer(Consumer):
     def dispatch(self, cmd, args):
         if cmd[1] == 'join':
             self._ws.join_channel('access_support', args['channel'])
         elif cmd[1] == 'leave':
             self._ws.leave_channel('access_support', args['channel'])
+
 
 class MightyConsumer:
     pass

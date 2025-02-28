@@ -1,13 +1,13 @@
 from django.db import models
 from django.utils.module_loading import import_string
 
-from mighty.applications.messenger import choices, translates as _, send_missive
-from mighty.applications.messenger.decorators import HeritToMessenger
-from mighty.applications.messenger.models.abstracts import MessengerModel
 from mighty.applications.address.models import AddressNoBase
-from mighty.fields import JSONField
+from mighty.applications.messenger import choices, send_missive
+from mighty.applications.messenger import translates as _
+from mighty.applications.messenger.decorators import HeritToMessenger
 
-@HeritToMessenger(related_name="missive_to_content_type", backend_blank=False, backend_null=False)
+
+@HeritToMessenger(related_name='missive_to_content_type', backend_blank=False, backend_null=False)
 class Missive(AddressNoBase):
     msg_id = models.CharField(max_length=255, blank=True, null=True)
     response = models.TextField(blank=True, null=True, editable=False)
@@ -19,10 +19,10 @@ class Missive(AddressNoBase):
 
     class Meta:
         abstract = True
-        verbose_name = "missive"
-        verbose_name_plural = "missives"
-        permissions = [('can_check', _.permission_check),]
-        ordering = ['-date_create',]
+        verbose_name = 'missive'
+        verbose_name_plural = 'missives'
+        permissions = [('can_check', _.permission_check)]
+        ordering = ['-date_create']
 
     def __str__(self):
         return '%s (%s)' % (self.masking, self.mode)
@@ -40,7 +40,7 @@ class Missive(AddressNoBase):
         self.status = choices.STATUS_SENT
 
     def get_backend(self):
-        backend = import_string("%s.MissiveBackend" % self.backend)(missive=self)
+        backend = import_string('%s.MissiveBackend' % self.backend)(missive=self)
         return backend
 
     def check_documents(self):

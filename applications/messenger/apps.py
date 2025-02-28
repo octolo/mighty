@@ -1,6 +1,8 @@
 from django.apps import AppConfig
 from django.conf import settings
+
 from mighty import over_config
+
 
 class Config:
     sender_name = None
@@ -16,6 +18,9 @@ class Config:
         sms = False
         postal = False
 
-if hasattr(settings, 'MESSENGER'): over_config(Config, getattr(settings, 'MESSENGER'))
+
+if hasattr(settings, 'MESSENGER'): over_config(Config, settings.MESSENGER)
+
+
 class MessengerConfig(AppConfig, Config):
     name = 'mighty.applications.messenger'

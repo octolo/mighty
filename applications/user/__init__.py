@@ -1,10 +1,12 @@
 default_app_config = 'mighty.applications.user.apps.UserConfig'
 
-from django.contrib.auth import get_user_model
-from mighty.applications.user.apps import UserConfig as conf
 import uuid
 
-#FIXME: Need unique method to create user
+from django.contrib.auth import get_user_model
+
+from mighty.applications.user.apps import UserConfig as conf
+
+# FIXME: Need unique method to create user
 
 # def username_generator(base_username):
 #     UserModel = get_user_model()
@@ -20,11 +22,12 @@ import uuid
 #             exist = False
 #     return username
 
+
 def get_form_fields(fields='*'):
     if fields == '*':
         return (conf.Field.username,) + conf.Field.required + conf.Field.optional
-    else:
-        return getattr(conf.Field, fields)
+    return getattr(conf.Field, fields)
+
 
 # DEV
 def username_generator_v2(first_name=None, last_name=None, email=None):
@@ -36,15 +39,14 @@ def username_generator_v2(first_name=None, last_name=None, email=None):
     :param email: The email address of the user (optional).
     :return: A unique username string.
     """
-
     # Check if first name and surname are provided
     if first_name and last_name:
         # Use the first name and surname to generate the prefix
-        prefix = f"{last_name[0].lower()}{first_name[:2].lower()}"
+        prefix = f'{last_name[0].lower()}{first_name[:2].lower()}'
     elif email:
         # Validate the email
         if '@' not in email:
-            raise ValueError("A valid email must be provided")
+            raise ValueError('A valid email must be provided')
 
         # Split the email into local part and domain
         local_part, domain = email.split('@')
@@ -52,7 +54,7 @@ def username_generator_v2(first_name=None, last_name=None, email=None):
         # Use a combination of parts of the local part and domain for the prefix
         prefix = f"{local_part[:3].lower()}-{domain.split('.')[0][:3].lower()}"
     else:
-        raise ValueError("Insufficient information: provide either first name and surname, or email")
+        raise ValueError('Insufficient information: provide either first name and surname, or email')
 
     # Get the user model
     UserModel = get_user_model()
@@ -60,7 +62,7 @@ def username_generator_v2(first_name=None, last_name=None, email=None):
     # Generate a unique username
     while True:
         # Create a candidate username by combining the prefix and a substring of a UUID
-        username = f"{prefix}-{str(uuid.uuid4())[:8]}"
+        username = f'{prefix}-{str(uuid.uuid4())[:8]}'
 
         # Check if the username already exists in the database
         if not UserModel.objects.filter(username=username).exists():
@@ -71,9 +73,11 @@ def username_generator_v2(first_name=None, last_name=None, email=None):
 
 from django.apps import apps as django_apps
 
+
 def get_user_email_model(model=conf.ForeignKey.email):
     email = model.split('.')
     return django_apps.get_model(email[0], email[1])
+
 
 def get_user_phone_model(model=conf.ForeignKey.phone):
     phone = model.split('.')

@@ -1,10 +1,11 @@
-from django.db import models
+
 from django.conf import settings
+from django.db import models
 from django.template.defaultfilters import slugify
-from mighty.fields import JSONField
-from mighty.models.base import Base
+
 from mighty.applications.dataprotect import choices as _c
-import json
+from mighty.models.base import Base
+
 
 class ServiceData(Base):
     name = models.CharField(max_length=255)
@@ -19,11 +20,11 @@ class ServiceData(Base):
 
     @property
     def level_desc(self):
-        return getattr(_c, "%s_DESC" % self.level)
+        return getattr(_c, '%s_DESC' % self.level)
 
     @property
     def prefix_array(self):
-        return self.prefix.split(",") if self.prefix else None
+        return self.prefix.split(',') if self.prefix else None
 
     @property
     def prefix_json(self):
@@ -38,13 +39,14 @@ class ServiceData(Base):
 
     def as_json(self):
         return {
-            "name": self.name,
-            "category": self.category,
-            "code": self.code,
-            "desc": self.desc,
-            "keywords": self.keywords,
-            "prefix": self.prefix_json,
+            'name': self.name,
+            'category': self.category,
+            'code': self.code,
+            'desc': self.desc,
+            'keywords': self.keywords,
+            'prefix': self.prefix_json,
         }
+
 
 class UserDataProtect(Base):
     session_id = models.TextField()
@@ -55,7 +57,7 @@ class UserDataProtect(Base):
         abstract = True
 
     def __str__(self):
-        return "%s (%s/%s)" % (str(self.user), str(self.nbr_accept), str(self.nbr_refuse))
+        return '%s (%s/%s)' % (str(self.user), str(self.nbr_accept), str(self.nbr_refuse))
 
     @property
     def nbr_accept(self):

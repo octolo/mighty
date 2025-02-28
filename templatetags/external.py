@@ -5,9 +5,10 @@ from django.utils.safestring import mark_safe
 register = template.Library()
 
 tpls = {
-    "javascript": """<script type='text/javascript' %(async)s src="%(src)s"></script>""",
-    "stylesheet": """<link rel="stylesheet" href="%(href)s">""",
+    'javascript': """<script type='text/javascript' %(async)s src="%(src)s"></script>""",
+    'stylesheet': """<link rel="stylesheet" href="%(href)s">""",
 }
+
 
 @register.simple_tag(name='external_lib')
 def external_lib(libtype):
@@ -15,7 +16,7 @@ def external_lib(libtype):
     libs = libext.get(libtype)
     if libs:
         tpl = tpls.get(libtype)
-        html = ""
+        html = ''
         for lib in libs:
-            html+=tpl % (lib)
+            html += tpl % (lib)
     return mark_safe(html)

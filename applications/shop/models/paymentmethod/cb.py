@@ -1,28 +1,30 @@
+import re
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from mighty.applications.shop.apps import cards_test, ShopConfig
-import re
+
+from mighty.applications.shop.apps import ShopConfig, cards_test
+
 
 class CBModel:
     @property
     def readable_cb(self):
-        return ' '.join([self.cb[i:i+4] for i in range(0, len(self.cb), 4)])
+        return ' '.join([self.cb[i:i + 4] for i in range(0, len(self.cb), 4)])
 
     @property
     def str_cb(self):
-        return "%s %s %s/%s" % (self.readable_cb, self.cvc, self.date_valid.month, self.date_valid.year)
+        return '%s %s %s/%s' % (self.readable_cb, self.cvc, self.date_valid.month, self.date_valid.year)
 
     @property
     def mask_cb(self):
-        cb = self.readable_cb[0:4]+re.sub(r"\d", '*', self.readable_cb[4:-4])+self.readable_cb[-4:]
-        return "%s %s %s/%s" % (cb, self.cvc, self.date_valid.month, str(self.date_valid.year)[-2:])
+        cb = self.readable_cb[0:4] + re.sub(r'\d', '*', self.readable_cb[4:-4]) + self.readable_cb[-4:]
+        return '%s %s %s/%s' % (cb, self.cvc, self.date_valid.month, str(self.date_valid.year)[-2:])
 
     def sum_digits(self, digit):
         if digit < 10:
             return digit
-        else:
-            sum = (digit % 10) + (digit // 10)
-            return sum
+        sum = (digit % 10) + (digit // 10)
+        return sum
 
     def validate_luhn(self, cc_num):
         if settings.DEBUG and cc_num in cards_test():
@@ -57,7 +59,7 @@ class CBModel:
     def is_valid_cb(self):
         if not self.cb:
             raise ValidationError(code='invalid_cb', message='invalid CB')
-        self.cb = re.sub(r"\s+", "", self.cb, flags=re.UNICODE)
+        self.cb = re.sub(r'\s+', '', self.cb, flags=re.UNICODE)
         if not self.is_valid_date:
             raise ValidationError(code='invalid_date', message='invalid date')
         if not self.cb or not self.validate_luhn(self.cb):

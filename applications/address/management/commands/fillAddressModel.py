@@ -1,6 +1,8 @@
+from mighty.applications.address import fields, get_address_backend
 from mighty.management import ModelBaseCommand
-from mighty.applications.address import get_address_backend, fields
+
 address_backend = get_address_backend()
+
 
 class Command(ModelBaseCommand):
     def on_object(self, obj):
@@ -14,4 +16,3 @@ class Command(ModelBaseCommand):
                 pass
         else:
             obj.delete()
-        

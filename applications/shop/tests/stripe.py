@@ -1,15 +1,17 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-
-from mighty.functions import get_model
-from mighty.models import Offer, Subscription, PaymentMethod, Bill
-from mighty.applications.shop.apps import ShopConfig
-
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+
+from mighty.applications.shop.apps import ShopConfig
+from mighty.functions import get_model
+from mighty.models import Offer, PaymentMethod, Subscription
+
 
 class StripeConfTest:
     pass
+
 
 class StripeTestCase(TestCase):
     offer = None
@@ -25,7 +27,7 @@ class StripeTestCase(TestCase):
             return get_user_model().objects.first()
 
     def create_offer(self):
-        self.offer = Offer(name="Month 9.90€", price=999, price_tenant=199)
+        self.offer = Offer(name='Month 9.90€', price=999, price_tenant=199)
         self.offer.save()
 
     def create_subscription(self):
@@ -38,7 +40,7 @@ class StripeTestCase(TestCase):
 
     def test_basic_cards_date_ok(self):
         print('-- Basic cards date ok --')
-        now = datetime.today()+relativedelta(months=1)
+        now = datetime.today() + relativedelta(months=1)
         for cb in ShopConfig.bank_card_conf.basic_cards:
             self.payment_method = PaymentMethod(cb=cb['number'], cvc=cb['cvc'], month=now, year=now)
             self.set_group_or_user = self.get_group_or_user()
@@ -54,7 +56,7 @@ class StripeTestCase(TestCase):
 
     def test_basic_cards_date_ko(self):
         print('-- Basic cards date ko --')
-        now = datetime.today()-relativedelta(months=12)
+        now = datetime.today() - relativedelta(months=12)
         for cb in StripeConfTest.basic_cards:
             self.payment_method = PaymentMethod(cb=cb['number'], cvc=cb['cvc'], month=now, year=now)
             self.set_group_or_user = self.get_group_or_user()
@@ -73,8 +75,8 @@ class StripeTestCase(TestCase):
 
     def test_3ds_cards_date_ok(self):
         print('-- Basic cards date ok --')
-        now = datetime.today()+relativedelta(months=1)
-        for cb in  ShopConfig.bank_card_conf.cards_3ds:
+        now = datetime.today() + relativedelta(months=1)
+        for cb in ShopConfig.bank_card_conf.cards_3ds:
             self.payment_method = PaymentMethod(cb=cb['number'], cvc=cb['cvc'], month=now, year=now)
             self.set_group_or_user = self.get_group_or_user()
             self.payment_method.save()

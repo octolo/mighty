@@ -1,5 +1,6 @@
 from mighty.applications.address.apps import AddressConfig
 
+
 class SearchBackend:
     message = None
     fields = ['address', 'complement', 'code', 'locality']
@@ -34,10 +35,10 @@ class SearchBackend:
         }
 
     def get_location(self, search):
-        raise NotImplementedError("Subclasses should implement get_companies()")
+        raise NotImplementedError('Subclasses should implement get_companies()')
 
     def get_list(self, search, offset=0, limit=10):
-        raise NotImplementedError("Subclasses should implement get_companies()")
+        raise NotImplementedError('Subclasses should implement get_companies()')
 
     def give_list(self, search, offset=0, limit=10):
         address_list = self.get_list(search, offset, limit)

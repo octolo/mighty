@@ -1,25 +1,25 @@
 from django.db.models import Q
 from django.http import Http404, HttpResponse
-
 from rest_framework.decorators import action
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
-from mighty.filters import Foxid, FiltersManager
+from mighty.filters import FiltersManager, Foxid
 from mighty.forms.descriptors import FormDescriptor
 from mighty.tables.descriptors import TableDescriptor
+
 
 class ModelViewSet(ModelViewSet):
     cache_manager = None
     filters = []
-    user_way = "user__id"
-    action_prefix = "action_"
+    user_way = 'user__id'
+    action_prefix = 'action_'
     order_enable = False
     order_base = []
     order_association = {}
     forms_desc = []
     tables_desc = []
-    file_type = ("csv", "xls", "xlsx", "pdf")
+    file_type = ('csv', 'xls', 'xlsx', 'pdf')
     actions_authorized = ()
     variables_related = {}
     variables_model = []
@@ -28,36 +28,35 @@ class ModelViewSet(ModelViewSet):
     def model_static(self):
         return self.serializer_class.Meta.model
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=['get'])
     def reporting_list(self, request, *args, **kwargs):
         return Response(self.model_static().reporting_definition)
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=['get'])
     def reporting_global(self, request, *args, **kwargs):
         obj = self.get_queryset().first()
         return obj.reporting_execute(request, *args, **kwargs)
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=['get'])
     def reporting_detail(self, request, *args, **kwargs):
         obj = self.get_object()
         return obj.reporting_execute(request, *args, **kwargs)
-        #report = request.GET.get("report")
-        #filetype = request.GET.get("file")
-        #if any(report, filetype) and filetype in self.file_type and report in obj.reporting_keys:
+        # report = request.GET.get("report")
+        # filetype = request.GET.get("file")
+        # if any(report, filetype) and filetype in self.file_type and report in obj.reporting_keys:
         #    return obj.reporting_process(reporting, file_type)
-        #raise Http404()
+        # raise Http404()
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=['get'])
     def reporting(self, request, *args, **kwargs):
         obj = self.model_static()
-        report = request.GET.get("report")
-        filetype = request.GET.get("file")
+        report = request.GET.get('report')
+        filetype = request.GET.get('file')
         if any(report, filetype) and filetype in self.file_type and report in obj.reporting_keys:
             return obj.reporting_process(reporting, file_type)
         raise Http404()
 
-
-    @action(detail=False, methods=["get"], url_path=r"forms/(?P<form>\w+)")
+    @action(detail=False, methods=['get'], url_path=r'forms/(?P<form>\w+)')
     def form_desc(self, request, form=None, *args, **kwargs):
         desc = next((f for f in self.forms_desc if f.Options.url == form), None)
         if desc:
@@ -65,7 +64,7 @@ class ModelViewSet(ModelViewSet):
             return Response(formdesc)
         raise Http404
 
-    @action(detail=True, methods=["get"], url_path=r"formsdetail/(?P<form>\w+)")
+    @action(detail=True, methods=['get'], url_path=r'formsdetail/(?P<form>\w+)')
     def form_detail_desc(self, request, form=None, *args, **kwargs):
         desc = next((f for f in self.forms_desc if f.Options.url == form), None)
         if desc:
@@ -76,9 +75,9 @@ class ModelViewSet(ModelViewSet):
     def call_action_model(self, obj, action, data, method):
         return
 
-    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r"saction/(?P<saction>\w+)")
+    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r'saction/(?P<saction>\w+)')
     def single_action(self, *args, **kwargs):
-        saction = kwargs.get("saction")
+        saction = kwargs.get('saction')
         if saction in self.actions_authorized:
             obj = self.get_object()
             if hasattr(obj, saction):
@@ -86,10 +85,10 @@ class ModelViewSet(ModelViewSet):
                 return Response(result)
         raise Http404
 
-    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r"daction/(?P<daction>\w+)")
+    @action(detail=True, methods=['get', 'post', 'delete'], url_path=r'daction/(?P<daction>\w+)')
     def data_action(self, *args, **kwargs):
-        daction = kwargs.get("daction")
-        action = self.action_prefix+daction
+        daction = kwargs.get('daction')
+        action = self.action_prefix + daction
         if action in self.actions_authorized:
             obj = self.get_object()
             if hasattr(obj, daction):
@@ -97,7 +96,7 @@ class ModelViewSet(ModelViewSet):
                 return Response(result)
         raise Http404
 
-    @action(detail=False, methods=["get"], url_path=r"table/(?P<table>\w+)")
+    @action(detail=False, methods=['get'], url_path=r'table/(?P<table>\w+)')
     def table_desc(self, request, table=None, *args, **kwargs):
         desc = next((f for t in self.tables_desc if t.Options.url == table), None)
         if desc:
@@ -105,33 +104,33 @@ class ModelViewSet(ModelViewSet):
             return Response(formdesc)
         raise Http404
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=['get'])
     def variables(self, request, *args, **kwargs):
         model = self.model_static
         if hasattr(self.model_static, 'eve_variable_prefixed_list'):
             var = self.model_static().eve_variable_prefixed_list(related=self.variables_related)
-            #var += list(itertools.chain(*(v().eve_variable_prefixed_list() for v in self.variables_model)))
+            # var += list(itertools.chain(*(v().eve_variable_prefixed_list() for v in self.variables_model)))
             return Response(var)
         return Response([])
 
     # Variables access
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=['get'])
     def variablesviewer(self, request, *args, **kwargs):
         obj = self.get_object()
-        variable = obj.eve_tv.get(request.GET.get("eve_tv"))
+        variable = obj.eve_tv.get(request.GET.get('eve_tv'))
         return HttpResponse(variable)
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=['get'])
     def variablesviewer2(self, request, *args, **kwargs):
         obj = self.get_object()
-        variable = obj.eve_tv2.get(request.GET.get("eve_tv2"))
+        variable = obj.eve_tv2.get(request.GET.get('eve_tv2'))
         if variable:
             return HttpResponse(variable.compiled)
-        return HttpResponse("variable not found")
+        return HttpResponse('variable not found')
 
     # Filter query
-    def Q_is_me(self, prefix=""):
-        return Q(**{prefix+self.user_way: self.user.id})
+    def Q_is_me(self, prefix=''):
+        return Q(**{prefix + self.user_way: self.user.id})
 
     # Queryset
     def get_queryset(self, queryset=None):

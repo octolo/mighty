@@ -1,10 +1,13 @@
 default_app_config = 'mighty.applications.shop.apps.ShopConfig'
-from django.core.exceptions import ObjectDoesNotExist, FieldDoesNotExist
-from mighty.functions import key, get_model
 import string
 
+from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
+
+from mighty.functions import get_model, key
+
+
 def generate_code_type():
-    code = key(8, string.ascii_letters+string.hexdigits).upper()
+    code = key(8, string.ascii_letters + string.hexdigits).upper()
     try:
         Model = get_model('mighty', 'Discount')
         Model._meta.get_field('code')
@@ -16,8 +19,9 @@ def generate_code_type():
     except FieldDoesNotExist:
         return code
 
+
 def generate_code_service():
-    code = key(8, string.ascii_letters+string.hexdigits).upper()
+    code = key(8, string.ascii_letters + string.hexdigits).upper()
     try:
         Model = get_model('mighty', 'Service')
         Model._meta.get_field('code')
@@ -28,15 +32,16 @@ def generate_code_service():
     except FieldDoesNotExist:
         return code
 
+
 def generate_code_offer():
-    code = key(8, string.ascii_letters+string.hexdigits).upper()
+    code = key(8, string.ascii_letters + string.hexdigits).upper()
     return code
-    #try:
+    # try:
     #    Model = get_model('mighty', 'Offer')
     #    Model._meta.get_field('code')
     #    Model.objects.get(code=code)
     #    return generate_code_offer()
-    #except FieldDoesNotExist:
+    # except FieldDoesNotExist:
     #    return code
-    #except ObjectDoesNotExist:
+    # except ObjectDoesNotExist:
     #    return code

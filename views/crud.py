@@ -1,60 +1,68 @@
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic.detail import DetailView
-from django.views.generic.list import ListView
 from django.http import HttpResponseRedirect
-from mighty.views.model import ModelView
-from mighty.views.foxid import FoxidView
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.list import ListView
+
 from mighty.functions import setting
+from mighty.views.foxid import FoxidView
+from mighty.views.model import ModelView
+
 
 # ListView overrided
 class ListView(FoxidView, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": self.model._meta.verbose_name_plural,})
+        context.update({'title': self.model._meta.verbose_name_plural})
         return context
+
 
 # CreateView overrided and rename with an empty object
 class AddView(ModelView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": "%s %s" % (self.model.mighty.perm_title['add'], self.model._meta.verbose_name)})
+        context.update({'title': '%s %s' % (self.model.mighty.perm_title['add'], self.model._meta.verbose_name)})
         return context
 
     def get_success_url(self):
         return self.object.detail_url
+
 
 # DetailView overrided
 class DetailView(ModelView, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": self.object})
+        context.update({'title': self.object})
         return context
+
 
 # ChangeView overrided
 class ChangeView(ModelView, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": "%s %s" % (self.model.mighty.perm_title['change'], self.model._meta.verbose_name)})
+        context.update({'title': '%s %s' % (self.model.mighty.perm_title['change'], self.model._meta.verbose_name)})
         return context
 
     def get_success_url(self):
         return self.object.detail_url
 
+
 # DeleteView overrided
 class DeleteView(ModelView, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": "%s %s" % (self.object.mighty.perm_title['delete'], self.object._meta.verbose_name)})
+        context.update({'title': '%s %s' % (self.object.mighty.perm_title['delete'], self.object._meta.verbose_name)})
         return context
 
     def get_success_url(self):
         return self.object.list_url
 
         # EnableView is like deleteview but set is_disable to false
+
+
 class EnableView(DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": "%s %s" % (self.model.mighty.perm_title['enable'], context["fake"]._meta.verbose_name)})
+        context.update({'title': '%s %s' % (self.model.mighty.perm_title['enable'], context['fake']._meta.verbose_name)})
         return context
 
     def get_success_url(self):
@@ -66,11 +74,12 @@ class EnableView(DeleteView):
         self.object.enable()
         return HttpResponseRedirect(success_url)
 
+
 # EnableView is like deleteview but set is_disable to true
 class DisableView(DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"title": "%s %s" % (self.model.mighty.perm_title['disable'], self.object._meta.verbose_name)})
+        context.update({'title': '%s %s' % (self.model.mighty.perm_title['disable'], self.object._meta.verbose_name)})
         return context
 
     def get_success_url(self):
@@ -81,6 +90,7 @@ class DisableView(DeleteView):
         success_url = self.get_success_url()
         self.object.disable()
         return HttpResponseRedirect(success_url)
+
 
 if 'rest_framework' in setting('INSTALLED_APPS'):
     from rest_framework.generics import DestroyAPIView

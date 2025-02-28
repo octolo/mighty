@@ -1,9 +1,10 @@
 from django.db import models
 
-from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.address import fields as address_fields
 from mighty.applications.address.models import Address
+from mighty.applications.user.apps import UserConfig as conf
 from mighty.models import Base
+
 
 class UserAddress(Address):
     enable_model_change_log = True
@@ -11,17 +12,17 @@ class UserAddress(Address):
     enable_clean_fields = True
 
     def __str__(self):
-        return "%s - %s" % (str(self.user), self.representation)
+        return '%s - %s' % (str(self.user), self.representation)
 
     class Meta(Base.Meta):
         abstract = True
 
     @property
     def masking(self):
-        return "**"
+        return '**'
 
     def set_default_data(self):
-        data = "raw"
+        data = 'raw'
         udata = getattr(self.user, data)
         if (self.default or not udata) and udata != getattr(self, data):
             for field in address_fields:

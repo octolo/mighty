@@ -1,12 +1,14 @@
+import datetime
+import zoneinfo
+
+from django.core.exceptions import MultipleObjectsReturned
 from django.http import JsonResponse
 from django.utils import timezone
-from django.core.exceptions import MultipleObjectsReturned
 
-from mighty.views.template import TemplateView
 from mighty import translates as _
 from mighty.functions import setting
+from mighty.views.template import TemplateView
 
-import zoneinfo, datetime
 
 # Check data side server
 class CheckData(TemplateView):
@@ -16,22 +18,22 @@ class CheckData(TemplateView):
     http_status = 200
 
     def get_request_type(self):
-        if hasattr(self.request, "POST"):
+        if hasattr(self.request, 'POST'):
             return self.request.POST
         return self.request.GET
 
     def get_data(self):
-        return self.get_request_type().get('check', self.request.GET.get("check"))
+        return self.get_request_type().get('check', self.request.GET.get('check'))
 
     def get_queryset(self, queryset=None):
         return self.model.objects.get(**{self.test_field: self.get_data()})
 
     def msg_no_errors(self):
-        return { "message": _.no_errors, "valid": True }
+        return {'message': _.no_errors, 'valid': True}
 
     def msg_errors(self, error):
         self.http_status = self.http_error
-        return { "valid": False, "code": error.code, "msg": error.message }
+        return {'valid': False, 'code': error.code, 'msg': error.message}
 
     def check_alreay_exist(self):
         self.get_queryset()
@@ -40,30 +42,32 @@ class CheckData(TemplateView):
     def check_data(self):
         try:
             self.check_already_exist()
-        except self.model.DoesNotExist:        
+        except self.model.DoesNotExist:
             return self.msg_no_errors()
         except MultipleObjectsReturned as e:
             return self.msg_errors(e)
 
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(self.check_data(), 
+        return JsonResponse(self.check_data(),
             safe=False, status=self.http_status, **response_kwargs)
+
 
 class CheckSynchro(CheckData):
     def check_data(self):
         return {
-            "timezone": {
-                "now": str(timezone.now()),
-                "datetime": str(datetime.datetime.now()),
-                "today": str(datetime.date.today()),
-                "list": zoneinfo.available_timezones(),
+            'timezone': {
+                'now': str(timezone.now()),
+                'datetime': str(datetime.datetime.now()),
+                'today': str(datetime.date.today()),
+                'list': zoneinfo.available_timezones(),
             }
         }
 
+
 if 'rest_framework' in setting('INSTALLED_APPS'):
-    from rest_framework.views import APIView
     from rest_framework.response import Response
-    
+    from rest_framework.views import APIView
+
     class CheckData(CheckData, APIView):
         def get_request_type(self):
             return self.request.data

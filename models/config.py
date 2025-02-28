@@ -1,6 +1,8 @@
 from django.db import models
-from mighty.models.base import Base
+
 from mighty.functions import make_searchable
+from mighty.models.base import Base
+
 
 class Config(Base):
     name = models.CharField(max_length=255, unique=True)

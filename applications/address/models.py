@@ -1,12 +1,16 @@
-from django.db import models
 from django.core.exceptions import ValidationError
-from mighty.models.base import Base
-from mighty.applications.address import translates as _, fields, get_address_backend
+from django.db import models
+
+from mighty.applications.address import fields, get_address_backend
+from mighty.applications.address import translates as _
 from mighty.applications.address.apps import AddressConfig as conf
+from mighty.models.base import Base
 
 address_backend = get_address_backend()
 
 CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
+
+
 class AddressNoBase(models.Model):
     addr_backend_id = models.CharField(max_length=255, null=True, blank=True, editable=False)
     address = models.CharField(_.address, max_length=255, null=True, blank=True)
@@ -35,8 +39,8 @@ class AddressNoBase(models.Model):
     def fill_from_raw(self):
         address = address_backend.get_location(self.raw)
         if address:
-            self.addr_backend_id = address["id"]
-            self.source = address["source"]
+            self.addr_backend_id = address['id']
+            self.source = address['source']
             for field in fields:
                 setattr(self, field, address[field])
 
@@ -49,11 +53,11 @@ class AddressNoBase(models.Model):
                 self.raw = self.format_universal()
 
     def erase_to_new(self, *args, **kwargs):
-        self.addr_backend_id = kwargs.get('backend_id', None)
+        self.addr_backend_id = kwargs.get('backend_id')
         self.source = kwargs.get('source', 'FROMUSER')
         self.raw = None
         for field in fields:
-            setattr(self, field, kwargs.get(field, None))
+            setattr(self, field, kwargs.get(field))
 
     @property
     def has_state_or_postal_code(self):
@@ -82,7 +86,7 @@ class AddressNoBase(models.Model):
     def clean_address_fields(self):
         if self.enable_clean_fields:
             self.clean_address()
-            #self.clean_locality()
+            # self.clean_locality()
             self.clean_state_or_postal_code()
 
     @property
@@ -97,7 +101,7 @@ class AddressNoBase(models.Model):
 
     @property
     def address_is_empty(self):
-        nb_fields = sum([1 if getattr(self, field) and field != 'raw' else 0  for field in fields])
+        nb_fields = sum([1 if getattr(self, field) and field != 'raw' else 0 for field in fields])
         return (nb_fields < 2)
 
     def only_raw(self):
@@ -115,7 +119,7 @@ class AddressNoBase(models.Model):
 
     @property
     def state_or_postal_code(self):
-        return self.postal_code if self.postal_code else self.state_code
+        return self.postal_code or self.state_code
 
     @property
     def city(self):
@@ -124,12 +128,12 @@ class AddressNoBase(models.Model):
 
     @property
     def city_fr(self):
-        cedex = "CEDEX %s" % self.cedex_code if self.cedex_code else ""
-        return " ".join([str(ad) for ad in [self.state_or_postal_code, self.locality, cedex] if ad]).strip()
+        cedex = 'CEDEX %s' % self.cedex_code if self.cedex_code else ''
+        return ' '.join([str(ad) for ad in [self.state_or_postal_code, self.locality, cedex] if ad]).strip()
 
     @property
     def city_default(self):
-        return " ".join([str(ad) for ad in [self.state_or_postal_code, self.locality] if ad]).strip()
+        return ' '.join([str(ad) for ad in [self.state_or_postal_code, self.locality] if ad]).strip()
 
     @property
     def representation(self):
@@ -141,11 +145,11 @@ class AddressNoBase(models.Model):
 
     @property
     def address_without_country(self):
-        tpl = ""
-        if self.address: tpl += "%(address)s"
-        if self.postal_code: tpl += ", %(postal_code)s" if len(tpl) else "%(postal_code)s"
-        if self.locality: tpl += ", %(locality)s"  if len(tpl) else "%(locality)s"
-        if self.state: tpl += ", %(state)s" if len(tpl) else "%(state)s"
+        tpl = ''
+        if self.address: tpl += '%(address)s'
+        if self.postal_code: tpl += ', %(postal_code)s' if len(tpl) else '%(postal_code)s'
+        if self.locality: tpl += ', %(locality)s' if len(tpl) else '%(locality)s'
+        if self.state: tpl += ', %(state)s' if len(tpl) else '%(state)s'
         return tpl % ({field: getattr(self, field) for field in self.fields_used})
 
     @property
@@ -153,13 +157,14 @@ class AddressNoBase(models.Model):
         return fields
 
     def format_universal(self):
-        tpl = ""
-        if self.address: tpl += "%(address)s"
-        if self.postal_code: tpl += ", %(postal_code)s" if len(tpl) else "%(postal_code)s"
-        if self.locality: tpl += ", %(locality)s"  if len(tpl) else "%(locality)s"
-        if self.state: tpl += ", %(state)s" if len(tpl) else "%(state)s"
-        if self.country: tpl += ", %(country)s"  if len(tpl) else "%(country)s"
+        tpl = ''
+        if self.address: tpl += '%(address)s'
+        if self.postal_code: tpl += ', %(postal_code)s' if len(tpl) else '%(postal_code)s'
+        if self.locality: tpl += ', %(locality)s' if len(tpl) else '%(locality)s'
+        if self.state: tpl += ', %(state)s' if len(tpl) else '%(state)s'
+        if self.country: tpl += ', %(country)s' if len(tpl) else '%(country)s'
         return tpl % ({field: getattr(self, field) for field in self.fields_used})
+
 
 class Address(AddressNoBase, Base):
     search_fields = ['locality', 'postal_code']

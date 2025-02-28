@@ -1,55 +1,56 @@
-from django.template.response import TemplateResponse
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
+from django.template.response import TemplateResponse
 
 from mighty.admin.models import BaseAdmin
-from mighty.applications.messenger import fields
 from mighty.applications.address import fields as addr_fields
+from mighty.applications.messenger import fields
+
 
 class MissiveAdmin(BaseAdmin):
-    change_form_template  = 'admin/change_form_missives.html'
+    change_form_template = 'admin/change_form_missives.html'
     view_on_site = False
     list_display = ('target', 'subject', 'mode', 'status')
     search_fields = ('target',)
     list_filter = ('mode', 'status')
-    readonly_fields = ('backend', 'addr_backend_id', 'response', 'partner_id', 'code_error', 'trace', "admin_url_html")
+    readonly_fields = ('backend', 'addr_backend_id', 'response', 'partner_id', 'code_error', 'trace', 'admin_url_html')
     fieldsets = (
-        (None, {"classes": ("wide",), "fields": (
-            "backend",
-            "mode",
-            "status",
-            "name",
-            "sender",
-            "reply",
-            "reply_name",
-            "target",
+        (None, {'classes': ('wide',), 'fields': (
+            'backend',
+            'mode',
+            'status',
+            'name',
+            'sender',
+            'reply',
+            'reply_name',
+            'target',
         )}),
-        ("Content type", {"classes": ("wide",), "fields": (
-            "admin_url_html",
-            "content_type",
-            "object_id",
+        ('Content type', {'classes': ('wide',), 'fields': (
+            'admin_url_html',
+            'content_type',
+            'object_id',
         )}),
-        ("Contact", {"classes": ("collapse",), "fields": (
-            "denomination",
-            "last_name",
-            "first_name",
+        ('Contact', {'classes': ('collapse',), 'fields': (
+            'denomination',
+            'last_name',
+            'first_name',
         )}),
-        ("Address", {"classes": ("collapse",), "fields": addr_fields}),
-        ("Content", {"classes": ("collapse",), "fields": (
-            "subject",
-            "template",
-            "header_html",
-            "footer_html",
-            "preheader",
-            "html",
-            "txt",
+        ('Address', {'classes': ('collapse',), 'fields': addr_fields}),
+        ('Content', {'classes': ('collapse',), 'fields': (
+            'subject',
+            'template',
+            'header_html',
+            'footer_html',
+            'preheader',
+            'html',
+            'txt',
         )}),
-        ("Follow", {"classes": ("collapse",), "fields": (
-            "response",
-            "msg_id",
-            "partner_id",
-            "trace",
-            "code_error",
+        ('Follow', {'classes': ('collapse',), 'fields': (
+            'response',
+            'msg_id',
+            'partner_id',
+            'trace',
+            'code_error',
         )}),
     )
 
@@ -102,14 +103,15 @@ class MissiveAdmin(BaseAdmin):
         request.current_app = self.admin_site.name
         return TemplateResponse(request, 'admin/missive_check.html', context)
 
-    missivecancel_view_template = "admin/missivecancel.html"
-    missivecancel_view_suffix = "missivecancel"
-    missivecancel_view_path = "<path:object_id>/missivecancel/"
-    missivecancel_view_object_tools = {"name": "Cancel", "url": "missivecancel"}
+    missivecancel_view_template = 'admin/missivecancel.html'
+    missivecancel_view_suffix = 'missivecancel'
+    missivecancel_view_path = '<path:object_id>/missivecancel/'
+    missivecancel_view_object_tools = {'name': 'Cancel', 'url': 'missivecancel'}
+
     def missivecancel_view(self, request, object_id, form_url=None, extra_context=None):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
-        extra_context = { "response": obj.cancel_missive(), }
+        extra_context = {'response': obj.cancel_missive()}
         return self.admincustom_view(request, object_id, extra_context,
             urlname=self.get_admin_urlname(self.missivecancel_view_suffix),
             template=self.missivecancel_view_template,
@@ -131,10 +133,11 @@ class MissiveAdmin(BaseAdmin):
         ]
         return my_urls + urls
 
+
 class NotificationAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.notification}),)
-    list_display = ('target', 'subject', 'mode',)
+    list_display = ('target', 'subject', 'mode')
     search_fields = ('target',)
     list_filter = ('mode', 'status')
     readonly_fields = ('missive',)
@@ -143,10 +146,11 @@ class NotificationAdmin(BaseAdmin):
 class NotificationAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.notification}),)
-    list_display = ('target', 'subject', 'mode',)
+    list_display = ('target', 'subject', 'mode')
     search_fields = ('target',)
     list_filter = ('mode', 'status')
     readonly_fields = ('missive',)
+
 
 class TemplateAdmin(BaseAdmin):
     view_on_site = False

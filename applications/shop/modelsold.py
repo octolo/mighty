@@ -1,13 +1,14 @@
+from datetime import timedelta
+
 from django.db import models
 from django.utils import timezone
+from schwifty import BIC, IBAN
 
-from mighty.models.base import Base
-from mighty.apps import MightyConfig
-from mighty.applications.shop import generate_code_type, choices
+from mighty.applications.shop import choices, generate_code_type
 from mighty.applications.shop.apps import ShopConfig
+from mighty.apps import MightyConfig
+from mighty.models.base import Base
 
-from schwifty import IBAN, BIC
-from datetime import timedelta
 
 class Service(Base):
     name = models.CharField(max_length=255)
@@ -18,7 +19,8 @@ class Service(Base):
         ordering = ['name']
 
     def __str__(self):
-        return "%s(%s)" % (self.name, self.code)
+        return '%s(%s)' % (self.name, self.code)
+
 
 class Offer(Base):
     name = models.CharField(max_length=255)
@@ -33,7 +35,8 @@ class Offer(Base):
         ordering = ['name']
 
     def __str__(self):
-        return "%s (%s)" % (self.name, self.get_frequency_display())
+        return '%s (%s)' % (self.name, self.get_frequency_display())
+
 
 class Subscription(Base):
     group = models.ForeignKey(ShopConfig.group, on_delete=models.CASCADE, related_name='group_subscription')
@@ -60,30 +63,30 @@ class Subscription(Base):
     @property
     def price(self):
         return self.offer.price
-    
+
     @property
     def price_tenant(self):
-        return self.offer.price_tenant*self.group.nbr_tenant
+        return self.offer.price_tenant * self.group.nbr_tenant
 
     def do_bill(self):
-        amount = self.price+self.price_tenant
+        amount = self.price + self.price_tenant
         for disc in self.discount.filter(date_end__lt=timezone.now).order_by('-amount'):
             if disc.amount and disc.is_percent:
-                amount -= amount*(disc.amount/100)
+                amount -= amount * (disc.amount / 100)
             elif disc.amount:
                 amount -= disc.amount
-        self.subscription_bill.create(amount=amount, group= self.group)
+        self.subscription_bill.create(amount=amount, group=self.group)
 
     def set_date_duration(self):
         pass
 
     @property
     def get_date_month(self):
-        return self.next_paid+timedelta(days=30)
+        return self.next_paid + timedelta(days=30)
 
     @property
     def get_date_year(self):
-        return self.next_paid+timedelta(days=MightyConfig.days_in_year)
+        return self.next_paid + timedelta(days=MightyConfig.days_in_year)
 
     @property
     def get_date_oneshot(self):
@@ -103,14 +106,14 @@ class Subscription(Base):
             self.set_date_by_duration()
         else:
             self.set_date_by_frequency()
-        #if self.is_paid:
+        # if self.is_paid:
         #    now = timezone.now
         #    self.date_start = now
         #    if self.offer.duration:
         #        self.date_end = now + self.offer.duration
 
     def set_on_use_count(self):
-        self.one_use_count = True if self.offer.frequency =='ONUSE' else False
+        self.one_use_count = True if self.offer.frequency == 'ONUSE' else False
 
     def set_subscription(self):
         if hasattr(self.group, 'subscription'):
@@ -135,6 +138,7 @@ class Subscription(Base):
         self.should_bill()
         self.set_subscription()
 
+
 class Bill(Base):
     group = models.ForeignKey(ShopConfig.group, on_delete=models.SET_NULL, blank=True, null=True)
     amount = models.FloatField()
@@ -143,9 +147,10 @@ class Bill(Base):
     payment_id = models.CharField(max_length=255, blank=True, null=True, editable=False)
     subscription = models.ForeignKey('mighty.Subscription', on_delete=models.SET_NULL, blank=True, null=True, related_name='subscription_bill', editable=False)
     method = models.ForeignKey('mighty.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True, related_name='method_bill', editable=False)
-    
+
     class Meta(Base.Meta):
         abstract = True
+
 
 class Discount(Base):
     code = models.CharField(max_length=50, default=generate_code_type, unique=True)
@@ -163,9 +168,10 @@ class Discount(Base):
             return (self.date_end >= timezone.now)
         return True
 
+
 class PaymentMethod(Base):
-    group = models.ForeignKey(ShopConfig.group, on_delete=models.SET_NULL, blank=True, null=True, related_name="payment_method")
-    form_method = models.CharField(max_length=4, choices=choices.PAYMETHOD, default="CB")
+    group = models.ForeignKey(ShopConfig.group, on_delete=models.SET_NULL, blank=True, null=True, related_name='payment_method')
+    form_method = models.CharField(max_length=4, choices=choices.PAYMETHOD, default='CB')
 
     # IBAN
     iban = models.CharField(max_length=27, blank=True, null=True)
@@ -207,9 +213,8 @@ class PaymentMethod(Base):
     def sum_digits(digit):
         if digit < 10:
             return digit
-        else:
-            sum = (digit % 10) + (digit // 10)
-            return sum
+        sum = (digit % 10) + (digit // 10)
+        return sum
 
     def validate_luhn(cc_num):
         cc_num = cc_num[::-1]
@@ -233,11 +238,11 @@ class PaymentMethod(Base):
 
     @property
     def is_valid(self):
-        if self.form_method == "IBAN":
+        if self.form_method == 'IBAN':
             return (self.is_valid_iban and self.is_valid_bic)
         return self.is_valid_cb
 
-    @property        
+    @property
     def cb_month(self):
         return self.date_cb.month
 

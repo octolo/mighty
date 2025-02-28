@@ -1,8 +1,9 @@
-from mighty.management import BaseCommand
-from mighty.models import Missive
+
 from mighty.applications.messenger.apps import MessengerConfig
 from mighty.functions import get_backends
-import sys, re
+from mighty.management import BaseCommand
+from mighty.models import Missive
+
 
 class Command(BaseCommand):
     cache_missive = None
@@ -11,8 +12,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument("--backend_path", default=MessengerConfig.missive_backend)
-        parser.add_argument("--target", default="test@mighty-py.com")
+        parser.add_argument('--backend_path', default=MessengerConfig.missive_backend)
+        parser.add_argument('--target', default='test@mighty-py.com')
 
     def handle(self, *args, **options):
         self.backend_path = options.get('backend_path')
@@ -34,4 +35,3 @@ class Command(BaseCommand):
 
     def do(self):
         self.backend.testBackend()
-

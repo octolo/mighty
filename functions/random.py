@@ -1,5 +1,6 @@
-from random import randrange
 from datetime import timedelta
+from random import randrange
+
 
 def random_date(start, end):
     """
@@ -11,8 +12,8 @@ def random_date(start, end):
     random_second = randrange(int_delta)
     return start + timedelta(seconds=random_second)
 
-def random_object_by_id(model, manager="objects", **kwargs):
-    manager = getattr(model, manager)
-    rand_object = randrange(0, manager.filter(**kwargs).count()-1)
-    manager.get(pk=rand_object)
 
+def random_object_by_id(model, manager='objects', **kwargs):
+    manager = getattr(model, manager)
+    rand_object = randrange(0, manager.filter(**kwargs).count() - 1)
+    manager.get(pk=rand_object)

@@ -1,1 +1,1 @@
-from mighty.middlewares.token import TokenAuthMiddleware
+from mighty.middlewares.token import TokenAuthMiddleware as TokenAuthMiddleware

@@ -1,15 +1,16 @@
+import hashlib
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.contrib.auth import get_user_model
-from mighty.models.base import Base
-from mighty.applications.logger import translates as _, choices
+
 from mighty import translates as _m
-from datetime import datetime
-import hashlib
+from mighty.applications.logger import translates as _
+from mighty.models.base import Base
+
 
 class Log(Base):
-    fields_log_hash = ("msg", "stack_info")
+    fields_log_hash = ('msg', 'stack_info')
     args = models.CharField(_.args, max_length=255, blank=True, null=True)
     created = models.DateTimeField(_.created, auto_now_add=True, editable=False)
     exc_info = models.CharField(_.exc_info, max_length=255, blank=True, null=True)
@@ -39,12 +40,13 @@ class Log(Base):
         ordering = ['-created']
 
     def get_log_hash(self):
-        fields_to_hash = "".join(getattr(self, field) for field in self.fields_log_hash)
+        fields_to_hash = ''.join(getattr(self, field) for field in self.fields_log_hash)
         return hashlib.sha1(fields_to_hash.encode()).hexdigest()
 
     def save(self, *args, **kwargs):
         self.log_hash = self.get_log_hash()
         super().save(*args, **kwargs)
+
 
 class ModelChangeLog(models.Model):
     field = models.CharField(_m.field, max_length=255, db_index=True)
@@ -60,7 +62,7 @@ class ModelChangeLog(models.Model):
     def get_value(self):
         if hasattr(self.value, 'decode'):
             return self.value.decode('utf-8')
-        elif hasattr(self.value, 'tobytes'):
+        if hasattr(self.value, 'tobytes'):
             return self.value.tobytes().decode('utf-8')
         return "Can't cast/bytes/decode"
 
@@ -69,4 +71,3 @@ class ModelChangeLog(models.Model):
         verbose_name = _.v_changelog
         verbose_name_plural = _.vp_changelog
         ordering = ['-date_end']
-

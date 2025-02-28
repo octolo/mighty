@@ -1,9 +1,9 @@
-from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 
-from mighty.models.base import Base
-from mighty.functions import make_searchable
 from mighty.fields import JSONField
+from mighty.models.base import Base
+
 
 class Backend(Base):
     service = models.CharField(max_length=255, blank=True, null=True)
@@ -17,7 +17,7 @@ class Backend(Base):
 
     def pre_save(self):
         if not self.service and self.content_type:
-            self.service = str(self.content_type.app_label)+"."+str(self.content_type.model)
+            self.service = str(self.content_type.app_label) + '.' + str(self.content_type.model)
 
     @property
     def format_list(self):

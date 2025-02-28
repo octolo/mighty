@@ -1,7 +1,10 @@
-from mighty.consumers import Consumer
 # from asgiref.sync import async_to_sync
 import logging
+
+from mighty.consumers import Consumer
+
 logger = logging.getLogger(__name__)
+
 
 class ChatConsumer(Consumer):
     def __init__(self, ws):

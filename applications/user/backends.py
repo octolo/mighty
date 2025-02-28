@@ -1,15 +1,16 @@
-from django.conf import settings
-from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
 
 UserModel = get_user_model()
+
+
 class AuthBasicBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        field_type = kwargs.get('field_type', None)
+        field_type = kwargs.get('field_type')
         if username is None:
             username = kwargs.get(UserModel.USERNAME_FIELD)
         if username is None or password is None:
-            return
+            return None
         try:
             if field_type == 'uid' and hasattr(UserModel, 'uid'):
                 user = UserModel.objects.get(uid=username)

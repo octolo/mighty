@@ -1,23 +1,30 @@
+import csv
+import datetime
+import os
+import os.path
+import sys
+
+from django.contrib.auth import get_user_model
+from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
-from django.core.exceptions import MultipleObjectsReturned
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
-from mighty.functions import get_model, request_kept
-from mighty.apps import MightyConfig as conf
 from mighty.applications.logger import EnableLogger
 from mighty.applications.user.apps import UserConfig
-from mighty.readers import ReaderXLS, ReaderXLSX
-import datetime, sys, csv, os.path, os
+from mighty.apps import MightyConfig as conf
+from mighty.functions import get_model, request_kept
+from mighty.readers import ReaderXLS as ReaderXLS
+from mighty.readers import ReaderXLSX
+
 
 class BaseCommand(BaseCommand, EnableLogger):
     importer = None
     importer_required = False
     importer_path = None
-    default_string_arguments = ("fkmodel", "m2mmodel")
-    default_boolean_arguments = ("loader", "test", "progressbar")
+    default_string_arguments = ('fkmodel', 'm2mmodel')
+    default_boolean_arguments = ('loader', 'test', 'progressbar')
     default_integer_arguments = ()
     string_arguments = ()
     boolean_arguments = ()
@@ -31,17 +38,17 @@ class BaseCommand(BaseCommand, EnableLogger):
     in_test = False
     loader = False
     userlog_cache = None
-    ftotal = "total"
+    ftotal = 'total'
     total = 0
     command_date_start = timezone.now()
 
     def init_importer(self, importer):
-        self.importer = import_string(self.importer_path+".importers.{}.Importer".format(importer))()
+        self.importer = import_string(self.importer_path + f'.importers.{importer}.Importer')()
 
     def get_object_unique_from_qs(self, qs, assoc, values):
-        for k,v in assoc.items():
+        for k, v in assoc.items():
             if values.get(k):
-                if v == "pos":
+                if v == 'pos':
                     return qs[int(values.get(k))]
                 return qs.get(**{v: values.get(k)})
 
@@ -54,7 +61,7 @@ class BaseCommand(BaseCommand, EnableLogger):
             try:
                 Qparams = Q(id=int(info))
             except ValueError:
-                Qparams = Q(**{UserConfig.ForeignKey.email_related_name + "__email": info})|Q(user_phone__phone=info)|Q(username=info)
+                Qparams = Q(**{UserConfig.ForeignKey.email_related_name + '__email': info}) | Q(user_phone__phone=info) | Q(username=info)
             try:
                 return self.user_model.objects.get(Qparams)
             except self.user_model.DoesNotExist:
@@ -62,7 +69,7 @@ class BaseCommand(BaseCommand, EnableLogger):
         return self.user_model.objects.filter(is_superuser=True).first() if forlog else None
 
     def set_position(self, pos=1):
-        self.position+=pos
+        self.position += pos
 
     def get_current_info(self):
         return self.current_info
@@ -72,25 +79,13 @@ class BaseCommand(BaseCommand, EnableLogger):
         if self.verbosity > 0 and total:
             percent = self.position / total
             if self.progressbar:
-                arrow = '-' * int(round(percent * bar_length)-1) + '>'
+                arrow = '-' * int(round(percent * bar_length) - 1) + '>'
                 spaces = ' ' * (bar_length - len(arrow))
-                sys.stdout.write("\r{0}: [{1}] {2}% ({3}/{4}) {5}".format(
-                    self.prefix_bar,
-                    arrow + spaces,
-                    int(round(percent * 100)),
-                    self.position,
-                    total,
-                    self.get_current_info(),
-                    )
+                sys.stdout.write(f'\r{self.prefix_bar}: [{arrow + spaces}] {int(round(percent * 100))}% ({self.position}/{total}) {self.get_current_info()}'
                 )
                 sys.stdout.flush()
             else:
-                sys.stdout.write("\r{0}: {1}% ({2}/{3}) {4}".format(
-                    self.prefix_bar,
-                    int(round(percent * 100)),
-                    self.position,
-                    total,
-                    self.get_current_info())
+                sys.stdout.write(f'\r{self.prefix_bar}: {int(round(percent * 100))}% ({self.position}/{total}) {self.get_current_info()}'
                 )
                 print()
             if self.position == total: print()
@@ -102,27 +97,27 @@ class BaseCommand(BaseCommand, EnableLogger):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument('--importer', type=str, help='Importer type', required=self.importer_required)
-        parser.add_argument('--logfile', default="%s_%s.log" % (str(self.subcommand).lower(), f"{datetime.datetime.now():%Y%m%d_%H%M%S_%f}"))
+        parser.add_argument('--logfile', default='%s_%s.log' % (str(self.subcommand).lower(), f'{datetime.datetime.now():%Y%m%d_%H%M%S_%f}'))
         parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--userlog', default=None)
-        for field in self.string_arguments+self.default_string_arguments:
-            parser.add_argument('--%s'%field, default=None)
-        for field in self.integer_arguments+self.default_integer_arguments:
-            parser.add_argument('--%s'%field, default=0)
-        for field in self.boolean_arguments+self.default_boolean_arguments:
-            parser.add_argument('--%s'%field, action="store_true")
+        for field in self.string_arguments + self.default_string_arguments:
+            parser.add_argument('--%s' % field, default=None)
+        for field in self.integer_arguments + self.default_integer_arguments:
+            parser.add_argument('--%s' % field, default=0)
+        for field in self.boolean_arguments + self.default_boolean_arguments:
+            parser.add_argument('--%s' % field, action='store_true')
 
     @property
     def default_fields(self):
-        return self.default_string_arguments+self.default_integer_arguments+self.default_boolean_arguments
+        return self.default_string_arguments + self.default_integer_arguments + self.default_boolean_arguments
 
     @property
     def working_fields(self):
-        return self.string_arguments+self.integer_arguments+self.boolean_arguments
+        return self.string_arguments + self.integer_arguments + self.boolean_arguments
 
     @property
     def auto_fields(self):
-        return self.default_fields+self.working_fields+("logfile", "encoding")
+        return self.default_fields + self.working_fields + ('logfile', 'encoding')
 
     def handle(self, *args, **options):
         self.importer = options.get('importer')
@@ -154,7 +149,8 @@ class BaseCommand(BaseCommand, EnableLogger):
             self.logger.info(error)
 
     def do(self):
-        raise NotImplementedError("Command should implement method do(self)")
+        raise NotImplementedError('Command should implement method do(self)')
+
 
 class ModelBaseCommand(BaseCommand):
     help = 'Commande Model Base'
@@ -166,12 +162,12 @@ class ModelBaseCommand(BaseCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument('--create', action="store_true")
+        parser.add_argument('--create', action='store_true')
         parser.add_argument('--label', default=self.label)
         parser.add_argument('--model', default=self.model)
         parser.add_argument('--filter', default=None)
         parser.add_argument('--manager', default=self.manager)
-        parser.add_argument('--search', action="store_true")
+        parser.add_argument('--search', action='store_true')
 
     def handle(self, *args, **options):
         self.create = options.get('create')
@@ -205,7 +201,7 @@ class ModelBaseCommand(BaseCommand):
     def do(self):
         self.each_objects(self.get_queryset())
 
-    def each_objects(self, qs, do="on_object"):
+    def each_objects(self, qs, do='on_object'):
         self.position = 0
         self.total = len(qs)
         for obj in qs:
@@ -216,7 +212,8 @@ class ModelBaseCommand(BaseCommand):
             getattr(self, do)(obj)
 
     def on_object(self, object):
-        raise NotImplementedError("Command should implement method on_object(self, obj)")
+        raise NotImplementedError('Command should implement method on_object(self, obj)')
+
 
 class ImportModelCommand(ModelBaseCommand):
     _reader = None
@@ -228,7 +225,7 @@ class ImportModelCommand(ModelBaseCommand):
     real_values = {}
     required_fields = []
     need_reset_reader = False
-    ftotal = "import_total"
+    ftotal = 'import_total'
     stop_loop = False
 
     def reset_reader(self):
@@ -242,11 +239,11 @@ class ImportModelCommand(ModelBaseCommand):
         try:
             return self.current_row[self.reverse[name]]
         except KeyError:
-            for key,value in self.current_row.items():
+            for key, value in self.current_row.items():
                 if key and key.lower() == name:
                     return self.current_row[key]
         if self.is_required(name):
-            raise KeyError(name + " not found")
+            raise KeyError(name + ' not found')
         return None
 
     def real_value(self, value):
@@ -256,11 +253,11 @@ class ImportModelCommand(ModelBaseCommand):
 
     @property
     def reader(self):
-        raise NotImplementedError("Command should implement property reader")
+        raise NotImplementedError('Command should implement property reader')
 
     @property
     def import_total(self):
-        raise NotImplementedError("Command should implement property total")
+        raise NotImplementedError('Command should implement property total')
 
     def prepare_fields(self, fields):
         if hasattr(self, 'fields'):
@@ -268,13 +265,13 @@ class ImportModelCommand(ModelBaseCommand):
             self.fields = {}
             for field in fields:
                 self.fields[field] = ofields[field] if field in ofields else field
-            self.reverse = {v: k for k,v in self.fields.items()}
+            self.reverse = {v: k for k, v in self.fields.items()}
         else:
             self.fields = self.reverse = {field: field for field in fields}
 
     def do(self):
         self.prepare_fields(self.reader.fieldnames)
-        self.loop_qs("on_row")
+        self.loop_qs('on_row')
 
     def get_current_info(self):
         return self.current_row
@@ -289,9 +286,9 @@ class ImportModelCommand(ModelBaseCommand):
             getattr(self, do)(row)
 
     def on_row(self, row):
-        raise NotImplementedError("Command should implement method on_object(self, obj)")
+        raise NotImplementedError('Command should implement method on_object(self, obj)')
 
-#class XLSModelCommand(ImportModelCommand):
+# class XLSModelCommand(ImportModelCommand):
 #    xlsmandatory = True
 #
 #    def check_xlsfile(self, mandatory):
@@ -322,6 +319,7 @@ class ImportModelCommand(ModelBaseCommand):
 #    @property
 #    def import_total(self):
 #        return self.reader.total-1
+
 
 class XLSXModelCommand(ImportModelCommand):
     xlsxmandatory = True
@@ -357,7 +355,8 @@ class XLSXModelCommand(ImportModelCommand):
 
     @property
     def import_total(self):
-        return self.reader.total-1
+        return self.reader.total - 1
+
 
 class CSVModelCommand(ImportModelCommand):
     csvmandatory = True
@@ -402,8 +401,9 @@ class CSVModelCommand(ImportModelCommand):
     @property
     def import_total(self):
         if not self._total:
-            self._total = len(open(self.csvfile).readlines())-1
+            self._total = len(open(self.csvfile).readlines()) - 1
         return self._total
+
 
 class AnyDataFileCommand(XLSXModelCommand, CSVModelCommand):
     xlsmandatory = False
@@ -418,19 +418,18 @@ class AnyDataFileCommand(XLSXModelCommand, CSVModelCommand):
     def reader(self):
         if self.xlsxfile:
             return self.reader_xlsx
-        elif self.csvfile:
+        if self.csvfile:
             return self.reader_csv
-        else:
-            return self.get_queryset()
+        return self.get_queryset()
 
     @property
     def import_total(self):
         if self.xlsxfile:
             return super(self, XLSXModelCommand).import_total
-        elif self.csvfile:
+        if self.csvfile:
             return super(self, CSVModelCommand).import_total
-        else:
-            return self.get_queryset().count()
+        return self.get_queryset().count()
+
 
 class ImporterCommand(AnyDataFileCommand):
     help = 'Command importer'
@@ -438,7 +437,7 @@ class ImporterCommand(AnyDataFileCommand):
     importer_path = None
 
     def get_queryset(self, *args, **kwargs):
-        if hasattr(self.importer, "get_queryset"):
+        if hasattr(self.importer, 'get_queryset'):
             return self.importer.get_queryset(*args, **kwargs).filter(**self.get_queryset_filter())
         return super().get_queryset(*args, **kwargs)
 
@@ -446,19 +445,18 @@ class ImporterCommand(AnyDataFileCommand):
     def reader(self):
         if self.xlsxfile:
             return self.reader_xlsx
-        elif self.csvfile:
+        if self.csvfile:
             return self.reader_csv
-        else:
-            return self.get_queryset()
+        return self.get_queryset()
 
     def do(self):
-        self.loop_qs("on_data")
+        self.loop_qs('on_data')
 
     def before_job(self):
         self.action = self.importer
         self.init_importer(self.importer)
-        if hasattr(self, "before_"+self.action):
-            getattr(self, "before_"+self.action)()
+        if hasattr(self, 'before_' + self.action):
+            getattr(self, 'before_' + self.action)()
 
     def on_data(self, data):
         if hasattr(self, self.action):
@@ -467,5 +465,4 @@ class ImporterCommand(AnyDataFileCommand):
             self.do_action(self.action, data)
 
     def do_action(self, action, data):
-        raise NotImplementedError("Command should implement method do_action(self, action, data)")
-
+        raise NotImplementedError('Command should implement method do_action(self, action, data)')

@@ -1,4 +1,4 @@
-def getattr_recursive(obj, strtoget, split=".", default=None):
+def getattr_recursive(obj, strtoget, split='.', default=None):
     if strtoget:
         keys = strtoget.split(split)
         current = obj

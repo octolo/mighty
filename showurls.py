@@ -1,23 +1,31 @@
-# -*- coding: utf-8 -*-
 
-import functools, json, re
+import functools
+import re
 
 from django.conf import settings
-from django.core.management import color
 from django.contrib.admindocs.views import simplify_regex
 from django.core.exceptions import ViewDoesNotExist
+from django.core.management import color
 from django.core.management.base import CommandError
-from django.utils import translation
 from django.urls import URLPattern, URLResolver  # type: ignore
+from django.utils import translation
+
 
 class RegexURLPattern: pass
+
+
 class RegexURLResolver: pass
+
+
 class LocaleRegexURLResolver: pass
+
 
 def describe_pattern(p): return str(p.pattern)
 
+
 def _dummy_style_func(msg):
     return msg
+
 
 def no_style():
     style = color.no_style()
@@ -25,26 +33,27 @@ def no_style():
         setattr(style, role, _dummy_style_func)
     return style
 
+
 FMTR = {
-    'dense': "{url}\t{module}\t{url_name}\t{decorator}",
-    'table': "{url},{module},{url_name},{decorator}",
-    'aligned': "{url},{module},{url_name},{decorator}",
-    'verbose': "{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n",
+    'dense': '{url}\t{module}\t{url_name}\t{decorator}',
+    'table': '{url},{module},{url_name},{decorator}',
+    'aligned': '{url},{module},{url_name},{decorator}',
+    'verbose': '{url}\n\tController: {module}\n\tURL Name: {url_name}\n\tDecorators: {decorator}\n',
     'json': '',
     'pretty-json': ''
 }
 
+
 class ShowUrls:
-    help = "Displays all of the url matching routes for the project."
+    help = 'Displays all of the url matching routes for the project.'
 
     def get_urls(self, *args, **options):
-        style = options.get("style", no_style())
-        opt_unsorted = options.get("unsorted", False)
-        opt_language = options.get("language")
-        opt_decorator = options.get("decorator", [])
-        opt_format = options.get("format", "dense")
-        opt_urlconf = options.get("urlconf", "ROOT_URLCONF")
-
+        style = options.get('style', no_style())
+        opt_unsorted = options.get('unsorted', False)
+        opt_language = options.get('language')
+        opt_decorator = options.get('decorator', [])
+        opt_format = options.get('format', 'dense')
+        opt_urlconf = options.get('urlconf', 'ROOT_URLCONF')
 
         language = opt_language
         if language is not None:
@@ -62,7 +71,7 @@ class ShowUrls:
             raise CommandError(
                 "Format style '%s' does not exist. Options: %s" % (
                     format_style,
-                    ", ".join(sorted(FMTR.keys())),
+                    ', '.join(sorted(FMTR.keys())),
                 )
             )
         pretty_json = format_style == 'pretty-json'
@@ -74,7 +83,7 @@ class ShowUrls:
 
         views = []
         if not hasattr(settings, urlconf):
-            raise CommandError("Settings module {} does not have the attribute {}.".format(settings, urlconf))
+            raise CommandError(f'Settings module {settings} does not have the attribute {urlconf}.')
 
         try:
             urlconf = __import__(getattr(settings, urlconf), {}, {}, [''])
@@ -82,7 +91,7 @@ class ShowUrls:
             if options['traceback']:
                 import traceback
                 traceback.print_exc()
-            raise CommandError("Error occurred while trying to load %s: %s" % (getattr(settings, urlconf), str(e)))
+            raise CommandError('Error occurred while trying to load %s: %s' % (getattr(settings, urlconf), str(e)))
 
         view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
         for (func, regex, url_name) in view_functions:
@@ -108,26 +117,26 @@ class ShowUrls:
             else:
                 func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
-            module = '{0}.{1}'.format(func.__module__, func_name)
+            module = f'{func.__module__}.{func_name}'
             url_name = url_name or ''
             url = simplify_regex(regex)
             decorator = ', '.join(decorators)
 
-            views.append({"url": str(url), "module": str(module), "name": str(url_name)})
-        if options.get("search"):
-            views = [d for d in views if all(word in d['module'] or word in d["url"] or word in d['name']
-                for word in options.get("search").split(" "))]
+            views.append({'url': str(url), 'module': str(module), 'name': str(url_name)})
+        if options.get('search'):
+            views = [d for d in views if all(word in d['module'] or word in d['url'] or word in d['name']
+                for word in options.get('search').split(' '))]
         views = sorted(views, key=lambda d: d['url'])
-        #if not opt_unsorted and format_style != 'json':
+        # if not opt_unsorted and format_style != 'json':
 
-        #if format_style == 'aligned':
+        # if format_style == 'aligned':
         #    views = [row.split(',', 3) for row in views]
         #    widths = [len(max(columns, key=len)) for columns in zip(*views)]
         #    views = [
         #        '   '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
         #        for row in views
         #    ]
-        #elif format_style == 'table':
+        # elif format_style == 'table':
         #    # Reformat all data and show in a table format
 
         #    views = [row.split(',', 3) for row in views]
@@ -148,7 +157,7 @@ class ShowUrls:
         #    # Replace original views so we can return the same object
         #    views = table_views
 
-        #elif format_style == 'json':
+        # elif format_style == 'json':
         #    if pretty_json:
         #        return json.dumps(views, indent=4)
         #    return json.dumps(views)
@@ -168,7 +177,7 @@ class ShowUrls:
                     if not p.name:
                         name = p.name
                     elif namespace:
-                        name = '{0}:{1}'.format(namespace, p.name)
+                        name = f'{namespace}:{p.name}'
                     else:
                         name = p.name
                     pattern = describe_pattern(p)
@@ -181,7 +190,7 @@ class ShowUrls:
                 except ImportError:
                     continue
                 if namespace and p.namespace:
-                    _namespace = '{0}:{1}'.format(namespace, p.namespace)
+                    _namespace = f'{namespace}:{p.namespace}'
                 else:
                     _namespace = (p.namespace or namespace)
                 pattern = describe_pattern(p)
@@ -203,5 +212,5 @@ class ShowUrls:
                     continue
                 views.extend(self.extract_views_from_urlpatterns(patterns, base + describe_pattern(p), namespace=namespace))
             else:
-                raise TypeError("%s does not appear to be a urlpattern object" % p)
+                raise TypeError('%s does not appear to be a urlpattern object' % p)
         return views

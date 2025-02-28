@@ -1,7 +1,11 @@
+import json
+import os.path
+
 from django.core.management.base import CommandError
+
 from mighty.management import ModelBaseCommand
-from mighty.models import Translator, TranslateDict, Nationality
-import os.path, json
+from mighty.models import Nationality, TranslateDict, Translator
+
 
 class Command(ModelBaseCommand):
     def add_arguments(self, parser):

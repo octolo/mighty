@@ -1,18 +1,19 @@
-from django.contrib import admin
 from django.conf import settings
+from django.contrib import admin
+from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import Group
-from django.contrib.auth.models import Permission
 from django.contrib.sessions.models import Session
 
-from mighty.apps import MightyConfig as conf
-from mighty.admin.site import AdminSite
-from mighty import fields, models as all_models
+from mighty import fields
+from mighty import models as all_models
 from mighty.admin.models import BaseAdmin
+from mighty.admin.site import AdminSite
+from mighty.apps import MightyConfig as conf
 
 mysite = AdminSite()
 admin.site = mysite
 admin.sites.site = mysite
+
 
 ###########################
 # Models django
@@ -22,15 +23,18 @@ class ContentTypeAdmin(admin.ModelAdmin):
     list_display = ('app_label', 'model')
     search_fields = ('app_label', 'model')
 
+
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
     list_filter = ('content_type',)
+
 
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
     def _session_data(self, obj):
         return obj.get_decoded()
     list_display = ['session_key', '_session_data', 'expire_date']
+
 
 ###########################
 # Models in mighty
@@ -42,20 +46,23 @@ class BackendAdmin(BaseAdmin):
     list_display = ('service', 'content_type', 'is_disable')
     search_fields = ('service',)
 
+
 @admin.register(all_models.Reporting)
 class ReportingAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.reporting}),)
     list_display = ('name', 'content_type', 'target')
     search_fields = ('service',)
-    raw_id_fields = ("content_type", "target")
+    raw_id_fields = ('content_type', 'target')
+
 
 @admin.register(all_models.RegisterTask)
 class RegisterTaskAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertask}),)
-    list_display = ('__str__', 'content_type', 'how_start_task', 'register_type',)
+    list_display = ('__str__', 'content_type', 'how_start_task', 'register_type')
     search_fields = ('name', 'content_type', 'how_start_task')
+
 
 @admin.register(all_models.RegisterTaskSubscription)
 class RegisterTaskSubscriptionAdmin(BaseAdmin):
@@ -63,8 +70,9 @@ class RegisterTaskSubscriptionAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.registertasksubscription}),)
     list_display = ('register', 'subscribe_to', 'content_type_subscriber')
     search_fields = ('register__name', 'register__content_type', 'register__how_start_task')
-    readonly_fields = ("last_date_task",)
+    readonly_fields = ('last_date_task',)
     raw_id_fields = ('register',)
+
 
 @admin.register(all_models.ConfigClient)
 class ConfigClientAdmin(BaseAdmin):
@@ -73,6 +81,7 @@ class ConfigClientAdmin(BaseAdmin):
     list_display = ('name',)
     readonly_fields = ('url_name',)
 
+
 @admin.register(all_models.ConfigSimple)
 class ConfigSimpleAdmin(BaseAdmin):
     view_on_site = False
@@ -80,24 +89,28 @@ class ConfigSimpleAdmin(BaseAdmin):
     list_display = ('name',)
     readonly_fields = ('url_name',)
 
+
 @admin.register(all_models.TemplateVariable)
 class TemplateVariableAdmin(BaseAdmin):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': ('name', 'description', 'content_type', 'template', 'hidden', 'version')}),)
     list_display = ('name', 'description', 'content_type', 'hidden')
 
+
 if hasattr(settings, 'CHANNEL_LAYERS'):
     @admin.register(all_models.Channel)
     class ChannelAdmin(BaseAdmin):
         list_display = ('channel_name', 'channel_type', 'date_update')
         fieldsets = ((None, {'classes': ('wide',), 'fields': fields.channels}),)
-        search_fields = ('channel_name', 'channel_type',)
+        search_fields = ('channel_name', 'channel_type')
         view_on_site = False
+
 
 class NewsAdmin(admin.StackedInline):
     view_on_site = False
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.news + ('keywords',)}),)
     extra = 0
+
 
 ###########################
 # Models apps mighty
@@ -209,16 +222,16 @@ if conf.enable_mimetype:
     class MimeTypeAdmin(BaseAdmin):
         view_on_site = False
 
-#if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
+# if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
 #    from mighty.admin.applications import grapher
 
-#from django.apps import apps
-#apps.get_model('auth.Group')._meta.app_label = 'mighty'
-#apps.get_model('auth.Group')._meta.db_table = 'mighty_group'
-#apps.get_model('auth.Permission')._meta.app_label = 'mighty'
-#apps.get_model('auth.Permission')._meta.db_table = 'mighty_permission'
+# from django.apps import apps
+# apps.get_model('auth.Group')._meta.app_label = 'mighty'
+# apps.get_model('auth.Group')._meta.db_table = 'mighty_group'
+# apps.get_model('auth.Permission')._meta.app_label = 'mighty'
+# apps.get_model('auth.Permission')._meta.db_table = 'mighty_permission'
 
-#def render_change_form(self, request, context, *args, **kwargs):
+# def render_change_form(self, request, context, *args, **kwargs):
 #    if hasattr(kwargs['obj'], 'company'):
 #        replace_args = {"company": kwargs['obj'].company}
 #        if kwargs['obj'].sql_date_start is not None:
@@ -236,14 +249,14 @@ if conf.enable_mimetype:
 #        context['adminform'].form.fields['ag_leave'].queryset = context['adminform'].form.fields['ag_leave'].queryset.none()
 #    return super(MandateAdmin, self).render_change_form(request, context, *args, **kwargs)
 
-#def get_form(self, request, obj=None, **kwargs):
+# def get_form(self, request, obj=None, **kwargs):
 #    request._obj_ = obj
 #    return super(MandateAdmin, self).get_form(request, obj, **kwargs)
 
-#def __init__(self, model, admin_site):
+# def __init__(self, model, admin_site):
 #    super().__init__(model, admin_site)
 
-#def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+# def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 #    field = super(MandateAGDataAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 #    if db_field.name == 'assembly':
 #        if request._obj_:

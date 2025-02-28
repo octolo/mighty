@@ -1,5 +1,6 @@
 from mighty.applications.logger import EnableLogger
 
+
 class ThumbnailBackend(EnableLogger):
     element = None
 
@@ -8,4 +9,4 @@ class ThumbnailBackend(EnableLogger):
 
     @property
     def base64(self):
-        raise NotImplementedError("base64 not implemented")
+        raise NotImplementedError('base64 not implemented')

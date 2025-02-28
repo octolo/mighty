@@ -1,8 +1,8 @@
+from mighty.applications.address import fields, get_address_backend
 from mighty.management import ModelBaseCommand
-from mighty.applications.address import get_address_backend, fields
-from mighty.functions import get_model
 
 address_backend = get_address_backend()
+
 
 class Command(ModelBaseCommand):
     def add_arguments(self, parser):
@@ -19,5 +19,4 @@ class Command(ModelBaseCommand):
             addr = addr_list[0]
             data = {field: addr[field] for field in fields}
             if self.fkmodel:
-                getattr(obj, self.fkmodel).update_or_create(addr_backend_id=data["addr_backend_id"], defaults=data)
-        
+                getattr(obj, self.fkmodel).update_or_create(addr_backend_id=data['addr_backend_id'], defaults=data)

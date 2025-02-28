@@ -1,6 +1,8 @@
-from django.views.generic.base import TemplateView
-from mighty.views.base import BaseView
 from django.http import JsonResponse
+from django.views.generic.base import TemplateView
+
+from mighty.views.base import BaseView
+
 
 class JsonView(BaseView, TemplateView):
     is_safe = True

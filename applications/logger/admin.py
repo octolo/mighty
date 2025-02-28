@@ -1,9 +1,8 @@
-from django.template.response import TemplateResponse
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes.models import ContentType
-from django.contrib import admin
-from django.core.paginator import Paginator
+from django.template.response import TemplateResponse
+
 from mighty.admin.models import BaseAdmin
 from mighty.applications.logger import fields
 from mighty.models import Log
@@ -13,19 +12,21 @@ class LogAdmin(BaseAdmin):
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.log}),)
     list_display = ('msg', 'log_hash')
     search_fields = ('msg', 'log_hash')
-    list_filter = ("content_type",)
+    list_filter = ('content_type',)
     readonly_fields = fields.log
 
+
 class ModelChangeLogAdmin(BaseAdmin):
-    change_form_template  = 'admin/change_form_modelchangelog.html'
+    change_form_template = 'admin/change_form_modelchangelog.html'
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.modelchangelog}),)
     list_display = fields.modelchangelog
-    list_filter = ("content_type", "date_begin", "date_end")
+    list_filter = ('content_type', 'date_begin', 'date_end')
     search_fields = ('object_id', 'field', 'value')
     readonly_fields = fields.modelchangelog
 
+
 class ModelWithLogAdmin(BaseAdmin):
-    change_form_template  = 'admin/change_form_logs.html'
+    change_form_template = 'admin/change_form_logs.html'
 
     def logs_view(self, request, object_id, extra_context=None):
         opts = self.model._meta

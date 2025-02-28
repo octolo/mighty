@@ -1,9 +1,11 @@
-import copy, json
+import copy
+
 from django.forms.models import fields_for_model
+
 
 class TableDescriptable:
     def __new__(mcs, name, bases, attrs):
-        attrs["declared_fields"] = {
+        attrs['declared_fields'] = {
             key: attrs.pop(key)
             for key, value in list(attrs.items())
             if isinstance(value, Field)
@@ -12,7 +14,7 @@ class TableDescriptable:
 
         declared_fields = {}
         for base in reversed(new_class.__mro__):
-            if hasattr(base, "declared_fields"):
+            if hasattr(base, 'declared_fields'):
                 declared_fields.update(base.declared_fields)
 
             for attr, value in base.__dict__.items():
@@ -44,6 +46,7 @@ class TableDescriptable:
         fields = ()
         ordering = ()
         templates = {}
+
 
 class TableModelDescriptor(TableDescriptable):
     class Meta(TableDescriptable.Meta):
@@ -79,8 +82,8 @@ class TableModelDescriptor(TableDescriptable):
             none_model_fields = {k for k, v in fields.items() if not v}
             missing_fields = none_model_fields.difference(new_class.declared_fields)
             if missing_fields:
-                message = "Unknown field(s) (%s) specified for %s"
-                message = message % (", ".join(missing_fields), opts.model.__name__)
+                message = 'Unknown field(s) (%s) specified for %s'
+                message = message % (', '.join(missing_fields), opts.model.__name__)
                 raise FieldError(message)
                 fields.update(new_class.declared_fields)
         else:

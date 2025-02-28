@@ -1,16 +1,13 @@
-from django.core.files import File
-from django.conf import settings
 from mighty.management.commands.CreateOrUpdateModelFromCSV import Command
 from mighty.models import Nationality
-from mighty.applications.nationality.apps import NationalityConfig as conf
-import os.path
+
 
 class Command(Command):
-    fields = { 'country': 'Country', 'alpha2': 'Alpha2', 'alpha3': 'Alpha3', 'numeric': 'Numeric', 'numbering': 'Numbering' }
+    fields = {'country': 'Country', 'alpha2': 'Alpha2', 'alpha3': 'Alpha3', 'numeric': 'Numeric', 'numbering': 'Numbering'}
 
     def on_row(self, row):
         self.prefix_bar = self.reverse['country']
-        self.current_info = "%s (%s)" % (row[self.reverse['country']], row[self.reverse['alpha3']])
+        self.current_info = '%s (%s)' % (row[self.reverse['country']], row[self.reverse['alpha3']])
         obj, create = Nationality.objects.get_or_create(country=row[self.reverse['country']])
         obj.alpha2 = row[self.reverse['alpha2']]
         obj.alpha3 = row[self.reverse['alpha3']]

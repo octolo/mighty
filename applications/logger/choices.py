@@ -9,12 +9,12 @@ NOTICE = conf.Code.notice
 INFO = conf.Code.info
 DEBUG = conf.Code.debug
 LEVEL = (
-    (EMERG, "EMERGENCY"),
-    (ALERT, "ALERT"),
-    (CRITICAL, "CRITICAL"),
-    (ERROR, "ERROR"),
-    (WARNING, "WARNING"),
-    (NOTICE, "NOTICE"),
-    (INFO, "INFO"),
-    (DEBUG, "DEBUG"),
+    (EMERG, 'EMERGENCY'),
+    (ALERT, 'ALERT'),
+    (CRITICAL, 'CRITICAL'),
+    (ERROR, 'ERROR'),
+    (WARNING, 'WARNING'),
+    (NOTICE, 'NOTICE'),
+    (INFO, 'INFO'),
+    (DEBUG, 'DEBUG'),
 )

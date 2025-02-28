@@ -1,7 +1,11 @@
+import json
+import os
+
 from django.core.management.base import CommandError
+
 from mighty.management import ModelBaseCommand
-from mighty.models import Translator, TranslateDict, Nationality
-import os, json
+from mighty.models import Nationality, TranslateDict, Translator
+
 
 class Command(ModelBaseCommand):
 
@@ -39,7 +43,7 @@ class Command(ModelBaseCommand):
         qs = []
         for (dirpath, dirnames, filenames) in os.walk(folder):
             for file in filenames:
-                if file.endswith(".json"):
+                if file.endswith('.json'):
                     qs.append(os.path.join(dirpath, file))
         self.each_objects(qs)
 

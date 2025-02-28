@@ -1,7 +1,9 @@
+
 from django.db import models
-from mighty.models.base import Base
+
 from mighty import translates as _
-from datetime import datetime
+from mighty.models.base import Base
+
 
 class TimelineModel(Base):
     object_id = models.ForeignKey('', on_delete=models.CASCADE)

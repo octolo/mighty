@@ -1,7 +1,9 @@
 
 from django.db import models
-from mighty.models.base import Base
+
 from mighty.fields import RichTextField
+from mighty.models.base import Base
+
 
 class Template(Base):
     name = models.CharField(max_length=20, unique=True)
@@ -10,5 +12,5 @@ class Template(Base):
 
     class Meta:
         abstract = True
-        verbose_name = "template"
-        verbose_name_plural = "templates"
+        verbose_name = 'template'
+        verbose_name_plural = 'templates'

@@ -1,19 +1,23 @@
+from itertools import starmap
+
+import logger
 from django.conf import settings
 from django.contrib.staticfiles.finders import find as find_static_file
-from django.template import Template, Context
-from django.template.loader import get_template
 from django.core.files.base import ContentFile
+from django.template import Context, Template
+from django.template.loader import get_template
 from weasyprint import HTML
-import logger
+
 logging = logger.get_logger(__name__)
 
-class FileMakerPDF:
-    str_options = ["html", "header", "footer", "lang", "title", "charset"]
-    arr_options = ["css",]
-    dct_options = ["config", "context", "fonts", "images"]
 
-    lang, title, charset = "en", "Document", "UTF-8"
-    header, html, footer = "", "", ""
+class FileMakerPDF:
+    str_options = ['html', 'header', 'footer', 'lang', 'title', 'charset']
+    arr_options = ['css']
+    dct_options = ['config', 'context', 'fonts', 'images']
+
+    lang, title, charset = 'en', 'Document', 'UTF-8'
+    header, html, footer = '', '', ''
     config, context, fonts, images = {}, {}, {}, {}
     current_pdf = None
     template_name = None
@@ -34,7 +38,7 @@ class FileMakerPDF:
     def init_options(self, **kwargs):
         logging.warning(self.css)
         self.css = settings.CSS_FILES_WEASYPRINT or []
-        for key,value in kwargs.items():
+        for key, value in kwargs.items():
             if key in self.str_options:
                 setattr(self, key, value)
             elif key in self.arr_options:
@@ -49,24 +53,22 @@ class FileMakerPDF:
         self.init_options(**kwargs)
         logging.warning(self.css)
 
-
     # Font rules
     def get_font_rule(self, font, name):
-        return "\n".join([
-            "@font-face {",
+        return '\n'.join([
+            '@font-face {',
             "    font-family: '%s';" % name,
-            "    src: url(file://%s);" % find_static_file("fonts/%s" % font),
-            "}",
+            '    src: url(file://%s);' % find_static_file('fonts/%s' % font),
+            '}',
         ])
 
     def get_style_font_face(self):
-        return "\n".join([self.get_font_rule(font, name)
-            for font, name in self.fonts.items()])
+        return '\n'.join(list(starmap(self.get_font_rule, self.fonts.items())))
 
     # CSS rules
     def get_style(self):
-        style = ""
-        style += "\n".join([
+        style = ''
+        style += '\n'.join([
             "@import url('file://%s');" % find_static_file(css)
             for css in self.css
         ])
@@ -88,18 +90,18 @@ class FileMakerPDF:
 
     def get_html_string(self):
         return self.body_html % {
-            "title": self.title,
-            "lang": self.lang,
-            "charset": self.charset,
-            "style": self.get_style(),
-            "head": self.get_header_html(),
-            "body": self.get_body_html(),
-            "footer": self.get_footer_html(),
+            'title': self.title,
+            'lang': self.lang,
+            'charset': self.charset,
+            'style': self.get_style(),
+            'head': self.get_header_html(),
+            'body': self.get_body_html(),
+            'footer': self.get_footer_html(),
         }
 
     def write_html(self, **kwargs):
         self.init_options(**kwargs)
-        return HTML(string=kwargs.get("html", self.get_html_string()))
+        return HTML(string=kwargs.get('html', self.get_html_string()))
 
     def write_pdf(self, **kwargs):
         self.init_options(**kwargs)

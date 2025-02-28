@@ -1,26 +1,40 @@
-from django.conf import settings
-from rest_framework.serializers import ModelSerializer, SerializerMethodField, DateField
-from mighty.models import Subscription, PaymentMethod, Offer, ShopService, ShopItem
+from rest_framework.serializers import (
+    DateField,
+    ModelSerializer,
+    SerializerMethodField,
+)
+
 from mighty.applications.shop import fields
+from mighty.models import (
+    Offer,
+    PaymentMethod,
+    ShopItem,
+    ShopService,
+    Subscription,
+)
+
 
 class ShopServiceSerializer(ModelSerializer):
     class Meta:
         model = ShopService
-        fields = fields.service + ("real_tax", "calc_tax", "price_ht", "price_ttc")
+        fields = fields.service + ('real_tax', 'calc_tax', 'price_ht', 'price_ttc')
+
 
 class ShopItemSerializer(ModelSerializer):
     class Meta:
         model = ShopItem
-        fields = fields.item + ("real_tax", "calc_tax", "price_ht", "price_ttc")
+        fields = fields.item + ('real_tax', 'calc_tax', 'price_ht', 'price_ttc')
+
 
 class PaymentMethodSerializer(ModelSerializer):
-    date_valid = DateField(format="%m/%Y", required=False)
-    month = DateField(format="%m", required=False)
-    year = DateField(format="%Y", required=False)
+    date_valid = DateField(format='%m/%Y', required=False)
+    month = DateField(format='%m', required=False)
+    year = DateField(format='%Y', required=False)
 
     class Meta:
         model = PaymentMethod
         fields = ('uid',) + fields.payment_method
+
 
 class OfferSerializer(ModelSerializer):
     service = ShopServiceSerializer(many=True)
@@ -28,7 +42,8 @@ class OfferSerializer(ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = fields.offer + ("image_url", "real_tax", "calc_tax", "price_ht", "price_ttc", "service_tenant")
+        fields = fields.offer + ('image_url', 'real_tax', 'calc_tax', 'price_ht', 'price_ttc', 'service_tenant')
+
 
 class SubscriptionSerializer(ModelSerializer):
     offer = OfferSerializer()

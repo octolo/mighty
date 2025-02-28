@@ -1,29 +1,30 @@
-from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.template.loader import render_to_string
 
 from mighty.applications.messenger import (
-    choices, translates as _,
+    choices,
+    missive_backend_app,
     missive_backend_email,
     missive_backend_emailar,
     missive_backend_postal,
     missive_backend_postalar,
     missive_backend_sms,
     missive_backend_web,
-    missive_backend_app,
 )
 from mighty.applications.messenger.apps import MessengerConfig as conf
-from mighty.functions import masking_email, masking_phone, get_model, url_domain
+from mighty.fields import JSONField, RichTextField
+from mighty.functions import get_model, masking_email, masking_phone, url_domain
 from mighty.models.base import Base
-from mighty.fields import RichTextField, JSONField
+
 
 class MessengerModel(Base):
     in_test = False
     mode = models.CharField(max_length=8, choices=choices.MODE, default=choices.MODE_EMAIL)
     status = models.CharField(choices=choices.STATUS, default=choices.STATUS_PREPARE, max_length=9)
     priority = models.PositiveIntegerField(default=0, choices=choices.PRIORITIES)
-    #address_window = models.BooleanField(default=False)
+    # address_window = models.BooleanField(default=False)
 
     name = models.CharField(max_length=255, blank=True, null=True)
     sender = models.CharField(max_length=255, blank=True, null=True)
@@ -56,20 +57,20 @@ class MessengerModel(Base):
 
     class Meta(Base.Meta):
         abstract = True
-        ordering = ['-date_create',]
+        ordering = ['-date_create']
 
     @property
     def fullname(self):
         if self.last_name and self.first_name:
-            return self.first_name+" "+self.last_name
-        elif self.last_name or self.first_name:
-            return self.first_name if self.first_name else self.last_name
+            return self.first_name + ' ' + self.last_name
+        if self.last_name or self.first_name:
+            return self.first_name or self.last_name
         return None
 
     def need_to_send(self):
-        raise NotImplementedError("Subclasses should implement need_to_send()")
+        raise NotImplementedError('Subclasses should implement need_to_send()')
 
-    #def textify(self, html):
+    # def textify(self, html):
     #    from django.utils.html import strip_tags
     #    import re
     #    if self.template:
@@ -79,8 +80,7 @@ class MessengerModel(Base):
     #    text_only = text_only.replace('\n ', '\n').strip()
     #    text_only = '\n'.join((txt for txt in text_only.splitlines() if txt.strip() != ""))
     #    return text_only
-#
-    #def set_txt(self):
+    # def set_txt(self):
     #    if self.html_format:
     #        self.txt = self.textify(self.html_format)
 
@@ -94,7 +94,7 @@ class MessengerModel(Base):
         getattr(self, 'prepare_%s' % self.mode.lower())()
 
     def pre_save(self):
-        #self.set_txt()
+        # self.set_txt()
         self.set_backend()
         self.prepare_mode()
         self.need_to_send()
@@ -147,7 +147,7 @@ class MessengerModel(Base):
 
     @property
     def content(self):
-        return self.html if self.html else self.txt
+        return self.html or self.txt
 
     @property
     def masking_email(self):
@@ -161,9 +161,9 @@ class MessengerModel(Base):
     def masking(self):
         if self.mode == choices.MODE_SMS:
             return self.masking_phone
-        elif self.mode == choices.MODE_EMAIL:
+        if self.mode == choices.MODE_EMAIL:
             return self.masking_email
-        elif self.mode == choices.MODE_POSTAL:
+        if self.mode == choices.MODE_POSTAL:
             return self.raw_address
         return self.target
 
@@ -177,4 +177,4 @@ class MessengerModel(Base):
 
     @property
     def html_format(self):
-        return render_to_string(self.template, {"object": self, "domain_url": url_domain("", http=True) }) if self.template else self.html
+        return render_to_string(self.template, {'object': self, 'domain_url': url_domain('', http=True)}) if self.template else self.html

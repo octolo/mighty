@@ -1,6 +1,7 @@
+from mighty.applications.dataprotect import fields
 from mighty.management import ModelBaseCommand
 from mighty.models import ServiceData
-from mighty.applications.dataprotect import fields
+
 
 class Command(ModelBaseCommand):
     string_arguments = fields.servicedata

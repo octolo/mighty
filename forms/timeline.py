@@ -1,5 +1,6 @@
 from django import forms
 
+
 class TimelineForm(forms.ModelForm):
     date_begin = forms.DateField(required=True, widget=forms.SelectDateWidget())
     date_end = forms.DateField(required=False, widget=forms.SelectDateWidget())

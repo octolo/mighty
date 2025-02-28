@@ -1,12 +1,13 @@
-from typing import Any
 from django.contrib.auth.models import UserManager
-from mighty.applications.user import username_generator_v2, choices
+
+from mighty.applications.user import choices, username_generator_v2
 from mighty.applications.user.apps import UserConfig
 
-#FIXME: Need unique method to create user
+# FIXME: Need unique method to create user
 
-from django.conf import settings
 PrefetchRelated = (UserConfig.ForeignKey.email_related_name_attr, 'user_phone', 'user_ip', 'user_useragent')
+
+
 class UserManager(UserManager):
     def create_superuser(self, username=None, email=None, password=None, **extra_fields):
         if username is None: username = username_generator_v2(email)

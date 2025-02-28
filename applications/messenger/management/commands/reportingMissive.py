@@ -1,6 +1,9 @@
+import csv
+import datetime
+
 from mighty.management import ModelBaseCommand
 from mighty.models import Missive
-import csv, datetime
+
 
 class Command(ModelBaseCommand):
     model = Missive
@@ -44,18 +47,18 @@ class Command(ModelBaseCommand):
         filename = 'reporting_missive_%s.csv' % datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         self.csvfile = open(filename, 'w', newline='')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(self.fields+['pages',])
+        self.writer.writerow(self.fields + ['pages'])
 
     def on_object(self, obj):
         data = [getattr(obj, f) for f in self.fields]
-        if obj.mode in ("POSTAL", "POSTALAR"):
+        if obj.mode in ('POSTAL', 'POSTALAR'):
             try:
                 documents = obj.check_documents()
-                documents = documents.get("documents")
-                pages = sum(doc.get("pages_count") for doc in documents)
+                documents = documents.get('documents')
+                pages = sum(doc.get('pages_count') for doc in documents)
                 data.append(pages)
             except:
-                data.append("error")
+                data.append('error')
         else:
             data.append(None)
         self.writer.writerow(data)

@@ -11,10 +11,11 @@ Add [sources] JSON field at the model
 (clean_sources) clean souces with the configuration sources
 """
 from django.db import models
+
+from mighty import translates as _
 from mighty.models import JSONField
 from mighty.models.base import Base
 from mighty.models.file import File
-from mighty import translates as _
 
 TYPE_WEBSITE = 'WEBSITE'
 TYPE_DOCUMENT = 'DOCUMENT'
@@ -28,8 +29,10 @@ CHOICES_TYPE = (
     (TYPE_IMAGE, _.TYPE_IMAGE),
     (TYPE_FLUX, _.TYPE_FLUX),
     (TYPE_EVENT, _.TYPE_EVENT),
-    (TYPE_OTHER, _.TYPE_OTHER),)
+    (TYPE_OTHER, _.TYPE_OTHER))
 CHOICES_TYPE = sorted(list(CHOICES_TYPE), key=lambda x: x[1])
+
+
 class SourceModel(Base, File):
     sourcetype = models.CharField(max_length=10, choices=CHOICES_TYPE, default=TYPE_OTHER)
     object_id = models.ForeignKey('', on_delete=models.CASCADE)
@@ -50,21 +53,21 @@ class SourceModel(Base, File):
     def get_value(self):
         return self.value.decode('utf-8')
 
-#from django.db import models
-#from mighty.models import JSONField
-#from mighty.translates import choices as _
-#from mighty.functions import test
+# from django.db import models
+# from mighty.models import JSONField
+# from mighty.translates import choices as _
+# from mighty.functions import test
 #
-#TYPE_SITE = 'TYPE_SITE'
-#TYPE_DOCUMENT = 'TYPE_DOCUMENT'
-#TYPE_OTHER = 'TYPE_OTHER'
-#TYPE_NONE = 'TYPE_NONE'
-#CHOICES_TYPE = (
+# TYPE_SITE = 'TYPE_SITE'
+# TYPE_DOCUMENT = 'TYPE_DOCUMENT'
+# TYPE_OTHER = 'TYPE_OTHER'
+# TYPE_NONE = 'TYPE_NONE'
+# CHOICES_TYPE = (
 #    (TYPE_SITE, _.TYPE_SITE),
 #    (TYPE_DOCUMENT, _.TYPE_DOCUMENT),
 #    (TYPE_OTHER, _.TYPE_OTHER),
 #    (TYPE_NONE, _.TYPE_NONE))
-#class Source(models.Model):
+# class Source(models.Model):
 #    sources_configuration = {}
 #    sources = JSONField(blank=True, null=True)
 #

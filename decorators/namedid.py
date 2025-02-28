@@ -7,9 +7,9 @@ from mighty.functions import getattr_recursive
 def NamedIdModel(**kwargs):
     def decorator(obj):
         class NewClass(obj):
-            Qnamed_id = kwargs.get("Qfields", ())
-            named_id_fields = kwargs.get("fields", ())
-            named_id = models.CharField(max_length=255, blank=kwargs.get("blank", True), null=kwargs.get("null", True))
+            Qnamed_id = kwargs.get('Qfields', ())
+            named_id_fields = kwargs.get('fields', ())
+            named_id = models.CharField(max_length=255, blank=kwargs.get('blank', True), null=kwargs.get('null', True))
 
             @property
             def model_fields(self):
@@ -29,18 +29,18 @@ def NamedIdModel(**kwargs):
 
             @property
             def count_named_id(self):
-                return 0 if kwargs.get("start0") else self.qs_named_id.count()
+                return 0 if kwargs.get('start0') else self.qs_named_id.count()
 
             @property
             def named_id_exist(self):
                 return self.qs_named_id.filter(named_id=self.named_id).count()
 
             def set_named_id(self, offset=0):
-                base_name = "-".join([str(getattr_recursive(self, field)) for field in self.named_id_fields if getattr_recursive(self, field)])
+                base_name = '-'.join([str(getattr_recursive(self, field)) for field in self.named_id_fields if getattr_recursive(self, field)])
                 named_id = slugify(base_name)
-                count = self.count_named_id+offset
-                self.named_id = "%s-%s" % (named_id, count+1) if count > 0 else named_id
-                if self.named_id_exist: self.set_named_id(offset+1)
+                count = self.count_named_id + offset
+                self.named_id = '%s-%s' % (named_id, count + 1) if count > 0 else named_id
+                if self.named_id_exist: self.set_named_id(offset + 1)
 
             class Meta(obj.Meta):
                 abstract = obj._meta.abstract

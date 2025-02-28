@@ -1,9 +1,11 @@
-from mighty.applications.address.backends import SearchBackend
-from mighty.apps import MightyConfig
 from geopy import geocoders
 
+from mighty.applications.address.backends import SearchBackend
+from mighty.apps import MightyConfig
+
+
 class SearchBackend(SearchBackend):
-    service_default = "nominatim"
+    service_default = 'nominatim'
     service_cache = None
 
     def get_address(self, data):

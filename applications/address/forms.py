@@ -1,6 +1,8 @@
 from django import forms
-from mighty.forms import FormDescriptable
+
 from mighty.applications.address import translates as _
+from mighty.forms import FormDescriptable
+
 
 class AddressFormDesc(FormDescriptable):
     address = forms.CharField(label=_.address, max_length=255)

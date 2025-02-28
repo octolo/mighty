@@ -1,8 +1,8 @@
 from django.views.generic.base import RedirectView
-from mighty.views.base import BaseView
-from mighty.views.crud import ListView, DetailView
-from mighty.filegenerator import FileGenerator
 
+from mighty.filegenerator import FileGenerator
+from mighty.views.base import BaseView
+from mighty.views.crud import DetailView, ListView
 
 # Buffer for ExportView
 
@@ -13,9 +13,11 @@ class FileDownloadView(BaseView, RedirectView):
         fil = get_object_or_404(self.model, uid=kwargs['uid'])
         return fil.file_url
 
+
 # FilePDFView open a pdf file in a viewer
 class FilePDFView(DetailView):
     pass
+
 
 # ExportView download a csv file
 class ExportView(ListView):

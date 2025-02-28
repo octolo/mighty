@@ -1,7 +1,10 @@
+import re
+
 from django.db import models
+
 from mighty.applications.shop.models.realprice import RealPrice
 from mighty.models.image import Image
-import re
+
 
 class ShopService(RealPrice, Image):
     name = models.CharField(max_length=255, unique=True)
@@ -14,10 +17,10 @@ class ShopService(RealPrice, Image):
         ordering = ['name']
 
     def __str__(self):
-        return "%s (%s €)" % (self.name, self.real_price)
+        return '%s (%s €)' % (self.name, self.real_price)
 
     def generate_key(self):
-        return re.sub("[^a-zA-Z0-9]+", "", self.name).lower()
+        return re.sub(r'[^a-zA-Z0-9]+', '', self.name).lower()
 
     def set_key(self):
         if not self.key:

@@ -1,10 +1,13 @@
-from mighty.views import FormDescView, CheckData
+from django.core.exceptions import ValidationError
+
 from mighty.applications.shop.forms import CBForm
 from mighty.models import PaymentMethod
-from django.core.exceptions import ValidationError
+from mighty.views import CheckData, FormDescView
+
 
 class CBFormDescView(FormDescView):
     form = CBForm
+
 
 class CheckCB(CheckData):
     def get_data(self):
@@ -12,7 +15,7 @@ class CheckCB(CheckData):
 
     def check_data(self):
         pm = PaymentMethod(**self.get_data())
-        pm.form_method = "CB"
+        pm.form_method = 'CB'
         try:
             pm.check_validity()
         except ValidationError as e:

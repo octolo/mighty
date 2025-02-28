@@ -1,13 +1,8 @@
-from django.core.exceptions import FieldDoesNotExist
-from django.db import models, router
-from django.db.models.constants import LOOKUP_SEP
-from django.db.models.deletion import Collector
-from django.forms.utils import pretty_name
+from django.db import router
 from django.urls import NoReverseMatch, reverse
-from django.utils import formats, timezone
 from django.utils.html import format_html
 from django.utils.text import capfirst
-from django.utils.translation import ngettext, override as translation_override
+
 
 def get_disabled_objects(objs, request, admin_site):
     try:
@@ -33,12 +28,12 @@ def get_disabled_objects(objs, request, admin_site):
             except NoReverseMatch:
                 return no_edit_link
             return format_html('{}: <a href="{}">{}</a>', capfirst(opts.verbose_name), admin_url, obj)
-        else:
-            return no_edit_link
+        return no_edit_link
     to_delete = collector.nested(format_callback)
     protected = [format_callback(obj) for obj in collector.protected]
     model_count = {model._meta.verbose_name_plural: len(objs) for model, objs in collector.model_objs.items()}
     return to_delete, model_count, perms_needed, protected
+
 
 def get_enabled_objects(objs, request, admin_site):
     try:
@@ -64,8 +59,7 @@ def get_enabled_objects(objs, request, admin_site):
             except NoReverseMatch:
                 return no_edit_link
             return format_html('{}: <a href="{}">{}</a>', capfirst(opts.verbose_name), admin_url, obj)
-        else:
-            return no_edit_link
+        return no_edit_link
     to_delete = collector.nested(format_callback)
     protected = [format_callback(obj) for obj in collector.protected]
     model_count = {model._meta.verbose_name_plural: len(objs) for model, objs in collector.model_objs.items()}

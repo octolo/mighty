@@ -1,6 +1,7 @@
 from mighty.applications.logger.notify import NotifyBackend
 from mighty.applications.messenger import notify_slack
 
+
 class SlackLogger(NotifyBackend):
     @property
     def slack_self(self):
@@ -9,11 +10,11 @@ class SlackLogger(NotifyBackend):
     @property
     def text_data_help(self):
         return [{
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": ":warning: "+data,
-                "emoji": True
+            'type': 'section',
+            'text': {
+                'type': 'plain_text',
+                'text': ':warning: ' + data,
+                'emoji': True
             }
         } for data in self.help_data]
 
@@ -21,29 +22,29 @@ class SlackLogger(NotifyBackend):
     def slack_msg_error(self):
         data = [
         {
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": ":exclamation: %s" % self.msg,
-                "emoji": True
+            'type': 'section',
+            'text': {
+                'type': 'plain_text',
+                'text': ':exclamation: %s' % self.msg,
+                'emoji': True
             }
         },
-        { "type": "divider" },
+        {'type': 'divider'},
         {
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": "\n".join(self.help_data),
-                "emoji": True
+            'type': 'section',
+            'text': {
+                'type': 'plain_text',
+                'text': '\n'.join(self.help_data),
+                'emoji': True
             }
         },
-        { "type": "divider" },]
+        {'type': 'divider'}]
         if self.dblog:
             data.append({
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "<access error| %s :link:>" % self.url_domain(self.dblog.admin_change_url),
+                'type': 'section',
+                'text': {
+                    'type': 'mrkdwn',
+                    'text': '<access error| %s :link:>' % self.url_domain(self.dblog.admin_change_url),
             }})
         return data
 

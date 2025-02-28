@@ -1,7 +1,11 @@
+import json
+import os.path
+
 from django.core.management.base import CommandError
+
 from mighty.management import ModelBaseCommand
 from mighty.models import ConfigClient
-import os.path, json
+
 
 class Command(ModelBaseCommand):
     def add_arguments(self, parser):
@@ -24,4 +28,3 @@ class Command(ModelBaseCommand):
             conf, status = ConfigClient.objects.get_or_create(name=self.name)
             conf.config = json.load(json_file)
             conf.save()
-

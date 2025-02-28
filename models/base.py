@@ -1,7 +1,5 @@
 import copy
 import json
-from sys import getsizeof
-from types import FunctionType
 from uuid import uuid4
 
 from django.conf import settings
@@ -25,19 +23,22 @@ from mighty.functions import (
 )
 from mighty.models import fields
 
-if "mighty.applications.messenger" in settings.INSTALLED_APPS:
+if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
     from mighty.applications.messenger import (
         notify,
         notify_discord,
         notify_slack,
     )
-if "mighty.applications.logger" in settings.INSTALLED_APPS:
+if 'mighty.applications.logger' in settings.INSTALLED_APPS:
     from mighty.applications.logger.notify.discord import DiscordLogger
     from mighty.applications.logger.notify.slack import SlackLogger
 
-lvl_priority = ["alert", "warning", "notify", "info", "debug"]
+lvl_priority = ['alert', 'warning', 'notify', 'info', 'debug']
+
+
 def default_logfield_dict():
     return {lvl: {} for lvl in lvl_priority}
+
 
 LIST = 'list'
 EXPORT = 'export'
@@ -63,6 +64,8 @@ actions = {
 }
 default_permissions = Options(None).default_permissions
 permissions = tuple(sorted(list(actions), key=lambda x: x[0]))
+
+
 class Base(models.Model):
     from_rest = False
     www_action = None
@@ -85,7 +88,7 @@ class Base(models.Model):
     use_create_by = True
     use_update_by = True
     can_notify = True
-    fields_can_be_changed = "*"
+    fields_can_be_changed = '*'
 
     _logger = get_logger()
     _unmodified = None
@@ -95,13 +98,13 @@ class Base(models.Model):
     _hlast = None
 
     def has_model_activate(self, model):
-        return getattr(self, "model_activate_%s" % model, False)
+        return getattr(self, 'model_activate_%s' % model, False)
 
-    if "mighty.applications.logger" in settings.INSTALLED_APPS:
+    if 'mighty.applications.logger' in settings.INSTALLED_APPS:
         _discord_logger = DiscordLogger()
         _slack_logger = SlackLogger()
         changelog_exclude = ()
-        pk_field = "pk"
+        pk_field = 'pk'
         enable_model_change_log = False
 
         @property
@@ -117,31 +120,23 @@ class Base(models.Model):
             if self._unmodified and self.enable_model_change_log:
                 from mighty.fields import base
                 from mighty.functions import models_difference
-                exclude =  base + tuple(self.m2o_fields().keys()) + tuple(self.m2m_fields().keys()) + tuple(self.changelog_exclude)
+                exclude = base + tuple(self.m2o_fields().keys()) + tuple(self.m2m_fields().keys()) + tuple(self.changelog_exclude)
                 new, old = models_difference(self, self._unmodified, exclude)
                 if len(old) > 0:
                     self.model_change_log.objects.bulk_create([
-                        self.model_change_log(**{
-                            "content_type": self.get_content_type(),
-                            "object_id": getattr(self, self.pk_field),
-                            "field": field,
-                            "value": bytes(str(value), 'utf-8'),
-                            "fmodel": self.fields()[field],
-                            "date_begin": self._unmodified.date_update,
-                            "date_end": self.date_update,
-                            "user": self._user,
-                        }) for field, value in old.items()])
-
+                        self.model_change_log(content_type=self.get_content_type(), object_id=getattr(self, self.pk_field), field=field, value=bytes(str(value), 'utf-8'), fmodel=self.fields()[field], date_begin=self._unmodified.date_update, date_end=self.date_update, user=self._user) for field, value in old.items()])
 
     @property
     def method_list(self):
         return [x for x, y in self.__dict__.items()]
+
     def methods_startswith(self, prefix):
         return self.method_list
 
     @property
     def property_list(self):
-        return [p for p in dir(self) if not callable(getattr(self, p)) and not p.startswith("__")]
+        return [p for p in dir(self) if not callable(getattr(self, p)) and not p.startswith('__')]
+
     def properties_startswith(self, prefix):
         return [p for p in self.property_list if p.startswith(prefix)]
 
@@ -155,14 +150,17 @@ class Base(models.Model):
     def history(self):
         if not len(self._history): self._history = self.history_queryset()
         return self._history
+
     @property
     def history_last(self):
         if not self._hlast: self._hlast = self.history.last()
         return self._hlast
+
     @property
     def history_first(self):
         if not self._hfirst: self._hfirst = self.history.first()
         return self._hfirst
+
     @property
     def qs_not_self(self): return self.queryset().exclude(pk=self.pk) if self.pk else self.queryset().all()
     @property
@@ -172,7 +170,7 @@ class Base(models.Model):
     @property
     def logger(self): return self._logger
 
-    if "mighty.applications.messenger" in settings.INSTALLED_APPS:
+    if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
         def notify(self, subject, content_type, object_id, **kwargs):
             return notify(subject, content_type, object_id, **kwargs)
 
@@ -201,7 +199,7 @@ class Base(models.Model):
     @property
     def can_be_changed(self):
         if self.is_immutable:
-            if self.fields_can_be_changed == "*":
+            if self.fields_can_be_changed == '*':
                 return True
             return all([field in self.fields_can_be_changed for field in self.fields_changed])
         return True
@@ -228,10 +226,10 @@ class Base(models.Model):
 
     def do_a_copy(self, **kwargs):
         new_copy = copy.deepcopy(self)
-        for prop in ("id", "uid", "named_id"):
+        for prop in ('id', 'uid', 'named_id'):
             if hasattr(new_copy, prop):
-                setattr(new_copy, prop, uuid4() if prop == "uid" else None)
-            for k,v in kwargs.items():
+                setattr(new_copy, prop, uuid4() if prop == 'uid' else None)
+            for k, v in kwargs.items():
                 setattr(new_copy, k, v)
         return new_copy
 
@@ -268,7 +266,7 @@ class Base(models.Model):
     @property
     def model_name(self): return str(self.__class__.__name__)
     @property
-    def app_model(self): return self.app_label + "." + self.model_name
+    def app_model(self): return self.app_label + '.' + self.model_name
     @property
     def is_enable(self): return True if self.is_disable is False else False
     @property
@@ -281,7 +279,7 @@ class Base(models.Model):
     # Admin URL
     def url_domain(self, url): return url_domain(url)
     @property
-    def admin_url_args(self): return {"object_id": self.pk}
+    def admin_url_args(self): return {'object_id': self.pk}
     @property
     def app_admin(self): return 'admin:%s_%s_%s'
     @property
@@ -340,10 +338,10 @@ class Base(models.Model):
     Functions
     """
 
-    def getattr_recursive(self, strtoget, split="."):
+    def getattr_recursive(self, strtoget, split='.'):
         if strtoget:
             from functools import reduce
-            return reduce(getattr, [self, ]+strtoget.split(split))
+            return reduce(getattr, [self] + strtoget.split(split))
         return strtoget
 
     def get_has(self, attr, default=None):
@@ -378,7 +376,7 @@ class Base(models.Model):
     def get_url_html(self, url, title):
         return format_html('<a href="%s">%s</a>' % (url, title))
 
-    def get_url(self, action, mask="%s:%s-%s", arguments=None):
+    def get_url(self, action, mask='%s:%s-%s', arguments=None):
         return reverse(mask % (self.app_label.lower(), self.model_name.lower(), action), kwargs=arguments)
 
     # Search facilities
@@ -479,7 +477,7 @@ class Base(models.Model):
         self.is_disable = False
         self.save()
 
-    def on_change_data(self, action="on"):
+    def on_change_data(self, action='on'):
         for field in self.fields_changed:
             fct = '%s_change_%s' % (action, field)
             if hasattr(self, fct) and callable(getattr(self, fct)):
@@ -491,58 +489,58 @@ class Base(models.Model):
         self.set_update_by(get_request_kept().user if request else None)
         if self.pk:
             self.update_count += 1
-            self.www_action = "update"
-            if "pre_update" not in self.www_action_cancel:
-                self.on_change_data("pre_update")
-                self._logger.debug("pre_update %s (%s)" % (type(self), str(self.pk)))
+            self.www_action = 'update'
+            if 'pre_update' not in self.www_action_cancel:
+                self.on_change_data('pre_update')
+                self._logger.debug('pre_update %s (%s)' % (type(self), str(self.pk)))
                 self.pre_update()
         else:
             self.set_create_by(get_request_kept().user if request else None)
-            self.www_action = "create"
-            if "pre_create" not in self.www_action_cancel:
-                self._logger.debug("pre_create %s" % (type(self)))
+            self.www_action = 'create'
+            if 'pre_create' not in self.www_action_cancel:
+                self._logger.debug('pre_create %s' % (type(self)))
                 self.pre_create()
         self.pre_save()
 
     def on_post_save(self):
-        if "post_save" not in self.www_action_cancel:
-            self._logger.debug("post_save %s (%s)" % (type(self), str(self.pk)))
+        if 'post_save' not in self.www_action_cancel:
+            self._logger.debug('post_save %s (%s)' % (type(self), str(self.pk)))
             self.post_save()
-        if self.www_action == "create":
-            if "post_create" not in self.www_action_cancel:
-                self._logger.debug("post_create %s (%s)" % (type(self), str(self.pk)))
+        if self.www_action == 'create':
+            if 'post_create' not in self.www_action_cancel:
+                self._logger.debug('post_create %s (%s)' % (type(self), str(self.pk)))
                 self.post_create()
         else:
-            if "post_update" not in self.www_action_cancel:
-                self.on_change_data("post_update")
-                self._logger.debug("post_update %s (%s)" % (type(self), str(self.pk)))
+            if 'post_update' not in self.www_action_cancel:
+                self.on_change_data('post_update')
+                self._logger.debug('post_update %s (%s)' % (type(self), str(self.pk)))
                 self.post_update()
-            if "mighty.applications.logger" in settings.INSTALLED_APPS:
-                self._logger.debug("save_model_change_log %s (%s)" % (type(self), str(self.pk)))
+            if 'mighty.applications.logger' in settings.INSTALLED_APPS:
+                self._logger.debug('save_model_change_log %s (%s)' % (type(self), str(self.pk)))
                 self.save_model_change_log()
 
     def save(self, *args, **kwargs):
         if self.can_be_changed:
-            self._logger.debug("pre_save %s (%s)" % (type(self), str(self.pk)))
+            self._logger.debug('pre_save %s (%s)' % (type(self), str(self.pk)))
             self.on_pre_save()
             super().save(*args, **kwargs)
             self.on_post_save()
         else:
-            self._logger.debug("is_immutable %s (%s)" % (type(self), str(self.pk)))
-            raise self.raise_error(code="is_immutable", message="is immutable")
+            self._logger.debug('is_immutable %s (%s)' % (type(self), str(self.pk)))
+            raise self.raise_error(code='is_immutable', message='is immutable')
 
     def delete(self, *args, **kwargs):
-        self.www_action = "delete"
+        self.www_action = 'delete'
         if self.can_be_deleted:
-            if "pre_delete" not in self.www_action_cancel:
-                self._logger.debug("pre_delete %s (%s)" % (type(self), str(self.pk)))
+            if 'pre_delete' not in self.www_action_cancel:
+                self._logger.debug('pre_delete %s (%s)' % (type(self), str(self.pk)))
                 self.pre_delete()
             super().delete(*args, **kwargs)
-            if "post_delete" not in self.www_action_cancel:
-                self._logger.debug("post_delete %s (%s)" % (type(self), str(self.pk)))
+            if 'post_delete' not in self.www_action_cancel:
+                self._logger.debug('post_delete %s (%s)' % (type(self), str(self.pk)))
                 self.post_delete()
         else:
-            raise self.raise_error(code="is_immutable", message="is immutable")
+            raise self.raise_error(code='is_immutable', message='is immutable')
 
     def pre_save(self):
         pass

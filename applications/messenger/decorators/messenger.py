@@ -1,27 +1,37 @@
-from django.db.models import PositiveIntegerField, ForeignKey, CharField, SET_NULL
-from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-from mighty.applications.messenger.models import MessengerModel
 from django.conf import settings
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey,
+    GenericRelation,
+)
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import (
+    SET_NULL,
+    CharField,
+    ForeignKey,
+    PositiveIntegerField,
+)
+
+from mighty.applications.messenger.models import MessengerModel
+
 
 def HeritToMessenger(**kwargs):
     def decorator(obj):
         class NewClass(obj, MessengerModel):
             backend = CharField(
                 max_length=255,
-                blank=kwargs.get("backend_blank", True),
-                null=kwargs.get("backend_null", True),
+                blank=kwargs.get('backend_blank', True),
+                null=kwargs.get('backend_null', True),
                 editable=False
             )
             content_type = ForeignKey(ContentType,
-                on_delete=kwargs.get("on_delete", SET_NULL),
-                blank=kwargs.get("blank", True),
-                null=kwargs.get("null", True),
-                related_name=kwargs.get("related_name", "content_type_to_messenger"),
+                on_delete=kwargs.get('on_delete', SET_NULL),
+                blank=kwargs.get('blank', True),
+                null=kwargs.get('null', True),
+                related_name=kwargs.get('related_name', 'content_type_to_messenger'),
             )
             object_id = PositiveIntegerField(
-                blank=kwargs.get("blank", True),
-                null=kwargs.get("null", True),
+                blank=kwargs.get('blank', True),
+                null=kwargs.get('null', True),
             )
             content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -45,11 +55,11 @@ def HeritToMessenger(**kwargs):
         return NewClass
     return decorator
 
+
 def AccessToMissive(**kwargs):
     def decorator(obj):
         if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
-            obj.add_to_class("missives", GenericRelation(kwargs.get("foreignkey", "mighty.Missive")))
-            obj.add_to_class("messenger_missives", GenericRelation(kwargs.get("foreignkey", "mighty.Missive")))
+            obj.add_to_class('missives', GenericRelation(kwargs.get('foreignkey', 'mighty.Missive')))
+            obj.add_to_class('messenger_missives', GenericRelation(kwargs.get('foreignkey', 'mighty.Missive')))
         return obj
     return decorator
-

@@ -1,40 +1,47 @@
+import logging
+import re
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 from django.db.models import Q
 from django.templatetags.static import static
 
+from login import USERNAME_REGEX
 from mighty.applications.address.models import AddressNoBase
 from mighty.applications.messenger.decorators import AccessToMissive
-from mighty.applications.nationality.fields import nationality as fields_nationality
+from mighty.applications.nationality.fields import (
+    nationality as fields_nationality,
+)
 from mighty.applications.tenant.apps import TenantConfig
+from mighty.applications.user import (
+    choices,
+    fields,
+    username_generator_v2,
+    validators,
+)
 from mighty.applications.user import translates as _user
-from mighty.applications.user import fields, choices, username_generator_v2, validators
 from mighty.applications.user.apps import UserConfig as conf
 from mighty.applications.user.manager import UserManager
 from mighty.decorators import AccessToRegisterTask
 from mighty.models.base import Base
 from mighty.models.image import Image
 
-from login import USERNAME_REGEX
-
-import re
-import logging
-
 logger = logging.getLogger(__name__)
 
 validate_trashmail = validators.validate_trashmail
 validate_phone = validators.validate_phone
+
 
 @AccessToRegisterTask()
 @AccessToMissive()
 class User(AbstractUser, Base, Image, AddressNoBase):
     enable_model_change_log = True
     search_fields = fields.search
-    username = models.CharField(_user.username, max_length=254, unique=True, default="WILL_BE_GENERATED")
+    username = models.CharField(_user.username, max_length=254, unique=True, default='WILL_BE_GENERATED')
     email = models.EmailField(_user.email, blank=True, null=True, db_index=True, validators=[validate_trashmail])
     phone = models.CharField(_user.phone, blank=True, null=True, db_index=True, max_length=255)
 
@@ -43,7 +50,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         if not email: return email
         UserModel = get_user_model()
         qs = UserModel.objects.exclude(pk=pk) if pk else UserModel.objects
-        if qs.filter(Q(email__iexact=email) | Q(**{conf.ForeignKey.email_related_name + "__email__iexact": email})).exists():
+        if qs.filter(Q(email__iexact=email) | Q(**{conf.ForeignKey.email_related_name + '__email__iexact': email})).exists():
             raise ValidationError(_user.error_email_already)
         return email
 
@@ -59,7 +66,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     method = models.CharField(_user.method, choices=choices.METHOD, default=choices.METHOD_FRONTEND, max_length=15)
     method_backend = models.CharField(_user.method, max_length=255, blank=True, null=True)
     gender = fields.GenderField(blank=True, null=True)
-    style = models.CharField(max_length=255, default="clear")
+    style = models.CharField(max_length=255, default='clear')
     channel = models.CharField(max_length=255, editable=False, blank=True, null=True)
     first_connection = models.DateTimeField(blank=True, null=True)
     sentry_replay = models.BooleanField(default=False)
@@ -80,11 +87,11 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     if conf.ForeignKey.optional5:
         optional = models.ForeignKey(conf.ForeignKey.optional5, on_delete=models.SET_NULL, blank=True, null=True, related_name='optional5_user')
 
-    #missives = GenericRelation("mighty.Missive")
+    # missives = GenericRelation("mighty.Missive")
 
     if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
         nationalities = models.ManyToManyField(conf.ForeignKey.nationalities, blank=True)
-        language = models.ForeignKey(conf.ForeignKey.nationalities, on_delete=models.SET_NULL, blank=True, null=True, related_name="language_user")
+        language = models.ForeignKey(conf.ForeignKey.nationalities, on_delete=models.SET_NULL, blank=True, null=True, related_name='language_user')
 
         @property
         def language_pref(self):
@@ -121,7 +128,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         self.save()
 
     @property
-    def image_url(self): return self.image.url if self.image else static("img/avatar.svg")
+    def image_url(self): return self.image.url if self.image else static('img/avatar.svg')
 
     @property
     def user(self):
@@ -129,7 +136,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     @property
     def fullname(self):
-        return "%s %s" % (self.first_name, self.last_name) if all([self.last_name, self.first_name]) else ''
+        return '%s %s' % (self.first_name, self.last_name) if all([self.last_name, self.first_name]) else ''
 
     @property
     def logname(self):
@@ -138,7 +145,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     @property
     def representation(self):
         if self.fullname: return self.fullname
-        elif self.username: return self.username
+        if self.username: return self.username
         return self.uid
 
     @property
@@ -189,8 +196,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         emails = tuple(self.get_emails())
         phones = tuple(self.get_phones())
         addresses = tuple(self.get_addresses())
-        return emails+phones+addresses
-
+        return emails + phones + addresses
 
     def get_addresses(self, flat=True):
         if flat:
@@ -208,7 +214,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     def pre_save(self):
         logger.info('UserModel: pre_save')
 
-        if self.username == "WILL_BE_GENERATED" or not re.match(USERNAME_REGEX, self.username):
+        if self.username == 'WILL_BE_GENERATED' or not re.match(USERNAME_REGEX, self.username):
             self.username = username_generator_v2(self.first_name, self.last_name, self.email)
 
         # Handle umique email and phone

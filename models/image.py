@@ -10,15 +10,21 @@ Add an image field at the model
 (valid_image_name) get a valid name for filesystem
 (image_extension) return the extension
 """
-from django.db import models
-from django.utils.html import format_html
-from django.templatetags.static import static
-from mighty.functions import image_directory_path
-import os, mimetypes, base64
+import base64
+import mimetypes
+import os
 
-IMAGE_DEFAULT = "none.jpg"
+from django.db import models
+from django.templatetags.static import static
+from django.utils.html import format_html
+
+from mighty.functions import image_directory_path
+
+IMAGE_DEFAULT = 'none.jpg'
+
+
 class Image(models.Model):
-    default_image = "img/soon.jpg"
+    default_image = 'img/soon.jpg'
     image = models.FileField(upload_to=image_directory_path, blank=True, null=True)
     model_activate_image = True
 

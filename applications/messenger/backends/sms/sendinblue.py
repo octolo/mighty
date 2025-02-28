@@ -1,10 +1,9 @@
+import sib_api_v3_sdk
 from django.conf import settings
 
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
 
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
 
 class MissiveBackend(MissiveBackend):
     CONFSIB = False
@@ -18,7 +17,7 @@ class MissiveBackend(MissiveBackend):
             configuration.api_key['api-key'] = settings.SENDINBLUE_APIKEY
             self.CONFSIB = configuration
         return self.CONFSIB
-            
+
     @property
     def api_sib(self):
         if not self.APISIB:
@@ -37,7 +36,7 @@ class MissiveBackend(MissiveBackend):
             sender=MightyConfig.domain.lower(),
             recipient=self.missive.target,
             content=self.missive.txt,
-            type="transactionnal",
+            type='transactionnal',
         )
         try:
             api_response = api_instance.send_transac_sms(send_transac_sms)
@@ -46,14 +45,13 @@ class MissiveBackend(MissiveBackend):
         except Exception as e:
             self.missive.trace(str(e))
             return False
-        
 
     def send_sms(self):
         over_target = setting('MISSIVE_PHONE', False)
-        self.missive.target = over_target if over_target else self.missive.target
+        self.missive.target = over_target or self.missive.target
         self.missive.status = choices.STATUS_SENT
         if setting('MISSIVE_SERVICE', False):
             if not self.use_api_sms(self.missive):
                 self.missive.status = choices.STATUS_ERROR
-        self.missive.save()            
+        self.missive.save()
         return self.missive.status

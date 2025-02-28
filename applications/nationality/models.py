@@ -1,10 +1,11 @@
 from django.db import models
-from django.utils.html import format_html
 
+from mighty.applications.nationality import managers
+from mighty.applications.nationality import translates as _
+from mighty.fields import JSONField
 from mighty.models.base import Base
 from mighty.models.image import Image
-from mighty.applications.nationality import translates as _, managers
-from mighty.fields import JSONField
+
 
 class Nationality(Base, Image):
     search_fields = ['country', 'alpha2', 'alpha3']
@@ -18,16 +19,17 @@ class Nationality(Base, Image):
         abstract = True
         verbose_name = _.v_nationality
         verbose_name_plural = _.vp_nationality
-        ordering = ['country', ]
+        ordering = ['country']
 
     def __str__(self):
-        return "%s (%s, %s, %s)" % (self.country, self.alpha2, self.alpha3, self.numeric)
+        return '%s (%s, %s, %s)' % (self.country, self.alpha2, self.alpha3, self.numeric)
 
     # @property
     # def image_html(self):
     #     if self.image:
     #         return format_html('<img src="%s" title="%s" style="max-height: 20px">' % (self.image.url, str(self)))
     #     return
+
 
 class Translator(Base):
     name = models.CharField(max_length=255)
@@ -38,6 +40,7 @@ class Translator(Base):
 
     def __str__(self):
         return self.name
+
 
 class TranslateDict(Base):
     one_dim = {}
@@ -51,7 +54,7 @@ class TranslateDict(Base):
     objectsB = managers.TranslateDictManager()
 
     def __str__(self):
-        return "%s(%s)" % (self.translator, self.language)
+        return '%s(%s)' % (self.translator, self.language)
 
     @property
     def split_precision(self):
@@ -60,14 +63,14 @@ class TranslateDict(Base):
     @property
     def one_dim_format(self):
         self.one_dim = {}
-        for key,tr in self.translates.items():
-            self.one_dim_keytr(self.translator.name+"."+key, tr)
+        for key, tr in self.translates.items():
+            self.one_dim_keytr(self.translator.name + '.' + key, tr)
         return self.one_dim
 
     def one_dim_keytr(self, key, tr):
         if type(tr) == dict:
-            for key2,tr2 in tr.items():
-                self.one_dim_keytr(key+"."+key2, tr2)
+            for key2, tr2 in tr.items():
+                self.one_dim_keytr(key + '.' + key2, tr2)
         else:
             self.one_dim[key] = tr
 

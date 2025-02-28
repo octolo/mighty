@@ -1,6 +1,6 @@
-from django.views.generic.edit import FormView
-from mighty.views.model import ModelView
 from mighty.filters import FiltersManager, Foxid
+from mighty.views.model import ModelView
+
 
 class FoxidView(ModelView):
     cache_manager = None
@@ -18,7 +18,7 @@ class FoxidView(ModelView):
 
     @property
     def manager(self):
-        self.cache_manager = self.cache_manager if self.cache_manager else FiltersManager(flts=self.filters, mandatories=self.mandatories)
+        self.cache_manager = self.cache_manager or FiltersManager(flts=self.filters, mandatories=self.mandatories)
         return self.cache_manager
 
     def get_object(self):

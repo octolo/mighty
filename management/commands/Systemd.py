@@ -1,5 +1,7 @@
-from mighty.management import BaseCommand
 from django.template.loader import render_to_string
+
+from mighty.management import BaseCommand
+
 
 class Command(BaseCommand):
     context = {}
@@ -14,7 +16,7 @@ class Command(BaseCommand):
         parser.add_argument('--user', default=None)
         parser.add_argument('--group', default=None)
         parser.add_argument('--pid', default=None)
-    
+
     def handle(self, *args, **options):
         self.context = {
             'DESC': options.get('description'),
@@ -30,4 +32,3 @@ class Command(BaseCommand):
     def do(self):
         if self.service:
             print(render_to_string('services/%s.service' % self.service, self.context))
-

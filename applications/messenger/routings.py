@@ -1,4 +1,5 @@
-from django.urls import path, include
+from django.urls import include, path
+
 from mighty.applications.chat import consumers
 
 app_name = 'messenger'

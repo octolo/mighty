@@ -1,5 +1,7 @@
 from django.utils.module_loading import import_string
+
 from mighty.applications.shop.apps import ShopConfig
+
 
 class BackendModel:
     def get_backend(self):

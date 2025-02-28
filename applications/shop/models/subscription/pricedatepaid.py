@@ -1,11 +1,13 @@
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
+
 
 class PriceDatePaid:
     @property
     def price_tenant(self):
         if self.group_or_user:
-            return self.offer.real_price_tenant*self.group_or_user.nbr_tenant
+            return self.offer.real_price_tenant * self.group_or_user.nbr_tenant
         return 0
 
     @property
@@ -14,14 +16,14 @@ class PriceDatePaid:
 
     @property
     def price_full(self):
-        return self.offer.real_price+ self.offer.real_price_tenant
+        return self.offer.real_price + self.offer.real_price_tenant
 
     # Date
     def get_date_month(self):
-        return self.next_paid+relativedelta(months=1)
+        return self.next_paid + relativedelta(months=1)
 
     def get_date_year(self):
-        return self.next_paid+relativedelta(months=12)
+        return self.next_paid + relativedelta(months=12)
 
     def get_date_oneshot(self):
         return date.today()

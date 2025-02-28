@@ -1,23 +1,26 @@
-from mighty.applications.logger import EnableLogger
 from openpyxl import load_workbook
+
+from mighty.applications.logger import EnableLogger
+
 
 def reader(iterator):
     total = [[col.value for col in row] for row in iterator]
     for row in total:
         yield row
 
+
 class ReaderXLSX(EnableLogger):
     def __init__(self, filename, worksheet=None, *args, **kwargs):
-        self.logger.info("Opening file %s" % filename)
+        self.logger.info('Opening file %s' % filename)
         self.wb = load_workbook(filename, **kwargs)
-        self.logger.info("file %s open" % filename)
-        self.ws = worksheet and self.wb[worksheet] or self.wb.active
+        self.logger.info('file %s open' % filename)
+        self.ws = (worksheet and self.wb[worksheet]) or self.wb.active
         self.total = self.ws.max_row
         self.reader = reader(self.ws)
-        self._fieldnames = kwargs.get("fieldnames", None)
-        self.restkey = kwargs.get("restkey", None)
-        self.restval = kwargs.get("restval", None)
-        self.skip_blank_lines = kwargs.get("skip_blank_lines", False)
+        self._fieldnames = kwargs.get('fieldnames')
+        self.restkey = kwargs.get('restkey')
+        self.restval = kwargs.get('restval')
+        self.skip_blank_lines = kwargs.get('skip_blank_lines', False)
         self.line_num = 0
 
     @property
@@ -49,7 +52,7 @@ class ReaderXLSX(EnableLogger):
         ):
             row = next(self.reader)
 
-        d = dict(zip(self.fieldnames, row))
+        d = dict(zip(self.fieldnames, row, strict=False))
         lf = len(self.fieldnames)
         lr = len(row)
         if lf < lr:
@@ -58,4 +61,3 @@ class ReaderXLSX(EnableLogger):
             for key in self.fieldnames[lr:]:
                 d[key] = self.restval
         return d
-

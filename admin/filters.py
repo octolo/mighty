@@ -1,5 +1,7 @@
 from django.contrib import admin
+
 from mighty import translates as _
+
 
 class InAlertListFilter(admin.SimpleListFilter):
     title = _.alerts
@@ -10,6 +12,7 @@ class InAlertListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == 'inalert': return queryset.filter(logfields__icontains='alert')
+
 
 class InErrorListFilter(admin.SimpleListFilter):
     title = _.errors

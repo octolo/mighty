@@ -4,13 +4,13 @@ class FilterDescriptor:
     def __init__(self, filters, *args, **kwargs):
         self.filters = filters
 
-    #def input_type_field(self, field):
+    # def input_type_field(self, field):
     #    return field.widget.input_type
 
-    #def errors_field(self, field):
+    # def errors_field(self, field):
     #    return field.error_messages
 
-    #def config_field(self, field):
+    # def config_field(self, field):
     #    config = {
     #        "required": field.widget.is_required,
     #        "mutlipart": field.widget.needs_multipart_form,
@@ -19,10 +19,10 @@ class FilterDescriptor:
     #    if hasattr(field, "max_length"): config["max_length"] = field.max_length
     #    return config
 
-    #def attrs_field(self, field):
+    # def attrs_field(self, field):
     #    return field.widget.attrs
 
-    #def field_definition(self, field):
+    # def field_definition(self, field):
     #    return {
     #        "type": self.input_type_field(field),
     #        "errors": self.errors_field(field),
@@ -33,8 +33,8 @@ class FilterDescriptor:
     #    }
 
     def get_fields(self):
-        return { name: self.field_definition(field)
-            for name,field in self.form.fields.items()}
+        return {name: self.field_definition(field)
+            for name, field in self.form.fields.items()}
 
     def as_json(self):
         return self.get_fields()

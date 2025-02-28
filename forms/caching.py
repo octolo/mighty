@@ -11,6 +11,8 @@ You can also add an attribute like model_queryset to override the queryset in "_
         self.model_queryset = Model.objects.all()
         super().__init__(*args, **kwargs)
 """
+
+
 class CachingModelChoicesFormSet(forms.BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,22 +26,23 @@ class CachingModelChoicesFormSet(forms.BaseInlineFormSet):
             for field_name in model_choice_fields:
                 if field_name in sample_form.fields and not isinstance(
                     sample_form.fields[field_name].widget, forms.HiddenInput):
-                    if hasattr(self, "%s_queryset" % field_name):
-                        sample_form.fields[field_name].queryset = getattr(self, "%s_queryset" % field_name)
+                    if hasattr(self, '%s_queryset' % field_name):
+                        sample_form.fields[field_name].queryset = getattr(self, '%s_queryset' % field_name)
                     self.cached_choices[field_name] = [c for c in sample_form.fields[field_name].choices]
 
     def get_form_kwargs(self, index):
         kwargs = super().get_form_kwargs(index)
-        kwargs["cached_choices"] = self.cached_choices
+        kwargs['cached_choices'] = self.cached_choices
         return kwargs
+
 
 class CachingModelChoicesForm(forms.ModelForm):
     @property
     def model_choice_fields(self):
-        return [fn for fn, f in self.fields.items() if isinstance(f, (forms.ModelChoiceField, forms.ModelMultipleChoiceField,))]
+        return [fn for fn, f in self.fields.items() if isinstance(f, (forms.ModelChoiceField, forms.ModelMultipleChoiceField))]
 
     def __init__(self, *args, **kwargs):
-        cached_choices = kwargs.pop("cached_choices", {})
+        cached_choices = kwargs.pop('cached_choices', {})
         super().__init__(*args, **kwargs)
         for field_name, choices in cached_choices.items():
             if choices is not None and field_name in self.fields:
@@ -51,12 +54,12 @@ class CachingModelChoicesForm(forms.ModelForm):
                 model = type(self._obj)
                 fields = (self.fieldname,)
         mf = ModelForm()
-        self.fields["value"] = mf.fields[self.fieldname]
+        self.fields['value'] = mf.fields[self.fieldname]
 
     def clean(self):
         cleaned_data = super().clean()
         amodel = self._obj.timeline_model(**self.prepared_fields)
-        amodel.date_begin = cleaned_data.get("date_begin")
-        amodel.date_end = cleaned_data.get("date_end")
-        amodel.value = str(cleaned_data.get("value"))
+        amodel.date_begin = cleaned_data.get('date_begin')
+        amodel.date_end = cleaned_data.get('date_end')
+        amodel.value = str(cleaned_data.get('value'))
         amodel.save()

@@ -1,13 +1,16 @@
+import re
+import sys
+
 from mighty.management import BaseCommand
 from mighty.models import Missive
-import sys, re
+
 
 class Command(BaseCommand):
     mail = None
     msgid = None
 
     def makeJob(self):
-        self.mail = "\n".join(sys.stdin)
+        self.mail = '\n'.join(sys.stdin)
         self.get_msgid()
 
     def get_msgid(self):

@@ -1,5 +1,4 @@
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
 from django.http import QueryDict
 
 from mighty.applications.logger import EnableLogger
@@ -14,7 +13,7 @@ class FiltersManager(EnableLogger):
     def __init__(self, *args, **kwargs):
         self.flts = kwargs.get('flts', [])
         self.mandatories = kwargs.get('mandatories', [])
-        self.filter_post_enable = kwargs.get("filter_post_enable", False)
+        self.filter_post_enable = kwargs.get('filter_post_enable', False)
 
     def check_mandatories(self, request):
         return all(k in self.get_data(request) for k in self.mandatories)

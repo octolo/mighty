@@ -1,6 +1,7 @@
-from mighty.views.base import BaseView
 from mighty.apps import MightyConfig as conf
-from mighty.functions import get_logger, tpl
+from mighty.functions import tpl
+from mighty.views.base import BaseView
+
 
 class ModelView(BaseView):
     is_ajax = False
@@ -9,17 +10,17 @@ class ModelView(BaseView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            "opts": self.model._meta,
-            "fake": self.model(),
+            'opts': self.model._meta,
+            'fake': self.model(),
         })
         context.update({
-            "can_add": self.request.user.has_perm(context["fake"].perm("add")),
-            "can_change": self.request.user.has_perm(context["fake"].perm("change")),
-            "can_delete": self.request.user.has_perm(context["fake"].perm("delete")),
-            "can_export": self.request.user.has_perm(context["fake"].perm("export")),
-            "can_import": self.request.user.has_perm(context["fake"].perm("import")),
-            "can_disable": self.request.user.has_perm(context["fake"].perm("disable")),
-            "can_enable": self.request.user.has_perm(context["fake"].perm("enable")),
+            'can_add': self.request.user.has_perm(context['fake'].perm('add')),
+            'can_change': self.request.user.has_perm(context['fake'].perm('change')),
+            'can_delete': self.request.user.has_perm(context['fake'].perm('delete')),
+            'can_export': self.request.user.has_perm(context['fake'].perm('export')),
+            'can_import': self.request.user.has_perm(context['fake'].perm('import')),
+            'can_disable': self.request.user.has_perm(context['fake'].perm('disable')),
+            'can_enable': self.request.user.has_perm(context['fake'].perm('enable')),
         })
         return context
 
@@ -34,5 +35,5 @@ class ModelView(BaseView):
                 self.app_label or str(self.model._meta.app_label).lower(),
                 self.model_name or str(self.model.__name__).lower(),
                 str(self.__class__.__name__).lower())
-        self._logger.info("template: %s" % self.template_name, self.request.user)
+        self._logger.info('template: %s' % self.template_name, self.request.user)
         return self.template_name

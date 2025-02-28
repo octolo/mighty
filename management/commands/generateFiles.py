@@ -1,5 +1,6 @@
 from mighty.management import ModelBaseCommand
 
+
 class Command(ModelBaseCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)

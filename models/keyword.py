@@ -7,10 +7,11 @@ usefull for some text field search based
 (get_keywords) return the keywords field searchable
 (set_keywords) set the keywords field
 """
+
 from django.db import models
-from mighty.models import JSONField
-from mighty.functions import weight_words, make_searchable
-import re
+
+from mighty.functions import weight_words
+
 
 class Keyword(models.Model):
     keywords_fields = []
@@ -24,12 +25,12 @@ class Keyword(models.Model):
         words = []
         for field in self.keywords_fields:
             words += weight_words(getattr(self, field))
-        return "_"+"_".join(words)
+        return '_' + '_'.join(words)
 
     def set_keywords(self):
         self.keywords = self.get_keywords()
         if self.keywords:
-            self.keyworkd = "_"+self.keywords
+            self.keyworkd = '_' + self.keywords
 
     def save(self, *args, **kwargs):
         self.set_keywords()

@@ -1,14 +1,17 @@
-from django.db import models
-from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.db import models
+
 from mighty.applications.tenant.apps import TenantConfig as conf
+
 
 def TenantAssociation(**kwargs):
     def decorator(obj):
         class_name = obj.__name__.lower()
+
         class NewClass(obj):
             tenant_association_config = kwargs
-            tenant_field = kwargs.get("tenant_field", "tenant")
+            tenant_field = kwargs.get('tenant_field', 'tenant')
 
             group_relations = kwargs.get('group_relations', [])
             group = models.ForeignKey(conf.ForeignKey.group,
@@ -20,12 +23,12 @@ def TenantAssociation(**kwargs):
 
             if kwargs.get('user_related'):
                 user = models.ForeignKey(get_user_model(),
-                    related_name=class_name + "_user_related",
+                    related_name=class_name + '_user_related',
                     on_delete=models.SET_NULL, blank=True, null=True,
                 )
             if kwargs.get('roles_related'):
                 roles = models.ManyToManyField(conf.ForeignKey.role,
-                    related_name=class_name + "_roles_related",
+                    related_name=class_name + '_roles_related',
                     blank=True,
                 )
 
@@ -62,11 +65,11 @@ def TenantAssociation(**kwargs):
 
             # Users related (indirect m2m relation)
             def get_users_related(self, ur):
-                return self.ur.values_list("id", flat=True)
+                return self.ur.values_list('id', flat=True)
 
             def set_users_related(self):
-                for ur in kwargs.get("users_related", []):
-                    ur_name = str(ur)+"_list_id"
+                for ur in kwargs.get('users_related', []):
+                    ur_name = str(ur) + '_list_id'
                     if hasattr(self, ur_name):
                         setattr(self, ur_name, self.get_users_related(ur))
 
@@ -76,11 +79,10 @@ def TenantAssociation(**kwargs):
 
             def tenant_pre_save(self):
                 if self.group:
-                    for field in kwargs.get("duplicate_db_charfields", ()):
-                        setattr(self, "group_"+field, getattr(self.group, field))
+                    for field in kwargs.get('duplicate_db_charfields', ()):
+                        setattr(self, 'group_' + field, getattr(self.group, field))
 
-
-            #def save(self, *args, **kwargs):
+            # def save(self, *args, **kwargs):
             #    if not self.group:
             #        try:
             #            self.set_group()
@@ -89,12 +91,13 @@ def TenantAssociation(**kwargs):
             #    self.check_group_coherence()
             #    super().save(*args, **kwargs)
 
-        for field in kwargs.get("duplicate_db_charfields", ()):
-            NewClass.add_to_class("group_"+field, models.CharField(max_length=255, blank=True, null=True))
+        for field in kwargs.get('duplicate_db_charfields', ()):
+            NewClass.add_to_class('group_' + field, models.CharField(max_length=255, blank=True, null=True))
 
         NewClass.__name__ = obj.__name__
         return NewClass
     return decorator
+
 
 def TenantGroup(**kwargs):
     def decorator(obj):

@@ -1,14 +1,18 @@
-from django.db.models import Q
-from mighty import Verify
-from mighty.functions import make_float, make_int
-from mighty.apps import MightyConfig
-
+import operator
+import re
+import uuid
+from datetime import datetime, timedelta
 from functools import reduce
-from datetime import timedelta, datetime
-import operator, uuid, re
+
+from django.db.models import Q
+
+from mighty import Verify
+from mighty.apps import MightyConfig
+from mighty.functions import make_float, make_int
 
 SEPARATOR = MightyConfig.Interpreter._split
 NEGATIVE = MightyConfig.Interpreter._negative
+
 
 class Filter(Verify):
     default_value = False
@@ -25,7 +29,7 @@ class Filter(Verify):
     and_operator = operator.and_
 
     def __init__(self, id, *args, **kwargs):
-        self.id = id if id else str(uuid.uuid4())
+        self.id = id or str(uuid.uuid4())
         self.operator = kwargs.get('operator', operator.and_)
         self.dependencies = kwargs.get('dependencies', [])
         self.mask = kwargs.get('mask', '')
@@ -37,10 +41,10 @@ class Filter(Verify):
         self.choices = kwargs.get('choices')
         self.extend = kwargs.get('extend', self.extend)
         self.or_extend = kwargs.get('or_extend', self.or_extend)
-        self.or_operator = kwargs.get("or_operator", self.or_operator)
+        self.or_operator = kwargs.get('or_operator', self.or_operator)
         self.and_extend = kwargs.get('and_extend', self.and_extend)
-        self.and_operator = kwargs.get("and_operator", self.and_operator)
-        self.only_extend = kwargs.get("only_extend", self.only_extend)
+        self.and_operator = kwargs.get('and_operator', self.and_operator)
+        self.only_extend = kwargs.get('only_extend', self.only_extend)
         self.params_choices = [
             self.param,
             self.negative_param,
@@ -71,15 +75,15 @@ class Filter(Verify):
     #################
     @property
     def negative_param(self, array=False):
-        return NEGATIVE+self.param
+        return NEGATIVE + self.param
 
     @property
     def positive_array_param(self):
-        return self.param+'[]'
+        return self.param + '[]'
 
     @property
     def negative_array_param(self):
-        return NEGATIVE+self.param+'[]'
+        return NEGATIVE + self.param + '[]'
 
     @property
     def is_positive(self):
@@ -102,14 +106,14 @@ class Filter(Verify):
         if self.is_positive:
             self.param_used = self.is_positive
             return True
-        elif self.is_negative:
+        if self.is_negative:
             self.param_used = self.is_negative
             return True
-        elif self.is_array_positive:
+        if self.is_array_positive:
             self.param_used = self.is_array_positive
             self.is_array = True
             return True
-        elif self.is_array_negative:
+        if self.is_array_negative:
             self.param_used = self.is_array_negative
             self.is_array = True
             return True
@@ -130,17 +134,17 @@ class Filter(Verify):
             if self.delimiter:
                 for value in self.request.get(self.param_used):
                     if self.is_array:
-                        for value in  self.request.get(self.param_used):
+                        for value in self.request.get(self.param_used):
                             values += value.split(self.delimiter)
                     else:
                         values += self.request.get(self.param_used).split(self.delimiter)
                 return values
-            elif self.regex_delimiter:
+            if self.regex_delimiter:
                 for value in self.request.get(self.param_used):
                     if value:
                         values += re.split(self.regex_delimiter, value)
                 return values
-            elif self.is_array:
+            if self.is_array:
                 return self.request.get(self.param_used)
             return self.request.get(self.param_used)[0]
         return None
@@ -152,13 +156,13 @@ class Filter(Verify):
         return self.get_value()
 
     def get_rfield(self):
-        return self.prefix+self.field+self.get_rmask()
+        return self.prefix + self.field + self.get_rmask()
 
     def get_field(self):
-        return self.prefix+self.field+self.get_mask()
+        return self.prefix + self.field + self.get_mask()
 
     def get_field_extend(self, ext):
-        return self.prefix+ext+self.get_mask()
+        return self.prefix + ext + self.get_mask()
 
     def extend_value(self):
         values = self.get_value()
@@ -204,8 +208,10 @@ class Filter(Verify):
             return dep.add(sql, Q.AND) if dep and sql else sql
         return Q()
 
+
 class ParamFilter(Filter):
     pass
+
 
 class ParamChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
@@ -222,6 +228,7 @@ class ParamChoicesFilter(ParamFilter):
         if self.choices_required:
             return value if value in self.choices else False
         return value
+
 
 class ParamMultiChoicesFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
@@ -241,6 +248,7 @@ class ParamMultiChoicesFilter(ParamFilter):
             return values if values in self.choices else None
         return [value for value in values]
 
+
 class MultiParamFilter(ParamFilter):
     def __init__(self, id, request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
@@ -251,7 +259,7 @@ class MultiParamFilter(ParamFilter):
         return super().get_value().split(SEPARATOR)
 
     def fieldQ(self):
-        return reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in self.get_value()])
+        return reduce(self.operator, [self.usedQ(**{self.get_field(): value}) for value in self.get_value()])
 
     def fieldsQ(self):
         return reduce(self.operator, [self.usedQ(**{self.get_field_extend(f): value}) for value in self.get_value()
@@ -260,6 +268,7 @@ class MultiParamFilter(ParamFilter):
     def get_Q(self):
         theQ = self.fieldsQ() if len(self.fields) else self.fieldQ()
         return theQ
+
 
 class SearchFilter(ParamFilter):
     regex_delimiter = r'[;,\s]\s*'
@@ -273,23 +282,24 @@ class SearchFilter(ParamFilter):
 
     def extend_value(self):
         values = super().get_value()
-        return [self.extstartw+value for value in values]
+        return [self.extstartw + value for value in values]
 
     def get_mask(self):
         return self.mask
 
     def get_value(self):
         values = super().get_value()
-        return [self.startw+value for value in values]
+        return [self.startw + value for value in values]
 
     def baseQ(self):
         values = self.get_value()
         if len(values):
             if self.only_extend:
-                return self.get_andQ()|self.get_orQ()
-            searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value }) for value in values])
-            return (searchQ|self.get_andQ())|self.get_orQ()
+                return self.get_andQ() | self.get_orQ()
+            searchQ = reduce(self.operator, [self.usedQ(**{self.get_field(): value}) for value in values])
+            return (searchQ | self.get_andQ()) | self.get_orQ()
         return Q()
+
 
 class BooleanParamFilter(ParamFilter):
     enable_false = False
@@ -303,13 +313,14 @@ class BooleanParamFilter(ParamFilter):
 
     def get_value(self):
         value = super().get_value()
-        if type(value).__name__ == "str":
-            return True if value in ("true", "1") else False
+        if type(value).__name__ == 'str':
+            return True if value in ('true', '1') else False
         return bool(int(value))
 
     def get_Q(self):
         if self.enable_false or self.get_value():
             return super().get_Q()
+
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
     def __init__(self, id='gtelte', request=None, *args, **kwargs):
@@ -320,10 +331,10 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
 
     def get_field(self, value, field):
         if value[0:3] in ['gte', 'lte']:
-            return self.prefix+field+'__gte' if value[0:3] == 'gte' else self.prefix+field+'__lte'
-        elif value[0:2] in ['gt', 'lt']:
-            return self.prefix+field+'__gt' if value[0:2] == 'gt' else self.prefix+field+'__lt'
-        return self.prefix+field+self.mask
+            return self.prefix + field + '__gte' if value[0:3] == 'gte' else self.prefix + field + '__lte'
+        if value[0:2] in ['gt', 'lt']:
+            return self.prefix + field + '__gt' if value[0:2] == 'gt' else self.prefix + field + '__lt'
+        return self.prefix + field + self.mask
 
     def format_value(self, value):
         if self.is_int:
@@ -336,11 +347,11 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
             if '-' in value:
                 value = value.split('-')
                 theQ.append(Q(**{
-                    self.prefix+field+'__gte': self.format_value(value[0]),
-                    self.prefix+field+'__lte': self.format_value(value[1])
+                    self.prefix + field + '__gte': self.format_value(value[0]),
+                    self.prefix + field + '__lte': self.format_value(value[1])
                 }))
             else:
-                theQ.append(Q(**{self.get_field(value, field): self.format_value(value) }))
+                theQ.append(Q(**{self.get_field(value, field): self.format_value(value)}))
         if self.is_negative or self.is_array_negative:
             return ~reduce(self.operator, theQ)
         return reduce(self.operator, theQ)
@@ -348,12 +359,14 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
     def get_Q(self):
         return self.get_LTEGTE(self.field)
 
+
 class FilterByYearDelta(FilterByGTEorLTE):
     def __init__(self, id='years', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
 
     def format_value(self, value):
-        return timedelta(days=make_float(value)*MightyConfig.days_in_year)
+        return timedelta(days=make_float(value) * MightyConfig.days_in_year)
+
 
 class DatePastFilter(BooleanParamFilter):
     def __init__(self, id='coming', request=None, *args, **kwargs):
@@ -365,6 +378,7 @@ class DatePastFilter(BooleanParamFilter):
         value = self.get_value()
         return Q(**{self.get_field(): datetime.today()})
 
+
 class DateComingFilter(BooleanParamFilter):
     def __init__(self, id='coming', request=None, *args, **kwargs):
         super().__init__(id, request, *args, **kwargs)
@@ -374,6 +388,7 @@ class DateComingFilter(BooleanParamFilter):
     def get_Q(self):
         value = self.get_value()
         return Q(**{self.get_field(): datetime.today()})
+
 
 class DatePastFilter(DateComingFilter):
     def __init__(self, id='past', request=None, *args, **kwargs):

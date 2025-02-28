@@ -1,10 +1,12 @@
-from mighty.applications.address.backends import SearchBackend
-from mighty.applications.address.apps import AddressConfig
 import requests
+
+from mighty.applications.address.apps import AddressConfig
+from mighty.applications.address.backends import SearchBackend
+
 
 class SearchBackend(SearchBackend):
     API_KEY = AddressConfig.Key.google
-    url = "https://maps.googleapis.com/maps/api/geocode/json?address=%s&lang=%s&key=%s"
+    url = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&lang=%s&key=%s'
 
     def get_address(self, data):
         address = self.get_dict('google')
@@ -25,9 +27,7 @@ class SearchBackend(SearchBackend):
                 address['country_code'] = component.get('short_name')
             elif 'postal_code' in component['types']:
                 address['postal_code'] = component['long_name']
-            elif 'locality' in component['types']:
-                address['locality'] = component['long_name']
-            elif 'postal_town' in component['types']:
+            elif 'locality' in component['types'] or 'postal_town' in component['types']:
                 address['locality'] = component['long_name']
             else:
                 continue
@@ -44,9 +44,8 @@ class SearchBackend(SearchBackend):
         url = self.get_url(input_str)
         location = self.service(url)
         return self.get_address([0])
-        
+
     def get_list(self, input_str, offset=0, limit=15):
         url = self.get_url(input_str)
         location = self.service(url)
         return [self.get_address(address) for address in location['results']]
-        

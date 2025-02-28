@@ -1,7 +1,8 @@
-from mighty.apps import MightyConfig
-from functools import reduce
-from datetime import timedelta
 import operator
+from functools import reduce
+
+from mighty.apps import MightyConfig
+
 
 class Foxid:
     filters = None
@@ -36,15 +37,15 @@ class Foxid:
         self.method = kwargs.get('method', 'GET')
         self.method_request = getattr(self.request, self.method)
         self.filters = {fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])}
-        self.tokens = self.Token._filter+self.Token._family+[self.Token._split, self.Token._or]
+        self.tokens = self.Token._filter + self.Token._family + [self.Token._split, self.Token._or]
         self.include = self.execute(request.GET.get(self.Param._include, False))
         self.exclude = self.execute(request.GET.get(self.Param._exclude, False))
         self.order = self.method_request.get(self.Param._order, kwargs.get('order', False))
         self.order_base = kwargs.get('order_base', [])
         self.distinct = kwargs.get('distinct', False)
         self.order_enable = kwargs.get('order_enable', False)
-        self.order_association = kwargs.get("order_association", {})
-        self.order_authorized = kwargs.get("order_authorized", [])
+        self.order_association = kwargs.get('order_association', {})
+        self.order_authorized = kwargs.get('order_authorized', [])
         self.separator = self.Token._split
         self.negative = self.Token._negative
 
@@ -59,10 +60,7 @@ class Foxid:
                     # if filter starting
                     if char == self.Token._filter[0]:
                         # not already in filter
-                        if not len(self.context):
-                            self.context.append(self.Token._filter[0])
-                        # if filter in family
-                        elif self.context[-1] == self.Token._family[0]:
+                        if not len(self.context) or self.context[-1] == self.Token._family[0]:
                             self.context.append(self.Token._filter[0])
                         else:
                             # ID or ARG
@@ -86,7 +84,7 @@ class Foxid:
                             self.add_idorarg()
 
                         # closing filter
-                        if char == self.Token._filter[2] and self.context[-1] == self.Token._filter[0]+self.Token._filter[1]:
+                        if char == self.Token._filter[2] and self.context[-1] == self.Token._filter[0] + self.Token._filter[1]:
                             self.context.pop()
                             self.add_filter(self.get_filter_by_idandargs())
 
@@ -106,11 +104,10 @@ class Foxid:
                         self.operators.append(operator.or_)
 
                 # No token
+                elif not self.context:
+                    raise SyntaxError('request interepreter need a starting condition')
                 else:
-                    if not self.context:
-                        raise SyntaxError('request interepreter need a starting condition')
-                    else:
-                        self.concate_idorarg(char)
+                    self.concate_idorarg(char)
 
             if self.compiled:
                 self.compiled = reduce(self.operators.pop() if len(self.operators) else operator.and_, self.compiled)
@@ -119,7 +116,7 @@ class Foxid:
             raise SyntaxError('invalid syntax of the request interpreter')
 
         compiled, self.compiled = self.compiled, []
-        return compiled if compiled else False
+        return compiled or False
 
     def add_idorarg(self):
         self.filter_idandargs.append(self.idorarg)
@@ -129,7 +126,7 @@ class Foxid:
     def concate_idorarg(self, char):
         if self.context[-1] != self.Token._idorarg:
             self.context.append(self.Token._idorarg)
-        self.idorarg+=char
+        self.idorarg += char
 
     def add_filter(self, fltr):
         if fltr:
@@ -145,23 +142,23 @@ class Foxid:
         return False
 
     def get_arg_order(self, arg):
-        assoc = arg.replace("-", "")
-        direc = "-" if arg.startswith("-") else ""
+        assoc = arg.replace('-', '')
+        direc = '-' if arg.startswith('-') else ''
         field = self.order_association.get(assoc, assoc)
         if self.order_authorized:
             if assoc in self.order_authorized:
-                return direc+field
+                return direc + field
         else:
-            return direc+field
+            return direc + field
 
     def order_by(self):
         args = []
         if self.order:
             args += [o.replace('.', '__') for o in self.order.split(self.separator)]
-        args_base = [arg.replace("-", "") for arg in args]
+        args_base = [arg.replace('-', '') for arg in args]
         if len(self.order_base):
             for ord_base in self.order_base:
-                if ord_base.replace("-", "") not in args_base:
+                if ord_base.replace('-', '') not in args_base:
                     args.append(ord_base)
         return [result for arg in args if (result := self.get_arg_order(arg)) is not None]
 
@@ -172,7 +169,7 @@ class Foxid:
             self.queryset = self.queryset.exclude(self.exclude)
         if self.distinct:
             if type(self.distinct) == str and self.distinct == 'auto':
-                queryset = queryset.filter(id__in=queryset.distinct(*self.qdistinct).values("id"))
+                queryset = queryset.filter(id__in=queryset.distinct(*self.qdistinct).values('id'))
             elif type(self.distinct) == bool:
                 self.queryset = self.queryset.distinct()
             elif type(self.distinct) == list:

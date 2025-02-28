@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from mighty.filters import FilterDescriptor
 from mighty.views.template import TemplateView
 
+
 class FilterDescView(TemplateView):
     descriptor_class = FilterDescriptor
     filters = []

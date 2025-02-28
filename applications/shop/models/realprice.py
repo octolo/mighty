@@ -1,6 +1,8 @@
+
 from django.db import models
+
 from mighty.models.base import Base
-import math
+
 
 class RealPrice(Base):
     price = models.PositiveIntegerField(default=0)
@@ -12,19 +14,19 @@ class RealPrice(Base):
 
     @property
     def real_tax(self):
-        return self.tax/100 if self.tax else 0
+        return self.tax / 100 if self.tax else 0
 
     @property
     def calc_tax(self):
-        return round(self.price_ht*(self.real_tax/100), 2) if all([self.price_ht, self.real_tax]) else 0
+        return round(self.price_ht * (self.real_tax / 100), 2) if all([self.price_ht, self.real_tax]) else 0
 
     @property
     def price_ht(self):
-        return self.price/100 if self.price else 0
+        return self.price / 100 if self.price else 0
 
     @property
     def price_ttc(self):
-        return self.price_ht+self.calc_tax if all([self.price_ht, self.calc_tax]) else 0
+        return self.price_ht + self.calc_tax if all([self.price_ht, self.calc_tax]) else 0
 
     @property
     def real_price(self):

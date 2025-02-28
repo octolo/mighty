@@ -2,6 +2,7 @@ from django.db import models
 
 from mighty.models import Base
 
+
 class Trashmail(Base):
     domain = models.CharField(max_length=255)
 
@@ -9,4 +10,4 @@ class Trashmail(Base):
         abstract = True
 
     def __str__(self):
-        return "@" + self.domain
+        return '@' + self.domain

@@ -1,10 +1,11 @@
-from django.contrib.admin.utils import model_ngettext
-from django.contrib.admin import helpers
-from django.template.response import TemplateResponse
 from django.contrib import messages
+from django.contrib.admin import helpers
+from django.contrib.admin.utils import model_ngettext
 from django.core.exceptions import PermissionDenied
+from django.template.response import TemplateResponse
 
 from mighty import translates as _
+
 
 def disable_selected(modeladmin, request, queryset):
     opts = modeladmin.model._meta
@@ -20,11 +21,11 @@ def disable_selected(modeladmin, request, queryset):
                 modeladmin.log_enablion(request, obj, obj_display)
             modeladmin.disable_queryset(request, queryset)
             modeladmin.message_user(request, _.disable_succes % {
-                "count": n, "items": model_ngettext(modeladmin.opts, n)
+                'count': n, 'items': model_ngettext(modeladmin.opts, n)
             }, messages.SUCCESS)
         return None
     objects_name = model_ngettext(queryset)
-    title = _.can_not_disable % {"name": objects_name} if perms_needed or protected else _.are_you_sure
+    title = _.can_not_disable % {'name': objects_name} if perms_needed or protected else _.are_you_sure
     context = {
         **modeladmin.admin_site.each_context(request),
         'title': title,
@@ -40,11 +41,14 @@ def disable_selected(modeladmin, request, queryset):
     }
     request.current_app = modeladmin.admin_site.name
     return TemplateResponse(request, modeladmin.disable_selected_confirmation_template or [
-        "admin/%s/%s/disable_selected_confirmation.html"% (app_label, opts.model_name),
-        "admin/%s/disable_selected_confirmation.html" % app_label ,
-        "admin/disable_selected_confirmation.html",], context)
+        'admin/%s/%s/disable_selected_confirmation.html' % (app_label, opts.model_name),
+        'admin/%s/disable_selected_confirmation.html' % app_label,
+        'admin/disable_selected_confirmation.html'], context)
+
+
 disable_selected.allowed_permissions = ('change',)
 disable_selected.short_description = _.disable_selected
+
 
 def enable_selected(modeladmin, request, queryset):
     opts = modeladmin.model._meta
@@ -60,11 +64,11 @@ def enable_selected(modeladmin, request, queryset):
                 modeladmin.log_enablion(request, obj, obj_display)
             modeladmin.enable_queryset(request, queryset)
             modeladmin.message_user(request, _.enable_success % {
-                "count": n, "items": model_ngettext(modeladmin.opts, n)
+                'count': n, 'items': model_ngettext(modeladmin.opts, n)
             }, messages.SUCCESS)
         return None
     objects_name = model_ngettext(queryset)
-    title = _.can_not_enable % {"name": objects_name} if perms_needed or protected else _.are_you_sure
+    title = _.can_not_enable % {'name': objects_name} if perms_needed or protected else _.are_you_sure
     context = {
         **modeladmin.admin_site.each_context(request),
         'title': title,
@@ -80,8 +84,10 @@ def enable_selected(modeladmin, request, queryset):
     }
     request.current_app = modeladmin.admin_site.name
     return TemplateResponse(request, modeladmin.enable_selected_confirmation_template or [
-        "admin/%s/%s/enable_selected_confirmation.html"% (app_label, opts.model_name),
-        "admin/%s/enable_selected_confirmation.html" % app_label ,
-        "admin/enable_selected_confirmation.html",], context)
+        'admin/%s/%s/enable_selected_confirmation.html' % (app_label, opts.model_name),
+        'admin/%s/enable_selected_confirmation.html' % app_label,
+        'admin/enable_selected_confirmation.html'], context)
+
+
 enable_selected.allowed_permissions = ('change',)
 enable_selected.short_description = _.enable_selected

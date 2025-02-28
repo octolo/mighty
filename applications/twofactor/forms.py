@@ -1,40 +1,37 @@
-from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-from django.conf import settings
-from django.contrib.auth import get_user_model, authenticate
-from django.db.models import Q
-from django.urls import reverse, NoReverseMatch
+import secrets
+import string
 
-from mighty.forms import FormDescriptable
-from mighty.functions import masking_email, masking_phone
-from mighty.applications.twofactor import use_twofactor, translates as _
+from django import forms
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.forms import AuthenticationForm
+from django.db.models import Q
+
+from mighty.applications.twofactor import translates as _
+from mighty.applications.twofactor import use_twofactor
 from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.user.apps import UserConfig
 from mighty.applications.user.forms import UserCreationForm
-
-from phonenumber_field.widgets import PhoneNumberPrefixWidget
-from phonenumber_field.formfields import PhoneNumberField
-
-from urllib.parse import quote_plus, unquote_plus
-import secrets, string
+from mighty.forms import FormDescriptable
+from mighty.functions import masking_email, masking_phone
 
 UserModel = get_user_model()
 
+
 class TwoFactorSearchForm(FormDescriptable):
     # A corriger
-    #username = forms.CharField(label=_.search, required=True)
-    username = forms.CharField(label="Votre email", required=True) # Need to be fixed
-    error_messages = { 'invalid_search': _.invalid_search, 'inactive': _.inactive }
+    # username = forms.CharField(label=_.search, required=True)
+    username = forms.CharField(label='Votre email', required=True)  # Need to be fixed
+    error_messages = {'invalid_search': _.invalid_search, 'inactive': _.inactive}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_cache = None
 
     def clean_target(self, target):
-        return "".join(filter(lambda c: c not in string.whitespace, target))
+        return ''.join(filter(lambda c: c not in string.whitespace, target))
 
     def Qfilters(self, search):
-        return Q(username=search)|Q(**{UserConfig.ForeignKey.email_related_name+"__email":search})|Q(user_phone__phone=search)
+        return Q(username=search) | Q(**{UserConfig.ForeignKey.email_related_name + '__email': search}) | Q(user_phone__phone=search)
 
     def get_user_target(self, target):
         target = self.clean_target(target)
@@ -52,7 +49,7 @@ class TwoFactorSearchForm(FormDescriptable):
                 self.user_cache = self.get_user_target(search)
                 self.confirm_login_allowed(self.user_cache)
             except UserModel.DoesNotExist:
-                raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search',)
+                raise forms.ValidationError(self.error_messages['invalid_search'], code='invalid_search')
             self.set_session_with_uid(str(self.user_cache.uid))
         return self.cleaned_data
 
@@ -60,9 +57,10 @@ class TwoFactorSearchForm(FormDescriptable):
         if not user.is_active:
             raise forms.ValidationError(self.error_messages['inactive'], code='inactive')
 
+
 class TwoFactorChoicesForm(FormDescriptable):
     receiver = forms.CharField(widget=forms.HiddenInput)
-    error_messages = { 'inactive': _.inactive, 'cant_send': _.cant_send, 'method_not_allowed': _.method_not_allowed }
+    error_messages = {'inactive': _.inactive, 'cant_send': _.cant_send, 'method_not_allowed': _.method_not_allowed}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -115,9 +113,10 @@ class TwoFactorChoicesForm(FormDescriptable):
                 raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send')
         return self.cleaned_data
 
+
 class TwoFactorCodeForm(AuthenticationForm):
     uid = None
-    error_messages = { 'cant_found': _.cant_found, }
+    error_messages = {'cant_found': _.cant_found}
     password = forms.fields.CharField(label="Code d'authentification")
 
     def __init__(self, *args, **kwargs):
@@ -146,10 +145,10 @@ class TwoFactorCodeForm(AuthenticationForm):
                     code='invalid_login',
                     params={'username': username_field_verbose_name},
                 )
-            else:
-                self.del_session_with_uid()
-                self.confirm_login_allowed(self.user_cache)
+            self.del_session_with_uid()
+            self.confirm_login_allowed(self.user_cache)
         return self.cleaned_data
+
 
 class SignUpForm(UserCreationForm):
     def __init__(self, use_password=True, *args, **kwargs):
@@ -165,6 +164,6 @@ class SignUpForm(UserCreationForm):
 
     def save(self, commit=True):
         if not self.use_password:
-            self.cleaned_data["password1"] = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(20))
+            self.cleaned_data['password1'] = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(20))
         user = super(SignUpForm, self).save(commit)
         return user

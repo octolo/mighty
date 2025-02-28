@@ -1,13 +1,13 @@
-from django.core.management.base import CommandError
 from mighty.management import ModelBaseCommand
 from mighty.models import RegisterTaskSubscription
 
+
 class Command(ModelBaseCommand):
-    tasks = "*"
-    action = "start"
+    tasks = '*'
+    action = 'start'
     model = RegisterTaskSubscription
     action_associated = {
-        "start": "start_task",
+        'start': 'start_task',
     }
 
     def add_arguments(self, parser):
@@ -21,5 +21,5 @@ class Command(ModelBaseCommand):
         super().handle(*args, **options)
 
     def on_object(self, obj):
-        for action in self.action.split(" "):
+        for action in self.action.split(' '):
             getattr(obj, self.action_associated.get(action))()

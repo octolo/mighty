@@ -1,3 +1,5 @@
+import logging
+
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -6,12 +8,14 @@ from django.dispatch import receiver
 
 from mighty.applications.user import get_user_email_model, get_user_phone_model
 from mighty.applications.user.apps import UserConfig
+from mighty.applications.user.signals.custom import (
+    merge_accounts_signal,  # noqa
+)
 
 UserModel = get_user_model()
 UserEmailModel = get_user_email_model()
 UserPhoneModel = get_user_phone_model()
 
-import logging
 
 logger = logging.getLogger(__name__)
 

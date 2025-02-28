@@ -1,8 +1,10 @@
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
-from mighty.views import DetailView, ListView
+
 from mighty.applications.tenant.views.tenant.base import TenantBase
+from mighty.views import DetailView, ListView
+
 
 @method_decorator(login_required, name='dispatch')
 class TenantList(TenantBase, ListView):
@@ -12,6 +14,7 @@ class TenantList(TenantBase, ListView):
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, safe=False, **response_kwargs)
 
+
 @method_decorator(login_required, name='dispatch')
 class TenantDetail(TenantBase, DetailView):
     def get_context_data(self, **kwargs):
@@ -19,6 +22,7 @@ class TenantDetail(TenantBase, DetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, safe=False, **response_kwargs)
+
 
 @method_decorator(login_required, name='dispatch')
 class CurrentTenant(TenantBase, DetailView):

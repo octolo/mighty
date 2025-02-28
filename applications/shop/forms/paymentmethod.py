@@ -1,9 +1,14 @@
 from django import forms
-from mighty.models import PaymentMethod
+
 from mighty.applications.shop.forms.widgets import (
-    CBNumberInput, CBCVCInput, CBDateInput,
-    IbanInput, BicInput
+    BicInput,
+    CBCVCInput,
+    CBDateInput,
+    CBNumberInput,
+    IbanInput,
 )
+from mighty.models import PaymentMethod
+
 
 class PaymentMethodForm(forms.ModelForm):
     class Meta:
