@@ -67,7 +67,7 @@ class Foxid:
                             self.concate_idorarg(char)
 
                     # opening form
-                    elif char in [self.Token._filter[1], self.Token._family[0]]:
+                    elif char in {self.Token._filter[1], self.Token._family[0]}:
 
                         # opening filter
                         if len(self.context) and self.context[-1] == self.Token._filter[0] and char == self.Token._filter[1]:
@@ -79,7 +79,7 @@ class Foxid:
                             self.families.append([])
 
                     # closing form
-                    elif char in [self.Token._filter[2], self.Token._family[1]]:
+                    elif char in {self.Token._filter[2], self.Token._family[1]}:
                         if len(self.context) and self.context[-1] == self.Token._idorarg:
                             self.add_idorarg()
 
@@ -150,6 +150,7 @@ class Foxid:
                 return direc + field
         else:
             return direc + field
+        return None
 
     def order_by(self):
         args = []
@@ -169,7 +170,7 @@ class Foxid:
             self.queryset = self.queryset.exclude(self.exclude)
         if self.distinct:
             if type(self.distinct) == str and self.distinct == 'auto':
-                queryset = queryset.filter(id__in=queryset.distinct(*self.qdistinct).values('id'))
+                queryset.filter(id__in=queryset.distinct(*self.qdistinct).values('id'))
             elif type(self.distinct) == bool:
                 self.queryset = self.queryset.distinct()
             elif type(self.distinct) == list:

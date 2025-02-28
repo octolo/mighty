@@ -4,7 +4,7 @@ from mighty.models import Bill
 
 
 def AddOrRemoveDiscount(sender, instance, action, **kwargs):
-    if action == 'post_add' or action == 'post_remove':
+    if action in {'post_add', 'post_remove'}:
         instance.save()
 
 

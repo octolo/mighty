@@ -60,13 +60,12 @@ class MissiveBackend(MissiveBackend):
         return attachments
 
     def send_email(self):
-        data = {}
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target or self.missive.target
-        self.logger.info('Email - from: %s, to : %s, reply : %s' % (self.sender_email, self.missive.target, self.reply_email))
+        self.logger.info(f'Email - from: {self.sender_email}, to : {self.missive.target}, reply : {self.reply_email}')
         if setting('MISSIVE_SERVICE', False):
             headers = {'X-Auth-Token': self.SCW_SECRET_KEY, 'Content-Type': 'application/json'}
-            response = requests.post(self.api_url, headers=headers, json=self.email_data)
+            requests.post(self.api_url, headers=headers, json=self.email_data)
         self.missive.to_sent()
         self.missive.save()
         return self.missive.status

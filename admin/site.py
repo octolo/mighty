@@ -199,21 +199,17 @@ class AdminSite(admin.AdminSite):
         return TemplateResponse(request, 'admin/supervision/channel_detail.html', context)
 
     def get_urls(self):
-        urls = super(AdminSite, self).get_urls()
+        urls = super().get_urls()
         from django.urls import path
         my_urls = []
         if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
             logger.info('Login twofactor enable')
-            my_urls.append(path('login/', self.stepsearch, name='twofactor_search'))
-            my_urls.append(path('login/choices/', self.stepchoices, name='twofactor_choices'))
-            my_urls.append(path('login/code/', self.stepcode, name='twofactor_code'))
+            my_urls.extend((path('login/', self.stepsearch, name='twofactor_search'), path('login/choices/', self.stepchoices, name='twofactor_choices'), path('login/code/', self.stepcode, name='twofactor_code')))
         my_urls.append(path('showurls/', self.wrap(self.showurls_view), name='mighty_showurls'))
         if conf.enable_supervision:
             my_urls.append(path('supervision/', self.admin_view(self.supervision_view), name='supervision'))
             if conf.enable_channel:
-                my_urls.append(path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'))
-                my_urls.append(path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'))
-                my_urls.append(path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail'))
+                my_urls.extend((path('supervision/channels/', self.admin_view(self.supervision_channel_view), name='supervision_channel_list'), path('supervision/channels/flushall/', self.admin_view(self.supervision_channelflushall_view), name='supervision_channel_flushall'), path('supervision/channels/join/<str:room>/', self.admin_view(self.supervision_channeljoin_view), name='supervision_channel_detail')))
 
         if len(conf.urls_admin_to_add):
             from django.utils.module_loading import import_string

@@ -22,7 +22,7 @@ class Nationality(Base, Image):
         ordering = ['country']
 
     def __str__(self):
-        return '%s (%s, %s, %s)' % (self.country, self.alpha2, self.alpha3, self.numeric)
+        return f'{self.country} ({self.alpha2}, {self.alpha3}, {self.numeric})'
 
     # @property
     # def image_html(self):
@@ -54,7 +54,7 @@ class TranslateDict(Base):
     objectsB = managers.TranslateDictManager()
 
     def __str__(self):
-        return '%s(%s)' % (self.translator, self.language)
+        return f'{self.translator}({self.language})'
 
     @property
     def split_precision(self):

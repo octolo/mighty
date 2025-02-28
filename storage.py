@@ -21,7 +21,7 @@ Usefull for cost service.
 class CloudStorage(Storage):
     def __init__(self, **settings):
         todel = [name for name, value in settings.items() if not hasattr(self, name)]
-        logger.info('CloudStorage: delete settings: %s' % todel)
+        logger.info(f'CloudStorage: delete settings: {todel}')
         for field in todel: del settings[field]
         super().__init__(**settings)
 
@@ -30,21 +30,21 @@ if storage_choice != storage_default:
     class CloudStorage(CloudStorage):
         def _save_backup(self, name, content):
             content.seek(0)
-            filename = '%s/%s' % (setting('MEDIA_ROOT'), name)
+            filename = '{}/{}'.format(setting('MEDIA_ROOT'), name)
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             with open(filename, 'wb') as bacfile:
                 while True:
                     buf = content.read(1024)
                     if buf:
-                        for byte in buf:
+                        for _byte in buf:
                             pass
-                        n = bacfile.write(buf)
+                        bacfile.write(buf)
                     else:
                         break
 
         # Backup file in localstorage
         def _save(self, name, content, headers=None):
-            original_name = super(CloudStorage, self)._save(name, content, headers=None)
+            original_name = super()._save(name, content, headers=None)
             self._save_backup(name, content)
             return original_name
 
@@ -63,7 +63,7 @@ if storage_choice != storage_default:
 
         # Delete the backup file
         def delete_backup(self, name):
-            name = '%s/%s' % (setting('MEDIA_ROOT'), name)
+            name = '{}/{}'.format(setting('MEDIA_ROOT'), name)
             assert name, 'The name argument is not allowed to be empty.'
             name = os.path.realpath(name)
             try:
@@ -76,5 +76,5 @@ if storage_choice != storage_default:
             self.remove_dir(name)
 
         def delete(self, name):
-            super(CloudStorage, self).delete(name)
+            super().delete(name)
             self.delete_backup(name)

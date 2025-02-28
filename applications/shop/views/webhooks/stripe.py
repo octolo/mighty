@@ -20,8 +20,7 @@ class StripeCheckStatus(DetailView):
 
     def get_context_data(self, **kwargs):
         bill = self.get_object()
-        charge = bill.check_status()
-        return charge
+        return bill.check_status()
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, **response_kwargs, safe=False)

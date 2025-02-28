@@ -1,5 +1,6 @@
 
 import functools
+import operator
 import re
 
 from django.conf import settings
@@ -48,8 +49,8 @@ class ShowUrls:
     help = 'Displays all of the url matching routes for the project.'
 
     def get_urls(self, *args, **options):
-        style = options.get('style', no_style())
-        opt_unsorted = options.get('unsorted', False)
+        options.get('style', no_style())
+        options.get('unsorted', False)
         opt_language = options.get('language')
         opt_decorator = options.get('decorator', [])
         opt_format = options.get('format', 'dense')
@@ -69,7 +70,7 @@ class ShowUrls:
         format_style = opt_format
         if format_style not in FMTR:
             raise CommandError(
-                "Format style '%s' does not exist. Options: %s" % (
+                "Format style '{}' does not exist. Options: {}".format(
                     format_style,
                     ', '.join(sorted(FMTR.keys())),
                 )
@@ -77,7 +78,7 @@ class ShowUrls:
         pretty_json = format_style == 'pretty-json'
         if pretty_json:
             format_style = 'json'
-        fmtr = FMTR[format_style]
+        FMTR[format_style]
 
         urlconf = opt_urlconf
 
@@ -91,7 +92,7 @@ class ShowUrls:
             if options['traceback']:
                 import traceback
                 traceback.print_exc()
-            raise CommandError('Error occurred while trying to load %s: %s' % (getattr(settings, urlconf), str(e)))
+            raise CommandError(f'Error occurred while trying to load {getattr(settings, urlconf)}: {e!s}')
 
         view_functions = self.extract_views_from_urlpatterns(urlconf.urlpatterns)
         for (func, regex, url_name) in view_functions:
@@ -113,7 +114,7 @@ class ShowUrls:
             if hasattr(func, '__name__'):
                 func_name = func.__name__
             elif hasattr(func, '__class__'):
-                func_name = '%s()' % func.__class__.__name__
+                func_name = f'{func.__class__.__name__}()'
             else:
                 func_name = re.sub(r' at 0x[0-9a-f]+', '', repr(func))
 
@@ -126,7 +127,7 @@ class ShowUrls:
         if options.get('search'):
             views = [d for d in views if all(word in d['module'] or word in d['url'] or word in d['name']
                 for word in options.get('search').split(' '))]
-        views = sorted(views, key=lambda d: d['url'])
+        views = sorted(views, key=operator.itemgetter('url'))
         # if not opt_unsorted and format_style != 'json':
 
         # if format_style == 'aligned':
@@ -162,7 +163,7 @@ class ShowUrls:
         #        return json.dumps(views, indent=4)
         #    return json.dumps(views)
 
-        return [v for v in views]
+        return list(views)
 
     def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None):
         """
@@ -172,7 +173,7 @@ class ShowUrls:
         """
         views = []
         for p in urlpatterns:
-            if isinstance(p, (URLPattern, RegexURLPattern)):
+            if isinstance(p, URLPattern | RegexURLPattern):
                 try:
                     if not p.name:
                         name = p.name
@@ -184,22 +185,22 @@ class ShowUrls:
                     views.append((p.callback, base + pattern, name))
                 except ViewDoesNotExist:
                     continue
-            elif isinstance(p, (URLResolver, RegexURLResolver)):
+            elif isinstance(p, URLResolver | RegexURLResolver):
                 try:
                     patterns = p.url_patterns
                 except ImportError:
                     continue
                 if namespace and p.namespace:
-                    _namespace = f'{namespace}:{p.namespace}'
+                    namespace_ = f'{namespace}:{p.namespace}'
                 else:
-                    _namespace = (p.namespace or namespace)
+                    namespace_ = (p.namespace or namespace)
                 pattern = describe_pattern(p)
                 if isinstance(p, LocaleRegexURLResolver):
                     for language in self.LANGUAGES:
                         with translation.override(language[0]):
-                            views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
+                            views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=namespace_))
                 else:
-                    views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=_namespace))
+                    views.extend(self.extract_views_from_urlpatterns(patterns, base + pattern, namespace=namespace_))
             elif hasattr(p, '_get_callback'):
                 try:
                     views.append((p._get_callback(), base + describe_pattern(p), p.name))
@@ -212,5 +213,5 @@ class ShowUrls:
                     continue
                 views.extend(self.extract_views_from_urlpatterns(patterns, base + describe_pattern(p), namespace=namespace))
             else:
-                raise TypeError('%s does not appear to be a urlpattern object' % p)
+                raise TypeError(f'{p} does not appear to be a urlpattern object')
         return views

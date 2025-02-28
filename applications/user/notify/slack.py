@@ -16,17 +16,17 @@ class SlackUser(NotifyBackend):
 			'type': 'section',
 			'text': {
 				'type': 'plain_text',
-				'text': ':baby: New user on the platform : %s' % self.user.date_create.strftime('%Y-%m-%d %H:%M'),
+				'text': ':baby: New user on the platform : {}'.format(self.user.date_create.strftime('%Y-%m-%d %H:%M')),
 				'emoji': True
 		}},
 		{
 			'type': 'section',
 			'text': {
 				'type': 'mrkdwn',
-				'text': '<%s| %s :link:>' % (self.url_domain(self.user.admin_change_url), self.slack_self)
+				'text': f'<{self.url_domain(self.user.admin_change_url)}| {self.slack_self} :link:>'
 		}},
 		{'type': 'divider'}]
 
     def send_msg_create(self):
-        text = 'New user on the platform : %s' % self.user.date_create.strftime('%Y-%m-%d %H:%M')
+        text = 'New user on the platform : {}'.format(self.user.date_create.strftime('%Y-%m-%d %H:%M'))
         notify_slack('info', text=text, blocks=self.slack_msg_creation)

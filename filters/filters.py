@@ -58,11 +58,12 @@ class Filter(Verify):
     def verify_param(self):
         if not self.param:
             return "param can't be empty!"
+        return None
 
     def verify_field(self):
         if not self.field:
-            msg = "field can't be empty!"
-            return msg
+            return "field can't be empty!"
+        return None
 
     def get_mask(self):
         return '__in' if self.is_array and not self.mask else self.mask
@@ -166,7 +167,7 @@ class Filter(Verify):
 
     def extend_value(self):
         values = self.get_value()
-        return [values] if type(values) == str else [value for value in values]
+        return [values] if type(values) == str else list(values)
 
     def get_orQ(self):
         if len(self.or_extend):
@@ -195,8 +196,7 @@ class Filter(Verify):
         return baseQ
 
     def get_Q(self):
-        test = ~self.baseQ() if self.is_negative or self.is_array_negative else self.baseQ()
-        return test
+        return ~self.baseQ() if self.is_negative or self.is_array_negative else self.baseQ()
 
     def sql(self, request=None, *args, **kwargs):
         self.request = request
@@ -222,6 +222,7 @@ class ParamChoicesFilter(ParamFilter):
     def verify_param(self):
         if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
+        return None
 
     def get_value(self):
         value = super().get_value()
@@ -239,6 +240,7 @@ class ParamMultiChoicesFilter(ParamFilter):
     def verify_param(self):
         if self.choices_required and (not self.choices or type(self.choices) != list):
             return "choices can't be empty and must be a list of choices"
+        return None
 
     def get_value(self):
         values = super().get_value()
@@ -246,7 +248,7 @@ class ParamMultiChoicesFilter(ParamFilter):
             if self.is_array:
                 return [value for value in values if value in self.choices]
             return values if values in self.choices else None
-        return [value for value in values]
+        return list(values)
 
 
 class MultiParamFilter(ParamFilter):
@@ -266,8 +268,7 @@ class MultiParamFilter(ParamFilter):
             for f in self.fields])
 
     def get_Q(self):
-        theQ = self.fieldsQ() if len(self.fields) else self.fieldQ()
-        return theQ
+        return self.fieldsQ() if len(self.fields) else self.fieldQ()
 
 
 class SearchFilter(ParamFilter):
@@ -314,12 +315,13 @@ class BooleanParamFilter(ParamFilter):
     def get_value(self):
         value = super().get_value()
         if type(value).__name__ == 'str':
-            return True if value in ('true', '1') else False
+            return value in {'true', '1'}
         return bool(int(value))
 
     def get_Q(self):
         if self.enable_false or self.get_value():
             return super().get_Q()
+        return None
 
 
 class FilterByGTEorLTE(ParamMultiChoicesFilter):
@@ -330,9 +332,9 @@ class FilterByGTEorLTE(ParamMultiChoicesFilter):
         self.operator = operator.or_
 
     def get_field(self, value, field):
-        if value[0:3] in ['gte', 'lte']:
+        if value[0:3] in {'gte', 'lte'}:
             return self.prefix + field + '__gte' if value[0:3] == 'gte' else self.prefix + field + '__lte'
-        if value[0:2] in ['gt', 'lt']:
+        if value[0:2] in {'gt', 'lt'}:
             return self.prefix + field + '__gt' if value[0:2] == 'gt' else self.prefix + field + '__lt'
         return self.prefix + field + self.mask
 
@@ -375,7 +377,7 @@ class DatePastFilter(BooleanParamFilter):
         self.mask = kwargs.get('mask', '__gte')
 
     def get_Q(self):
-        value = self.get_value()
+        self.get_value()
         return Q(**{self.get_field(): datetime.today()})
 
 
@@ -386,7 +388,7 @@ class DateComingFilter(BooleanParamFilter):
         self.mask = kwargs.get('mask', '__gte')
 
     def get_Q(self):
-        value = self.get_value()
+        self.get_value()
         return Q(**{self.get_field(): datetime.today()})
 
 

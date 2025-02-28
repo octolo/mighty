@@ -31,5 +31,5 @@ class IsMe(filters.BooleanParamFilter):
         self.field = kwargs.get('field', 'tenant__user')
 
     def get_Q(self, exclude=False):
-        value = self.get_value(exclude)
+        self.get_value(exclude)
         return Q(**{self.field: self.request.user})

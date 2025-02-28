@@ -29,7 +29,7 @@ class PaymentBackend(Backend):
 
     @property
     def billing_detail(self):
-        return '%s - %s' % (self.domain, self.offer)
+        return f'{self.domain} - {self.offer}'
 
     @property
     def form_method(self):

@@ -42,7 +42,7 @@ class SearchBackend(SearchBackend):
 
     def get_location(self, input_str):
         url = self.get_url(input_str)
-        location = self.service(url)
+        self.service(url)
         return self.get_address([0])
 
     def get_list(self, input_str, offset=0, limit=15):

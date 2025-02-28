@@ -38,7 +38,7 @@ def PositionModel(**kwargs):
 
             def on_delete_position(self):
                 qs = self.position_qs.filter(position__gt=self._unmodified.position)
-                for i, p in enumerate(qs): qs[i].position -= 1
+                for i, _p in enumerate(qs): qs[i].position -= 1
                 type(self).objects.bulk_update(qs, ['position'])
 
         NewClass.__name__ = obj.__name__

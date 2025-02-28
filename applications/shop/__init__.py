@@ -34,8 +34,7 @@ def generate_code_service():
 
 
 def generate_code_offer():
-    code = key(8, string.ascii_letters + string.hexdigits).upper()
-    return code
+    return key(8, string.ascii_letters + string.hexdigits).upper()
     # try:
     #    Model = get_model('mighty', 'Offer')
     #    Model._meta.get_field('code')

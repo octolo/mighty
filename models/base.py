@@ -1,5 +1,6 @@
 import copy
 import json
+import operator
 from uuid import uuid4
 
 from django.conf import settings
@@ -63,7 +64,7 @@ actions = {
     FILTERLVL2: _.FILTERLVL2,
 }
 default_permissions = Options(None).default_permissions
-permissions = tuple(sorted(list(actions), key=lambda x: x[0]))
+permissions = tuple(sorted(actions, key=operator.itemgetter(0)))
 
 
 class Base(models.Model):
@@ -98,7 +99,7 @@ class Base(models.Model):
     _hlast = None
 
     def has_model_activate(self, model):
-        return getattr(self, 'model_activate_%s' % model, False)
+        return getattr(self, f'model_activate_{model}', False)
 
     if 'mighty.applications.logger' in settings.INSTALLED_APPS:
         _discord_logger = DiscordLogger()
@@ -121,7 +122,7 @@ class Base(models.Model):
                 from mighty.fields import base
                 from mighty.functions import models_difference
                 exclude = base + tuple(self.m2o_fields().keys()) + tuple(self.m2m_fields().keys()) + tuple(self.changelog_exclude)
-                new, old = models_difference(self, self._unmodified, exclude)
+                _new, old = models_difference(self, self._unmodified, exclude)
                 if len(old) > 0:
                     self.model_change_log.objects.bulk_create([
                         self.model_change_log(content_type=self.get_content_type(), object_id=getattr(self, self.pk_field), field=field, value=bytes(str(value), 'utf-8'), fmodel=self.fields()[field], date_begin=self._unmodified.date_update, date_end=self.date_update, user=self._user) for field, value in old.items()])
@@ -178,14 +179,16 @@ class Base(models.Model):
             ct, pk = self.get_content_type(), self.id
             return self.notify(subject, ct, pk, **kwargs)
 
-        def notify_slack(hookname, **kwargs):
-            return notify_slack(hookname, **kwargs)
+        def notify_slack(self, **kwargs):
+            return notify_slack(self, **kwargs)
 
-        def notify_discord(hookname, **kwargs):
-            return notify_discord(hookname, **kwargs)
+        def notify_discord(self, **kwargs):
+            return notify_discord(self, **kwargs)
 
     # TEMPLATE
-    def make_template(self, template, context={}):
+    def make_template(self, template, context=None):
+        if context is None:
+            context = {}
         tpl = get_template(template)
         return tpl.render(context)
 
@@ -201,7 +204,7 @@ class Base(models.Model):
         if self.is_immutable:
             if self.fields_can_be_changed == '*':
                 return True
-            return all([field in self.fields_can_be_changed for field in self.fields_changed])
+            return all(field in self.fields_can_be_changed for field in self.fields_changed)
         return True
 
     @property
@@ -215,7 +218,7 @@ class Base(models.Model):
 
     class Meta:
         abstract = True
-        default_permissions = default_permissions + permissions
+        default_permissions += permissions
 
     def raise_error(self, message, code=None):
         if config.use_rest and config.rest_error and self.from_rest:
@@ -247,7 +250,7 @@ class Base(models.Model):
         self.save_unmodified()
 
     def __init__(self, *args, **kwargs):
-        super(Base, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.save_unmodified()
 
     def do_not_notify(self):
@@ -268,9 +271,9 @@ class Base(models.Model):
     @property
     def app_model(self): return self.app_label + '.' + self.model_name
     @property
-    def is_enable(self): return True if self.is_disable is False else False
+    def is_enable(self): return self.is_disable is False
     @property
-    def all_permissions(self): return self._meta.default_permissions + tuple([perm[0] for perm in self._meta.permissions])
+    def all_permissions(self): return self._meta.default_permissions + tuple(perm[0] for perm in self._meta.permissions)
     @property
     def cache_json(self): return json.dumps(self.cache)
     @property
@@ -341,7 +344,7 @@ class Base(models.Model):
     def getattr_recursive(self, strtoget, split='.'):
         if strtoget:
             from functools import reduce
-            return reduce(getattr, [self] + strtoget.split(split))
+            return reduce(getattr, [self, *strtoget.split(split)])
         return strtoget
 
     def get_has(self, attr, default=None):
@@ -353,28 +356,36 @@ class Base(models.Model):
     # permissions
     def perm(self, perm):
         if perm in self.all_permissions:
-            return '%s.%s_%s' % (str(self.app_label).lower(), perm, str(self.model_name).lower())
+            return f'{str(self.app_label).lower()}.{perm}_{str(self.model_name).lower()}'
         return None
 
     # Fields facilities
     def field_config(self, field):
         return self._meta.get_field(field)
 
-    def fields(self, excludes=[]):
+    def fields(self, excludes=None):
+        if excludes is None:
+            excludes = []
         return {field.name: field.__class__.__name__ for field in self._meta.get_fields() if field.__class__.__name__ not in excludes}
 
-    def concrete_fields(self, excludes=[]):
+    def concrete_fields(self, excludes=None):
+        if excludes is None:
+            excludes = []
         return {field.name: field.__class__.__name__ for field in self._meta.concrete_fields if field.__class__.__name__ not in excludes}
 
-    def m2o_fields(self, excludes=[]):
+    def m2o_fields(self, excludes=None):
+        if excludes is None:
+            excludes = []
         return {field.name: field.__class__.__name__ for field in self._meta.related_objects if field.__class__.__name__ not in excludes}
 
-    def m2m_fields(self, excludes=[]):
+    def m2m_fields(self, excludes=None):
+        if excludes is None:
+            excludes = []
         return {field.name: field.__class__.__name__ for field in self._meta.many_to_many if field.__class__.__name__ not in excludes}
 
     # Url facilities
     def get_url_html(self, url, title):
-        return format_html('<a href="%s">%s</a>' % (url, title))
+        return format_html(f'<a href="{url}">{title}</a>')
 
     def get_url(self, action, mask='%s:%s-%s', arguments=None):
         return reverse(mask % (self.app_label.lower(), self.model_name.lower(), action), kwargs=arguments)
@@ -407,13 +418,10 @@ class Base(models.Model):
         del self.logs[lvl][field]
 
     def has_log_lvl(self, lvl):
-        return True if lvl in self.logs else False
+        return lvl in self.logs
 
     def has_log(self):
-        for lvl, errors in self.logs.items():
-            if any(errors):
-                return True
-        return False
+        return any(any(errors) for lvl, errors in self.logs.items())
 
     # Cache facilities
     def add_cache(self, field, cache):
@@ -426,10 +434,10 @@ class Base(models.Model):
         self.cache = None
 
     def has_cache_field(self, field):
-        return True if field in self.cache else False
+        return field in self.cache
 
     def has_cache(self):
-        return True if self.cache and len(self.cache) else False
+        return bool(self.cache and len(self.cache))
 
     # Create / Update
     @property
@@ -454,11 +462,11 @@ class Base(models.Model):
 
     def set_create_by(self, user=None):
         if user and self.use_create_by:
-            self.create_by = '%s.%s' % (user.id, user.username)
+            self.create_by = f'{user.id}.{user.username}'
 
     def set_update_by(self, user=None):
         if user and self.use_create_by:
-            self.update_by = '%s.%s' % (user.id, user.username)
+            self.update_by = f'{user.id}.{user.username}'
 
     def property_change(self, prop):
         return (not self._unmodified or getattr(self._unmodified, prop) != getattr(self, prop))
@@ -479,7 +487,7 @@ class Base(models.Model):
 
     def on_change_data(self, action='on'):
         for field in self.fields_changed:
-            fct = '%s_change_%s' % (action, field)
+            fct = f'{action}_change_{field}'
             if hasattr(self, fct) and callable(getattr(self, fct)):
                 getattr(self, fct)()
 
@@ -492,52 +500,52 @@ class Base(models.Model):
             self.www_action = 'update'
             if 'pre_update' not in self.www_action_cancel:
                 self.on_change_data('pre_update')
-                self._logger.debug('pre_update %s (%s)' % (type(self), str(self.pk)))
+                self._logger.debug(f'pre_update {type(self)} ({self.pk!s})')
                 self.pre_update()
         else:
             self.set_create_by(get_request_kept().user if request else None)
             self.www_action = 'create'
             if 'pre_create' not in self.www_action_cancel:
-                self._logger.debug('pre_create %s' % (type(self)))
+                self._logger.debug(f'pre_create {type(self)}')
                 self.pre_create()
         self.pre_save()
 
     def on_post_save(self):
         if 'post_save' not in self.www_action_cancel:
-            self._logger.debug('post_save %s (%s)' % (type(self), str(self.pk)))
+            self._logger.debug(f'post_save {type(self)} ({self.pk!s})')
             self.post_save()
         if self.www_action == 'create':
             if 'post_create' not in self.www_action_cancel:
-                self._logger.debug('post_create %s (%s)' % (type(self), str(self.pk)))
+                self._logger.debug(f'post_create {type(self)} ({self.pk!s})')
                 self.post_create()
         else:
             if 'post_update' not in self.www_action_cancel:
                 self.on_change_data('post_update')
-                self._logger.debug('post_update %s (%s)' % (type(self), str(self.pk)))
+                self._logger.debug(f'post_update {type(self)} ({self.pk!s})')
                 self.post_update()
             if 'mighty.applications.logger' in settings.INSTALLED_APPS:
-                self._logger.debug('save_model_change_log %s (%s)' % (type(self), str(self.pk)))
+                self._logger.debug(f'save_model_change_log {type(self)} ({self.pk!s})')
                 self.save_model_change_log()
 
     def save(self, *args, **kwargs):
         if self.can_be_changed:
-            self._logger.debug('pre_save %s (%s)' % (type(self), str(self.pk)))
+            self._logger.debug(f'pre_save {type(self)} ({self.pk!s})')
             self.on_pre_save()
             super().save(*args, **kwargs)
             self.on_post_save()
         else:
-            self._logger.debug('is_immutable %s (%s)' % (type(self), str(self.pk)))
+            self._logger.debug(f'is_immutable {type(self)} ({self.pk!s})')
             raise self.raise_error(code='is_immutable', message='is immutable')
 
     def delete(self, *args, **kwargs):
         self.www_action = 'delete'
         if self.can_be_deleted:
             if 'pre_delete' not in self.www_action_cancel:
-                self._logger.debug('pre_delete %s (%s)' % (type(self), str(self.pk)))
+                self._logger.debug(f'pre_delete {type(self)} ({self.pk!s})')
                 self.pre_delete()
             super().delete(*args, **kwargs)
             if 'post_delete' not in self.www_action_cancel:
-                self._logger.debug('post_delete %s (%s)' % (type(self), str(self.pk)))
+                self._logger.debug(f'post_delete {type(self)} ({self.pk!s})')
                 self.post_delete()
         else:
             raise self.raise_error(code='is_immutable', message='is immutable')

@@ -8,7 +8,7 @@ User = get_user_model()
 def explain_room(room_name):
     room = room_name.split(conf.delimiter)
     obj_by = room[0]
-    obj_for = room[1]
+    room[1]
     try:
         obj_by = int(obj_by)
         User.objects.get(id=obj_by)

@@ -151,7 +151,7 @@ class UserPhoneAdminBase(BaseAdmin):
 
     def get_search_fields(self, request):
         base_fields = get_user_search_fields()
-        return ['phone'] + list(map(lambda a: 'user__' + a, base_fields))
+        return ['phone', *['user__' + a for a in base_fields]]
 
     def make_verified(self, request, queryset):
         queryset.update(verified=True)
@@ -191,7 +191,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender', 'sentry_replay') + address_fields
+        self.fieldsets[1][1]['fields'] += ('phone', 'style', 'gender', 'sentry_replay', *address_fields)
         self.fieldsets[3][1]['fields'] += ('first_connection',)
         if UserConfig.ForeignKey.optional:
             self.fieldsets[1][1]['fields'] += ('optional',)

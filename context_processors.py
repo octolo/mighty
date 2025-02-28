@@ -8,6 +8,7 @@ from mighty import translates as _
 def menus(request):
     if hasattr(settings, 'MIGHTY_BACKOFFICE'):
         return {'applications': {label: [import_string(model)() for model in models] for label, models in settings.MIGHTY_BACKOFFICE.items()}}
+    return None
 
 
 # Add translates in all context

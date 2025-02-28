@@ -1,3 +1,5 @@
+import operator
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -8,7 +10,7 @@ from mighty.models.base import Base
 
 address_backend = get_address_backend()
 
-CHOICES_WAYS = sorted(list(_.WAYS), key=lambda x: x[1])
+CHOICES_WAYS = sorted(_.WAYS, key=operator.itemgetter(1))
 
 
 class AddressNoBase(models.Model):
@@ -47,7 +49,7 @@ class AddressNoBase(models.Model):
     def fill_raw(self):
         if not self.address_is_empty:
             if self.country_code:
-                formatting = 'format_%s' % self.country_code.lower()
+                formatting = f'format_{self.country_code.lower()}'
                 self.raw = getattr(self, formatting)() if hasattr(self, formatting) else self.format_universal()
             else:
                 self.raw = self.format_universal()
@@ -61,7 +63,7 @@ class AddressNoBase(models.Model):
 
     @property
     def has_state_or_postal_code(self):
-        return True if self.postal_code or self.state_code else False
+        return bool(self.postal_code or self.state_code)
 
     def clean_state_or_postal_code(self):
         if not self.has_state_or_postal_code:
@@ -69,7 +71,7 @@ class AddressNoBase(models.Model):
 
     @property
     def has_address(self):
-        return True if self.address else False
+        return bool(self.address)
 
     def clean_address(self):
         if not self.has_address:
@@ -77,7 +79,7 @@ class AddressNoBase(models.Model):
 
     @property
     def has_locality(self):
-        return True if self.locality else False
+        return bool(self.locality)
 
     def clean_locality(self):
         if not self.has_locality:
@@ -101,7 +103,7 @@ class AddressNoBase(models.Model):
 
     @property
     def address_is_empty(self):
-        nb_fields = sum([1 if getattr(self, field) and field != 'raw' else 0 for field in fields])
+        nb_fields = sum(1 if getattr(self, field) and field != 'raw' else 0 for field in fields)
         return (nb_fields < 2)
 
     def only_raw(self):
@@ -123,12 +125,12 @@ class AddressNoBase(models.Model):
 
     @property
     def city(self):
-        formatting = 'city_%s' % self.country_code.lower()
+        formatting = f'city_{self.country_code.lower()}'
         return getattr(self, formatting) if hasattr(self, formatting) else self.city_default
 
     @property
     def city_fr(self):
-        cedex = 'CEDEX %s' % self.cedex_code if self.cedex_code else ''
+        cedex = f'CEDEX {self.cedex_code}' if self.cedex_code else ''
         return ' '.join([str(ad) for ad in [self.state_or_postal_code, self.locality, cedex] if ad]).strip()
 
     @property

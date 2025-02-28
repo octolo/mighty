@@ -9,7 +9,7 @@ from django.template import Context, Template
 from mighty.applications.logger import EnableLogger
 from mighty.applications.messenger import choices
 from mighty.applications.messenger.apps import MessengerConfig as conf  # noqa
-from mighty.apps import MightyConfig
+from mighty.apps import MightyConfig as MightyConfig
 from mighty.functions import setting
 from mighty.models import Missive  # noqa
 
@@ -34,19 +34,19 @@ class MissiveBackend(EnableLogger):
         return self.missive.txt or self.missive.html
 
     def send(self):
-        return getattr(self, 'send_%s' % self.missive.mode.lower())()
+        return getattr(self, f'send_{self.missive.mode.lower()}')()
 
     def send_sms(self):
         over_target = setting('MISSIVE_PHONE', False)
         self.missive.target = over_target or self.missive.target
         self.logger.info(
-            'SMS - from : %s, to : %s' % (self.sender_sms, self.missive.target)
+            f'SMS - from : {self.sender_sms}, to : {self.missive.target}'
         )
         if setting('MISSIVE_SERVICE', False):
             pass
         self.missive.status = choices.STATUS_SENT
         self.missive.save()
-        self.logger.info('send sms: %s' % self.message, extra=self.extra)
+        self.logger.info(f'send sms: {self.message}', extra=self.extra)
         return self.missive.status
 
     def email_attachments(self):
@@ -67,7 +67,7 @@ class MissiveBackend(EnableLogger):
     @property
     def sender_email(self):
         if self.missive.name:
-            return '%s <%s>' % (self.missive.name, self.missive.sender)
+            return f'{self.missive.name} <{self.missive.sender}>'
         return self.missive.sender
 
     @property
@@ -82,8 +82,7 @@ class MissiveBackend(EnableLogger):
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target or self.missive.target
         self.logger.info(
-            'Email - from : %s, to : %s, reply : %s'
-            % (self.sender_email, self.missive.target, self.reply_email)
+            f'Email - from : {self.sender_email}, to : {self.missive.target}, reply : {self.reply_email}'
         )
         if setting('MISSIVE_SERVICE', False):
             self.missive.msg_id = make_msgid()
@@ -117,7 +116,6 @@ class MissiveBackend(EnableLogger):
 
     def postal_attachments(self):
         if self.missive.attachments:
-            logs = []
             for document in self.missive.attachments:
                 self.postal_add_attachment(document)
 
@@ -125,7 +123,6 @@ class MissiveBackend(EnableLogger):
         return Template(self.missive.html).render(context)
 
     def postal_base(self):
-        options = MightyConfig.pdf_options
         context = Context()
 
         # header
@@ -145,7 +142,7 @@ class MissiveBackend(EnableLogger):
             suffix='postalfirstpage.pdf', delete=False
         ) as tmp_pdf:
             content_html = self.postal_template(context)
-            pdf = pdfkit.from_string(
+            pdfkit.from_string(
                 content_html,
                 tmp_pdf.name,
                 options={

@@ -37,7 +37,7 @@ class CheckData(TemplateView):
 
     def check_alreay_exist(self):
         self.get_queryset()
-        raise MultipleObjectsReturned()
+        raise MultipleObjectsReturned
 
     def check_data(self):
         try:

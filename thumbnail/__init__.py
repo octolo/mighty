@@ -14,7 +14,7 @@ class Thumbnail(EnableLogger):
         self.formt = 'thumbnail_' + self.get_alias(formt)
 
     def get_alias(self, formt):
-        return self.alias[formt] if formt in self.alias else formt
+        return self.alias.get(formt, formt)
 
     @property
     def base64(self):

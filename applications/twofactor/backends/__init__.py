@@ -111,7 +111,7 @@ class TwoFactorBackend(ModelBackend):
         try:
             user, target = self.get_user_target(target)
             mode = self.method_twofactor(user, target)
-            twofactor, created = self.get_object(
+            twofactor, _created = self.get_object(
                 user, target, mode, backend_path
             )
 
@@ -120,7 +120,7 @@ class TwoFactorBackend(ModelBackend):
             twofactor.discord_notify.send_msg_create()
 
             logger.info(
-                'code twofactor (%s): %s' % (target, twofactor.code),
+                f'code twofactor ({target}): {twofactor.code}',
                 extra={'user': user, 'app': 'twofactor'},
             )
             if mode == choices.MODE_EMAIL:
@@ -137,14 +137,14 @@ class TwoFactorBackend(ModelBackend):
     # return timezone.now()-timezone.timedelta(minutes=minutes)
 
     def raise_date_protect(self, date, minutes):
-        date = date + timezone.timedelta(minutes=minutes)
+        date += timezone.timedelta(minutes=minutes)
         raise SpamException(date)
 
     def check_protect(self, target, subject, minutes, mode):
         target = self.clean_target(target)
         if minutes:
             time_threshold = self.time_threshold(minutes)
-            missive = (
+            (
                 Missive.objects.filter(
                     target=target,
                     subject=subject,
@@ -311,8 +311,8 @@ class TwoFactorBackend(ModelBackend):
         except Twofactor.DoesNotExist:
             return None
         except Exception as e:
-            logger.error(
-                'Two-factor authentication error: %s' % str(e),
+            logger.exception(
+                f'Two-factor authentication error: {e!s}',
                 extra={'user': user.id},
             )
             return None

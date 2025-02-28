@@ -14,7 +14,7 @@ class Reader(EnableLogger):
         raise BackendError(msg)
 
     def converter(self, fr, to):
-        return getattr(self, '%s_to_%s' % (fr, to), 1)
+        return getattr(self, f'{fr}_to_{to}', 1)
 
     def convert(self, value, fr, to, rd=2):
         return round(float(value) * self.converter(fr, to), rd)

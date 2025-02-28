@@ -41,7 +41,7 @@ def create_user_identifiers(sender, instance, created, **kwargs):
                         user=instance, phone=instance.phone, primary=True
                     )
             except Exception as e:
-                logger.error(f'create_user_identifiants: {e}')
+                logger.exception(f'create_user_identifiants: {e}')
 
 
 # This signal help us to monitor and find user based on their primary and verified email

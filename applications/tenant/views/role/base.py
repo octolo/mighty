@@ -36,4 +36,4 @@ class RoleBase(FoxidView):
         return self.get_queryset().get(uid=uid)
 
     def get_fields(self, role):
-        return {field: str(getattr(role, field)) for field in ('uid',) + tenant_fields.role}
+        return {field: str(getattr(role, field)) for field in ('uid', *tenant_fields.role)}

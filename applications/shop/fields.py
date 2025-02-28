@@ -96,9 +96,7 @@ payment_method = (
     'status',
 )
 
-method = payment_method + (
-    'group',
-)
+method = (*payment_method, 'group')
 
 subscription_group = (
     'subscription',
@@ -106,9 +104,4 @@ subscription_group = (
     'valid_subscription',
 )
 
-subscription_request = payment_method + (
-    'offer',
-    'user',
-    'frequency',
-    'data',
-)
+subscription_request = (*payment_method, 'offer', 'user', 'frequency', 'data')

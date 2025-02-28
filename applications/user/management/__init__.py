@@ -3,7 +3,6 @@ import logging
 import sys
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q
 
 from mighty import functions
 
@@ -33,12 +32,12 @@ class BaseCommand(BaseCommand):
                 arrow = '-' * int(round(percent * bar_length) - 1) + '>'
                 spaces = ' ' * (bar_length - len(arrow))
                 sys.stdout.write(
-                    f'\r{self.prefix_bar}: [{arrow + spaces}] {int(round(percent * 100))}% ({self.position}/{self.get_total()}) {self.get_current_info()}'
+                    f'\r{self.prefix_bar}: [{arrow + spaces}] {round(percent * 100)}% ({self.position}/{self.get_total()}) {self.get_current_info()}'
                 )
                 sys.stdout.flush()
             else:
                 sys.stdout.write(
-                    f'\r{self.prefix_bar}: {int(round(percent * 100))}% ({self.position}/{self.get_total()}) {self.get_current_info()}'
+                    f'\r{self.prefix_bar}: {round(percent * 100)}% ({self.position}/{self.get_total()}) {self.get_current_info()}'
                 )
                 print()
             if self.position == self.get_total():
@@ -54,8 +53,7 @@ class BaseCommand(BaseCommand):
         parser.add_argument('--encoding', default='utf8')
         parser.add_argument(
             '--logfile',
-            default='%s_%s.log'
-            % (
+            default='{}_{}.log'.format(
                 str(self.subcommand).lower(),
                 f'{datetime.datetime.now():%Y%m%d_%H%M%S_%f}',
             ),

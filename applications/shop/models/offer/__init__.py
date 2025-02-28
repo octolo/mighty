@@ -23,7 +23,7 @@ class Offer(RealPrice, Image):
         ordering = ['name']
 
     def __str__(self):
-        return '%s (%s)' % (self.name, self.get_frequency_display())
+        return f'{self.name} ({self.get_frequency_display()})'
 
     @property
     def real_price_tenant(self):

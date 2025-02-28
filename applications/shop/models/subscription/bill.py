@@ -5,7 +5,7 @@ from mighty.applications.shop import choices as _c
 
 class Bill:
     def create_bill(self):
-        self.logger.info('generate a new bill for subscription: %s' % self.pk)
+        self.logger.info(f'generate a new bill for subscription: {self.pk}')
         bill = self.subscription_bill.create(
             amount=self.price_full,
             group=self.group_or_user,
@@ -18,7 +18,7 @@ class Bill:
         bill.save()
         self.bill = bill
         self.save()
-        return True if bill.date_payment <= date.today() else False
+        return bill.date_payment <= date.today()
 
     def prepare_bill(self):
         if not self.bill or self.bill.date_paid != self.next_paid:

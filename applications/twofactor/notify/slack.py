@@ -8,7 +8,7 @@ class SlackTwoFactor(SlackLogger):
 
     @property
     def slack_self(self):
-        return '%s, %s (%s)' % (self.user.fullname, self.twofactor.email_or_phone, self.twofactor.code)
+        return f'{self.user.fullname}, {self.twofactor.email_or_phone} ({self.twofactor.code})'
 
     @property
     def date_send(self):
@@ -20,19 +20,19 @@ class SlackTwoFactor(SlackLogger):
 			'type': 'section',
 			'text': {
 				'type': 'plain_text',
-				'text': ':red_circle: Code : %s - %s' % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
+				'text': ':red_circle: Code : {} - {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
 				'emoji': True
 		}},
 		{
 			'type': 'section',
 			'text': {
 				'type': 'mrkdwn',
-				'text': '<%s| %s :link:>' % (self.url_domain(self.twofactor.admin_change_url), self.slack_self)
+				'text': f'<{self.url_domain(self.twofactor.admin_change_url)}| {self.slack_self} :link:>'
 		}},
 		{'type': 'divider'}]
 
     def send_msg_create(self):
-        msg = 'New code send : %s' % self.date_send.strftime('%Y-%m-%d %H:%M')
+        msg = 'New code send : {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'))
         self.send_msg(msg, self.slack_msg_creation)
 
     @property
@@ -41,17 +41,17 @@ class SlackTwoFactor(SlackLogger):
 			'type': 'section',
 			'text': {
 				'type': 'plain_text',
-				'text': ':large_green_circle: Connexion : %s - %s' % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
+				'text': ':large_green_circle: Connexion : {} - {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
 				'emoji': True
 		}},
 		{
 			'type': 'section',
 			'text': {
 				'type': 'mrkdwn',
-				'text': '<%s| %s :link:>' % (self.url_domain(self.twofactor.admin_change_url), self.slack_self)
+				'text': f'<{self.url_domain(self.twofactor.admin_change_url)}| {self.slack_self} :link:>'
 		}},
 		{'type': 'divider'}]
 
     def send_msg_connection(self):
-        msg = 'New connexion : %s' % self.date_send.strftime('%Y-%m-%d %H:%M')
+        msg = 'New connexion : {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'))
         self.send_msg(msg, self.slack_msg_connection)

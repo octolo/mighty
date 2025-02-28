@@ -54,7 +54,7 @@ class PaymentBackend(PaymentBackend):
     def add_payment_method(self, force=False):
         if not force and self.payment_method.service_id:
             return self.api.PaymentMethod.retrieve(self.payment_method.service_id)
-        data_pm = getattr(self, 'data_%s' % self.form_method.lower())
+        data_pm = getattr(self, f'data_{self.form_method.lower()}')
         self.logger.info(data_pm)
         return self.api.PaymentMethod.create(**data_pm)
 
@@ -71,7 +71,7 @@ class PaymentBackend(PaymentBackend):
     @property
     def data_bill(self):
         return {
-            'amount': int(round(self.bill.end_amount * 100)),
+            'amount': round(self.bill.end_amount * 100),
             'currency': 'eur',
             'payment_method': self.payment_method.service_id,
             'description': self.bill.follow_id,
@@ -88,7 +88,7 @@ class PaymentBackend(PaymentBackend):
 
     @property
     def is_paid_success(self):
-        return True if self.bill.cache['status'] == 'succeeded' else False
+        return self.bill.cache['status'] == 'succeeded'
 
     @property
     def payment_id(self):
@@ -100,7 +100,7 @@ class PaymentBackend(PaymentBackend):
     def create_or_retry_payment(self):
         if self.payment_id:
             charge = self.api.PaymentIntent.retrieve(self.payment_id)
-            if charge.status not in ['processing', 'canceled', 'succeeded']:
+            if charge.status not in {'processing', 'canceled', 'succeeded'}:
                 self.bill.add_cache('payment_method', self.add_payment_method(True))
                 return self.api.PaymentIntent.modify(self.payment_id, **self.data_bill)
             return charge

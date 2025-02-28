@@ -25,7 +25,7 @@ class SlackLogger(NotifyBackend):
             'type': 'section',
             'text': {
                 'type': 'plain_text',
-                'text': ':exclamation: %s' % self.msg,
+                'text': f':exclamation: {self.msg}',
                 'emoji': True
             }
         },
@@ -44,7 +44,7 @@ class SlackLogger(NotifyBackend):
                 'type': 'section',
                 'text': {
                     'type': 'mrkdwn',
-                    'text': '<access error| %s :link:>' % self.url_domain(self.dblog.admin_change_url),
+                    'text': f'<access error| {self.url_domain(self.dblog.admin_change_url)} :link:>',
             }})
         return data
 

@@ -15,7 +15,7 @@ class ShopItem(RealPrice):
         ordering = ['name']
 
     def __str__(self):
-        return '%s (%s €)' % (self.name, self.price)
+        return f'{self.name} ({self.price} €)'
 
     def generate_key(self):
         return re.sub(r'[^a-zA-Z0-9]+', '', self.name).lower()

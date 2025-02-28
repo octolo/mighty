@@ -163,14 +163,13 @@ def encode_b64(path):
     Usage::
         {% encode_static path [encoding] %}
     Examples::
-        <img src="{% encode_static 'path/to/img.png' %}">
+        <img src="{% encode_static 'path/to/img.png' %}">.
     """
     file_path = find_static_file(path)
     ext = file_path.split('.')[-1]
     with open(file_path, 'rb') as image_file:
         file_str = base64.b64encode(image_file.read()).decode()
-        src = 'data:{0}/{1};{2},{3}'.format('image', ext, 'base64', file_str)
-        return src
+        return 'data:{}/{};{},{}'.format('image', ext, 'base64', file_str)
 
 
 @register.simple_tag
@@ -180,7 +179,7 @@ def encode_static(path, encoding='base64', file_type='image'):
     Usage::
         {% encode_static path [encoding] %}
     Examples::
-        <img src="{% encode_static 'path/to/img.png' %}">
+        <img src="{% encode_static 'path/to/img.png' %}">.
     """
     file_path = find_static_file(path)
     ext = file_path.split('.')[-1]
@@ -195,7 +194,7 @@ def raw_static(path):
     Usage::
         {% raw_static path %}
     Examples::
-        <style>{% raw_static path/to/style.css %}</style>
+        <style>{% raw_static path/to/style.css %}</style>.
     """
     if path.startswith(settings.STATIC_URL):
         # remove static_url if its included in the path

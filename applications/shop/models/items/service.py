@@ -17,7 +17,7 @@ class ShopService(RealPrice, Image):
         ordering = ['name']
 
     def __str__(self):
-        return '%s (%s €)' % (self.name, self.real_price)
+        return f'{self.name} ({self.real_price} €)'
 
     def generate_key(self):
         return re.sub(r'[^a-zA-Z0-9]+', '', self.name).lower()

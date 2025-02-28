@@ -61,4 +61,4 @@ cedex_code = _('Code cedex/Cedex code')
 special = _('Informations spéciales/Special information')
 index = _('Indice/Index')
 
-validate_postal_state_code = '"%s" or "%s" must be filled' % (postal_code, state_code)
+validate_postal_state_code = f'"{postal_code}" or "{state_code}" must be filled'

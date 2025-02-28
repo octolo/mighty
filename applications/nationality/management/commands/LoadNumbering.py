@@ -9,8 +9,7 @@ class Command(ModelBaseCommand):
         from phonenumbers.data import _COUNTRY_CODE_TO_REGION_CODE
         qs = []
         for prefix, values in _COUNTRY_CODE_TO_REGION_CODE.items():
-            for value in values:
-                qs.append({'alpha': value, 'numbering': prefix})
+            qs.extend({'alpha': value, 'numbering': prefix} for value in values)
         return qs
 
     def on_object(self, obj):

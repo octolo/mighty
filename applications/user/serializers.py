@@ -22,7 +22,7 @@ UserEmailModel = get_user_email_model()
 class UserEmailSerializer(ModelSerializer):
     class Meta:
         models = UserEmailModel
-        fields = ('email', ) + (UserConfig.ForeignKey.email_field, )
+        fields = ('email', UserConfig.ForeignKey.email_field)
 
 
 class UserPhoneSerializer(ModelSerializer):

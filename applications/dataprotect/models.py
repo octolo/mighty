@@ -20,7 +20,7 @@ class ServiceData(Base):
 
     @property
     def level_desc(self):
-        return getattr(_c, '%s_DESC' % self.level)
+        return getattr(_c, f'{self.level}_DESC')
 
     @property
     def prefix_array(self):
@@ -57,7 +57,7 @@ class UserDataProtect(Base):
         abstract = True
 
     def __str__(self):
-        return '%s (%s/%s)' % (str(self.user), str(self.nbr_accept), str(self.nbr_refuse))
+        return f'{self.user!s} ({self.nbr_accept!s}/{self.nbr_refuse!s})'
 
     @property
     def nbr_accept(self):

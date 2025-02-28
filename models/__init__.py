@@ -1,8 +1,6 @@
 from django.apps import apps
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.utils.text import get_valid_filename
 
 from mighty.applications.logger import models as models_logger
 from mighty.apps import MightyConfig as conf
@@ -79,7 +77,7 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 
         def save(self, *args, **kwargs):
             if not self.from_id: self.from_id = next(iter(self.objs))
-            super(Channel, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
 
 ###########################

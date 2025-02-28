@@ -39,5 +39,5 @@ class Command(CSVModelCommand):
 
     def create_tenant(self, tenant):
         user = self.get_user(tenant)
-        tenant, create = TenantModel.objects.get_or_create(user=user, group=self.group)
+        tenant, _create = TenantModel.objects.get_or_create(user=user, group=self.group)
         self.add_role(tenant)

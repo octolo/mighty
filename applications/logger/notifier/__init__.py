@@ -1,4 +1,3 @@
-from django.utils.module_loading import import_string
 
 from mighty.applications.logger import settings
 

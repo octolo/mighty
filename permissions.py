@@ -84,16 +84,16 @@ class MightyPermission:
     def can_check_action(self, action):
         check_action = getattr(self, 'check_' + action)
         if len(check_action):
-            return any([getattr(self, check) for check in check_action])
-        return any([getattr(self, check) for check in self.check_others])
+            return any(getattr(self, check) for check in check_action)
+        return any(getattr(self, check) for check in self.check_others)
 
     """ Loop on permission action """
     def check_user_permissions(self, action):
         user_perms = 'user_perms_' + action
         if action != 'default' and hasattr(self, user_perms) and len(getattr(self, user_perms)):
-            return any([getattr(self, perm)() for perm in getattr(self, user_perms)])
+            return any(getattr(self, perm)() for perm in getattr(self, user_perms))
         if len(self.user_perms_default):
-            return any([getattr(self, perm)() for perm in self.user_perms_default])
+            return any(getattr(self, perm)() for perm in self.user_perms_default)
         return True
 
     def check_by_action(self, action):

@@ -28,7 +28,7 @@ def ImmutabledModel(**kwargs):
             if self.immutable and not self.immutable_bypass:
                 if self.immutable_fields == '*':
                     return True
-                return all([field in self.immutable_fields_editable for field in self.fields_changed])
+                return all(field in self.immutable_fields_editable for field in self.fields_changed)
             return True
         obj.can_be_changed = can_be_changed
 

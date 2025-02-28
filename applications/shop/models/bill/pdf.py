@@ -21,7 +21,7 @@ class PDFModel:
 
     @property
     def bill_pdf_name(self):
-        return get_valid_filename('%s_%s.pdf' % (self.group_or_user, self.bill_numero))
+        return get_valid_filename(f'{self.group_or_user}_{self.bill_numero}.pdf')
 
     @property
     def bill_pdf_content(self):

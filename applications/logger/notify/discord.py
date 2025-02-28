@@ -6,7 +6,8 @@ class DiscordLogger(NotifyBackend):
     @property
     def link_admin(self):
         if self.dblog:
-            return '[%s :link:](access error)' % self.url_domain(self.dblog.admin_change_url)
+            return f'[{self.url_domain(self.dblog.admin_change_url)} :link:](access error)'
+        return None
 
     @property
     def text_data_help(self):
@@ -17,12 +18,10 @@ class DiscordLogger(NotifyBackend):
 
     @property
     def discord_msg_error(self):
-        data = {
+        return {
 			'content': self.msg,
 			'embeds': self.text_data_help,
 		}
-
-        return data
 
     def send_msg_error(self):
         self.send_msg(self.discord_msg_error)

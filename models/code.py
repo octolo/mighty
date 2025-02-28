@@ -1,7 +1,7 @@
 """
 Model class
 Add [code] field at the model
-generate a unique code from a list of fields
+generate a unique code from a list of fields.
 
 [code_fields] list of field used to generate code
 (get_code) get the code generate

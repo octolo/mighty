@@ -27,8 +27,16 @@ from mighty.functions.registertask import (
 
 logger = logging.getLogger(__name__)
 BS = conf.Crypto.BS
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
-unpad = lambda s: s[: -ord(s[len(s) - 1 :])]
+
+
+def pad(s):
+    return s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+
+
+def unpad(s):
+    return s[: -ord(s[len(s) - 1 :])]
+
+
 numeric_const_pattern = (
     r'[-+]? (?: (?: \d* [\.,] \d+ ) | (?: \d+ [\.,]? ) )(?: [Ee] [+-]? \d+ ) ?'
 )
@@ -37,7 +45,7 @@ request_kept = threading.local()
 
 
 def has_model_activate(clas, mdl):
-    return getattr(clas, 'model_activate_%s' % mdl, False)
+    return getattr(clas, f'model_activate_{mdl}', False)
 
 
 # Request kept
@@ -58,9 +66,9 @@ def batch_bulk_chunk(objects, chunk, **kwargs):
     log = kwargs.pop('log', False)
     while True:
         if log == 'logger':
-            logger.info('Batch %s to %s' % (schunk, schunk + chunk))
+            logger.info(f'Batch {schunk} to {schunk + chunk}')
         elif log == 'print':
-            print('Batch %s to %s' % (schunk, schunk + chunk))
+            print(f'Batch {schunk} to {schunk + chunk}')
         batch = objects[schunk : schunk + chunk]
         if not len(batch):
             break
@@ -82,7 +90,7 @@ class CountSubquery(Subquery):
     ):
         extra['count_field'] = count_field
         extra['name'] = extra.get('name', '_count')
-        super(CountSubquery, self).__init__(queryset, output_field, **extra)
+        super().__init__(queryset, output_field, **extra)
 
 
 class SumSubquery(Subquery):
@@ -92,7 +100,7 @@ class SumSubquery(Subquery):
     def __init__(self, queryset, output_field=None, *, sum_field, **extra):
         extra['sum_field'] = sum_field
         extra['name'] = extra.get('name', '_sum')
-        super(SumSubquery, self).__init__(queryset, output_field, **extra)
+        super().__init__(queryset, output_field, **extra)
 
 
 class SumGt0SubQuery(Subquery):
@@ -103,7 +111,7 @@ class SumGt0SubQuery(Subquery):
         extra['field0'] = sum_fields[0]
         extra['field1'] = sum_fields[1]
         extra['name'] = extra.get('name', '_sum')
-        super(SumGt0SubQuery, self).__init__(queryset, output_field, **extra)
+        super().__init__(queryset, output_field, **extra)
 
 
 class Round(Func):
@@ -114,21 +122,29 @@ class Round(Func):
 """
 List of default tempates
 """
-tpl = lambda a, n, t: [
-    '%s/%s/%s.html' % (a, n, t),
-    '%s/%s.html' % (n, t),
-    '%s/%s.html' % (a, t),
-    '%s.html' % t,
+
+
+def tpl(a, n, t):
+    return [
+    f'{a}/{n}/{t}.html',
+    f'{n}/{t}.html',
+    f'{a}/{t}.html',
+    f'{t}.html',
 ]
+
 
 """
 List of default templates AJAX
 """
-tplx = lambda a, n, t: [
-    '%s/%s/ajax/%s.html' % (a, n, t),
-    '%s/ajax/%s.html' % (n, t),
-    'ajax/%s.html' % t,
+
+
+def tplx(a, n, t):
+    return [
+    f'{a}/{n}/ajax/{t}.html',
+    f'{n}/ajax/{t}.html',
+    f'ajax/{t}.html',
 ]
+
 
 """
 Shortcut to get a setting django
@@ -154,9 +170,7 @@ def test(input_str=None, search=conf.Test.search, *args, **kwargs):
     if 'positive' in kwargs and input_str in kwargs['positive']:
         return True
     return (
-        True
-        if str(input_str).strip().lower().replace(' ', '') not in search
-        else False
+        str(input_str).strip().lower().replace(' ', '') not in search
     )
 
 
@@ -198,8 +212,9 @@ def key(size=32, generator=string.hexdigits):
 
 
 def hex_color_rand():
-    r = lambda: random.randint(0, 255)
-    return '#%02X%02X%02X' % (r(), r(), r())
+    def r():
+        return random.randint(0, 255)
+    return f'#{r():02X}{r():02X}{r():02X}'
 
 
 def hex_to_rgb(hex):
@@ -207,7 +222,7 @@ def hex_to_rgb(hex):
 
 
 def rgb_to_hex(rgb):
-    return '#%02x%02x%02x' % rgb
+    return '#{:02x}{:02x}{:02x}'.format(*rgb)
 
 
 def hex_darker_color(hex, step):
@@ -301,8 +316,7 @@ Get and cast the string from the input
 
 def make_string(input_str):
     if ',' in input_str:
-        input_str = re.sub(r'[^\w\s]', ' ', input_str).strip()
-        return input_str
+        return re.sub(r'[^\w\s]', ' ', input_str).strip()
     return re.sub(r'[^\w\s]', ' ', input_str).strip()
 
 
@@ -340,7 +354,7 @@ def get_backends(backends_list=(), *args, **kwargs):
             pass
 
     for backend_path in backends_list:
-        backend_path = backend_path + path_extend
+        backend_path += path_extend
         if only_string:
             backends.append(backend_path)
         else:
@@ -393,7 +407,7 @@ def service_cpumem(cmd):
     err, out, cmd = command(cmd)
     if not err:
         out = out.strip().split('\n')
-        load = round(sum([float(i) for i in out if len(i)]), 2)
+        load = round(sum(float(i) for i in out if len(i)), 2)
         nb = len(out)
         return err, load, nb, cmd
     return err, out, 0, cmd
@@ -458,8 +472,8 @@ Get a model from a label and a model name
 
 
 def input_get_model(reference):
-    label = input('What label is for the reference %s: ' % reference)
-    model = input('What model is for the reference %s: ' % reference)
+    label = input(f'What label is for the reference {reference}: ')
+    model = input(f'What model is for the reference {reference}: ')
     return get_model(label, model)
 
 
@@ -471,9 +485,9 @@ Ask a boolean question
 
 
 def boolean_input(question, default='n'):
-    result = input('%s ' % question)
+    result = input(f'{question} ')
     while len(result) < 1 or result[0].lower() not in 'yn':
-        result = input('Please answer yes(y) or no(n), default(%s): ' % default)
+        result = input(f'Please answer yes(y) or no(n), default({default}): ')
     return result[0].lower() == 'y'
 
 
@@ -486,7 +500,7 @@ Ask to search in a model
 
 def object_search(model, reference):
     result = input(
-        'Make a search that refers to %s (keep empty for pass): ' % reference
+        f'Make a search that refers to {reference} (keep empty for pass): '
     )
     if test(result):
         objects_list = model.objects.filter(
@@ -511,10 +525,9 @@ def multipleobjects_onechoice(objects_list, reference, model):
     for obj in objects_list:
         i += 1
         objects.append(obj)
-        print('%s. %s (%s)' % (i, str(obj), obj.id))
+        print(f'{i}. {obj!s} ({obj.id})')
     result = input(
-        'choose the object that refers to %s (keep empty for pass): '
-        % reference
+        f'choose the object that refers to {reference} (keep empty for pass): '
     )
     if test(result):
         choice = make_int(result)
@@ -666,13 +679,7 @@ def file_directory_path(instance, filename, directory=None):
             if hasattr(instance.parent, 'uid') and instance.parent.uid
             else instance.parent.id
         )
-        return '%s/%s/%s/%s/%s' % (
-            directory,
-            date.year,
-            date.month,
-            selfpath,
-            filename,
-        )
+        return f'{directory}/{date.year}/{date.month}/{selfpath}/{filename}'
     if hasattr(instance, 'fieldparent') and hasattr(
         instance, instance.fieldparent
     ):
@@ -680,25 +687,13 @@ def file_directory_path(instance, filename, directory=None):
         selfpath = (
             parent.uid if hasattr(parent, 'uid') and parent.uid else parent.id
         )
-        return '%s/%s/%s/%s/%s' % (
-            directory,
-            date.year,
-            date.month,
-            selfpath,
-            filename,
-        )
+        return f'{directory}/{date.year}/{date.month}/{selfpath}/{filename}'
     selfpath = (
         instance.uid
         if hasattr(instance, 'uid') and instance.uid
         else instance.id
     )
-    return '%s/%s/%s/%s/%s' % (
-        directory,
-        date.year,
-        date.month,
-        selfpath,
-        filename,
-    )
+    return f'{directory}/{date.year}/{date.month}/{selfpath}/{filename}'
 
 
 """
@@ -750,8 +745,8 @@ def similar_char(str1, str2):
 
 # Get the score
 def similar_text(str1, str2):
-    if not (isinstance(str1, str) or isinstance(str1, unicode)) or not (
-        isinstance(str2, str) or isinstance(str2, unicode)
+    if not (isinstance(str1, str | unicode)) or not (
+        isinstance(str2, str | unicode)
     ):
         raise TypeError('must be str or unicode')
     if len(str1) == 0 and len(str2) == 0:
@@ -770,8 +765,8 @@ Return an array of words rarely found in an input
 
 
 def weight_words(input_str, exclude=conf.exclude, *args, **kwargs):
-    split = kwargs['split'] if 'split' in kwargs else r'[^\w]'
-    weight = kwargs['weight'] if 'weight' in kwargs else 3
+    split = kwargs.get('split', r'[^\w]')
+    weight = kwargs.get('weight', 3)
     words = []
     input_split = re.sub(split, ' ', input_str).split()
     for word in input_split:
@@ -788,7 +783,7 @@ Get a file json and return datas loaded
 
 def get_jsonfile(fil):
     if Path(fil).is_file():
-        with open(fil) as json_file:
+        with open(fil, encoding='utf-8') as json_file:
             return json.load(json_file)
     return False
 
@@ -802,7 +797,7 @@ Make a json file with datas
 
 
 def to_jsonfile(datas, fil, tmp='/tmp/'):
-    with open(tmp + fil, 'w') as f:
+    with open(tmp + fil, 'w', encoding='utf-8') as f:
         json.dump(datas, f, ensure_ascii=False, indent=4)
 
 
@@ -828,8 +823,7 @@ def get_logger():
         return import_string(settings.LOGGER_BACKEND)()
     import logging
 
-    logger = logging.getLogger(__name__)
-    return logger
+    return logging.getLogger(__name__)
 
 
 """
@@ -848,7 +842,7 @@ Return a form dynamically created
 
 def get_form(**kwargs):
     form_class = kwargs.get('form_class', forms.Form)
-    form_fields = kwargs.get('form_fields', [])
+    kwargs.get('form_fields', [])
 
     class DynForm(form_class):
         class Meta:
@@ -948,7 +942,7 @@ def refn(*args, **kwargs):
 
 def url_domain(url, http=False):
     domain = conf.domain
-    return '%s://%s%s' % ('http' if http else 'https', domain, url)
+    return '{}://{}{}'.format('http' if http else 'https', domain, url)
 
 
 def is_uid(uid):

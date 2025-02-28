@@ -122,10 +122,9 @@ class ShopConfig(AppConfig, Config):
 
 
 def cards_test():
-    bc = [c['number'] for c in ShopConfig.bank_card_conf.basic_cards] + [
+    return [c['number'] for c in ShopConfig.bank_card_conf.basic_cards] + [
         c['number'] for c in ShopConfig.bank_card_conf.cards_3ds
     ]
-    return bc
 
 
 def sepas_test():

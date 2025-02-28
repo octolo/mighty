@@ -13,25 +13,24 @@ class CBModel:
 
     @property
     def str_cb(self):
-        return '%s %s %s/%s' % (self.readable_cb, self.cvc, self.date_valid.month, self.date_valid.year)
+        return f'{self.readable_cb} {self.cvc} {self.date_valid.month}/{self.date_valid.year}'
 
     @property
     def mask_cb(self):
         cb = self.readable_cb[0:4] + re.sub(r'\d', '*', self.readable_cb[4:-4]) + self.readable_cb[-4:]
-        return '%s %s %s/%s' % (cb, self.cvc, self.date_valid.month, str(self.date_valid.year)[-2:])
+        return f'{cb} {self.cvc} {self.date_valid.month}/{str(self.date_valid.year)[-2:]}'
 
     def sum_digits(self, digit):
         if digit < 10:
             return digit
-        sum = (digit % 10) + (digit // 10)
-        return sum
+        return (digit % 10) + (digit // 10)
 
     def validate_luhn(self, cc_num):
         if settings.DEBUG and cc_num in cards_test():
             return True
         cc_num = cc_num[::-1]
         cc_num = [int(x) for x in cc_num]
-        doubled_second_digit_list = list()
+        doubled_second_digit_list = []
         digits = list(enumerate(cc_num, start=1))
         for index, digit in digits:
             if index % 2 == 0:
@@ -53,7 +52,7 @@ class CBModel:
         else:
             qs = type(self).objects.filter(cvc=self.cvc, cb=self.cb, date_valid=self.date_valid, user=self.user)
         if self.pk: qs = qs.exclude(pk=self.pk)
-        return False if qs.exists() else True
+        return not qs.exists()
 
     @property
     def is_valid_cb(self):

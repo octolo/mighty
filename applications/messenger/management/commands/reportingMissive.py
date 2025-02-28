@@ -44,14 +44,14 @@ class Command(ModelBaseCommand):
     ]
 
     def before_job(self):
-        filename = 'reporting_missive_%s.csv' % datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.csvfile = open(filename, 'w', newline='')
+        filename = 'reporting_missive_{}.csv'.format(datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
+        self.csvfile = open(filename, 'w', newline='', encoding='utf-8')
         self.writer = csv.writer(self.csvfile)
-        self.writer.writerow(self.fields + ['pages'])
+        self.writer.writerow([*self.fields, 'pages'])
 
     def on_object(self, obj):
         data = [getattr(obj, f) for f in self.fields]
-        if obj.mode in ('POSTAL', 'POSTALAR'):
+        if obj.mode in {'POSTAL', 'POSTALAR'}:
             try:
                 documents = obj.check_documents()
                 documents = documents.get('documents')

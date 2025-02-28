@@ -29,7 +29,7 @@ class PriceDatePaid:
         return date.today()
 
     def set_date_by_frequency(self):
-        self.next_paid = getattr(self, 'get_date_%s' % self.offer.frequency.lower())() if self.next_paid else datetime.now
+        self.next_paid = getattr(self, f'get_date_{self.offer.frequency.lower()}')() if self.next_paid else datetime.now
 
     def set_date_on_paid(self):
         self.set_date_by_duration() if self.offer.duration else self.set_date_by_frequency()

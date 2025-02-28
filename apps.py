@@ -94,9 +94,9 @@ class Config:
 
     class Directory:
         app = os.path.dirname(os.path.realpath(__file__))
-        certificates = '%s/certs' % settings.BASE_DIR
-        cache = '%s/cache' % settings.BASE_DIR
-        logs = '%s/logs' % settings.BASE_DIR
+        certificates = f'{settings.BASE_DIR}/certs'
+        cache = f'{settings.BASE_DIR}/cache'
+        logs = f'{settings.BASE_DIR}/logs'
         cloud = 'cloud/'
         process = 'process/'
 

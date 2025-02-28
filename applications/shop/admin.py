@@ -66,7 +66,7 @@ class SubscriptionAdmin(BaseAdmin):
         else:
             context['adminform'].form.fields['method'].queryset = context['adminform'].form.fields['method']\
                 .queryset.none()
-        return super(SubscriptionAdmin, self).render_change_form(request, context, *args, **kwargs)
+        return super().render_change_form(request, context, *args, **kwargs)
 
     def exports_view(self, request, object_id=None, extra_context=None):
         current_url = resolve(request.path_info).url_name
@@ -76,7 +76,7 @@ class SubscriptionAdmin(BaseAdmin):
         context = {
             **self.admin_site.each_context(request),
             'current_url': current_url,
-            'title': '%s (%s)' % (_.exports, obj) if obj else _.exports,
+            'title': f'{_.exports} ({obj})' if obj else _.exports,
             'object_name': str(opts.verbose_name),
             'object': obj,
             'opts': opts,
@@ -99,7 +99,7 @@ class SubscriptionAdmin(BaseAdmin):
         context = {
             **self.admin_site.each_context(request),
             'current_url': current_url,
-            'title': '%s (%s)' % (_.exports, obj) if obj else _.exports,
+            'title': f'{_.exports} ({obj})' if obj else _.exports,
             'object_name': str(opts.verbose_name),
             'object': obj,
             'opts': opts,
@@ -133,10 +133,10 @@ class SubscriptionAdmin(BaseAdmin):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/dobill/', self.wrap(self.dobill_view), name='%s_%s_dobill_subscription' % info),
+            path('<path:object_id>/dobill/', self.wrap(self.dobill_view), name='{}_{}_dobill_subscription'.format(*info)),
             path('exports/', include([
-                path('', self.exports_view, name='%s_%s_exports_subscription' % info),
-                path('csv/', self.export_view, name='%s_%s_export_all' % info),
+                path('', self.exports_view, name='{}_{}_exports_subscription'.format(*info)),
+                path('csv/', self.export_view, name='{}_{}_export_all'.format(*info)),
             ])),
 
         ]
@@ -176,8 +176,7 @@ class BillAdmin(BaseAdmin):
         return TemplateResponse(request, 'admin/try_to_charge.html', context)
 
     def billpdf_view(self, request, object_id=None, extra_context=None):
-        current_url = resolve(request.path_info).url_name
-        opts = self.model._meta
+        resolve(request.path_info).url_name
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         obj = self.get_object(request, unquote(object_id), to_field)
         pdf = obj.bill_to_pdf()
@@ -192,8 +191,8 @@ class BillAdmin(BaseAdmin):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/pdf/', self.billpdf_view, name='%s_%s_pdf_bill' % info),
-            path('<path:object_id>/trytocharge/', self.wrap(self.trytocharge_view), name='%s_%s_trytocharge_bill' % info),
+            path('<path:object_id>/pdf/', self.billpdf_view, name='{}_{}_pdf_bill'.format(*info)),
+            path('<path:object_id>/trytocharge/', self.wrap(self.trytocharge_view), name='{}_{}_trytocharge_bill'.format(*info)),
         ]
         return my_urls + urls
 

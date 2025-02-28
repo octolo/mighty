@@ -34,7 +34,7 @@ class Tenant(Base, Image):
 
     @property
     def representation(self):
-        return '%s , %s' % (str(self.user), str(self.group))
+        return f'{self.user!s} , {self.group!s}'
 
     @property
     def status(self):

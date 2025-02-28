@@ -9,9 +9,7 @@ from rest_framework_simplejwt.tokens import UntypedToken
 
 
 class TokenAuthMiddleware:
-    """
-    Custom token auth middleware
-    """
+    """Custom token auth middleware."""
 
     def __init__(self, inner):
         self.inner = inner

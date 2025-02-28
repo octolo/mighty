@@ -30,21 +30,19 @@ class Command(ModelBaseCommand):
 
     def load_jsonfile(self, jsonfile):
         name = os.path.splitext(os.path.basename(jsonfile))[0]
-        tr, status = Translator.objects.get_or_create(name=name)
+        tr, _status = Translator.objects.get_or_create(name=name)
         with open(jsonfile, encoding=self.encoding) as json_file:
             languages = json.load(json_file)
             for lang, translates in languages.items():
                 nat = Nationality.objects.get(alpha2__icontains=lang.split('_')[-1])
-                td, status = TranslateDict.objects.get_or_create(language=nat, precision=lang, translator=tr)
+                td, _status = TranslateDict.objects.get_or_create(language=nat, precision=lang, translator=tr)
                 td.translates = translates
                 td.save()
 
     def load_jsonfolder(self, folder):
         qs = []
-        for (dirpath, dirnames, filenames) in os.walk(folder):
-            for file in filenames:
-                if file.endswith('.json'):
-                    qs.append(os.path.join(dirpath, file))
+        for (dirpath, _dirnames, filenames) in os.walk(folder):
+            qs.extend(os.path.join(dirpath, file) for file in filenames if file.endswith('.json'))
         self.each_objects(qs)
 
     def on_object(self, obj):

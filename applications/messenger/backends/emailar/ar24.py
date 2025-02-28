@@ -105,7 +105,7 @@ class MissiveBackend(MissiveBackend):
     def valid_response(self, response):
         try:
             self.missive.trace = str(response.json())
-            self.logger.info('Error: %s' % self.missive.trace)
+            self.logger.info(f'Error: {self.missive.trace}')
             self.in_error = True
             return False
         except Exception:
@@ -124,7 +124,7 @@ class MissiveBackend(MissiveBackend):
             response = requests.post(self.api_url['user'], headers=self.api_headers, data=self.data_confirm)
             response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
             if not self.in_error:
-                self.logger.info('Confirmed user: %s' % response)
+                self.logger.info(f'Confirmed user: {response}')
             return False
         return True
 
@@ -139,7 +139,7 @@ class MissiveBackend(MissiveBackend):
         self.in_error = False
         response = requests.post(self.api_url['user'], headers=self.api_headers, data=self.data_user)
         response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
-        self.logger.info('Create user: %s' % response)
+        self.logger.info(f'Create user: {response}')
         return response
 
     def get_user(self):
@@ -147,7 +147,7 @@ class MissiveBackend(MissiveBackend):
         response = self.decrypt_data(response.content) if self.valid_response(response) else response.content
         if self.in_error: response = self.create_user()
         self.user = json.loads(response.decode())['result']
-        self.logger.info('Get user: %s' % self.user)
+        self.logger.info(f'Get user: {self.user}')
         self.is_confirmed()
 
     # SEND AR
@@ -167,7 +167,7 @@ class MissiveBackend(MissiveBackend):
         i = 0
         for attach in self.list_attach:
             data.update({
-                'attachment[%s]' % str(i): attach['file_id']
+                f'attachment[{i!s}]': attach['file_id']
             })
             i += 1
         return data
@@ -193,7 +193,7 @@ class MissiveBackend(MissiveBackend):
                     response = json.loads(response)['result']
                     self.list_attach.append(response)
             self.missive.logs['attachments'] = self.list_attach
-        return False if self.in_error else True
+        return not self.in_error
 
     def send_email(self):
         self.get_user()
@@ -217,6 +217,6 @@ class MissiveBackend(MissiveBackend):
         self.missive.last_name = 'Mighty-Lastname'
         self.missive.first_name = 'Mighty-Firstname'
         self.missive.target = ''
-        self.missive.attachments = [open(os.path.realpath(__file__))]
+        self.missive.attachments = [open(os.path.realpath(__file__), encoding='utf-8')]
         self.send_email()
-        self.logger.info('Send email: %s' % self.missive.cache)
+        self.logger.info(f'Send email: {self.missive.cache}')

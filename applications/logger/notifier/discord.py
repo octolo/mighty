@@ -11,9 +11,9 @@ class DiscordEventNotifier:
 
     def send_event(self, event_name, event_data, url=None):
         # Create a message template
-        message_template = 'Event: {event_name}\nData: {event_data}'
+        message_template = f'Event: {event_name}\nData: {event_data}'
         if url is not None:
-            message_template += '\nURL: {url}'
+            message_template += f'\nURL: {url}'
 
         # Format the message with the event name, data, and URL
         message = message_template.format(event_name=event_name, event_data=event_data, url=url)

@@ -1,4 +1,6 @@
-from mighty.decorators.inherit import InheritClassList as InheritClassList
+from mighty.decorators.inherit import (
+    InheritClassList as InheritClassList,
+)
 from mighty.decorators.inherit import (
     InheritModelClassList as InheritModelClassList,
 )

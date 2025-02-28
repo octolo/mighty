@@ -25,4 +25,4 @@ class TenantAdmin(BaseAdmin):
         else:
             context['adminform'].form.fields['roles'].queryset = context['adminform'].form.fields['roles']\
                 .queryset.none()
-        return super(TenantAdmin, self).render_change_form(request, context, *args, **kwargs)
+        return super().render_change_form(request, context, *args, **kwargs)

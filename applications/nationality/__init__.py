@@ -1,7 +1,5 @@
 default_app_config = 'mighty.applications.nationality.apps.NationalityConfig'
 
-import json
-
 
 def conf_prefix_numbering():
     from mighty.models import Nationality

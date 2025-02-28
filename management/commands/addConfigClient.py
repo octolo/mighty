@@ -17,7 +17,7 @@ class Command(ModelBaseCommand):
         self.name = options.get('name')
         self.json = options.get('json')
         if not os.path.isfile(self.json):
-            raise CommandError('JSON "%s" does not exist' % self.json)
+            raise CommandError(f'JSON "{self.json}" does not exist')
         super().handle(*args, **options)
 
     def makeJob(self):
@@ -25,6 +25,6 @@ class Command(ModelBaseCommand):
 
     def do(self):
         with open(self.json, encoding=self.encoding) as json_file:
-            conf, status = ConfigClient.objects.get_or_create(name=self.name)
+            conf, _status = ConfigClient.objects.get_or_create(name=self.name)
             conf.config = json.load(json_file)
             conf.save()

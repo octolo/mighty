@@ -45,6 +45,5 @@ class Command(CSVModelCommand):
         self.curr_translator.save()
 
     def on_row(self, row):
-        if row['path']:
-            if self.get_dict_filter(row['path']):
-                self.change_trad(row)
+        if row['path'] and self.get_dict_filter(row['path']):
+            self.change_trad(row)

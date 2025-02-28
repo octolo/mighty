@@ -107,7 +107,7 @@ class TwoFactorChoicesForm(FormDescriptable):
             if 'password' in dev:
                 status = TwofactorConfig.method.basic
             else:
-                receiver = getattr(self, '%ss' % dev)[int(pos)]
+                receiver = getattr(self, f'{dev}s')[int(pos)]
                 status = use_twofactor(receiver)
             if not status:
                 raise forms.ValidationError(self.error_messages['cant_send'], code='cant_send')
@@ -152,7 +152,7 @@ class TwoFactorCodeForm(AuthenticationForm):
 
 class SignUpForm(UserCreationForm):
     def __init__(self, use_password=True, *args, **kwargs):
-        super(SignUpForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.use_password = use_password
         if not use_password:
             self.fields.pop('password1')
@@ -160,10 +160,9 @@ class SignUpForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = get_user_model()
-        fields = (UserConfig.Field.username,) + UserConfig.Field.required
+        fields = (UserConfig.Field.username, *UserConfig.Field.required)
 
     def save(self, commit=True):
         if not self.use_password:
             self.cleaned_data['password1'] = ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(20))
-        user = super(SignUpForm, self).save(commit)
-        return user
+        return super().save(commit)

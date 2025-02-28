@@ -28,7 +28,7 @@ def setTenantAuto(sender, instance, **kwargs):
 
 
 def AddOrRemoveRoles(sender, instance, action, **kwargs):
-    if action == 'post_add' or action == 'post_remove':
+    if action in {'post_add', 'post_remove'}:
         roles = TenantRole.objects.filter(id__in=kwargs.get('pk_set'))
         for role in roles:
             role.save()

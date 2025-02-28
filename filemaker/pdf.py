@@ -57,8 +57,8 @@ class FileMakerPDF:
     def get_font_rule(self, font, name):
         return '\n'.join([
             '@font-face {',
-            "    font-family: '%s';" % name,
-            '    src: url(file://%s);' % find_static_file('fonts/%s' % font),
+            f"    font-family: '{name}';",
+            '    src: url(file://{});'.format(find_static_file(f'fonts/{font}')),
             '}',
         ])
 
@@ -69,7 +69,7 @@ class FileMakerPDF:
     def get_style(self):
         style = ''
         style += '\n'.join([
-            "@import url('file://%s');" % find_static_file(css)
+            f"@import url('file://{find_static_file(css)}');"
             for css in self.css
         ])
         style += self.get_style_font_face()

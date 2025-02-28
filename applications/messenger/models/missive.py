@@ -25,10 +25,10 @@ class Missive(AddressNoBase):
         ordering = ['-date_create']
 
     def __str__(self):
-        return '%s (%s)' % (self.masking, self.mode)
+        return f'{self.masking} ({self.mode})'
 
     def need_to_send(self):
-        if self.status in (choices.STATUS_PREPARE, choices.STATUS_FILETEST):
+        if self.status in {choices.STATUS_PREPARE, choices.STATUS_FILETEST}:
             send_missive(self)
 
     def clear_errors(self):
@@ -40,15 +40,14 @@ class Missive(AddressNoBase):
         self.status = choices.STATUS_SENT
 
     def get_backend(self):
-        backend = import_string('%s.MissiveBackend' % self.backend)(missive=self)
-        return backend
+        return import_string(f'{self.backend}.MissiveBackend')(missive=self)
 
     def check_documents(self):
         return self.get_backend().check_documents()
 
     def check_status(self):
         backend = self.get_backend()
-        return getattr(backend, 'check_%s' % self.mode.lower())()
+        return getattr(backend, f'check_{self.mode.lower()}')()
 
     def cancel_missive(self):
         return self.get_backend().cancel()
@@ -68,6 +67,5 @@ class Missive(AddressNoBase):
         return reverse('messenger-email-viewer', args=[self.uid])
 
     def on_raw_ready(self):
-        if not self.target:
-            if self.raw_address:
-                self.target = self.raw_address
+        if not self.target and self.raw_address:
+            self.target = self.raw_address

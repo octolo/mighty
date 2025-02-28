@@ -1,3 +1,5 @@
+import contextlib
+
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
@@ -56,7 +58,7 @@ class UserCreationForm(UserCreationForm, ModelFormDescriptable):
 
     def __init__(self, *args, **kwargs):
 
-        super(UserCreationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for field in allfields:
             if field in required:
                 self.fields[field].required = True
@@ -123,10 +125,8 @@ class UserMergeAccountsAdminForm(ModelFormDescriptable):
         dl = self.cleaned_data['account_delete']
 
         for data_link in (UserConfig.ForeignKey.email_related_name_attr, 'user_phone', 'user_address'):
-            try:
+            with contextlib.suppress(Exception):
                 getattr(dl, data_link).update(user=kp)
-            except Exception:
-                pass
 
         merge_accounts_signal.send(sender=None, tokeep=kp, todelete=dl)
         dl.delete()

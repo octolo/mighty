@@ -8,7 +8,7 @@ class DiscordTwoFactor(DiscordLogger):
 
     @property
     def discord_self(self):
-        return '%s, %s (%s)' % (self.user.fullname, self.twofactor.email_or_phone, self.twofactor.code)
+        return f'{self.user.fullname}, {self.twofactor.email_or_phone} ({self.twofactor.code})'
 
     @property
     def date_send(self):
@@ -17,10 +17,10 @@ class DiscordTwoFactor(DiscordLogger):
     @property
     def discord_msg_creation(self):
         return {
-        'content': 'Code : %s - %s' % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
+        'content': 'Code : {} - {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
         'embeds': [{
-            'title': ':red_circle: Code : %s - %s' % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
-            'description': '[%s :link:](%s)' % (self.discord_self, self.url_domain(self.twofactor.admin_change_url))
+            'title': ':red_circle: Code : {} - {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
+            'description': f'[{self.discord_self} :link:]({self.url_domain(self.twofactor.admin_change_url)})'
         }]}
 
     def send_msg_create(self):
@@ -29,10 +29,10 @@ class DiscordTwoFactor(DiscordLogger):
     @property
     def discord_msg_connection(self):
         return {
-			'content': 'Connexion : %s - %s' % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
+			'content': 'Connexion : {} - {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
 			'embeds': [{
-				'title': ':green_circle: Connexion : %s - %s' % (self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
-				'description': '[%s :link:](%s)' % (self.discord_self, self.url_domain(self.twofactor.admin_change_url))
+				'title': ':green_circle: Connexion : {} - {}'.format(self.date_send.strftime('%Y-%m-%d %H:%M'), self.user.fullname),
+				'description': f'[{self.discord_self} :link:]({self.url_domain(self.twofactor.admin_change_url)})'
 			}]
 		}
 

@@ -54,7 +54,7 @@ class ModelViewSet(ModelViewSet):
         filetype = request.GET.get('file')
         if any(report, filetype) and filetype in self.file_type and report in obj.reporting_keys:
             return obj.reporting_process(reporting, file_type)
-        raise Http404()
+        raise Http404
 
     @action(detail=False, methods=['get'], url_path=r'forms/(?P<form>\w+)')
     def form_desc(self, request, form=None, *args, **kwargs):
@@ -106,7 +106,6 @@ class ModelViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def variables(self, request, *args, **kwargs):
-        model = self.model_static
         if hasattr(self.model_static, 'eve_variable_prefixed_list'):
             var = self.model_static().eve_variable_prefixed_list(related=self.variables_related)
             # var += list(itertools.chain(*(v().eve_variable_prefixed_list() for v in self.variables_model)))

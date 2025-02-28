@@ -1,3 +1,5 @@
+import contextlib
+
 from openpyxl import load_workbook
 
 from mighty.applications.logger import EnableLogger
@@ -5,15 +7,14 @@ from mighty.applications.logger import EnableLogger
 
 def reader(iterator):
     total = [[col.value for col in row] for row in iterator]
-    for row in total:
-        yield row
+    yield from total
 
 
 class ReaderXLSX(EnableLogger):
     def __init__(self, filename, worksheet=None, *args, **kwargs):
-        self.logger.info('Opening file %s' % filename)
+        self.logger.info(f'Opening file {filename}')
         self.wb = load_workbook(filename, **kwargs)
-        self.logger.info('file %s open' % filename)
+        self.logger.info(f'file {filename} open')
         self.ws = (worksheet and self.wb[worksheet]) or self.wb.active
         self.total = self.ws.max_row
         self.reader = reader(self.ws)
@@ -26,10 +27,8 @@ class ReaderXLSX(EnableLogger):
     @property
     def fieldnames(self):
         if self._fieldnames is None:
-            try:
+            with contextlib.suppress(StopIteration):
                 self._fieldnames = next(self.reader)
-            except StopIteration:
-                pass
         self.line_num += 1
         return self._fieldnames
 

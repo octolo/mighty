@@ -9,7 +9,7 @@ from mighty import over_config
 
 class Config:
     directory = os.path.dirname(os.path.realpath(__file__))
-    csvfile = '%s/countries.csv' % directory
+    csvfile = f'{directory}/countries.csv'
     encoding = 'utf8'
     delimiter = ','
     quotchar = '"'

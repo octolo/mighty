@@ -25,7 +25,7 @@ from mighty.applications.user.apps import UserConfig as conf
 
 def get_form_fields(fields='*'):
     if fields == '*':
-        return (conf.Field.username,) + conf.Field.required + conf.Field.optional
+        return (conf.Field.username, *conf.Field.required, *conf.Field.optional)
     return getattr(conf.Field, fields)
 
 

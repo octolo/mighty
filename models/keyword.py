@@ -1,7 +1,7 @@
 """
 Model class
 Add keywords field at the model to help searching ability
-usefull for some text field search based
+usefull for some text field search based.
 
 [keywords_fields] list of fields to search for keywords
 (get_keywords) return the keywords field searchable

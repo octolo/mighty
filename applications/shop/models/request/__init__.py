@@ -30,7 +30,7 @@ class SubscriptionRequest(PaymentMethod):
         ordering = ['user', 'offer']
 
     def __str__(self):
-        return '%s (%s)' % (self.user, self.offer)
+        return f'{self.user} ({self.offer})'
 
     @property
     def webhook_url(self):

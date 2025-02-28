@@ -91,7 +91,7 @@ class MessengerModel(Base):
         self.status = choices.STATUS_ERROR
 
     def prepare_mode(self):
-        getattr(self, 'prepare_%s' % self.mode.lower())()
+        getattr(self, f'prepare_{self.mode.lower()}')()
 
     def pre_save(self):
         # self.set_txt()
@@ -100,7 +100,7 @@ class MessengerModel(Base):
         self.need_to_send()
 
     def __str__(self):
-        return '%s (%s)' % (self.masking, self.subject)
+        return f'{self.masking} ({self.subject})'
 
     def prepare_sms(self):
         self.html = 'not used for sms'

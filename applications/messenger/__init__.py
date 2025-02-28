@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def send_missive(missive):
-    for backend, backend_path in get_backends([missive.backend], return_tuples=True, path_extend='.MissiveBackend', missive=missive):
+    for backend, _backend_path in get_backends([missive.backend], return_tuples=True, path_extend='.MissiveBackend', missive=missive):
         return backend.send()
     return False
 
@@ -129,7 +129,7 @@ def notify_slack(hookname, **kwargs):
         if kwargs.get('blocks'):
             data['blocks'] = kwargs.get('blocks')
         headers = {'Content-Type': 'application/json'}
-        request = requests.post(hook, headers=headers, data=json.dumps(data))
+        requests.post(hook, headers=headers, data=json.dumps(data))
 
 
 def notify_discord(hookname, **kwargs):
@@ -148,15 +148,18 @@ def notify_discord(hookname, **kwargs):
         if kwargs.get('embeds'):
             data['embeds'] = kwargs.get('embeds')
         headers = {'Content-Type': 'application/json'}
-        request = requests.post(hook, headers=headers, data=json.dumps(data))
+        requests.post(hook, headers=headers, data=json.dumps(data))
 
 
-def generate_event_url(date, event, service=['google', 'apple', 'outlook', 'yahoo']):
+def generate_event_url(date, event, service=None):
     import base64
+
+    if service is None:
+        service = ['google', 'apple', 'outlook', 'yahoo']
 
     def svg_to_base64(service):
         from django.contrib.staticfiles.finders import find
-        svg = find('logo/%s_simple.svg' % service)
+        svg = find(f'logo/{service}_simple.svg')
         with open(svg, 'rb') as image_file:
             return base64.b64encode(image_file.read()).decode()
 

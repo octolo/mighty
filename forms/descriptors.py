@@ -1,3 +1,4 @@
+import contextlib
 import json
 
 from django import forms
@@ -46,7 +47,7 @@ class FormDescriptable(FormShare, forms.Form):
         blocks = None
 
     def form_init(self, kwargs):
-        list_fields = form_init_fields + ('field_order',)
+        list_fields = (*form_init_fields, 'field_order')
         return {f: kwargs[f] for f in kwargs if f in list_fields}
 
     def __init__(self, *args, **kwargs):
@@ -66,7 +67,7 @@ class ModelFormDescriptable(FormShare, forms.ModelForm):
         blocks = None
 
     def form_init(self, kwargs):
-        list_fields = form_init_fields + ('instance',)
+        list_fields = (*form_init_fields, 'instance')
         return {f: kwargs[f] for f in kwargs if f in list_fields}
 
     def __init__(self, *args, **kwargs):
@@ -170,7 +171,7 @@ class FormDescriptor:
         return errors
 
     def check_enctype(self, desc):
-        if desc['type'] in ('file', 'image'):
+        if desc['type'] in {'file', 'image'}:
             self.form_desc['enctype'] = self.enctypes['file']
 
     def get_input_type(self, field, name):
@@ -210,6 +211,7 @@ class FormDescriptor:
         if hasattr(self.form, self.current_field + '_disable'):
             cfg = getattr(self.form, self.current_field + '_disable')
             return (choice in cfg)
+        return None
 
     def get_options(self, field, name):
         if hasattr(field, 'choices'):
@@ -224,6 +226,7 @@ class FormDescriptor:
                     'label': str(choice[1]),
                     'value': choice[0],
                 } for choice in field.choices]
+        return None
 
     def get_dependencies(self, name):
         if name in self.form.Options.dependencies:
@@ -293,15 +296,13 @@ class FormDescriptor:
                 'opt_value': self.option(field, name, 'value'),
             })
         for attr in self.default_attrs:
-            if hasattr(self, 'get_%s' % attr):
-                desc.update({attr: getattr(self, 'get_%s' % attr)(field, name)})
+            if hasattr(self, f'get_{attr}'):
+                desc.update({attr: getattr(self, f'get_{attr}')(field, name)})
             elif hasattr(field, attr):
                 desc.update({attr: getattr(field, attr)})
             else:
-                try:
+                with contextlib.suppress(Exception):
                     desc.update({attr: self.option(field, name, attr)})
-                except Exception:
-                    pass
         for attr in self.url_attrs:
             desc.update({attr: self.get_url_attr(field, name, attr)})
         self.check_enctype(desc)

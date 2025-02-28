@@ -39,7 +39,7 @@ class Notification(models.Model):
         ordering = ['-date_create']
 
     def need_to_send(self):
-        getattr(self, 'sendnotify_%s' % self.mode.lower())()
+        getattr(self, f'sendnotify_{self.mode.lower()}')()
 
     @property
     def data_shared(self):

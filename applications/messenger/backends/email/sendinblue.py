@@ -1,4 +1,5 @@
 import base64
+import contextlib
 import json
 import os
 
@@ -88,7 +89,7 @@ class MissiveBackend(MissiveBackend):
             data['params'] = {
                 'code': self.missive.context['code'],
                 'domain': MightyConfig.domain.upper(),
-                'link':  'https://%s' % MightyConfig.domain,
+                'link':  f'https://{MightyConfig.domain}',
             }
 
     def forge_email(self, data, attachments):
@@ -115,12 +116,10 @@ class MissiveBackend(MissiveBackend):
         data = {}
         over_target = setting('MISSIVE_EMAIL', False)
         self.missive.target = over_target or self.missive.target
-        self.logger.info('Email - from : %s, to : %s, reply : %s' % (self.sender_email, self.missive.target, self.reply_email))
+        self.logger.info(f'Email - from : {self.sender_email}, to : {self.missive.target}, reply : {self.reply_email}')
         if setting('MISSIVE_SERVICE', False):
-            try:
+            with contextlib.suppress(Exception):
                 self.api_instance.smtp_blocked_contacts_email_delete(self.missive.target)
-            except Exception:
-                pass
             self.missive.msg_id = make_msgid()
             attachments = self.email_attachments()
             self.forge_email(data, attachments)

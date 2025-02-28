@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 from sys import getsizeof
@@ -37,7 +38,7 @@ class MimeType(Base, Image):
         return self.file
 
     def get_file(self, size):
-        return getattr(self, 'image%s' % size, self.x16)
+        return getattr(self, f'image{size}', self.x16)
 
     @property
     def x16(self):
@@ -64,7 +65,7 @@ class MimeType(Base, Image):
         return self.extension[1:]
 
     def __str__(self):
-        return '%s (%s)' % (self.mime, self.extension)
+        return f'{self.mime} ({self.extension})'
 
     class Meta:
         abstract = True
@@ -85,14 +86,13 @@ class FileSystem(models.Model):
         fltr = kwargs.get('fltr', {})
         size = []
         for key, type_ in self.concrete_fields(excludes).items():
-            data = getattr(self, '%s_id' % key) if type_ == 'ForeignKey' else getattr(self, key)
+            data = getattr(self, f'{key}_id') if type_ == 'ForeignKey' else getattr(self, key)
             size.append(getsizeof(data))
         for key, type_ in self.many_fields(excludes).items():
             size += [getsizeof(key) for key, obj in getattr(self, key).in_bulk(**fltr).items()]
         return sum(size) if size else None
 
     def save(self, *args, **kwargs):
-        need_post_create = False if not self.pk else True
         # if self.pk:
         #    self.db_size = self.calcul_db_size()
         #    self.init_ct()
@@ -116,7 +116,7 @@ class FileSystem(models.Model):
 
     @property
     def inode(self):
-        return '%s.%s' % (str(self.content_type.id), str(self.pk))
+        return f'{self.content_type.id!s}.{self.pk!s}'
 
     @property
     def number_of_links(self):
@@ -128,11 +128,9 @@ class FileSystem(models.Model):
 
     def init_owner(self):
         if not self.owner and (self.create_by or self.update_by):
-            userid, username = getattr(self, 'create_by', self.update_by).split('.')
-            try:
+            userid, _username = getattr(self, 'create_by', self.update_by).split('.')
+            with contextlib.suppress(userModel.DoesNotExist):
                 self.owner = userModel.objects.get(id=userid)
-            except userModel.DoesNotExist:
-                pass
 
     def biggest_name_value(self, *args, **kwargs):
         excludes = kwargs.get('excludes', [])
@@ -159,7 +157,7 @@ class FileSystem(models.Model):
 
     def file_format(self, *args, **kwargs):
         excludes = kwargs.get('excludes', [])
-        return getattr(self, 'file_%s' % kwargs.get('fileformat', 'txt'))(excludes)
+        return getattr(self, 'file_{}'.format(kwargs.get('fileformat', 'txt')))(excludes)
 
     def file_txt(self, excludes):
         oneline, manyline = self.data_for_file(excludes)
@@ -168,8 +166,8 @@ class FileSystem(models.Model):
         size_name = len(biggest_name)
         size_value = len(biggest_value)
         space_name = ' ' * size_name
-        space_value = ' ' * size_value
-        minus_name = '-' * size_name
+        ' ' * size_value
+        '-' * size_name
         minus_value = '-' * size_value
         line_template = conf.FileSystem.line_template
         for name, value in oneline.items():
@@ -178,8 +176,7 @@ class FileSystem(models.Model):
             line.append(tpl)
         for name, value in manyline.items():
             space = ' ' * (size_name - len(name))
-            line.append(line_template % ({'space': space, 'label': name, 'data': minus_value}))
-            line.append('\n'.join([space_name + '  - ' + str(d) for d in value]) if value else '')
+            line.extend((line_template % {'space': space, 'label': name, 'data': minus_value}, '\n'.join([space_name + '  - ' + str(d) for d in value]) if value else ''))
         return '\n'.join(line)
 
     def file_json(self, excludes):

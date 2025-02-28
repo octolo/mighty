@@ -15,7 +15,7 @@ class SlackExceptionHandler(logging.Handler):
     def emit(self, record):
         log_entry = self.format(record)
         try:
-            response = self.client.chat_postMessage(channel=settings.SLACKCHANNEL, text=log_entry)
+            self.client.chat_postMessage(channel=settings.SLACKCHANNEL, text=log_entry)
         except SlackApiError as e:
             print(f'Error sending message: {e}')
 

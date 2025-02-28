@@ -122,9 +122,9 @@ class MissiveAdmin(BaseAdmin):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/html/', self.wrap(self.html_view), name='%s_%s_html' % info),
-            path('<path:object_id>/check/', self.wrap(self.check_view), name='%s_%s_check' % info),
-            path('<path:object_id>/documents/', self.wrap(self.check_documents), name='%s_%s_documents' % info),
+            path('<path:object_id>/html/', self.wrap(self.html_view), name='{}_{}_html'.format(*info)),
+            path('<path:object_id>/check/', self.wrap(self.check_view), name='{}_{}_check'.format(*info)),
+            path('<path:object_id>/documents/', self.wrap(self.check_documents), name='{}_{}_documents'.format(*info)),
             path(
                 self.missivecancel_view_path,
                 self.wrap(self.missivecancel_view, object_tools=self.missivecancel_view_object_tools),

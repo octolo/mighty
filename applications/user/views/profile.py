@@ -16,7 +16,7 @@ class ProfileBaseView:
 
     def get_object(self, queryset=None):
         user = self.request.user
-        newstyle = self.request.GET.get('use', UserConfig.Field.style[0])
+        self.request.GET.get('use', UserConfig.Field.style[0])
         # if newstyle != user.style:
         #    user.style = newstyle
         #    user.save()

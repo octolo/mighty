@@ -64,7 +64,7 @@ def EnableSubscription(**kwargs):
 
             @property
             def subscription_active(self):
-                return True if self.subscription and self.subscription.is_active else False
+                return bool(self.subscription and self.subscription.is_active)
 
             def save(self, *args, **kwargs):
                 # self.set_valid_valid_payment_methods()

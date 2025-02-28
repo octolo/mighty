@@ -47,7 +47,7 @@ class Bill(Base, PDFModel, ChargeModel):
         unique_together = ShopConfig.bill_unique_together
 
     def __str__(self):
-        return '%s - %s' % (self.group, self.subscription)
+        return f'{self.group} - {self.subscription}'
 
     @property
     def offer(self):
@@ -67,7 +67,7 @@ class Bill(Base, PDFModel, ChargeModel):
 
     @property
     def tva_month_items(self):
-        return sum([amount_ht_month for item in self.items])
+        return sum(amount_ht_month for item in self.items)
 
     @property
     def tva_calc_year(self):
@@ -75,7 +75,7 @@ class Bill(Base, PDFModel, ChargeModel):
 
     @property
     def total_month_items(self):
-        return sum([amount_ttc_month for item in self.items])
+        return sum(amount_ttc_month for item in self.items)
 
     @property
     def total_calc_year(self):
@@ -97,18 +97,18 @@ class Bill(Base, PDFModel, ChargeModel):
 
     @property
     def follow_id(self):
-        return 'msbID_%s.%s' % (self.uid, self.pk)
+        return f'msbID_{self.uid}.{self.pk}'
 
     @property
     def bill_numero(self):
-        return '%s-%s%s' % (self.date_payment.year, self.date_payment.month, self.numero)
+        return f'{self.date_payment.year}-{self.date_payment.month}{self.numero}'
 
     def calcul_discount(self):
         if self.override_price:
             self.end_amount = self.override_price
         else:
             amount = self.amount
-            amount -= sum([discount.amount for discount in self.discount.filter(is_percent=False)])
+            amount -= sum(discount.amount for discount in self.discount.filter(is_percent=False))
             for discount in self.discount.filter(is_percent=True).order_by('-amount'):
                 amount -= (amount / 100 * discount.amount)
             self.end_amount = round(amount, 2)

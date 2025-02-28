@@ -63,7 +63,7 @@ class TrLoad(CreateAPIView):
             translator=translator,
             language=default_nationality
         )
-        cnt = len(path) - 1
+        len(path) - 1
         if not translatedict.translates: translatedict.translates = {}
         if (len(path) == 3):
             if path[1] in translatedict.translates:

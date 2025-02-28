@@ -62,7 +62,7 @@ class FormDescriptor:
         return validator.regex.pattern
 
     def get_config_validator(self, val, field, validator):
-        name = '%s_%s' % (validator.__class__.__name__.lower(), val)
+        name = f'{validator.__class__.__name__.lower()}_{val}'
         if hasattr(self, name):
             return getattr(self, name)(field, validator)
         return getattr(validator, val)
@@ -81,15 +81,16 @@ class FormDescriptor:
             validators = [self.config_validator(field, validator)
                 for validator in field.validators]
             return [val for val in validators if val]
+        return None
 
     def dependencies_field(self, name):
-        return getattr(self.form, '%s_dependencies' % name) if hasattr(self.form, '%s_dependencies' % name) else None
+        return getattr(self.form, f'{name}_dependencies') if hasattr(self.form, f'{name}_dependencies') else None
 
     def choice_dependencies_field(self, name):
-        return getattr(self.form, '%s_choice_dependencies' % name) if hasattr(self.form, '%s_choice_dependencies' % name) else None
+        return getattr(self.form, f'{name}_choice_dependencies') if hasattr(self.form, f'{name}_choice_dependencies') else None
 
     def emptyif_field(self, name):
-        return getattr(self.form, '%s_emptyif' % name) if hasattr(self.form, '%s_emptyif' % name) else None
+        return getattr(self.form, f'{name}_emptyif') if hasattr(self.form, f'{name}_emptyif') else None
 
     def get_fields(self):
         return [self.field_definition(field, name)
@@ -99,16 +100,19 @@ class FormDescriptor:
         if hasattr(self.form, self.current_field + '_choices'):
             cfg = getattr(self.form, self.current_field + '_choices')
             return getattr(obj, cfg['option'])
+        return None
 
     def choice_value(self, obj, field):
         if hasattr(self.form, self.current_field + '_choices'):
             cfg = getattr(self.form, self.current_field + '_choices')
             return getattr(obj, cfg['value'])
+        return None
 
     def disable_choice(self, obj, field, choice):
         if hasattr(self.form, self.current_field + '_disable'):
             cfg = getattr(self.form, self.current_field + '_disable')
             return (choice in cfg)
+        return None
 
     def choices_field(self, field):
         if hasattr(field.choices, 'queryset'):

@@ -39,7 +39,7 @@ def NamedIdModel(**kwargs):
                 base_name = '-'.join([str(getattr_recursive(self, field)) for field in self.named_id_fields if getattr_recursive(self, field)])
                 named_id = slugify(base_name)
                 count = self.count_named_id + offset
-                self.named_id = '%s-%s' % (named_id, count + 1) if count > 0 else named_id
+                self.named_id = f'{named_id}-{count + 1}' if count > 0 else named_id
                 if self.named_id_exist: self.set_named_id(offset + 1)
 
             class Meta(obj.Meta):

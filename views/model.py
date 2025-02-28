@@ -35,5 +35,5 @@ class ModelView(BaseView):
                 self.app_label or str(self.model._meta.app_label).lower(),
                 self.model_name or str(self.model.__name__).lower(),
                 str(self.__class__.__name__).lower())
-        self._logger.info('template: %s' % self.template_name, self.request.user)
+        self._logger.info(f'template: {self.template_name}', self.request.user)
         return self.template_name

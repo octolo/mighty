@@ -1,6 +1,6 @@
 """
 Model class
-Add [file, name, mimetype] field at the model
+Add [file, name, mimetype] field at the model.
 
 (file_url) return the url file static/media
 (download_url) return the download url
@@ -79,10 +79,10 @@ class File(models.Model):
 
     def calcul_db_size(self, *args, **kwargs):
         excludes = kwargs.get('excludes', [])
-        fltr = kwargs.get('fltr', {})
+        kwargs.get('fltr', {})
         size = []
         for key, type_ in self.concrete_fields(excludes).items():
-            data = getattr(self, '%s_id' % key) if type_ == 'ForeignKey' else getattr(self, key)
+            data = getattr(self, f'{key}_id') if type_ == 'ForeignKey' else getattr(self, key)
             size.append(getsizeof(data))
         # for key,type_ in self.m2m_fields(excludes).items():
         #    size += [getsizeof(key) for key,obj in getattr(self, key).in_bulk(**fltr).items()]
@@ -93,12 +93,12 @@ class File(models.Model):
         cloud_file = requests.get(self.file.url, stream=True)
         cloud_file.raise_for_status()
         status_code = str(cloud_file.status_code)[0]
-        if status_code == '2' or status_code == '3':
+        if status_code in {'2', '3'}:
             # with tempfile.NamedTemporaryFile(mode='w+b') as tmp_file:
             #    for chunk in cloud_file.iter_content(self.chunk_size):
             #        tmp_file.write(chunk)
             return cloud_file
-        raise PermissionDenied()
+        raise PermissionDenied
 
     @property
     def usable_file(self):
@@ -119,12 +119,12 @@ class File(models.Model):
     def http_download(self):
         todl_file = self.cloud_file if self.proxy_cloud_streaming else self.file
         response = FileResponse(todl_file)
-        response['Content-Disposition'] = 'attachment; filename="%s"' % self.file_name
+        response['Content-Disposition'] = f'attachment; filename="{self.file_name}"'
         return response
 
     @property
     def has_reader(self):
-        return True if self.reader_path else False
+        return bool(self.reader_path)
 
     @property
     def reader(self):
@@ -132,7 +132,7 @@ class File(models.Model):
 
     # PROPERTIES
     @property
-    def has_extension(self): return True if self.file_extension else False
+    def has_extension(self): return bool(self.file_extension)
     @property
     def file_url(self): return self.file.url
     @property
@@ -150,7 +150,7 @@ class File(models.Model):
     @property
     def mime_or_ext(self): return self.filemimetype or self.file_extension[1:]
     @property
-    def reader_path(self): return self.readers[self.mime_or_ext] if self.mime_or_ext in self.readers else None
+    def reader_path(self): return self.readers.get(self.mime_or_ext, None)
 
     # MEMORY FILE
     def InMemoryUploadedFile_filemimetype(self): return self.file._file.content_type

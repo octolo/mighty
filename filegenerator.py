@@ -44,21 +44,20 @@ class FileGenerator:
     @property
     def iter_rows(self):
         yield self.fields
-        for row in self.items:
-            yield row
+        yield from self.items
 
     def get_by_content_type(self, ct='text/csv', response='http'):
-        return getattr(self, 'response_%s' % response)(self.ct_list[ct])
+        return getattr(self, f'response_{response}')(self.ct_list[ct])
 
     def get_by_format(self, ct='csv', response='http'):
-        return getattr(self, 'response_%s' % response)(ct)
+        return getattr(self, f'response_{response}')(ct)
 
     def get_filename(self, ct):
-        return '%s.%s' % (get_valid_filename(make_searchable(self.filename)), ct)
+        return f'{get_valid_filename(make_searchable(self.filename))}.{ct}'
 
     def response_file(self, ct):
-        items_method = 'iter_items_%s' % ct
-        getattr(self, items_method)(self.items, open(self.get_filename(ct), 'w'))
+        items_method = f'iter_items_{ct}'
+        getattr(self, items_method)(self.items, open(self.get_filename(ct), 'w', encoding='utf-8'))
 
     # EXCEL
     def iter_items_xls(self, items, ws):
@@ -106,7 +105,7 @@ class FileGenerator:
             writer.writerow(item)
 
     def file_csv(self, ext, ct=None):
-        tmp = open(self.get_filename(ext), 'w')
+        tmp = open(self.get_filename(ext), 'w', encoding='utf-8')
         self.iter_items_csv(self.items, tmp, False)
         tmp.close()
         return open(self.get_filename(ext), 'rb')
@@ -126,7 +125,7 @@ class FileGenerator:
 
 
 def generate_pdf(**kwargs):
-    header_enable, footer_enable = False, False
+    _header_enable, _footer_enable = False, False
     file_name = kwargs.get('file_name', False)
     options = kwargs.get('options', conf.pdf_options)
     header = kwargs.get('header', False)
@@ -148,7 +147,6 @@ def generate_pdf(**kwargs):
         header_html.close()
         header = header_html
         options['--header-html'] = header_html.name
-        header_enable = True
 
     if footer:
         footer_tpl = kwargs.get('conf_footer', get_template(conf.pdf_footer).render({'footer': footer}))
@@ -158,7 +156,6 @@ def generate_pdf(**kwargs):
         footer_html.close()
         footer = footer_html
         options['--footer-html'] = footer_html.name
-        footer_enable = True
 
     if (content or content_html) and file_name:
         tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
@@ -168,7 +165,7 @@ def generate_pdf(**kwargs):
             content_html = get_template(content).render(context)
         content_tpl = kwargs.get('conf_content', get_template(conf.pdf_content).render({'content': content_html}))
         content_html = Template(content_tpl).render(Context(context))
-        pdf = pdfkit.from_string(content_html, tmp_pdf.name, options=options)
+        pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)
         final_pdf = tempfile.gettempdir() + '/' + valid_file_name

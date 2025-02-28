@@ -54,8 +54,7 @@ class BaseAdmin(admin.ModelAdmin):
         return super().get_form(request, obj, change, **kwargs)
 
     def get_admin_urlname(self, suffix):
-        info = self.model._meta.app_label, self.model._meta.model_name, suffix
-        return '%s_%s_%s' % (self.model._meta.app_label, self.model._meta.model_name, suffix)
+        return f'{self.model._meta.app_label}_{self.model._meta.model_name}_{suffix}'
 
     def is_urlname_temporary(self, request):
         from django.urls import resolve
@@ -65,11 +64,12 @@ class BaseAdmin(admin.ModelAdmin):
     def temporary_fields_or_fieldsets(self, request, field):
         if field and hasattr(self.model, field) and self.is_urlname_temporary(request):
             return getattr(self, getattr(self, field))
+        return None
 
     def _admincustom_view(self, request, object_id, extra_context, template, **kwargs):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
-            raise DisallowedModelAdminToField('The field %s cannot be referenced.' % to_field)
+            raise DisallowedModelAdminToField(f'The field {to_field} cannot be referenced.')
 
         obj = None
         if object_id:
@@ -139,7 +139,7 @@ class BaseAdmin(admin.ModelAdmin):
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
             raise DisallowedModelAdminToField(
-                'The field %s cannot be referenced.' % to_field
+                f'The field {to_field} cannot be referenced.'
             )
 
         obj = None
@@ -309,8 +309,8 @@ class BaseAdmin(admin.ModelAdmin):
             request,
             form_template
             or [
-                'admin/%s/%s/change_form.html' % (app_label, self.opts.model_name),
-                'admin/%s/change_form.html' % app_label,
+                f'admin/{app_label}/{self.opts.model_name}/change_form.html',
+                f'admin/{app_label}/change_form.html',
                 'admin/change_form.html',
             ],
             context,
@@ -413,7 +413,7 @@ class BaseAdmin(admin.ModelAdmin):
         task = request.POST.get('task_list')
         if task:
             obj.start_task(task)
-            messages.success(request, 'Task start: %s' % task)
+            messages.success(request, f'Task start: {task}')
         else:
             messages.warning(request, 'No task start')
         return redirect(obj.admin_change_url)
@@ -430,17 +430,15 @@ class BaseAdmin(admin.ModelAdmin):
     def has_enable_permission(self, request, obj=None):
         opts = self.opts
         codename = get_permission_codename('enable', opts)
-        return request.user.has_perm('%s.%s' % (opts.app_label, codename))
+        return request.user.has_perm(f'{opts.app_label}.{codename}')
 
     def has_disable_permission(self, request, obj=None):
         opts = self.opts
         codename = get_permission_codename('disable', opts)
-        return request.user.has_perm('%s.%s' % (opts.app_label, codename))
+        return request.user.has_perm(f'{opts.app_label}.{codename}')
 
     def disable_model(self, request, obj):
-        """
-        Given a model instance disable it from the database.
-        """
+        """Given a model instance disable it from the database."""
         obj.disable()
 
     @transaction.atomic
@@ -466,9 +464,7 @@ class BaseAdmin(admin.ModelAdmin):
         )
 
     def enable_model(self, request, obj):
-        """
-        Given a model instance enable it from the database.
-        """
+        """Given a model instance enable it from the database."""
         obj.enable()
 
     @transaction.atomic
@@ -535,7 +531,7 @@ class BaseAdmin(admin.ModelAdmin):
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:%s_%s_timeline' % info, object_id=object_id, contenttype_id=contenttype_id)
+                return redirect('admin:{}_{}_timeline'.format(*info), object_id=object_id, contenttype_id=contenttype_id)
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -597,7 +593,7 @@ class BaseAdmin(admin.ModelAdmin):
         if request.POST:
             form = form(obj, fieldname, request.user, request.POST)
             if form.is_valid():
-                return redirect('admin:%s_%s_timeline' % info, object_id=object_id)
+                return redirect('admin:{}_{}_timeline'.format(*info), object_id=object_id)
         else:
             form = form(obj, fieldname, request.user)
         context = {
@@ -651,36 +647,36 @@ class BaseAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         from django.urls import path
-        urls = super(BaseAdmin, self).get_urls()
+        urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/disable/', self.wrap(self.disable_view), name='%s_%s_disable' % info),
-            path('<path:object_id>/enable/', self.wrap(self.enable_view), name='%s_%s_enable' % info),
-            path('<path:object_id>/cachefield/', self.wrap(self.cachefield_view), name='%s_%s_cache_field' % info),
-            path('<path:object_id>/logsfield/', self.wrap(self.logsfield_view), name='%s_%s_logs_field' % info),
-            path('<path:object_id>/task/', self.wrap(self.task_view), name='%s_%s_task' % info),
-            path('<path:object_id>/reporting/', self.wrap(self.reporting_view), name='%s_%s_reporting' % info),
+            path('<path:object_id>/disable/', self.wrap(self.disable_view), name='{}_{}_disable'.format(*info)),
+            path('<path:object_id>/enable/', self.wrap(self.enable_view), name='{}_{}_enable'.format(*info)),
+            path('<path:object_id>/cachefield/', self.wrap(self.cachefield_view), name='{}_{}_cache_field'.format(*info)),
+            path('<path:object_id>/logsfield/', self.wrap(self.logsfield_view), name='{}_{}_logs_field'.format(*info)),
+            path('<path:object_id>/task/', self.wrap(self.task_view), name='{}_{}_task'.format(*info)),
+            path('<path:object_id>/reporting/', self.wrap(self.reporting_view), name='{}_{}_reporting'.format(*info)),
         ]
 
         if hasattr(self.model, 'has_eve_variable_template') and self.model.has_eve_variable_template:
-            my_urls.append(path('<path:object_id>/variables/', self.wrap(self.variables_view), name='%s_%s_variables' % info))
+            my_urls.append(path('<path:object_id>/variables/', self.wrap(self.variables_view), name='{}_{}_variables'.format(*info)))
 
         if hasattr(self.model, 'enable_model_change_log') and self.model.enable_model_change_log:
-            my_urls.append(path('<path:object_id>/modelchangelog/', self.wrap(self.modelchangelog_view), name='%s_%s_modelchangelog' % info))
+            my_urls.append(path('<path:object_id>/modelchangelog/', self.wrap(self.modelchangelog_view), name='{}_{}_modelchangelog'.format(*info)))
 
         if has_model_activate(self.model, 'file'):
-            my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='%s_%s_filemetadata' % info))
+            my_urls.append(path('<path:object_id>/filemetadata/', self.wrap(self.filemetadata_view), name='{}_{}_filemetadata'.format(*info)))
 
         if hasattr(self.model, 'timeline_model'):
             my_urls += [
-                path('ct-<int:contenttype_id>/<path:object_id>/timeline/', self.wrap(self.timeline_view), name='%s_%s_timeline' % info),
-                path('ct-<int:contenttype_id>/<path:object_id>/timeline/<str:fieldname>/', self.wrap(self.timeline_addfield_view), name='%s_%s_timeline_addfield' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/timeline/', self.wrap(self.timeline_view), name='{}_{}_timeline'.format(*info)),
+                path('ct-<int:contenttype_id>/<path:object_id>/timeline/<str:fieldname>/', self.wrap(self.timeline_addfield_view), name='{}_{}_timeline_addfield'.format(*info)),
             ]
         if hasattr(self.model, 'source_model'):
             my_urls += [
-                path('ct-<int:contenttype_id>/<path:object_id>/source/', self.wrap(self.source_view), name='%s_%s_source' % info),
-                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/', self.wrap(self.source_choice_view), name='%s_%s_source_choice' % info),
-                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/<str:sourcetype>/', self.wrap(self.source_addfield_view), name='%s_%s_source_addfield' % info),
+                path('ct-<int:contenttype_id>/<path:object_id>/source/', self.wrap(self.source_view), name='{}_{}_source'.format(*info)),
+                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/', self.wrap(self.source_choice_view), name='{}_{}_source_choice'.format(*info)),
+                path('ct-<int:contenttype_id>/<path:object_id>/source/<str:fieldname>/<str:sourcetype>/', self.wrap(self.source_addfield_view), name='{}_{}_source_addfield'.format(*info)),
             ]
         return my_urls + urls
 
@@ -751,7 +747,7 @@ class BaseAdmin(admin.ModelAdmin):
 
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
-            raise DisallowedModelAdminToField('The field %s cannot be referenced.' % to_field)
+            raise DisallowedModelAdminToField(f'The field {to_field} cannot be referenced.')
 
         obj = self.get_object(request, unquote(object_id), to_field)
 
@@ -798,9 +794,7 @@ class BaseAdmin(admin.ModelAdmin):
         return self.render_disable_form(request, context)
 
     def response_disable(self, request, obj_display, obj_id):
-        """
-        Determine the HttpResponse for the disable_view stage.
-        """
+        """Determine the HttpResponse for the disable_view stage."""
         opts = self.model._meta
 
         if IS_POPUP_VAR in request.POST:
@@ -809,8 +803,8 @@ class BaseAdmin(admin.ModelAdmin):
                 'value': str(obj_id),
             })
             return TemplateResponse(request, self.popup_response_template or [
-                'admin/%s/%s/popup_response.html' % (opts.app_label, opts.model_name),
-                'admin/%s/popup_response.html' % opts.app_label,
+                f'admin/{opts.app_label}/{opts.model_name}/popup_response.html',
+                f'admin/{opts.app_label}/popup_response.html',
                 'admin/popup_response.html',
             ], {
                 'popup_response_data': popup_response_data,
@@ -819,7 +813,7 @@ class BaseAdmin(admin.ModelAdmin):
         self.message_user(request, _m.disable_ok % {'name': opts.verbose_name, 'obj': obj_display}, messages.SUCCESS)
         if self.has_change_permission(request, None):
             post_url = reverse(
-                'admin:%s_%s_changelist' % (opts.app_label, opts.model_name),
+                f'admin:{opts.app_label}_{opts.model_name}_changelist',
                 current_app=self.admin_site.name,
             )
             preserved_filters = self.get_preserved_filters(request)
@@ -837,8 +831,8 @@ class BaseAdmin(admin.ModelAdmin):
         context.update(to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media)
         return TemplateResponse(request,
             self.disable_confirmation_template or [
-                'admin/%s/%s/disable_confirmation.html' % (app_label, opts.model_name),
-                'admin/%s/disable_confirmation.html' % app_label,
+                f'admin/{app_label}/{opts.model_name}/disable_confirmation.html',
+                f'admin/{app_label}/disable_confirmation.html',
                 'admin/disable_confirmation.html',
             ],
             context)
@@ -855,7 +849,7 @@ class BaseAdmin(admin.ModelAdmin):
 
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
         if to_field and not self.to_field_allowed(request, to_field):
-            raise DisallowedModelAdminToField('The field %s cannot be referenced.' % to_field)
+            raise DisallowedModelAdminToField(f'The field {to_field} cannot be referenced.')
 
         obj = self.get_object(request, unquote(object_id), to_field)
 
@@ -902,9 +896,7 @@ class BaseAdmin(admin.ModelAdmin):
         return self.render_enable_form(request, context)
 
     def response_enable(self, request, obj_display, obj_id):
-        """
-        Determine the HttpResponse for the enable_view stage.
-        """
+        """Determine the HttpResponse for the enable_view stage."""
         opts = self.model._meta
 
         if IS_POPUP_VAR in request.POST:
@@ -913,8 +905,8 @@ class BaseAdmin(admin.ModelAdmin):
                 'value': str(obj_id),
             })
             return TemplateResponse(request, self.popup_response_template or [
-                'admin/%s/%s/popup_response.html' % (opts.app_label, opts.model_name),
-                'admin/%s/popup_response.html' % opts.app_label,
+                f'admin/{opts.app_label}/{opts.model_name}/popup_response.html',
+                f'admin/{opts.app_label}/popup_response.html',
                 'admin/popup_response.html',
             ], {
                 'popup_response_data': popup_response_data,
@@ -923,7 +915,7 @@ class BaseAdmin(admin.ModelAdmin):
         self.message_user(request, _m.enable_ok % {'name': opts.verbose_name, 'obj': obj_display}, messages.SUCCESS)
         if self.has_change_permission(request, None):
             post_url = reverse(
-                'admin:%s_%s_changelist' % (opts.app_label, opts.model_name),
+                f'admin:{opts.app_label}_{opts.model_name}_changelist',
                 current_app=self.admin_site.name,
             )
             preserved_filters = self.get_preserved_filters(request)
@@ -941,8 +933,8 @@ class BaseAdmin(admin.ModelAdmin):
         context.update(to_field_var=TO_FIELD_VAR, is_popup_var=IS_POPUP_VAR, media=self.media)
         return TemplateResponse(request,
             self.enable_confirmation_template or [
-                'admin/%s/%s/enable_confirmation.html' % (app_label, opts.model_name),
-                'admin/%s/enable_confirmation.html' % app_label,
+                f'admin/{app_label}/{opts.model_name}/enable_confirmation.html',
+                f'admin/{app_label}/enable_confirmation.html',
                 'admin/enable_confirmation.html',
             ],
             context)

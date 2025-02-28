@@ -28,7 +28,7 @@ def TaskedModel(**kwargs):
                 self.task_list = None
 
             def backend_task(self, task, *args, **kwargs):
-                return import_string('%s.TaskBackend' % MightyConfig.backend_task)(
+                return import_string(f'{MightyConfig.backend_task}.TaskBackend')(
                     ct=self.get_content_type().id,
                     pk=self.pk,
                     task=task,

@@ -3,7 +3,6 @@ default_app_config = 'mighty.applications.twofactor.apps.TwofactorConfig'
 from django.contrib.auth import _get_backends
 from django.core.exceptions import ImproperlyConfigured
 from django.core.validators import RegexValidator, ValidationError
-from django.utils import timezone
 
 from mighty.applications.twofactor.apps import TwofactorConfig
 

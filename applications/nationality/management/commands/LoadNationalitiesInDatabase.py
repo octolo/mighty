@@ -7,8 +7,8 @@ class Command(Command):
 
     def on_row(self, row):
         self.prefix_bar = self.reverse['country']
-        self.current_info = '%s (%s)' % (row[self.reverse['country']], row[self.reverse['alpha3']])
-        obj, create = Nationality.objects.get_or_create(country=row[self.reverse['country']])
+        self.current_info = '{} ({})'.format(row[self.reverse['country']], row[self.reverse['alpha3']])
+        obj, _create = Nationality.objects.get_or_create(country=row[self.reverse['country']])
         obj.alpha2 = row[self.reverse['alpha2']]
         obj.alpha3 = row[self.reverse['alpha3']]
         obj.numeric = row[self.reverse['numeric']]

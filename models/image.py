@@ -1,6 +1,6 @@
 """
 Model class
-Add an image field at the model
+Add an image field at the model.
 
 [IMAGE_DEFAULT] static image default
 (image_url) return the url static/media
@@ -36,7 +36,7 @@ class Image(models.Model):
     @property
     def get_mime_type(self): return mimetypes.guess_type()[1]
     @property
-    def image_html(self): return format_html('<img src="%s" title="%s">' % (self.image.url, str(self)))
+    def image_html(self): return format_html(f'<img src="{self.image.url}" title="{self!s}">')
     @property
     def image_name(self): return os.path.basename(self.image.name)
     @property
@@ -44,6 +44,6 @@ class Image(models.Model):
     @property
     def image_extension(self): return os.path.splitext(self.imagename)[1]
     @property
-    def imagex16_html(self): return format_html('<img src="%s" title="%s" style="max-height: 16px">' % (self.image_url, str(self)))
+    def imagex16_html(self): return format_html(f'<img src="{self.image_url}" title="{self!s}" style="max-height: 16px">')
     @property
     def image_b64(self): return base64.b64encode(self.image.read()).decode('utf-8')

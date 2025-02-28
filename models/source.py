@@ -1,6 +1,6 @@
 """
 Model class
-Add [sources] JSON field at the model
+Add [sources] JSON field at the model.
 
 [sources_configuration] configurtion sources
 (field_configuration) get the configuration source of the field
@@ -10,6 +10,8 @@ Add [sources] JSON field at the model
 (delete_extend_source) delete an extended source to a field
 (clean_sources) clean souces with the configuration sources
 """
+import operator
+
 from django.db import models
 
 from mighty import translates as _
@@ -30,7 +32,7 @@ CHOICES_TYPE = (
     (TYPE_FLUX, _.TYPE_FLUX),
     (TYPE_EVENT, _.TYPE_EVENT),
     (TYPE_OTHER, _.TYPE_OTHER))
-CHOICES_TYPE = sorted(list(CHOICES_TYPE), key=lambda x: x[1])
+CHOICES_TYPE = sorted(CHOICES_TYPE, key=operator.itemgetter(1))
 
 
 class SourceModel(Base, File):

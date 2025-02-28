@@ -136,11 +136,11 @@ class User(AbstractUser, Base, Image, AddressNoBase):
 
     @property
     def fullname(self):
-        return '%s %s' % (self.first_name, self.last_name) if all([self.last_name, self.first_name]) else ''
+        return f'{self.first_name} {self.last_name}' if all([self.last_name, self.first_name]) else ''
 
     @property
     def logname(self):
-        return '%s.%s' % (self.username, self.id)
+        return f'{self.username}.{self.id}'
 
     @property
     def representation(self):
@@ -164,13 +164,13 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         ip = request.META.get('HTTP_X_FORWARDED_FOR').split(',')[0] if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR')
         if ip is not None:
             internetprotocol = ContentType.objects.get(app_label='mighty', model='internetprotocol').model_class()
-            obj, created = internetprotocol.objects.get_or_create(ip=ip, user=self)
-            logger.info('connected from ip: %s' % ip, extra={'user': self})
+            _obj, _created = internetprotocol.objects.get_or_create(ip=ip, user=self)
+            logger.info(f'connected from ip: {ip}', extra={'user': self})
 
     def get_user_agent(self, request):
         useragent = ContentType.objects.get(app_label='mighty', model='useragent').model_class()
-        obj, created = useragent.objects.get_or_create(useragent=request.META['HTTP_USER_AGENT'], user=self)
-        logger.info('usereagent: %s' % request.META['HTTP_USER_AGENT'], extra={'user': self})
+        _obj, _created = useragent.objects.get_or_create(useragent=request.META['HTTP_USER_AGENT'], user=self)
+        logger.info('usereagent: {}'.format(request.META['HTTP_USER_AGENT']), extra={'user': self})
 
     def get_emails(self, flat=True):
         email_manager = getattr(self, conf.ForeignKey.email_related_name_attr)

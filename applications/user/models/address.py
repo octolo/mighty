@@ -12,7 +12,7 @@ class UserAddress(Address):
     enable_clean_fields = True
 
     def __str__(self):
-        return '%s - %s' % (str(self.user), self.representation)
+        return f'{self.user!s} - {self.representation}'
 
     class Meta(Base.Meta):
         abstract = True

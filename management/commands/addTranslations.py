@@ -17,7 +17,7 @@ class Command(ModelBaseCommand):
         self.name = options.get('name')
         self.json = options.get('json')
         if not os.path.isfile(self.json):
-            raise CommandError('JSON "%s" does not exist' % self.json)
+            raise CommandError(f'JSON "{self.json}" does not exist')
         super().handle(*args, **options)
 
     def get_name(self):
@@ -30,11 +30,11 @@ class Command(ModelBaseCommand):
         self.do()
 
     def do(self):
-        tr, status = Translator.objects.get_or_create(name=self.get_name())
+        tr, _status = Translator.objects.get_or_create(name=self.get_name())
         with open(self.json, encoding=self.encoding) as json_file:
             languages = json.load(json_file)
             for lang, translates in languages.items():
                 nat = Nationality.objects.get(alpha2__icontains=lang.split('_')[-1])
-                td, status = TranslateDict.objects.get_or_create(language=nat, precision=lang, translator=tr)
+                td, _status = TranslateDict.objects.get_or_create(language=nat, precision=lang, translator=tr)
                 td.translates = translates
                 td.save()

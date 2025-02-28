@@ -34,7 +34,7 @@ class FiltersManager(EnableLogger):
     def params(self, request):
         if self.check_mandatories(request):
             return self.get_filters(request)
-        raise PermissionDenied()
+        raise PermissionDenied
 
     def get_filter(self, param, value):
         try:

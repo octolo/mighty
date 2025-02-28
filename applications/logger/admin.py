@@ -57,6 +57,6 @@ class ModelWithLogAdmin(BaseAdmin):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
-            path('<path:object_id>/logs/', self.wrap(self.logs_view), name='%s_%s_logs' % info),
+            path('<path:object_id>/logs/', self.wrap(self.logs_view), name='{}_{}_logs'.format(*info)),
         ]
         return my_urls + urls

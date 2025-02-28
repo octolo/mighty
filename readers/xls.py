@@ -1,10 +1,11 @@
+import contextlib
+
 from openpyxl import load_workbook
 
 
 def reader(iterator):
     total = [[col.value for col in row] for row in iterator]
-    for row in total:
-        yield row
+    yield from total
 
 
 class ReaderXLS:
@@ -22,10 +23,8 @@ class ReaderXLS:
     @property
     def fieldnames(self):
         if self._fieldnames is None:
-            try:
+            with contextlib.suppress(StopIteration):
                 self._fieldnames = next(self.reader)
-            except StopIteration:
-                pass
         self.line_num += 1
         return self._fieldnames
 

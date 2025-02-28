@@ -12,7 +12,7 @@ class Command(CSVModelCommand):
         return self.current_object if self.ftotal == 'total' else self.current_row['country']
 
     def on_row(self, row):
-        obj, create = Nationality.objects.get_or_create(country=row['country'])
+        obj, _create = Nationality.objects.get_or_create(country=row['country'])
         for field in ('alpha2', 'alpha3', 'numeric', 'numbering'):
             if row[field]:
                 setattr(obj, field, row[field])
@@ -36,8 +36,7 @@ class Command(CSVModelCommand):
             self.logger.info('Import phone number')
             qs = []
             for prefix, values in _COUNTRY_CODE_TO_REGION_CODE.items():
-                for value in values:
-                    qs.append({'alpha': value, 'numbering': prefix})
+                qs.extend({'alpha': value, 'numbering': prefix} for value in values)
             self.ftotal = 'total'
             self.each_objects(qs)
 

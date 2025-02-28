@@ -33,8 +33,7 @@ class Twofactor(Base):
         return str(self.code)
 
     def get_backend(self):
-        backend = import_string(self.backend)()
-        return backend
+        return import_string(self.backend)()
 
     def post_update(self):
         if self.is_consumed:

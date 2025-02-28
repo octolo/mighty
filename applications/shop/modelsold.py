@@ -19,7 +19,7 @@ class Service(Base):
         ordering = ['name']
 
     def __str__(self):
-        return '%s(%s)' % (self.name, self.code)
+        return f'{self.name}({self.code})'
 
 
 class Offer(Base):
@@ -35,7 +35,7 @@ class Offer(Base):
         ordering = ['name']
 
     def __str__(self):
-        return '%s (%s)' % (self.name, self.get_frequency_display())
+        return f'{self.name} ({self.get_frequency_display()})'
 
 
 class Subscription(Base):
@@ -99,7 +99,7 @@ class Subscription(Base):
         pass
 
     def set_date_by_frequency(self):
-        self.next_paid = getattr(self, 'get_date_%s' % self.frequency.lower()) if self.next_paid else timezone.now
+        self.next_paid = getattr(self, f'get_date_{self.frequency.lower()}') if self.next_paid else timezone.now
 
     def set_date_on_paid(self):
         if self.offer.duration:
@@ -113,7 +113,7 @@ class Subscription(Base):
         #        self.date_end = now + self.offer.duration
 
     def set_on_use_count(self):
-        self.one_use_count = True if self.offer.frequency == 'ONUSE' else False
+        self.one_use_count = self.offer.frequency == 'ONUSE'
 
     def set_subscription(self):
         if hasattr(self.group, 'subscription'):
@@ -210,17 +210,16 @@ class PaymentMethod(Base):
             sys.exit(1)
         return sys.argv[1]
 
-    def sum_digits(digit):
-        if digit < 10:
-            return digit
-        sum = (digit % 10) + (digit // 10)
-        return sum
+    def sum_digits(self):
+        if self < 10:
+            return self
+        return (self % 10) + (self // 10)
 
-    def validate_luhn(cc_num):
-        cc_num = cc_num[::-1]
-        cc_num = [int(x) for x in cc_num]
-        doubled_second_digit_list = list()
-        digits = list(enumerate(cc_num, start=1))
+    def validate_luhn(self):
+        self = self[::-1]
+        self = [int(x) for x in self]
+        doubled_second_digit_list = []
+        digits = list(enumerate(self, start=1))
         for index, digit in digits:
             if index % 2 == 0:
                 doubled_second_digit_list.append(digit * 2)

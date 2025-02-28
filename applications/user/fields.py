@@ -7,33 +7,11 @@ from mighty.applications.user.apps import UserConfig as conf
 from mighty.functions import setting
 
 search = ('username', 'email', 'last_name', 'first_name')
-serializer = ('uid',) + fields.image_url + (
-    'username',
-    'last_name',
-    'first_name',
-    'fullname',
-    'representation',
-    'style',
-    'gender',
-    'is_staff',
-    'sentry_replay',
-)
-if conf.cgu: serializer + ('cgu',)
-if conf.cgv: serializer + ('cgv',)
+serializer = ('uid', *fields.image_url, 'username', 'last_name', 'first_name', 'fullname', 'representation', 'style', 'gender', 'is_staff', 'sentry_replay')
+if conf.cgu: (*serializer, 'cgu')
+if conf.cgv: (*serializer, 'cgv')
 
-profile = fields.image_url + (
-    'username',
-    'last_name',
-    'first_name',
-    'fullname',
-    'representation',
-    'style',
-    'gender',
-    'is_staff',
-    'language_pref',
-    'is_first_login',
-    'sentry_replay',
-)
+profile = (*fields.image_url, 'username', 'last_name', 'first_name', 'fullname', 'representation', 'style', 'gender', 'is_staff', 'language_pref', 'is_first_login', 'sentry_replay')
 
 if 'mighty.applications.nationality' in setting('INSTALLED_APPS'):
     serializer += ('nationalities',)

@@ -109,7 +109,7 @@ def EnableVariableEditorModel(**kwargs):
 
             # Return list of matching variable python
             def eve_prefix_match_list(self):
-                return [i for i in [p for p in dir(self)] if self.eve_variable_to_match in i]
+                return [i for i in list(dir(self)) if self.eve_variable_to_match in i]
 
             def eve_key_or_default(self, f, key):
                 return getattr(getattr(self, f), key) if hasattr(getattr(self, f), key) else f.replace(self.eve_variable_to_match, '')

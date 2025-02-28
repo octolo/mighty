@@ -31,12 +31,12 @@ class Subscription(Base, Bill, Service, PriceDatePaid):
         ordering = ['date_start', 'next_paid']
 
     def __str__(self):
-        return '%s - %s' % (self.offer, self.next_paid)
+        return f'{self.offer} - {self.next_paid}'
 
     @property
     def is_active(self):
         if self.offer.frequency != 'ONUSE':
-            return True if self.next_paid and self.next_paid >= timezone.now().date() else False
+            return bool(self.next_paid and self.next_paid >= timezone.now().date())
         return self.coin > 0
 
     @property

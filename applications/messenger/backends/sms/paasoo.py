@@ -23,7 +23,7 @@ class MissiveBackend(MissiveBackend):
         }
 
     def valid_response(self, response):
-        if response.status_code not in [200, 201]:
+        if response.status_code not in {200, 201}:
             self.missive.trace = str(response.json())
             self.in_error = True
             return False
@@ -34,7 +34,7 @@ class MissiveBackend(MissiveBackend):
         self.missive.target = over_target or self.missive.target
         self.missive.status = choices.STATUS_SENT
         if setting('MISSIVE_SERVICE', True):
-            api_url = self.get_api_url(self.missive)
+            self.get_api_url(self.missive)
             headers = {'accept': 'application/json'}
             response = requests.get(self.get_api_url(), headers=headers)
             if self.valid_response(response):

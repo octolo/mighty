@@ -1,4 +1,3 @@
-import os
 import sys
 
 from mighty.applications.logger.apps import LoggerConfig as conf  # noqa
@@ -40,7 +39,7 @@ class NotifyBackend(Backend):
         if hasattr(self.record, 'exc_text'):
             exc_text = self.record.exc_text
         return (
-            'No exc text' if exc_text in ('None', None, False, '') else exc_text
+            'No exc text' if exc_text in {'None', None, False, ''} else exc_text
         )
 
     @property
@@ -53,10 +52,7 @@ class NotifyBackend(Backend):
 
     @property
     def help_data(self):
-        list_data = []
-        for data in self.data_ok:
-            if hasattr(self.record, data):
-                list_data.append('%s: %s' % (data, getattr(self.record, data)))
+        list_data = [f'{data}: {getattr(self.record, data)}' for data in self.data_ok if hasattr(self.record, data)]
 
         list_data.append('file error: ' + str(self.pathname))
         if hasattr(self.record, 'request'):

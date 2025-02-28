@@ -30,7 +30,7 @@ method = _('Creation method')
 gender = _('Genre')
 profil = _('Profil')
 cgu = _(
-    "J'accepte les <a href=\"%s\" target=\"blank_\">CGU</a> et la <a href=\"%s\" target=\"blank_\">Politique de Confidentialité</a>" % (
+    "J'accepte les <a href=\"{}\" target=\"blank_\">CGU</a> et la <a href=\"{}\" target=\"blank_\">Politique de Confidentialité</a>".format(
         conf.cgu_path, conf.politic_path
     ))
 

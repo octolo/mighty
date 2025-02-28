@@ -9,4 +9,4 @@ class Widget(TemplateView):
         return context
 
     def get_template_names(self):
-        return 'widgets/%s.html' % self.kwargs['widget']
+        return 'widgets/{}.html'.format(self.kwargs['widget'])

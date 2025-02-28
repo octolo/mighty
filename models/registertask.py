@@ -121,13 +121,13 @@ class RegisterTaskSubscription(Base):
         if self.is_register_enable:
             if self.is_delta_date_ok:
                 try:
-                    self._logger.info('start register task - sub: %s, model: %s, object_id: %s' % (self.pk, self.register, self.object_id))
+                    self._logger.info(f'start register task - sub: {self.pk}, model: {self.register}, object_id: {self.object_id}')
                     getattr(self.content_object, self.register.how_start_task)(self.subscriber)
                     self.status = _c.STATUS_FINISHED
                     self.last_date_task = timezone.now()
                 except Exception:
                     self.status = _c.STATUS_ERROR
-                    self._logger.warning("register task can't be started - sub: %s, model: %s, object_id: %s" % (self.pk, self.register, self.object_id))
+                    self._logger.warning(f"register task can't be started - sub: {self.pk}, model: {self.register}, object_id: {self.object_id}")
         else:
             self.status = _c.STATUS_EXPIRED
             self.last_date_task = timezone.now()

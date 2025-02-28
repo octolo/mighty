@@ -12,7 +12,7 @@ class ServiceDataView(TemplateView):
         return [{
                 'name': category[1],
                 'category': category[0],
-                'desc': getattr(_c, '%s_DESC' % category[0]),
+                'desc': getattr(_c, f'{category[0]}_DESC'),
                 'svcs': self.get_svcs_category(category[0])
         } for category in _c.CATEGORY]
 

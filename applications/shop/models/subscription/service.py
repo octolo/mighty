@@ -3,7 +3,7 @@ class Service:
         return self.has_cache_field(service.lower())
 
     def set_on_use_count(self):
-        self.one_use_count = True if self.offer.frequency == 'ONUSE' else False
+        self.one_use_count = self.offer.frequency == 'ONUSE'
 
     def set_subscription(self):
         if hasattr(self.group_or_user, 'subscription'):

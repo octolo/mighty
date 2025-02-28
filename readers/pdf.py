@@ -19,7 +19,7 @@ class ReaderPDF(Reader):
         self.metadata = {}
         for k, v in self.reader.metadata.items():
             key = k.replace('/', '').lower()
-            if isinstance(v, (str, int)):
+            if isinstance(v, str | int):
                 self.metadata[key] = v
         self.metadata['pages'] = []
         for page in self.reader.pages:
@@ -41,8 +41,8 @@ class ReaderPDF(Reader):
         deg = page.get('/Rotate')
         mb = page.mediabox
         if mb.right - mb.left > mb.top - mb.bottom:
-            return 'landscape' if deg in [0, 180, None] else 'portrait'
-        return 'portrait' if deg in [0, 180, None] else 'landscape'
+            return 'landscape' if deg in {0, 180, None} else 'portrait'
+        return 'portrait' if deg in {0, 180, None} else 'landscape'
 
     def page_add_before(self, *args, **kwargs):
         pass

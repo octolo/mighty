@@ -18,4 +18,4 @@ class Backend(EnableLogger):
 
     @property
     def base_url(self):
-        return 'https://%s/' % self.domain
+        return f'https://{self.domain}/'

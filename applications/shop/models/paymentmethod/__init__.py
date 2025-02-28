@@ -56,14 +56,14 @@ class PaymentMethod(Base, IbanModel, CBModel, PMValid, BackendModel):
         ordering = ['date_create']
 
     def __str__(self):
-        return '%s - %s' % (
+        return '{} - {}'.format(
             self.group_or_user,
-            getattr(self, 'str_%s' % self.form_method.lower()),
+            getattr(self, f'str_{self.form_method.lower()}'),
         )
 
     @property
     def masked(self):
-        return getattr(self, 'mask_%s' % self.form_method.lower())
+        return getattr(self, f'mask_{self.form_method.lower()}')
 
     def qs_default(self):
         qs = type(self).objects

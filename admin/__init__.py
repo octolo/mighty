@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
 
@@ -108,7 +108,7 @@ if hasattr(settings, 'CHANNEL_LAYERS'):
 
 class NewsAdmin(admin.StackedInline):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.news + ('keywords',)}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': (*fields.news, 'keywords')}),)
     extra = 0
 
 

@@ -1,10 +1,9 @@
+import contextlib
 import os
 
 
 def terminal_width():
-    """
-    Function to compute the terminal width.
-    """
+    """Function to compute the terminal width."""
     width = 0
     try:
         import fcntl
@@ -16,10 +15,8 @@ def terminal_width():
     except:
         pass
     if width <= 0:
-        try:
+        with contextlib.suppress(Exception):
             width = int(os.environ['COLUMNS'])
-        except:
-            pass
     if width <= 0:
         width = 80
     return width

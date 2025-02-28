@@ -44,14 +44,14 @@ class Command(BaseCommand):
         return self.backupdir
 
     def get_header(self, model):
-        field_names = set([field.name for field in model._meta.fields])
-        m2mfield_names = set([field.name for field in model._meta.many_to_many])
+        field_names = {field.name for field in model._meta.fields}
+        m2mfield_names = {field.name for field in model._meta.many_to_many}
         return list(chain(field_names, m2mfield_names))
 
     def get_line(self, obj):
         row = []
-        field_names = set([field.name for field in obj._meta.fields])
-        m2mfield_names = set([field.name for field in obj._meta.many_to_many])
+        field_names = {field.name for field in obj._meta.fields}
+        m2mfield_names = {field.name for field in obj._meta.many_to_many}
         for field in field_names:
             if type(obj._meta.get_field(field)) == models.ForeignKey and hasattr(getattr(obj, field), 'uid'):
                 row.append(getattr(obj, field).uid)
@@ -67,14 +67,14 @@ class Command(BaseCommand):
 
     def backup_csv(self, archive):
         for ct in ContentType.objects.all():
-            tablefile = '%s_%s.csv' % (ct.app_label, ct.model)
-            fullpath = self.backupdir + '/%s' % tablefile
+            tablefile = f'{ct.app_label}_{ct.model}.csv'
+            fullpath = self.backupdir + f'/{tablefile}'
             model = ct.model_class()
             with open(fullpath, self.mode) as csvfile:
                 writer = csv.writer(csvfile, delimiter=self.delimiter, quotechar=self.quotechar, quoting=self.quoting)
                 writer.writerow(self.get_header(model))
                 for obj in model.objects.all(): writer.writerow(self.get_line(obj))
-            archive.add(fullpath, arcname='db/%s' % tablefile)
+            archive.add(fullpath, arcname=f'db/{tablefile}')
             os.remove(fullpath)
 
     def backup_cloud(self, archive):
@@ -85,7 +85,7 @@ class Command(BaseCommand):
 
     def do(self):
         self.get_dir()
-        with tarfile.open(self.backupdir + '/backup_%s.tar.gz' % datetime.datetime.now().strftime('%Y%m%d_%H%M%S'), 'w:gz') as archive:
+        with tarfile.open(self.backupdir + '/backup_{}.tar.gz'.format(datetime.datetime.now().strftime('%Y%m%d_%H%M%S')), 'w:gz') as archive:
             if 'csv' in self.backup:
                 self.backup_csv(archive)
             if 'cloud' in self.backup:

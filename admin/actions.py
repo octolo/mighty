@@ -41,8 +41,8 @@ def disable_selected(modeladmin, request, queryset):
     }
     request.current_app = modeladmin.admin_site.name
     return TemplateResponse(request, modeladmin.disable_selected_confirmation_template or [
-        'admin/%s/%s/disable_selected_confirmation.html' % (app_label, opts.model_name),
-        'admin/%s/disable_selected_confirmation.html' % app_label,
+        f'admin/{app_label}/{opts.model_name}/disable_selected_confirmation.html',
+        f'admin/{app_label}/disable_selected_confirmation.html',
         'admin/disable_selected_confirmation.html'], context)
 
 
@@ -84,8 +84,8 @@ def enable_selected(modeladmin, request, queryset):
     }
     request.current_app = modeladmin.admin_site.name
     return TemplateResponse(request, modeladmin.enable_selected_confirmation_template or [
-        'admin/%s/%s/enable_selected_confirmation.html' % (app_label, opts.model_name),
-        'admin/%s/enable_selected_confirmation.html' % app_label,
+        f'admin/{app_label}/{opts.model_name}/enable_selected_confirmation.html',
+        f'admin/{app_label}/enable_selected_confirmation.html',
         'admin/enable_selected_confirmation.html'], context)
 
 

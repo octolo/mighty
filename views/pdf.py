@@ -83,7 +83,9 @@ class PDFView(DetailView):
     def get_pdf_name(self):
         return self.pdf_name
 
-    def get_tmp_pdf(self, context, config={}):
+    def get_tmp_pdf(self, context, config=None):
+        if config is None:
+            config = {}
         self.config_override = config
         if not self.tmp_pdf:
             with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_pdf:
@@ -92,7 +94,7 @@ class PDFView(DetailView):
         return self.tmp_pdf
 
     def save_pdf(self, context):
-        tmp_pdf = self.get_tmp_pdf(context)
+        self.get_tmp_pdf(context)
 
     def get_template(self, context):
         template_name = self.get_template_names()
@@ -122,7 +124,7 @@ class PDFView(DetailView):
         os.remove(output_path)
         # Préparer la réponse HTTP avec le fichier DOCX
         response = HttpResponse(docx_content, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % self.get_pdf_name().replace('pdf', 'docx')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(self.get_pdf_name().replace('pdf', 'docx'))
         return response
 
     def render_to_response(self, context, **response_kwargs):
@@ -138,6 +140,6 @@ class PDFView(DetailView):
                 return FileResponse(open(tmp_pdf.name, 'rb'), filename=self.get_pdf_name())
         pdf = pdfkit.from_string(self.get_template(context), False, options=self.options)
         response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % self.get_pdf_name()
+        response['Content-Disposition'] = f'attachment; filename="{self.get_pdf_name()}"'
         self.clean_tmp()
         return response

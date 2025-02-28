@@ -32,7 +32,6 @@ class Reporting(Base):
     cfg_pdf = JSONField(_.cfg_pdf, default=dict, blank=True, null=True)
     html_pdf = RichTextField(_.html_pdf, blank=True, null=True)
     email_html = RichTextField(_.email_html, blank=True, null=True)
-    is_detail = models.BooleanField(default=False)
     related_obj = None
     kwargs = {}
 
@@ -51,7 +50,7 @@ class Reporting(Base):
 
     @property
     def reporting_export_name(self):
-        return '%s_%s' % (self.file_name or self.name, timezone.now().strftime('%Y%m%d-%Hh%Ms%S'))
+        return '{}_{}'.format(self.file_name or self.name, timezone.now().strftime('%Y%m%d-%Hh%Ms%S'))
 
     @property
     def max_fields(self):
@@ -66,8 +65,7 @@ class Reporting(Base):
         count_data = {'count_' + mf['data']: models.Count(mf['data'], distinct=True) for mf in self.max_fields}
         max_data = {mf['data']: models.Max('count_' + mf['data']) for mf in self.max_fields}
         qs = self.get_manager().filter(**self.reporting_filter)
-        qs = qs.annotate(**count_data).aggregate(**max_data)
-        return qs
+        return qs.annotate(**count_data).aggregate(**max_data)
 
     @property
     def reporting_filter(self):
@@ -98,7 +96,7 @@ class Reporting(Base):
                 else:
                     data += [head + str(i + 1) for i in range(max)]
             elif cfg.get('fields'):
-                data += [field for field in cfg['fields']]
+                data += list(cfg['fields'])
             else:
                  data += [head]
         return data

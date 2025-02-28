@@ -22,7 +22,7 @@ class Command(ModelBaseCommand):
         self.quotechar = options.get('quotechar')
         self.quoting = options.get('quoting')
         if not os.path.isfile(self.csvfile):
-            raise CommandError('CSV "%s" does not exist' % self.csv)
+            raise CommandError(f'CSV "{self.csv}" does not exist')
         super().handle(*args, **options)
 
     def prepare_fields(self, fields):
@@ -32,7 +32,7 @@ class Command(ModelBaseCommand):
             self.fields = {}
             self.reverse = {}
             for field in fields:
-                self.fields[field] = ofields[field] if field in ofields else field
+                self.fields[field] = ofields.get(field, field)
                 if field in rfields:
                     self.reverse[rfields[field]] = field
                 else:
@@ -45,7 +45,7 @@ class Command(ModelBaseCommand):
         self.do()
 
     def do(self):
-        self.total = len(open(self.csvfile).readlines()) - 1
+        self.total = len(open(self.csvfile, encoding='utf-8').readlines()) - 1
         with open(self.csvfile, encoding=self.encoding) as csvfile:
             reader = csv.DictReader(csvfile, delimiter=self.delimiter)
             self.prepare_fields(reader.fieldnames)

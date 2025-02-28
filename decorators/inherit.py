@@ -16,7 +16,7 @@ def InheritClassList(*args):
 
 def InheritModelClassList(*args, **kwargs):
     def decorator(cls):
-        inherit_classes = tuple()
+        inherit_classes = ()
 
         for i in args:
             try:

@@ -53,7 +53,6 @@ class TranslatorAdmin(BaseAdmin):
     def get_urls(self):
         from django.urls import path
         urls = super().get_urls()
-        info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
             path('export/csv/', self.csv_view, name='translators_admin_export_csv'),
         ]

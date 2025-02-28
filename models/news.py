@@ -16,4 +16,4 @@ class News(Base, Keyword):
         ordering = ['date_news']
 
     def __str__(self):
-        return '%s - %s' % (str(self.date_news), self.title)
+        return f'{self.date_news!s} - {self.title}'

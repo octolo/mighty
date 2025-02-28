@@ -123,7 +123,7 @@ class MissiveBackend(MissiveBackend):
 
     @property
     def address_block(self):
-        sender_style = 'height:%spx;' % (str(self.sender_height))
+        sender_style = f'height:{self.sender_height!s}px;'
         target_style = 'height:171px;padding-bottom:35px;'
         sender_content = ''
         target_content = ''
@@ -132,7 +132,7 @@ class MissiveBackend(MissiveBackend):
             target_style += 'background-color:blue;color: white;'
             sender_content = 'SENDER'
             target_content = 'TARGET'
-        return """<div style="%s">%s</div><div style="%s">%s</div>""" % (sender_style, sender_content, target_style, target_content)
+        return f"""<div style="{sender_style}">{sender_content}</div><div style="{target_style}">{target_content}</div>"""
 
     def postal_template(self, context):
         return Template(self.address_block + self.missive.html).render(context)
@@ -222,8 +222,8 @@ class MissiveBackend(MissiveBackend):
         }
 
     def valid_response(self, response):
-        if response.status_code not in [200, 201, 204]:
-            self._logger.warning('Maileva - %s' % str(response.content))
+        if response.status_code not in {200, 201, 204}:
+            self._logger.warning(f'Maileva - {response.content!s}')
             self.missive.trace = str(response.content)
             if str(response.status_code).startswith('4'):
                 try:
@@ -235,7 +235,7 @@ class MissiveBackend(MissiveBackend):
                     self.missive.code_error = 'unknown'
             self.in_error = True
             return False
-        self._logger.warning('Maileva - %s' % str(response.content))
+        self._logger.warning(f'Maileva - {response.content!s}')
         return True
 
     def authentication(self):
@@ -255,11 +255,11 @@ class MissiveBackend(MissiveBackend):
         if self.authentication():
             url = self.api_url['documents'] % self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
-            rjson = response.json()
-            return rjson
+            return response.json()
+        return None
 
     def postal_add_attachment(self, attachment):
-        self._logger.info('postal_add_attachment %s' % attachment.name)
+        self._logger.info(f'postal_add_attachment {attachment.name}')
         self.priority += 1
         api = self.api_url['documents'] % self.sending_id
         headers = self.api_headers
@@ -284,7 +284,7 @@ class MissiveBackend(MissiveBackend):
                 with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_pdf:
                     tmp_pdf.write(document.read())
                     self.postal_add_attachment(tmp_pdf)
-        return False if self.in_error else True
+        return not self.in_error
 
     def add_recipients(self):
         api = self.api_url['recipients'] % self.sending_id
@@ -333,8 +333,9 @@ class MissiveBackend(MissiveBackend):
                     self.enable_webhooks()
             else:
                 self.missive.to_error()
-            getattr(self, 'check_%s' % self.missive.mode.lower())()
+            getattr(self, f'check_{self.missive.mode.lower()}')()
             return self.missive.status
+        return None
 
     def price_archive(self, page, archive):
         if not archive or not page:
@@ -345,9 +346,10 @@ class MissiveBackend(MissiveBackend):
             return self.archiving_lte6_first + (self.archiving_lte6_next * (page - 1))
         if archive <= 10:
             return self.archiving_lte10_first + (self.archiving_lte10_next * (page - 1))
+        return None
 
     def price_page(self, count_page, color=False, archive=0):
-        price, pnext, parchive = (0.73, 0.48) if color else (0.48, 0.23)
+        price, pnext, _parchive = (0.73, 0.48) if color else (0.48, 0.23)
         if count_page > 1: price += (pnext * (count_page - 1))
         price += self.price_archive(count_page, archive)
         return price
@@ -378,7 +380,7 @@ class MissiveBackend(MissiveBackend):
     def price(self):
         pages = self.price_info['count_page']
         pages += 1 if self.prince_info['optional_address_sheet'] else 0
-        price_page = self.price_page(
+        self.price_page(
             count_page=pages,
             color=self.price_info['color_printing'],
             archive=self.prince_info['archiving_duration']
@@ -394,6 +396,7 @@ class MissiveBackend(MissiveBackend):
                 self.missive.status = self.status_ref[rjson['status']]
             self.missive.save()
             return rjson
+        return None
 
     def cancel(self):
         if self.authentication():

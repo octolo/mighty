@@ -14,7 +14,7 @@ class IbanModel:
 
     @property
     def str_iban(self):
-        return '%s/%s' % (self.readable_iban, self.bic)
+        return f'{self.readable_iban}/{self.bic}'
 
     @property
     def iban_readable(self):
@@ -23,7 +23,7 @@ class IbanModel:
     @property
     def mask_iban(self):
         iban = self.readable_cb[0:4] + re.sub(r'[a-zA-Z0-9]', '*', self.iban_readable[4:-4]) + self.iban_readable[-4:]
-        return '%s/%s' % (iban, self.bic)
+        return f'{iban}/{self.bic}'
 
     @property
     def is_valid_ibanlib(self):
@@ -51,7 +51,7 @@ class IbanModel:
         else:
             qs = type(self).objects.filter(iban=self.iban, bic=self.bic, user=self.user)
         if self.pk: qs = qs.exclude(pk=self.pk)
-        return False if qs.exists() else True
+        return not qs.exists()
 
     @property
     def is_valid_iban(self):

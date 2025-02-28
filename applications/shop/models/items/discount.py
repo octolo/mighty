@@ -17,7 +17,7 @@ class Discount(Base):
         ordering = ['date_create']
 
     def __str__(self):
-        return '%s: %s (-%s %s)' % (self.code, self.date_end, str(self.amount / 100), self.type_discount)
+        return f'{self.code}: {self.date_end} (-{self.amount / 100!s} {self.type_discount})'
 
     @property
     def type_discount(self):

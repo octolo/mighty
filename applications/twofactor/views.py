@@ -136,11 +136,11 @@ class Register(LoginStepSearch):
         if user.phone:
             # status = send_sms(user)
             self.set_url_by_method('sms')
-            self.success_url += '?sms=%s' % user.phone
+            self.success_url += f'?sms={user.phone}'
         else:
             # status = send_email(user)
             self.set_url_by_method(user, 'email')
-            self.success_url += '?email=%s' % user.email
+            self.success_url += f'?email={user.email}'
         return super(FormView, self).form_valid(form)
 
 

@@ -32,7 +32,7 @@ if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
             user_content_type = ContentType.objects.get_for_model(UserModel())
             baseQ = Q(content_type=user_content_type, object_id=self.request.user.id)
             for m, r in UserConfig.notification_optional_relation.items():
-                baseQ = baseQ | Q(**self.get_Qrelation(m, r))
+                baseQ |= Q(**self.get_Qrelation(m, r))
             return baseQ
 
         def get_queryset(self, queryset=None):

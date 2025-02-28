@@ -8,7 +8,7 @@ class AddressCommand(ModelBaseCommand):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         for field in fields:
-            parser.add_argument('--%s' % field, default=None)
+            parser.add_argument(f'--{field}', default=None)
 
     def handle(self, *args, **options):
         for field in fields:
@@ -17,7 +17,4 @@ class AddressCommand(ModelBaseCommand):
 
     @property
     def has_address(self):
-        for field in fields:
-            if getattr(self, field):
-                return True
-        return False
+        return any(getattr(self, field) for field in fields)

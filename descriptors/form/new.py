@@ -56,7 +56,7 @@ class FormJsonDescriptor:
         return errors
 
     def check_enctype(self, desc):
-        if desc['type'] in ('file', 'image'):
+        if desc['type'] in {'file', 'image'}:
             self.form_desc['enctype'] = self.enctypes['file']
 
     def get_input_type(self, field):
@@ -76,12 +76,13 @@ class FormJsonDescriptor:
             hasattr(field.Options, key),
             getattr(field.Options, key)]):
             return getattr(field.Options, key)
-        raise Exception('%s option in error' % name)
+        raise Exception(f'{name} option in error')
 
     def disable_choice(self, obj, field, choice):
         if hasattr(self.form, self.current_field + '_disable'):
             cfg = getattr(self.form, self.current_field + '_disable')
             return (choice in cfg)
+        return None
 
     def get_options(self, field, name):
         if hasattr(field, 'choices'):
@@ -96,6 +97,7 @@ class FormJsonDescriptor:
                     'label': choice[1],
                     'value': choice[0],
                 } for choice in field.choices]
+        return None
 
     def get_dependencies(self, name):
         if name in self.form.Options.dependencies:

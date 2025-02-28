@@ -24,25 +24,25 @@ class ChatConsumer(Consumer):
         self._ws.join_channel('chat', channel)
 
     def join_init(self, to):
-        channel = '%s%s%s' % (self._ws.uid, self._ws.delimiter, to)
+        channel = f'{self._ws.uid}{self._ws.delimiter}{to}'
         self._ws.join_channel('chat', channel)
 
     def join_accept(self, to):
-        channel = '%s%s%s' % (to, self._ws.delimiter, self._ws.uid)
+        channel = f'{to}{self._ws.delimiter}{self._ws.uid}'
         self._ws.join_channel('chat', channel)
 
     def leave_init(self, to):
-        channel = '%s%s%s' % (self._ws.uid, self._ws.delimiter, to)
+        channel = f'{self._ws.uid}{self._ws.delimiter}{to}'
         self._ws.leave_channel(channel)
 
     def leave_accept(self, to):
-        channel = '%s%s%s' % (to, self._ws.delimiter, self._ws.uid)
+        channel = f'{to}{self._ws.delimiter}{self._ws.uid}'
         self._ws.leave_channel(channel)
 
     def message_send(self, to, msg):
-        channel = '%s%s%s' % (self._ws.uid, self._ws.delimiter, to)
+        channel = f'{self._ws.uid}{self._ws.delimiter}{to}'
         self._ws.send_to_channel(channel, 'chat.message.receive', {'chat': to, 'msg': msg, 'from': self._ws.user_representation})
 
     def message_receive(self, to, msg):
-        channel = '%s%s%s' % (self._ws.uid, self._ws.delimiter, to)
+        channel = f'{self._ws.uid}{self._ws.delimiter}{to}'
         self._ws.send_to_channel(channel, 'chat.message.receive', {'chat': to, 'msg': msg})

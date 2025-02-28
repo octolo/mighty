@@ -5,7 +5,6 @@ import os.path
 import sys
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.utils import timezone
@@ -51,6 +50,7 @@ class BaseCommand(BaseCommand, EnableLogger):
                 if v == 'pos':
                     return qs[int(values.get(k))]
                 return qs.get(**{v: values.get(k)})
+        return None
 
     @property
     def user_model(self):
@@ -81,11 +81,11 @@ class BaseCommand(BaseCommand, EnableLogger):
             if self.progressbar:
                 arrow = '-' * int(round(percent * bar_length) - 1) + '>'
                 spaces = ' ' * (bar_length - len(arrow))
-                sys.stdout.write(f'\r{self.prefix_bar}: [{arrow + spaces}] {int(round(percent * 100))}% ({self.position}/{total}) {self.get_current_info()}'
+                sys.stdout.write(f'\r{self.prefix_bar}: [{arrow + spaces}] {round(percent * 100)}% ({self.position}/{total}) {self.get_current_info()}'
                 )
                 sys.stdout.flush()
             else:
-                sys.stdout.write(f'\r{self.prefix_bar}: {int(round(percent * 100))}% ({self.position}/{total}) {self.get_current_info()}'
+                sys.stdout.write(f'\r{self.prefix_bar}: {round(percent * 100)}% ({self.position}/{total}) {self.get_current_info()}'
                 )
                 print()
             if self.position == total: print()
@@ -97,15 +97,15 @@ class BaseCommand(BaseCommand, EnableLogger):
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument('--importer', type=str, help='Importer type', required=self.importer_required)
-        parser.add_argument('--logfile', default='%s_%s.log' % (str(self.subcommand).lower(), f'{datetime.datetime.now():%Y%m%d_%H%M%S_%f}'))
+        parser.add_argument('--logfile', default='{}_{}.log'.format(str(self.subcommand).lower(), f'{datetime.datetime.now():%Y%m%d_%H%M%S_%f}'))
         parser.add_argument('--encoding', default='utf8')
         parser.add_argument('--userlog', default=None)
         for field in self.string_arguments + self.default_string_arguments:
-            parser.add_argument('--%s' % field, default=None)
+            parser.add_argument(f'--{field}', default=None)
         for field in self.integer_arguments + self.default_integer_arguments:
-            parser.add_argument('--%s' % field, default=0)
+            parser.add_argument(f'--{field}', default=0)
         for field in self.boolean_arguments + self.default_boolean_arguments:
-            parser.add_argument('--%s' % field, action='store_true')
+            parser.add_argument(f'--{field}', action='store_true')
 
     @property
     def default_fields(self):
@@ -158,7 +158,6 @@ class ModelBaseCommand(BaseCommand):
     label = None
     model = None
     filter = None
-    model = None
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
@@ -239,7 +238,7 @@ class ImportModelCommand(ModelBaseCommand):
         try:
             return self.current_row[self.reverse[name]]
         except KeyError:
-            for key, value in self.current_row.items():
+            for key in self.current_row:
                 if key and key.lower() == name:
                     return self.current_row[key]
         if self.is_required(name):
@@ -264,7 +263,7 @@ class ImportModelCommand(ModelBaseCommand):
             ofields = self.fields
             self.fields = {}
             for field in fields:
-                self.fields[field] = ofields[field] if field in ofields else field
+                self.fields[field] = ofields.get(field, field)
             self.reverse = {v: k for k, v in self.fields.items()}
         else:
             self.fields = self.reverse = {field: field for field in fields}
@@ -328,7 +327,7 @@ class XLSXModelCommand(ImportModelCommand):
         if self.xlsxfile and os.path.isfile(self.xlsxfile):
             return True
         if mandatory:
-            raise CommandError('file %s" does not exist' % self.xlsx)
+            raise CommandError(f'file {self.xlsx}" does not exist')
         return False
 
     def add_arguments(self, parser):
@@ -365,7 +364,7 @@ class CSVModelCommand(ImportModelCommand):
         if self.csvfile and os.path.isfile(self.csvfile):
             return True
         if mandatory:
-            raise CommandError('CSV "%s" does not exist' % self.csvfile)
+            raise CommandError(f'CSV "{self.csvfile}" does not exist')
         return False
 
     def add_arguments(self, parser):
@@ -389,7 +388,7 @@ class CSVModelCommand(ImportModelCommand):
     def reader_csv(self):
         if not self._reader or self.need_reset_reader:
             csvfile = open(self.csvfile, encoding=self.encoding)
-            for i in range(self.skiprows): next(csvfile)
+            for _i in range(self.skiprows): next(csvfile)
             self._reader = csv.DictReader(csvfile, delimiter=self.delimiter)
             self.need_reset_reader = False
         return self._reader
@@ -401,7 +400,7 @@ class CSVModelCommand(ImportModelCommand):
     @property
     def import_total(self):
         if not self._total:
-            self._total = len(open(self.csvfile).readlines()) - 1
+            self._total = len(open(self.csvfile, encoding='utf-8').readlines()) - 1
         return self._total
 
 

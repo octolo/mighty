@@ -60,8 +60,8 @@ class TableModelDescriptor(TableDescriptable):
             if opts.fields is None and opts.exclude is None:
                 raise ImproperlyConfigured(
                     "Creating a ModelForm without either the 'fields' attribute "
-                    "or the 'exclude' attribute is prohibited; form %s "
-                    "needs updating." % name
+                    f"or the 'exclude' attribute is prohibited; form {name} "
+                    "needs updating."
                 )
             if opts.fields == ALL_FIELDS:
                 opts.fields = None
@@ -83,7 +83,7 @@ class TableModelDescriptor(TableDescriptable):
             missing_fields = none_model_fields.difference(new_class.declared_fields)
             if missing_fields:
                 message = 'Unknown field(s) (%s) specified for %s'
-                message = message % (', '.join(missing_fields), opts.model.__name__)
+                message %= (', '.join(missing_fields), opts.model.__name__)
                 raise FieldError(message)
                 fields.update(new_class.declared_fields)
         else:

@@ -48,7 +48,7 @@ def TenantAssociation(**kwargs):
                         else:
                             groups.append(getattr(self, rel).id)
                     groups = list(dict.fromkeys(groups))
-                    return True if not len(groups) or (len(groups) == 1 and groups[0] == self.group.id) else False
+                    return bool(not len(groups) or (len(groups) == 1 and groups[0] == self.group.id))
                 return True
 
             def check_group_coherence(self):

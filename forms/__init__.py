@@ -1,4 +1,3 @@
-from django import forms
 
 from mighty import translates as _
 from mighty.forms.caching import (

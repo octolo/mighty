@@ -34,7 +34,7 @@ class MissiveBackend(MissiveBackend):
         }
 
     def valid_response(self, response):
-        if response.status_code not in [200, 201]:
+        if response.status_code not in {200, 201}:
             self.missive.trace = str(response.json())
             self.in_error = True
             return False
