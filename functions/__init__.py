@@ -19,6 +19,11 @@ from django.utils.module_loading import import_string
 
 from mighty import fields
 from mighty.apps import MightyConfig as conf
+from mighty.functions.facilities import getattr_recursive  # noqa
+from mighty.functions.registertask import (
+    subscribe_register_task,  # noqa
+    unsubscribe_register_task,  # noqa
+)
 
 logger = logging.getLogger(__name__)
 BS = conf.Crypto.BS
