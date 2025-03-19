@@ -70,6 +70,7 @@ def send_email(ar=False, **kwargs):
 
 
 def send_sms(**kwargs):
+    kwargs.pop('html', None)
     return send_missive_type(**kwargs, mode=MODE_SMS, html='empty_for_sms')
 
 
