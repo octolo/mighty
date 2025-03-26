@@ -72,6 +72,7 @@ class Reporting(Base):
     email_html = RichTextField(_.email_html, blank=True, null=True)
     related_obj = None
     kwargs = {}
+    json_length = {}
 
     class Meta(Base.Meta):
         abstract = True
@@ -139,7 +140,7 @@ class Reporting(Base):
             })
         return Qfilter
 
-    @property
+    @cached_property
     def reporting_queryset(self):
         return self.get_manager().filter(**self.reporting_filter)
 
@@ -149,15 +150,21 @@ class Reporting(Base):
         for cfg in self.config:
             head = cfg.get('label') or cfg.get('multiple') or cfg.get('data')
             if cfg.get('multiple'):
-                max = self.reporting_max_aggregate.get(cfg['data'])
-                if cfg.get('fields'):
+                if cfg.get('json'):
                     data += [
-                        field + str(i + 1)
-                        for i in range(max)
-                        for field in cfg['fields']
+                        head + str(i + 1)
+                        for i in range(self.json_length.get(cfg['data'], 0))
                     ]
                 else:
-                    data += [head + str(i + 1) for i in range(max)]
+                    max = self.reporting_max_aggregate.get(cfg['data'])
+                    if cfg.get('fields'):
+                        data += [
+                            field + str(i + 1)
+                            for i in range(max)
+                            for field in cfg['fields']
+                        ]
+                    else:
+                        data += [head + str(i + 1) for i in range(max)]
             elif cfg.get('fields'):
                 data += list(cfg['fields'])
             else:
@@ -185,10 +192,28 @@ class Reporting(Base):
     def reporting_get_data_fields(self, cfg, obj):
         return [self.reporting_data_obj(field, obj) for field in cfg['fields']]
 
+    def reporting_get_data_json_max_multiple(self, cfg):
+        if cfg['data'] not in self.json_length:
+            max_length = max(len(getattr_recursive(pp, cfg['data'], default=[])) for pp in self.reporting_queryset)
+            self.json_length[cfg['data']] = max_length
+        return self.json_length.get(cfg['data'], 0)
+
+    def reporting_get_data_json(self, cfg, obj):
+        if cfg.get('multiple'):
+            blk = self.reporting_get_data_json_max_multiple(cfg)
+            json = getattr_recursive(obj, cfg['data'], default=[])
+            data = [d[cfg['multiple']] for d in json]
+            data = [d[cfg['multiple']] for d in json]
+            data += ['' for i in range(blk - len(data))]
+            return data
+        return getattr_recursive(obj, cfg['data'])
+
     def reporting_line_detail(self, obj):
         data = []
         for cfg in self.config:
-            if cfg.get('multiple'):
+            if cfg.get('json'):
+                data += self.reporting_get_data_json(cfg, obj)
+            elif cfg.get('multiple'):
                 data += self.reporting_get_data_multiple(cfg, obj)
             elif cfg.get('fields'):
                 data += self.reporting_get_data_fields(cfg, obj)
@@ -204,9 +229,10 @@ class Reporting(Base):
 
     @property
     def reporting_file_generator(self):
+        items = self.reporting_items
         return FileGenerator(
             filename=self.reporting_export_name,
-            items=self.reporting_items,
+            items=items,
             fields=self.reporting_fields,
         )
 
