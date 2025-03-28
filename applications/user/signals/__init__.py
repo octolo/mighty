@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=UserModel)
 def create_user_identifiers(sender, instance, created, **kwargs):
-    if created and (instance.email or instance.phone):
+    if instance.email or instance.phone:
         # If the user is created, create a primary email and/or phone
         with transaction.atomic():
             try:
@@ -30,14 +30,14 @@ def create_user_identifiers(sender, instance, created, **kwargs):
                     logger.info(
                         f'create_user_identifiers: create primary email {instance.email}'
                     )
-                    UserEmailModel.objects.create(
+                    UserEmailModel.objects.update_or_create(
                         user=instance, email=instance.email, primary=True
                     )
                 if instance.phone:
                     logger.info(
                         f'create_user_identifiers: create primary phone {instance.phone}'
                     )
-                    UserPhoneModel.objects.create(
+                    UserPhoneModel.objects.update_or_create(
                         user=instance, phone=instance.phone, primary=True
                     )
             except Exception as e:

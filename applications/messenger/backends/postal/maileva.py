@@ -173,15 +173,6 @@ class MissiveBackend(MissiveBackend):
     def postal_template(self, context):
         return Template(self.address_block + self.missive.html).render(context)
 
-    @property
-    def auth_data(self):
-        return {
-            'username': setting('MAILEVA_USERNAME'),
-            'password': setting('MAILEVA_PASSWORD'),
-            'grant_type': 'password',
-            'client_id': setting('MAILEVA_CLIENTID'),
-            'client_secret': setting('MAILEVA_SECRET'),
-        }
 
     @property
     def postal_data(self):
@@ -281,7 +272,14 @@ class MissiveBackend(MissiveBackend):
         return True
 
     def authentication(self):
-        response = requests.post(self.api_url['auth'], data=self.auth_data)
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        auth = (setting('MAILEVA_CLIENTID'),setting('MAILEVA_SECRET'))
+        data = {
+            'grant_type': 'password',
+            'username': setting('MAILEVA_USERNAME'),
+            'password': setting('MAILEVA_PASSWORD'),
+        }
+        response = requests.post(self.api_url['auth'], headers=headers, auth=auth, data=data)
         if self.valid_response(response):
             self.access_token = response.json()['access_token']
             return True
