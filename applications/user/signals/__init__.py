@@ -30,15 +30,19 @@ def create_user_identifiers(sender, instance, created, **kwargs):
                     logger.info(
                         f'create_user_identifiers: create primary email {instance.email}'
                     )
-                    UserEmailModel.objects.update_or_create(
-                        user=instance, email=instance.email, primary=True
+                    UserEmailModel.objects.get_or_create(
+                        user=instance,
+                        email=instance.email,
+                        primary=True,
                     )
                 if instance.phone:
                     logger.info(
                         f'create_user_identifiers: create primary phone {instance.phone}'
                     )
-                    UserPhoneModel.objects.update_or_create(
-                        user=instance, phone=instance.phone, primary=True
+                    UserPhoneModel.objects.get_or_create(
+                        user=instance,
+                        phone=instance.phone,
+                        primary=True,
                     )
             except Exception as e:
                 logger.exception(f'create_user_identifiants: {e}')
