@@ -435,12 +435,21 @@ class MissiveBackend(MissiveBackend):
 
     def check_postal(self):
         if self.authentication():
+            # status
             url = self.api_url['sendings'] + '/' + self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
-            rjson = response.json()
+            rjson_status = response.json()
+            # recipents
+            url = self.api_url['recipients'] % self.missive.partner_id
+            response = requests.get(url, headers=self.api_headers)
+            rjson_recipients = response.json()
+            rjson = {
+                'status': rjson_status,
+                'recipients': rjson_recipients,
+            }
             self.missive.trace = str(rjson)
-            if 'status' in rjson:
-                self.missive.status = self.status_ref[rjson['status']]
+            if 'status' in rjson_status:
+                self.missive.status = self.status_ref[rjson_status['status']]
             self.missive.save()
             return rjson
         return None
