@@ -58,6 +58,8 @@ def send_missive_type(**kwargs):
         state_code=kwargs.get('state_code'),
         country=kwargs.get('country', 'France'),
         country_code=kwargs.get('country_code', 'FR'),
+        cedex=kwargs.get('cedex'),
+        cedex_code=kwargs.get('cedex_code'),
         raw=kwargs.get('raw'),
     )
     missive.attachments = kwargs.get('attachments')
