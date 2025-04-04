@@ -8,6 +8,7 @@ from uuid import uuid4
 import requests
 from django.shortcuts import get_object_or_404
 from django.template import Template
+from django import settings
 
 from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
@@ -22,13 +23,13 @@ class MissiveBackend(MissiveBackend):
     resource_type = 'mail/v2/sendings'
     callback_url = MightyConfig.webhook + '/wbh/messenger/postal/'
     api_sandbox = {
-        'webhook': 'https://api.sandbox.maileva.net/notification_center/v2/subscriptions',
-        'auth': 'https://connexion.sandbox.maileva.net/auth/realms/services/protocol/openid-connect/token',
-        'sendings': 'https://api.sandbox.maileva.net/mail/v2/sendings',
-        'documents': 'https://api.sandbox.maileva.net/mail/v2/sendings/%s/documents',
-        'recipients': 'https://api.sandbox.maileva.net/mail/v2/sendings/%s/recipients',
-        'submit': 'https://api.sandbox.maileva.net/mail/v2/sendings/%s/submit',
-        'cancel': 'https://api.sandbox.maileva.com/mail/v2/sendings/%s',
+        'webhook': 'https://api.maileva.com/notification_center/v2/subscriptions',
+        'auth': 'https://connexion.maileva.com/auth/realms/services/protocol/openid-connect/token',
+        'sendings': 'https://api.maileva.com/mail/v2/sendings',
+        'documents': 'https://api.maileva.com/mail/v2/sendings/%s/documents',
+        'recipients': 'https://api.maileva.com/mail/v2/sendings/%s/recipients',
+        'submit': 'https://api.maileva.com/mail/v2/sendings/%s/submit',
+        'cancel': 'https://api.maileva.com/mail/v2/sendings/%s',
     }
     api_official = {
         'webhook': 'https://api.maileva.com/notification_center/v2/subscriptions',
@@ -243,7 +244,7 @@ class MissiveBackend(MissiveBackend):
 
     @property
     def api_url(self):
-        if setting('ENV', False) != 'PRODUCTION':
+        if settings.IS_PROD:
             return self.api_sandbox
         return self.api_official
 

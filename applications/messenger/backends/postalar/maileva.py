@@ -8,6 +8,7 @@ from uuid import uuid4
 import requests
 from django.shortcuts import get_object_or_404
 from django.template import Template
+from django.conf import settings
 
 from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
@@ -242,7 +243,7 @@ class MissiveBackend(MissiveBackend):
 
     @property
     def api_url(self):
-        if setting('ENV', False) != 'PRODUCTION':
+        if settings.IS_PROD:
             return self.api_sandbox
         return self.api_official
 
