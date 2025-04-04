@@ -244,7 +244,7 @@ class MissiveBackend(MissiveBackend):
 
     @property
     def api_url(self):
-        if settings.IS_PROD:
+        if not settings.IS_PROD:
             return self.api_sandbox
         return self.api_official
 
