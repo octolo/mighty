@@ -2,6 +2,7 @@ default_app_config = 'mighty.applications.messenger.apps.MessengerConfig'
 
 import json
 import logging
+import os
 
 import requests
 from django.conf import settings
@@ -84,6 +85,12 @@ def send_postal(ar=False, **kwargs):
     )
 
 
+def check_emergency(backend_path):
+    backend = backend_path.split('.')[-2]
+    from django.core.cache import cache
+    emergency = cache.get(f'octolo_var_emergency_{backend}', None)
+    return emergency or backend_path
+
 # ** kwargs:
 #    -- mode
 #    -- status
@@ -125,11 +132,12 @@ def missive_backend_postalar():
 
 
 def missive_backend_email():
-    return (
+    backend_path = (
         settings.MISSIVE_BACKEND_EMAIL
         if hasattr(settings, 'MISSIVE_BACKEND_EMAIL')
         else conf.missive_backend
     )
+    return check_emergency(backend_path)
 
 
 def missive_backend_emailar():
