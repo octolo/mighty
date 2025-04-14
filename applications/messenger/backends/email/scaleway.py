@@ -1,8 +1,10 @@
 import base64
 import os
-import requests
 
+import requests
 from django.conf import settings
+
+from mighty.applications.messenger.apps import MessengerConfig as conf
 from mighty.applications.messenger.backends import MissiveBackend
 
 
@@ -38,12 +40,9 @@ class MissiveBackend(MissiveBackend):
                 {'email': self.missive.target, 'name': self.missive.fullname}
             ],
             'attachments': self.email_attachments(),
-            "additional_headers": [
-                {
-                    "key": "Reply-To",
-                    "value":  self.reply_email
-                }
-            ]
+            'additional_headers': [
+                {'key': 'Reply-To', 'value': self.reply_email}
+            ],
         }
         if self.missive.html_format:
             data['html'] = self.missive.html_format
@@ -68,6 +67,12 @@ class MissiveBackend(MissiveBackend):
         return attachments
 
     def send_email(self):
+        # FIXME: Cleanup
+        self.missive.sender = (
+            f'{conf.sender_name}@tem.{os.environ.get("DOMAIN")}'
+            if settings.IS_PROD_OR_PREPROD
+            else 'contact@tem.dev.octolo.tech'
+        )
         over_target = getattr(settings, 'MISSIVE_EMAIL', False)
         self.missive.target = over_target or self.missive.target
         self.logger.info(
@@ -82,3 +87,7 @@ class MissiveBackend(MissiveBackend):
         self.missive.to_sent()
         self.missive.save()
         return self.missive.status
+
+
+# EMERGENCY
+# ./manage.py redis_var --key emergency_email --value mighty.applications.messenger.backends.email.scaleway
