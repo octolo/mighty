@@ -2,6 +2,7 @@ default_app_config = 'mighty.applications.messenger.apps.MessengerConfig'
 
 import json
 import logging
+import os
 
 import requests
 from django.conf import settings
@@ -86,7 +87,7 @@ def send_postal(ar=False, **kwargs):
 
 
 def check_emergency(backend_path):
-    if settings.CI:
+    if settings.CI or not os.environ.get('DOCKER_BACKENDPATH'):
         return backend_path
     backend = backend_path.split('.')[-2]
 
