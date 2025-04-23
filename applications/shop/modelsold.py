@@ -153,9 +153,6 @@ class Subscription(Base):
         for service in self.offer.service.all():
             self.add_cache(service.name.lower(), service.code)
 
-    def has_service(self, service):
-        return self.has_cache_field(service.lower())
-
     def pre_save(self):
         self.set_on_use_count()
 

@@ -1,7 +1,4 @@
 class Service:
-    def has_service(self, service):
-        return self.has_cache_field(service.lower())
-
     def set_on_use_count(self):
         self.one_use_count = self.offer.frequency == 'ONUSE'
 
