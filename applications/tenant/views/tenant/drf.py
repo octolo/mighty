@@ -25,8 +25,6 @@ class TenantDetail(TenantBase, RetrieveAPIView):
 class CurrentTenant(TenantBase, RetrieveAPIView):
     def get(self, request, uid, action=None, format=None):
         tenant = self.get_object()
-        self.request.user.current_tenant = tenant
-        self.request.user.save()
         return Response(self.get_fields(tenant))
 
 

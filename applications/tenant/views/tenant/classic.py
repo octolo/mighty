@@ -28,9 +28,6 @@ class TenantDetail(TenantBase, DetailView):
 class CurrentTenant(TenantBase, DetailView):
     def get_context_data(self, **kwargs):
         tenant = self.get_object()
-        if tenant:
-            self.request.user.tenant = tenant
-            self.request.user.save()
         return self.get_fields(tenant)
 
     def render_to_response(self, context, **response_kwargs):
