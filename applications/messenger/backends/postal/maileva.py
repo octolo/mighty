@@ -6,9 +6,9 @@ import os
 from uuid import uuid4
 
 import requests
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template import Template
-from django import settings
 
 from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
@@ -174,7 +174,6 @@ class MissiveBackend(MissiveBackend):
     def postal_template(self, context):
         return Template(self.address_block + self.missive.html).render(context)
 
-
     @property
     def postal_data(self):
         undelivered = setting('MAILEVA_EMAIL_UNDELIVERED', None)
@@ -257,7 +256,7 @@ class MissiveBackend(MissiveBackend):
 
     def valid_response(self, response):
         if response.status_code not in {200, 201, 204}:
-            self._logger.warning(f'Maileva - {response.content!s}')
+            self._logger.info(f'Maileva - {response.content!s}')
             self.missive.trace = str(response.content)
             if str(response.status_code).startswith('4'):
                 try:
@@ -269,18 +268,20 @@ class MissiveBackend(MissiveBackend):
                     self.missive.code_error = 'unknown'
             self.in_error = True
             return False
-        self._logger.warning(f'Maileva - {response.content!s}')
+        self._logger.info(f'Maileva - {response.content!s}')
         return True
 
     def authentication(self):
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        auth = (setting('MAILEVA_CLIENTID'),setting('MAILEVA_SECRET'))
+        auth = (setting('MAILEVA_CLIENTID'), setting('MAILEVA_SECRET'))
         data = {
             'grant_type': 'password',
             'username': setting('MAILEVA_USERNAME'),
             'password': setting('MAILEVA_PASSWORD'),
         }
-        response = requests.post(self.api_url['auth'], headers=headers, auth=auth, data=data)
+        response = requests.post(
+            self.api_url['auth'], headers=headers, auth=auth, data=data
+        )
         if self.valid_response(response):
             self.access_token = response.json()['access_token']
             return True
