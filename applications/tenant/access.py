@@ -69,9 +69,9 @@ class TenantAccess(RequestAccess):
             named_id = self.request_access.parser_context['kwargs'].get(
                 'group_named_id'
             )
-            group_uid = self.request_access.data.get('group')
             if named_id:
                 return self.group_model.objects.get(named_id=named_id)
+            group_uid = self.request_access.data.get('group')
             if group_uid:
                 return self.group_model.objects.get(uid=group_uid)
             return self.current_tenant_group
