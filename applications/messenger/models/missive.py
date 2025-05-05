@@ -60,6 +60,39 @@ class Missive(AddressNoBase):
     def cancel_missive(self):
         return self.get_backend().cancel()
 
+    def get_price(self):
+        backend = self.get_backend()
+        return backend.get_price()
+
+    def get_billed_page(self):
+        backend = self.get_backend()
+        return backend.get_billed_page()
+
+    def get_external_reference(self):
+        backend = self.get_backend()
+        return backend.get_external_reference()
+
+    def get_external_status(self):
+        backend = self.get_backend()
+        return backend.get_external_status()
+
+    def get_class(self):
+        backend = self.get_backend()
+        return backend.get_class()
+
+    def get_type(self):
+        backend = self.get_backend()
+        return backend.get_type()
+
+    def get_color(self):
+        backend = self.get_backend()
+        return backend.get_color()
+
+    @property
+    def trace_json(self):
+        import ast
+        return ast.literal_eval(self.trace) if self.trace else {}
+
     @property
     def js_admin(self):
         backend = self.get_backend()

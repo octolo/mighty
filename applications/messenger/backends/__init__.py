@@ -189,3 +189,27 @@ class MissiveBackend(EnableLogger):
 
     def cancel(self):
         return NotImplementedError('Cancel mode not implemented')
+
+    def get_class(self):
+        return NotImplementedError('Get class mode not implemented')
+
+    def get_type(self):
+        return NotImplementedError('Get type mode not implemented')
+
+    def get_reference(self):
+        return NotImplementedError('Get reference mode not implemented')
+
+    def get_price(self):
+        return NotImplementedError('Get price mode not implemented')
+
+    def get_billed_page(self):
+        return NotImplementedError('Get billed page mode not implemented')
+
+    def get_external_reference(self):
+        return NotImplementedError('Get reference mode not implemented')
+
+    def get_external_status(self):
+        return NotImplementedError('Get status mode not implemented')
+
+    def get_color(self):
+        return NotImplementedError('Get color mode not implemented')

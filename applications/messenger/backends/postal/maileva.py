@@ -92,6 +92,15 @@ class MissiveBackend(MissiveBackend):
     sender_address_line_6 = setting('MAILEVA_SENDER6')
     sender_country_code = setting('MAILEVA_SENDERC')
 
+    field_price = 'trace_json.recipients.recipients.0.postage_price'
+    field_billed_page = 'trace_json.status.billed_pages_count'
+    field_external_reference = 'trace_json.status.reference'
+    field_external_status = 'trace_json.recipients.recipients.0.last_main_delivery_status.label'
+    field_color = 'trace_json.status.color_printing'
+    field_type = 'trace_json.status.envelope_type'
+    field_class = 'trace_json.recipients.recipients.0.postage_class'
+
+
     def __init__(self, missive, *args, **kwargs):
         super().__init__(missive, *args, **kwargs)
         self.color_first_c4 = kwargs.get('color_first_c4', self.color_first_c4)
@@ -463,3 +472,24 @@ class MissiveBackend(MissiveBackend):
             if self.valid_response(response):
                 self.missive.status = _c.STATUS_CANCELLED
             self.missive.save()
+
+    def get_price(self):
+        return getattr_recursive(self.missive, self.field_price, default='', default_on_error=True)
+
+    def get_billed_page(self):
+        return getattr_recursive(self.missive, self.field_billed_page, default='', default_on_error=True)
+
+    def get_external_reference(self):
+        return getattr_recursive(self.missive, self.field_external_reference, default='', default_on_error=True)
+
+    def get_external_status(self):
+        return getattr_recursive(self.missive, self.field_external_status, default='', default_on_error=True)
+
+    def get_color(self):
+        return getattr_recursive(self.missive, self.field_color, default='', default_on_error=True)
+
+    def get_class(self):
+        return getattr_recursive(self.missive, self.field_class, default='', default_on_error=True)
+
+    def get_type(self):
+        return getattr_recursive(self.missive, self.field_type, default='', default_on_error=True)

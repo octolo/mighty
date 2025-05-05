@@ -1,10 +1,11 @@
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.template.response import TemplateResponse
+from django.http import FileResponse
 
 from mighty.admin.models import BaseAdmin
 from mighty.applications.address import fields as addr_fields
-from mighty.applications.messenger import fields
+from mighty.applications.messenger import fields, forms
 
 
 class MissiveAdmin(BaseAdmin):
@@ -160,6 +161,25 @@ class MissiveAdmin(BaseAdmin):
             template=self.missivecancel_view_template,
         )
 
+    reporting_view_template = 'admin/reporting_missive.html'
+    reporting_view_suffix = 'reporting'
+    reporting_view_path = 'reporting/'
+    reporting_view_object_tools = {'name': 'Reporting', 'url': 'reporting', 'list': True}
+
+    def reporting_view(self, request, object_id=None, form_url=None, extra_context=None):
+        extra_context = extra_context or {}
+        generate_form = forms.MissiveReportingForm(request.POST or None, request.FILES or None)
+        extra_context['form'] = generate_form
+        if generate_form.is_valid():
+            generate_form.generate_report()
+        return self.admincustom_view(
+            request,
+            object_id,
+            extra_context,
+            urlname=self.get_admin_urlname(self.reporting_view_suffix),
+            template=self.reporting_view_template,
+        )
+
     def get_urls(self):
         from django.urls import path
 
@@ -188,6 +208,14 @@ class MissiveAdmin(BaseAdmin):
                     object_tools=self.missivecancel_view_object_tools,
                 ),
                 name=self.get_admin_urlname(self.missivecancel_view_suffix),
+            ),
+            path(
+                self.reporting_view_path,
+                self.wrap(
+                    self.reporting_view,
+                    object_tools=self.reporting_view_object_tools,
+                ),
+                name=self.get_admin_urlname(self.reporting_view_suffix),
             ),
         ]
         return my_urls + urls
