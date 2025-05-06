@@ -78,8 +78,8 @@ class MissiveBackend(MissiveBackend):
 
     # CONFIG
     color_printing = setting('MAILEVA_COLOR_PRINTING', False)
-    duplex_printing = setting('MAILEVA_DUPLEX_PRINTING', True)
-    optional_address_sheet = setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True)
+    duplex_printing = bool(setting('MAILEVA_DUPLEX_PRINTING', True))
+    optional_address_sheet = bool(setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True))
     archiving_duration = setting('MAILEVA_ARCHIVING_DURATION', 0)
     notification_email = setting('MAILEVA_NOTIFICATION', False)
 

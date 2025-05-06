@@ -80,8 +80,8 @@ class MissiveBackend(MissiveBackend):
 
     # CONFIG
     color_printing = setting('MAILEVA_COLOR_PRINTING', False)
-    duplex_printing = setting('MAILEVA_DUPLEX_PRINTING', True)
-    optional_address_sheet = setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True)
+    duplex_printing = bool(setting('MAILEVA_DUPLEX_PRINTING', True))
+    optional_address_sheet = bool(setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True))
     archiving_duration = setting('MAILEVA_ARCHIVING_DURATION', 0)
     notification_email = setting('MAILEVA_NOTIFICATION', False)
 
@@ -297,11 +297,14 @@ class MissiveBackend(MissiveBackend):
         return False
 
     def create_sending(self):
+        print("self.postal_data: ", self.postal_data)
         response = requests.post(
             self.api_url['sendings'],
             headers=self.api_headers,
             json=self.postal_data,
         )
+        print("response: ", response.content)
+        print("json: ", response.json())
         self.sending_id = response.json()['id']
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)
@@ -346,6 +349,7 @@ class MissiveBackend(MissiveBackend):
 
     def add_recipients(self):
         api = self.api_url['recipients'] % self.sending_id
+        print(self.target_data)
         response = requests.post(
             api, headers=self.api_headers, json=self.target_data
         )
