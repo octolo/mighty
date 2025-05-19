@@ -1,14 +1,14 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-23 17:12+0200\n"
+"POT-Creation-Date: 2025-05-16 08:55+0000\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: mighty/admin/models.py:91 mighty/admin/models.py:234
+#: mighty/admin/models.py:99 mighty/admin/models.py:250
 #, python-format
 msgid "View %s"
 msgstr ""
@@ -257,7 +257,7 @@ msgstr ""
 msgid "Social Media Cookies."
 msgstr ""
 
-#: mighty/applications/dataprotect/choices.py:15
+#: mighty/applications/dataprotect/choices.py:16
 msgid ""
 "These cookies are necessary for the website to function and cannot be "
 "switched off in our systems. They are usually only set in response to "
@@ -268,7 +268,7 @@ msgid ""
 "identifiable information."
 msgstr ""
 
-#: mighty/applications/dataprotect/choices.py:16
+#: mighty/applications/dataprotect/choices.py:19
 msgid ""
 "These cookies allow us to count visits and traffic sources so we can measure "
 "and improve the performance of our site. They help us to know which pages "
@@ -278,7 +278,7 @@ msgid ""
 "site, and will not be able to monitor its performance."
 msgstr ""
 
-#: mighty/applications/dataprotect/choices.py:17
+#: mighty/applications/dataprotect/choices.py:22
 msgid ""
 "These cookies enable the website to provide enhanced functionality and "
 "personalisation. They may be set by us or by third party providers whose "
@@ -286,7 +286,7 @@ msgid ""
 "some or all of these services may not function properly."
 msgstr ""
 
-#: mighty/applications/dataprotect/choices.py:18
+#: mighty/applications/dataprotect/choices.py:25
 msgid ""
 "These cookies may be set through our site by our advertising partners. They "
 "may be used by those companies to build a profile of your interests and show "
@@ -296,7 +296,7 @@ msgid ""
 "advertising."
 msgstr ""
 
-#: mighty/applications/dataprotect/choices.py:19
+#: mighty/applications/dataprotect/choices.py:28
 msgid ""
 "These cookies are set by a range of social media services that we have added "
 "to the site to enable you to share our content with your friends and "
@@ -318,87 +318,87 @@ msgstr ""
 msgid "key type"
 msgstr ""
 
-#: mighty/applications/extend/translates.py:8
+#: mighty/applications/extend/translates.py:9
 msgid ""
 "It is a 64-bit integer, much like an IntegerField except that it is "
 "guaranteed to fit numbers from -9223372036854775808 to 9223372036854775807."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:9
+#: mighty/applications/extend/translates.py:11
 msgid "A field to store raw binary data."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:10
+#: mighty/applications/extend/translates.py:12
 msgid "A true/false field."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:11
+#: mighty/applications/extend/translates.py:13
 msgid "It is a date, represented in Python by a datetime.date instance."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:12
+#: mighty/applications/extend/translates.py:14
 msgid "A date, represented in Python by a datetime.date instance"
 msgstr ""
 
-#: mighty/applications/extend/translates.py:13
+#: mighty/applications/extend/translates.py:16
 msgid ""
 "It is a fixed-precision decimal number, represented in Python by a Decimal "
 "instance."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:14
+#: mighty/applications/extend/translates.py:18
 msgid "A field for storing periods of time."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:15
+#: mighty/applications/extend/translates.py:20
 msgid "It is a CharField that checks that the value is a valid email address."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:16
+#: mighty/applications/extend/translates.py:22
 msgid "It is a file-upload field."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:17
+#: mighty/applications/extend/translates.py:24
 msgid ""
 "It is a floating-point number represented in Python by a float instance."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:18
+#: mighty/applications/extend/translates.py:27
 msgid ""
 "It inherits all attributes and methods from FileField, but also validates "
 "that the uploaded object is a valid image."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:19
+#: mighty/applications/extend/translates.py:30
 msgid ""
 "It is an integer field. Values from -2147483648 to 2147483647 are safe in "
 "all databases supported by Django."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:20
+#: mighty/applications/extend/translates.py:33
 msgid ""
 "It is like an IntegerField, but only allows values under a certain (database-"
 "dependent) point."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:21
+#: mighty/applications/extend/translates.py:36
 msgid ""
 "A large text field. The default form widget for this field is a Textarea."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:22
+#: mighty/applications/extend/translates.py:38
 msgid "A time, represented in Python by a datetime.time instance."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:23
+#: mighty/applications/extend/translates.py:39
 msgid "A CharField for a URL, validated by URLValidator."
 msgstr ""
 
-#: mighty/applications/extend/translates.py:25
+#: mighty/applications/extend/translates.py:41
 msgid "Value"
 msgstr ""
 
-#: mighty/applications/extend/translates.py:26
+#: mighty/applications/extend/translates.py:42
 msgid "Values"
 msgstr ""
 
@@ -406,6 +406,7 @@ msgstr ""
 #: mighty/applications/messenger/templates/admin/missive_check.html:17
 #: mighty/applications/messenger/templates/admin/missivecancel.html:9
 #: mighty/applications/messenger/templates/admin/missives.html:17
+#: mighty/applications/messenger/templates/admin/reporting_missive.html:7
 #: mighty/applications/shop/templates/admin/do_bill.html:6
 #: mighty/applications/shop/templates/admin/shop_exports.html:13
 #: mighty/applications/shop/templates/admin/try_to_charge.html:6
@@ -422,6 +423,7 @@ msgstr ""
 #: mighty/templates/admin/remove_18102023_base.html:61
 #: mighty/templates/admin/show_urls.html:18
 #: mighty/templates/admin/supervision/supervision.html:22
+#: mighty/templates/admin/template_variable.html:18
 msgid "Home"
 msgstr ""
 
@@ -433,131 +435,119 @@ msgstr ""
 msgid "logs"
 msgstr ""
 
-#: mighty/applications/logger/translates.py:6
+#: mighty/applications/logger/translates.py:7
 msgid ""
 "The tuple of arguments merged into msg to produce message, or a dict whose "
 "values are used for the merge (when there is only one argument, and it is a "
 "dictionary)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:7
+#: mighty/applications/logger/translates.py:10
 msgid ""
 "Human-readable time when the LogRecord was created. By default this is of "
 "the form '2003-07-08 16:49:45,896' (the numbers after the comma are "
 "millisecond portion of the time)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:8
+#: mighty/applications/logger/translates.py:12
 msgid "Time when the LogRecord was created (as returned by time.time())."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:9
+#: mighty/applications/logger/translates.py:14
 msgid ""
 "Exception tuple (à la sys.exc_info) or, if no exception has occurred, None."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:10
+#: mighty/applications/logger/translates.py:16
 msgid "Filename portion of pathname."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:11
+#: mighty/applications/logger/translates.py:17
 msgid "Name of function containing the logging call."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:12
+#: mighty/applications/logger/translates.py:19
 msgid ""
 "Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', "
 "'CRITICAL')."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:13
+#: mighty/applications/logger/translates.py:22
 msgid ""
 "Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, "
 "CRITICAL)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:14
+#: mighty/applications/logger/translates.py:25
 msgid "Source line number where the logging call was issued (if available)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:15
+#: mighty/applications/logger/translates.py:28
 msgid ""
-"The logged message, computed as msg % args. This is set when Formatter."
-"format() is invoked."
+"The logged message, computed as msg % args. This is set when "
+"Formatter.format() is invoked."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:16
+#: mighty/applications/logger/translates.py:30
 msgid "Module (name portion of filename)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:17
+#: mighty/applications/logger/translates.py:31
 msgid "Millisecond portion of the time when the LogRecord was created."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:18
+#: mighty/applications/logger/translates.py:33
 msgid ""
 "The format string passed in the original logging call. Merged with args to "
 "produce message, or an arbitrary object (see Utilisation d'objets "
 "arbitraires comme messages)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:19
+#: mighty/applications/logger/translates.py:35
 msgid "Name of the logger used to log the call."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:20
+#: mighty/applications/logger/translates.py:37
 msgid ""
 "Full pathname of the source file where the logging call was issued (if "
 "available)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:21
+#: mighty/applications/logger/translates.py:39
 msgid "Process ID (if available)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:22
+#: mighty/applications/logger/translates.py:40
 msgid "Process name (if available)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:23
+#: mighty/applications/logger/translates.py:42
 msgid ""
 "Time in milliseconds when the LogRecord was created, relative to the time "
 "the logging module was loaded."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:24
+#: mighty/applications/logger/translates.py:45
 msgid ""
 "Stack frame information (where available) from the bottom of the stack in "
 "the current thread, up to and including the stack frame of the logging call "
 "which resulted in the creation of this record."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:25
+#: mighty/applications/logger/translates.py:47
 msgid "Thread ID (if available)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:26
+#: mighty/applications/logger/translates.py:48
 msgid "Thread name (if available)."
 msgstr ""
 
-#: mighty/applications/logger/translates.py:28
+#: mighty/applications/logger/translates.py:50
 msgid "change log"
 msgstr ""
 
-#: mighty/applications/logger/translates.py:29
+#: mighty/applications/logger/translates.py:51
 msgid "changes logs"
-msgstr ""
-
-#: mighty/applications/logger/translates.py:31
-msgid "access log"
-msgstr ""
-
-#: mighty/applications/logger/translates.py:32
-msgid "access logs"
-msgstr ""
-
-#: mighty/applications/logger/translates.py:34
-msgid "access date"
 msgstr ""
 
 #: mighty/applications/messenger/choices.py:3
@@ -580,290 +570,290 @@ msgstr ""
 msgid "The server is ready."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:8
+#: mighty/applications/messenger/choices.py:9
 msgid ""
 "The server is closing its transmission channel. It can come with side "
 "messages like “Goodbye” or “Closing connection”."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:9
+#: mighty/applications/messenger/choices.py:12
 msgid ""
 "Its typical side message is “Requested mail action okay completed”: meaning "
 "that the server has transmitted a message."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:10
+#: mighty/applications/messenger/choices.py:15
 msgid ""
 "“User not local will forward”: the recipient’s account is not on the present "
 "server, so it will be relayed to another."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:11
+#: mighty/applications/messenger/choices.py:18
 msgid ""
 "The server cannot verify the user, but it will try to deliver the message "
 "anyway."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:12
+#: mighty/applications/messenger/choices.py:21
 msgid ""
 "The side message can be very cryptic (“Start mail input end <CRLF>.<CRLF>”). "
 "It’s the typical response to the DATA command."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:13
+#: mighty/applications/messenger/choices.py:24
 msgid ""
 "“Timeout connection problem”: there have been issues during the message "
 "transfer."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:14
+#: mighty/applications/messenger/choices.py:27
 msgid ""
 "The service is unavailable due to a connection problem: it may refer to an "
 "exceeded limit of simultaneous connections, or a more general temporary "
 "problem."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:15
+#: mighty/applications/messenger/choices.py:29
 msgid "The recipient’s mailbox has exceeded its storage limit."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:16
+#: mighty/applications/messenger/choices.py:31
 msgid ""
 "Not enough space on the disk, or an “out of memory” condition due to a file "
 "overload."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:17
+#: mighty/applications/messenger/choices.py:34
 msgid ""
 "Typical side-message: “The recipient’s Exchange Server incoming mail queue "
 "has been stopped”."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:18
+#: mighty/applications/messenger/choices.py:36
 msgid "The recipient’s server is not responding."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:19
+#: mighty/applications/messenger/choices.py:37
 msgid "The connection was dropped during the transmission."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:20
+#: mighty/applications/messenger/choices.py:39
 msgid ""
 "The maximum hop count was exceeded for the message: an internal loop has "
 "occurred."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:21
+#: mighty/applications/messenger/choices.py:42
 msgid ""
 "Your outgoing message timed out because of issues concerning the incoming "
 "server."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:22
+#: mighty/applications/messenger/choices.py:44
 msgid "A routing error."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:23
+#: mighty/applications/messenger/choices.py:46
 msgid ""
 "Requested action not taken – The user’s mailbox is unavailable. The mailbox "
 "has been corrupted or placed on an offline server, or your email hasn’t been "
 "accepted for IP problems or blacklisting."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:24
+#: mighty/applications/messenger/choices.py:49
 msgid ""
 "Requested action aborted – Local error in processing. Your ISP’s server or "
 "the server that got a first relay from yours has encountered a connection "
 "problem."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:25
+#: mighty/applications/messenger/choices.py:52
 msgid ""
 "Too many emails sent or too many recipients: more in general, a server "
 "storage limit exceeded."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:26
+#: mighty/applications/messenger/choices.py:55
 msgid ""
 "An error of your mail server, often due to an issue of the local anti-spam "
 "filter."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:27
+#: mighty/applications/messenger/choices.py:57
 msgid "A syntax error: the server couldn’t recognize the command."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:28
+#: mighty/applications/messenger/choices.py:59
 msgid ""
 "Another syntax error, not in the command but in its parameters or arguments."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:29
+#: mighty/applications/messenger/choices.py:61
 msgid "The command is not implemented."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:30
+#: mighty/applications/messenger/choices.py:63
 msgid ""
 "The server has encountered a bad sequence of commands, or it requires an "
 "authentication."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:31
+#: mighty/applications/messenger/choices.py:65
 msgid "A command parameter is not implemented."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:32
-#: mighty/applications/messenger/choices.py:33
+#: mighty/applications/messenger/choices.py:66
+#: mighty/applications/messenger/choices.py:67
 msgid "Bad email address."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:34
+#: mighty/applications/messenger/choices.py:69
 msgid ""
 "A DNS error: the host server for the recipient’s domain name cannot be found."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:35
+#: mighty/applications/messenger/choices.py:72
 msgid ""
 "Address type is incorrect: another problem concerning address misspelling. "
 "In few cases, however, it’s related to an authentication issue."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:36
+#: mighty/applications/messenger/choices.py:75
 msgid "The total size of your mailing exceeds the recipient server’s limits."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:37
+#: mighty/applications/messenger/choices.py:78
 msgid ""
 "Normally, an authentication problem. But sometimes it’s about the "
 "recipient’s server blacklisting yours, or an invalid email address."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:38
+#: mighty/applications/messenger/choices.py:81
 msgid ""
 "The recipient address rejected your message: normally, it’s an error caused "
 "by an anti-spam filter."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:39
+#: mighty/applications/messenger/choices.py:84
 msgid "It usually defines a non-existent email address on the remote side."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:40
+#: mighty/applications/messenger/choices.py:87
 msgid ""
 "“User not local or invalid address – Relay denied”. Meaning, if both your "
 "address and the recipient’s are not locally hosted by the server, a relay "
 "can be interrupted."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:41
+#: mighty/applications/messenger/choices.py:90
 msgid ""
 "“Requested mail actions aborted – Exceeded storage allocation”: simply put, "
 "the recipient’s mailbox has exceeded its limits."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:42
+#: mighty/applications/messenger/choices.py:93
 msgid ""
 "“Requested action not taken – Mailbox name invalid”. That is, there’s an "
 "incorrect email address into the recipients line."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:43
+#: mighty/applications/messenger/choices.py:96
 msgid ""
 "This means that the transaction has failed. It’s a permanent error and the "
 "server will not try to send the message again."
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:57
+#: mighty/applications/messenger/choices.py:111
 msgid "Prepare"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:58
+#: mighty/applications/messenger/choices.py:112
 msgid "Sent"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:59
+#: mighty/applications/messenger/choices.py:113
 msgid "Pending"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:60
+#: mighty/applications/messenger/choices.py:114
 msgid "Processed"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:61
+#: mighty/applications/messenger/choices.py:115
 msgid "Received"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:62
+#: mighty/applications/messenger/choices.py:116
 msgid "Accepted"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:63
+#: mighty/applications/messenger/choices.py:117
 msgid "Rejected"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:64
+#: mighty/applications/messenger/choices.py:118
 msgid "Cancelled"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:65
+#: mighty/applications/messenger/choices.py:119
 msgid "Open"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:66
+#: mighty/applications/messenger/choices.py:120
 #: mighty/applications/shop/choices.py:82
 msgid "Error"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:67
+#: mighty/applications/messenger/choices.py:121
 msgid "File test"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:78
+#: mighty/applications/messenger/choices.py:132
 #: mighty/applications/messenger/translates.py:6
 #: mighty/applications/twofactor/translates.py:6
 msgid "email"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:79
+#: mighty/applications/messenger/choices.py:133
 msgid "emailar"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:80
+#: mighty/applications/messenger/choices.py:134
 #: mighty/applications/messenger/translates.py:7
 #: mighty/applications/twofactor/translates.py:7
 msgid "sms"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:81
+#: mighty/applications/messenger/choices.py:135
 #: mighty/applications/messenger/translates.py:8
 msgid "postal"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:82
+#: mighty/applications/messenger/choices.py:136
 msgid "postalar"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:83
+#: mighty/applications/messenger/choices.py:137
 msgid "web"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:84
+#: mighty/applications/messenger/choices.py:138
 msgid "app"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:88
+#: mighty/applications/messenger/choices.py:142
 msgid "economic"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:89
+#: mighty/applications/messenger/choices.py:143
 msgid "normal"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:90
+#: mighty/applications/messenger/choices.py:144
 msgid "recommanded"
 msgstr ""
 
-#: mighty/applications/messenger/choices.py:91
+#: mighty/applications/messenger/choices.py:145
 msgid "urgent"
 msgstr ""
 
@@ -909,10 +899,6 @@ msgstr ""
 
 #: mighty/applications/nationality/translates.py:10
 msgid "numbering"
-msgstr ""
-
-#: mighty/applications/nationality/translates.py:11
-msgid "flag"
 msgstr ""
 
 #: mighty/applications/shop/choices.py:9
@@ -1080,11 +1066,11 @@ msgstr ""
 msgid "Domaine principal de votre société"
 msgstr ""
 
-#: mighty/applications/tenant/choices.py:33
+#: mighty/applications/tenant/choices.py:34
 msgid "Préfixe pour les emails envoyé par la plateforme prefix@domain.com"
 msgstr ""
 
-#: mighty/applications/tenant/choices.py:34
+#: mighty/applications/tenant/choices.py:36
 msgid "https://domain.com"
 msgstr ""
 
@@ -1194,54 +1180,54 @@ msgstr ""
 msgid "phone number, email or username"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:14
+#: mighty/applications/twofactor/translates.py:15
 msgid ""
 "please enter a correct email, phone or username. Note that both fields may "
 "be case-sensitive."
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:15
+#: mighty/applications/twofactor/translates.py:18
 #, python-format
 msgid ""
 "please enter a correct %s and password. Note that both fields may be case-"
 "sensitive."
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:16
+#: mighty/applications/twofactor/translates.py:20
 msgid "this account is inactive."
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:17
+#: mighty/applications/twofactor/translates.py:21
 msgid "unable to send message"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:18
+#: mighty/applications/twofactor/translates.py:22
 msgid "This authentication method is not allowed"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:19
+#: mighty/applications/twofactor/translates.py:23
 msgid "Can't found user"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:21
+#: mighty/applications/twofactor/translates.py:25
 #, python-format
 msgid "%(domain)s - Code de connexion"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:22
+#: mighty/applications/twofactor/translates.py:27
 #, python-format
 msgid ""
 "%(code)s est votre code pour accéder a votre session %(domain)s: %(code)s"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:23
+#: mighty/applications/twofactor/translates.py:30
 #, python-format
 msgid ""
 "Afin de vous authentifier et accéder à votre espace  %(domain)s, veuillez "
 "copier le code suivant : %(code)s"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:24
+#: mighty/applications/twofactor/translates.py:32
 #, python-format
 msgid ""
 "%(domain)s  - Code de connexion\n"
@@ -1253,92 +1239,92 @@ msgid ""
 "A tout de suite sur %(domain)s !\n"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:30
+#: mighty/applications/twofactor/translates.py:38
 #, python-format
 msgid "Bonjour, Votre code de connexion %(domain)s est %(code)s."
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:33
+#: mighty/applications/twofactor/translates.py:41
 msgid "Don't have an account? Register"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:34
+#: mighty/applications/twofactor/translates.py:42
 msgid "I already have an account"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:35
+#: mighty/applications/twofactor/translates.py:43
 msgid "I forget my password"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:36
+#: mighty/applications/twofactor/translates.py:44
 msgid "I did not get the sms"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:37
+#: mighty/applications/twofactor/translates.py:45
 msgid "I did not get the mail"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:40
+#: mighty/applications/twofactor/translates.py:48
 msgid "enter the code received by Email"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:41
+#: mighty/applications/twofactor/translates.py:49
 msgid "enter the code received by SMS"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:42
+#: mighty/applications/twofactor/translates.py:50
 msgid "enter your password"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:43
+#: mighty/applications/twofactor/translates.py:51
 msgid "You are disconnected"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:45
+#: mighty/applications/twofactor/translates.py:53
 msgid "method authentication"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:46
+#: mighty/applications/twofactor/translates.py:54
 msgid "basic authentication"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:47
-#: mighty/applications/twofactor/translates.py:58
+#: mighty/applications/twofactor/translates.py:55
+#: mighty/applications/twofactor/translates.py:66
 msgid "sign in"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:48
+#: mighty/applications/twofactor/translates.py:56
 msgid "sign up"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:50
+#: mighty/applications/twofactor/translates.py:58
 #: mighty/applications/user/translates.py:27
 msgid "Email"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:51
+#: mighty/applications/twofactor/translates.py:59
 msgid "SMS"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:52
+#: mighty/applications/twofactor/translates.py:60
 msgid "password"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:54
+#: mighty/applications/twofactor/translates.py:62
 #, python-format
 msgid "An authenticate code has been sent to the email address %s"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:55
+#: mighty/applications/twofactor/translates.py:63
 #, python-format
 msgid "An authenticate code has been sent to the phone number %s"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:57
+#: mighty/applications/twofactor/translates.py:65
 msgid "registration"
 msgstr ""
 
-#: mighty/applications/twofactor/translates.py:59
+#: mighty/applications/twofactor/translates.py:67
 msgid "see you soon"
 msgstr ""
 
@@ -1409,6 +1395,14 @@ msgstr ""
 msgid "finished"
 msgstr ""
 
+#: mighty/applications/user/models/phone.py:42
+msgid "primary"
+msgstr ""
+
+#: mighty/applications/user/models/phone.py:43
+msgid "verified"
+msgstr ""
+
 #: mighty/applications/user/translates.py:5
 msgid "user"
 msgstr ""
@@ -1458,17 +1452,16 @@ msgid "Profil"
 msgstr ""
 
 #: mighty/applications/user/translates.py:33
-#, python-format
 msgid ""
-"J'accepte les <a href=\"%s\" target=\"blank_\">CGU</a> et la <a href=\"%s\" "
+"J'accepte les <a href=\"{}\" target=\"blank_\">CGU</a> et la <a href=\"{}\" "
 "target=\"blank_\">Politique de Confidentialité</a>"
 msgstr ""
 
-#: mighty/applications/user/translates.py:38
+#: mighty/applications/user/translates.py:39
 msgid "user with this Phone already exists."
 msgstr ""
 
-#: mighty/applications/user/translates.py:39
+#: mighty/applications/user/translates.py:40
 msgid "user with this Email already exists."
 msgstr ""
 
@@ -2146,17 +2139,17 @@ msgstr ""
 msgid "Object used to start, he can be used in filter_related"
 msgstr ""
 
-#: mighty/translates/reporting.py:27
+#: mighty/translates/reporting.py:28
 msgid ""
 "Object targeted by the report, he can be used in filter_config and manager "
 "field"
 msgstr ""
 
-#: mighty/translates/reporting.py:28
+#: mighty/translates/reporting.py:30
 msgid "You can change the manager, default is 'objects'"
 msgstr ""
 
-#: mighty/translates/reporting.py:29
+#: mighty/translates/reporting.py:31
 msgid ""
 "You can config every fields used.\n"
 "    - data: field name\n"
@@ -2173,19 +2166,19 @@ msgid ""
 "    - class: class used (not impleted yet)"
 msgstr ""
 
-#: mighty/translates/reporting.py:39
+#: mighty/translates/reporting.py:41
 msgid ""
 "Filter used in the queryset.\n"
 "example: {\"field__gte\": 10, \"field__lte\": 20}\n"
 msgstr ""
 
-#: mighty/translates/reporting.py:42
+#: mighty/translates/reporting.py:44
 msgid ""
 "Filter used in the queryset using the startup object values.\n"
 "example: {\"target_field\": \"object_field\"}\n"
 msgstr ""
 
-#: mighty/translates/reporting.py:45
+#: mighty/translates/reporting.py:47
 msgid ""
 "Filter used in the queryset using the request data.\n"
 "example: {\"target_field\": \"object_field\"}\n"
