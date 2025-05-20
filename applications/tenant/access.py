@@ -97,7 +97,7 @@ class TenantAccess(RequestAccess):
     def current_tenant_group(self):
         return get_descendant_value(
             'current_tenant.group', self.request_access.user
-        )
+        ) or self.current_group # risk of infinite loop
 
     @property
     def tenant_groups(self):

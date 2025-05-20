@@ -262,9 +262,16 @@ class User(AbstractUser, Base, Image, AddressNoBase):
         useragent = ContentType.objects.get(
             app_label='mighty', model='useragent'
         ).model_class()
-        _obj, _created = useragent.objects.get_or_create(
-            useragent=request.META['HTTP_USER_AGENT'], user=self
-        )
+        try:
+            _obj, _created = useragent.objects.get_or_create(
+                useragent=request.META['HTTP_USER_AGENT'], user=self
+            )
+        except useragent.MultipleObjectsReturned:
+            usag = useragent.objects.filter(
+                useragent=request.META['HTTP_USER_AGENT'], user=self
+            )
+            last = usag.last()
+            usag.exclude(pk=last.pk).delete()
         logger.info(
             'usereagent: {}'.format(request.META['HTTP_USER_AGENT']),
             extra={'user': self},
