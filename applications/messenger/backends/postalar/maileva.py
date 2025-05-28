@@ -206,7 +206,8 @@ class MissiveBackend(MissiveBackend):
             'sender_address_line_5': self.sender_address_line_5,
             'sender_address_line_6': self.sender_address_line_6,
             'sender_country_code': self.sender_country_code,
-            'notification_treat_undelivered_mail': undelivered,
+            #'notification_treat_undelivered_mail': undelivered,
+            'envelope_windows_type': 'DOUBLE',
         }
 
         if self.missive.model == _c.MODE_POSTALAR:

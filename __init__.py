@@ -256,28 +256,46 @@ exclude = [
 ]
 
 
-"""
-Make a file with the sql result in json
-[clas] Config class to override
-[conf] dict() contain the config to override
-"""
+def over_config(obj, conf, stdtypes=None):
+    """
+    Met à jour récursivement les attributs d'un objet `obj` à partir d'un dictionnaire `conf`.
+    Les attributs sont mis à jour selon leur type, en fusionnant les mappings et en remplaçant les scalaires.
+    """
+    if not conf:
+        return
 
+    # Types standards à prendre en charge si non spécifiés
+    if stdtypes is None:
+        stdtypes = {
+            'mapping': (dict,),
+            'numeric': (int, float, complex),
+            'text': (str,),
+            'sequential': (list, tuple, range),
+        }
 
-def over_config(clas, conf):
-    if conf:
-        settable = (
-            stdtypes['mapping']
-            + stdtypes['numeric']
-            + stdtypes['text']
-            + stdtypes['sequential']
-        )
-        for key, val in conf.items():
-            if hasattr(clas, key) and type(getattr(clas, key)) in settable:
-                if type(getattr(clas, key)) in stdtypes['mapping']:
-                    getattr(clas, key).update(val)
-                else:
-                    setattr(clas, key, val)
-            elif type(getattr(clas, key)) == type:
-                over_config(getattr(clas, key), val)
-            else:
-                setattr(clas, key, val)
+    settable_types = (
+        stdtypes['mapping']
+        + stdtypes['numeric']
+        + stdtypes['text']
+        + stdtypes['sequential']
+    )
+
+    for key, val in conf.items():
+        if not hasattr(obj, key):
+            setattr(obj, key, val)
+            continue
+
+        current_attr = getattr(obj, key)
+
+        # Si l'attribut est un sous-objet de configuration
+        if isinstance(current_attr, type):
+            over_config(current_attr, val, stdtypes)
+        # Si l'attribut est un mapping (ex: dict), on fusionne
+        elif isinstance(current_attr, stdtypes['mapping']) and isinstance(val, dict):
+            current_attr.update(val)
+        # Si l'attribut est d'un type simple (texte, nombre, séquence), on remplace
+        elif isinstance(current_attr, settable_types):
+            setattr(obj, key, val)
+        else:
+            # Fallback : remplacement brut
+            setattr(obj, key, val)
