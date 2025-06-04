@@ -160,6 +160,8 @@ class AddressNoBase(models.Model):
 
     @property
     def city(self):
+        if not self.country_code:
+            return self.city_default
         formatting = f'city_{self.country_code.lower()}'
         return (
             getattr(self, formatting)
