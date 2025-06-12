@@ -192,35 +192,6 @@ if 'mighty.applications.extend' in settings.INSTALLED_APPS:
         pass
 
 
-# Shop
-if 'mighty.applications.shop' in settings.INSTALLED_APPS:
-    from mighty.applications.shop import models as models_shop
-
-    class ShopService(models_shop.ShopService):
-        pass
-
-    class Offer(models_shop.Offer):
-        pass
-
-    class Subscription(models_shop.Subscription):
-        pass
-
-    class Discount(models_shop.Discount):
-        pass
-
-    class ShopItem(models_shop.ShopItem):
-        pass
-
-    class Bill(models_shop.Bill):
-        pass
-
-    class PaymentMethod(models_shop.PaymentMethod):
-        pass
-
-    class SubscriptionRequest(models_shop.SubscriptionRequest):
-        pass
-
-
 if conf.enable_mimetype:
     from mighty.models.filesystem import MimeType
 
