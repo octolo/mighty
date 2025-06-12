@@ -321,43 +321,6 @@ if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
         pass
 
 
-# Shop
-if 'mighty.applications.shop' in settings.INSTALLED_APPS:
-    from mighty.applications.shop import admin as admin_shop
-
-    @admin.register(all_models.ShopService)
-    class ShopServiceAdmin(admin_shop.ServiceAdmin):
-        pass
-
-    @admin.register(all_models.ShopItem)
-    class ShopItemAdmin(admin_shop.ItemAdmin):
-        pass
-
-    @admin.register(all_models.Offer)
-    class OfferAdmin(admin_shop.OfferAdmin):
-        pass
-
-    @admin.register(all_models.Subscription)
-    class SubscriptionAdmin(admin_shop.SubscriptionAdmin):
-        pass
-
-    @admin.register(all_models.Bill)
-    class BillAdmin(admin_shop.BillAdmin):
-        pass
-
-    @admin.register(all_models.Discount)
-    class DiscountAdmin(admin_shop.DiscountAdmin):
-        pass
-
-    @admin.register(all_models.PaymentMethod)
-    class PaymentMethodAdmin(admin_shop.PaymentMethodAdmin):
-        pass
-
-    @admin.register(all_models.SubscriptionRequest)
-    class SubscriptionRequestAdmin(admin_shop.SubscriptionRequestAdmin):
-        pass
-
-
 if conf.enable_mimetype:
     from mighty.models import MimeType
 
