@@ -1,5 +1,6 @@
-from django.db.models import Q
+from functools import cached_property
 
+from django.db.models import Q
 from mighty.applications.tenant import get_tenant_model
 from mighty.applications.tenant.apps import TenantConfig
 from mighty.functions import get_descendant_value
@@ -32,11 +33,11 @@ class TenantAccess(RequestAccess):
         return Q(**{prefix + self.group_way: self.current_group})
 
     def Q_groups_associated(self, prefix=''):
-        return Q(**{prefix + self.group_way + '__in': self.tenant_groups})
+        return Q(**{prefix + self.group_way + '_id__in': self.tenant_groups_pk})
 
     # Filter query
     def Q_is_tenant(self, prefix=''):
-        return Q(**{prefix + self.group_way + '__in': self.tenant_groups})
+        return Q(**{prefix + self.group_way + '_id__in': self.tenant_groups_pk})
 
     # Test
     def is_tenant(self, group, pk=None):
@@ -63,7 +64,7 @@ class TenantAccess(RequestAccess):
         ).exists()
 
     # Properties
-    @property
+    @cached_property
     def current_group(self):
         if self.request_access:
             named_id = self.request_access.parser_context['kwargs'].get(
@@ -99,14 +100,14 @@ class TenantAccess(RequestAccess):
             'current_tenant.group', self.request_access.user
         ) or self.current_group # risk of infinite loop
 
-    @property
+    @cached_property
     def tenant_groups(self):
         return [
             tenant.group
             for tenant in self.request_access.user.user_tenant.all()
         ]
 
-    @property
+    @cached_property
     def tenant_groups_pk(self):
         return self.request_access.user.user_tenant.values_list(
             'group_id', flat=True
