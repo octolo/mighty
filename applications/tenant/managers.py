@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -15,9 +16,11 @@ class RoleManager(models.Manager.from_queryset(models.QuerySet)):
         )
 
 
-Selected_related = ('group', 'user')
-Prefetch_related = ('roles',)
+sr_conf = getattr(settings, 'TENANT_SELECTED_RELATED', ())
+Selected_related = ('group', 'user', *sr_conf)
 
+pr_conf = getattr(settings, 'TENANT_PREFETCH_RELATED', ())
+Prefetch_related = ('roles', *pr_conf)
 
 class TenantManager(models.Manager.from_queryset(models.QuerySet)):
     def get_queryset(self):
