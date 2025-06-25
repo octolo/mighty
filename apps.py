@@ -77,6 +77,11 @@ class Config:
         ],
     }
     pdf_options = {
+        'quiet': '',
+        'disable-smart-shrinking': '',
+        'no-outline': '',
+        'lowquality': '',
+        'javascript-delay': '0',
         'encoding': 'UTF-8',
         'page-size': 'A4',
         'margin-top': '0.75in',
