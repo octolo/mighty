@@ -1,14 +1,43 @@
 <style type="text/css">
-table, figure table {
-    width: 100%%;
-    border-collapse: collapse;
+* {
+    font-family: "Roboto Condensed", sans-serif;
+    box-sizing: border-box;
 }
 
-td, th { border: 1px solid black; }
-th { background-color: #dde0f4; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    page-break-inside: auto;
+}
+
+table tr {
+  page-break-inside: avoid;
+}
+
+table th {
+    border: 1px solid #000;
+    font-weight: bold;
+    text-align: center;
+}
+
+table td {
+    border: 1px solid #000;
+    padding: 6px;
+}
+
+table th { background-color: #dde0f4; }
+
 thead { display: table-header-group; }
 tfoot { display: table-row-group; }
+
 tr { page-break-inside: avoid; }
+
+table td img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
 
 .footer table td {
     border: 0px;
