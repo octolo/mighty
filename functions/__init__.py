@@ -905,14 +905,14 @@ def pretty_size_short(size, unit=None):
     return conf.FileSystem.unit % (str(size), unit)
 
 
-def scrap_xpath(xpath, *args, **kwargs):
-    from lxml import html
+# def scrap_xpath(xpath, *args, **kwargs):
+#     from lxml import html
 
-    content = kwargs.get('content')
-    url = kwargs.get('url')
-    content = requests.get(url).content if url else content
-    content = html.fromstring(content)
-    return content.xpath(xpath)
+#     content = kwargs.get('content')
+#     url = kwargs.get('url')
+#     content = requests.get(url).content if url else content
+#     content = html.fromstring(content)
+#     return content.xpath(xpath)
 
 
 def url_json_data(url):
