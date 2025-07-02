@@ -3,7 +3,6 @@ from django.contrib import admin
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
-
 from mighty import fields
 from mighty import models as all_models
 from mighty.admin.models import BaseAdmin
@@ -51,10 +50,42 @@ class BackendAdmin(BaseAdmin):
 @admin.register(all_models.Reporting)
 class ReportingAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': fields.reporting}),)
+    fieldsets = ((None, {'classes': ('wide',), 'fields': (
+        'name',
+        'is_detail',
+        'file_name',
+        'content_type',
+        'target',
+        'manager',
+        'config',
+    )}),)
     list_display = ('name', 'content_type', 'target')
     search_fields = ('service',)
     raw_id_fields = ('content_type', 'target')
+
+    def custom_fieldset(self, model, admin_site):
+        self.add_field('filter', (
+            'filter_config',
+            'filter_related',
+            'filter_request',
+        ))
+        self.add_field('excel', (
+            'can_excel',
+            'cfg_excel',
+        ))
+        self.add_field('csv', (
+            'can_csv',
+            'cfg_csv',
+        ))
+        self.add_field('pdf', (
+            'can_pdf',
+            'cfg_pdf',
+            'html_pdf',
+        ))
+        self.add_field('email', (
+            'email_html',
+        ))
+
 
 
 @admin.register(all_models.RegisterTask)

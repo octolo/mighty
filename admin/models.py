@@ -4,12 +4,9 @@ from functools import update_wrapper
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
 from django.contrib.admin.exceptions import DisallowedModelAdminToField
-from django.contrib.admin.options import (
-    IS_POPUP_VAR,
-    TO_FIELD_VAR,
-    csrf_protect_m,
-    get_content_type_for_model,
-)
+from django.contrib.admin.options import (IS_POPUP_VAR, TO_FIELD_VAR,
+                                          csrf_protect_m,
+                                          get_content_type_for_model)
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.admin.utils import flatten_fieldsets, unquote
 from django.contrib.auth import get_permission_codename
@@ -22,7 +19,6 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django_json_widget.widgets import JSONEditorWidget
-
 from mighty import decorators as decfields
 from mighty import fields
 from mighty import translates as _m
@@ -883,7 +879,6 @@ class BaseAdmin(admin.ModelAdmin):
 
     def modelchangelog_view(self, request, object_id, extra_context=None):
         from django.core.paginator import Paginator
-
         from mighty.models import ModelChangeLog
 
         opts = self.model._meta

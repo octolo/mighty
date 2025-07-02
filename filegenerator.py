@@ -10,10 +10,9 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.template import Context, Template
 from django.template.loader import get_template
 from django.utils.text import get_valid_filename
-from openpyxl import Workbook
-
 from mighty.apps import MightyConfig as conf
 from mighty.functions import make_searchable
+from openpyxl import Workbook
 
 
 class StreamingBuffer:
@@ -30,6 +29,11 @@ class FileGenerator:
         'application/vnd.ms-excel': 'xls',
         'application/vnd.ms-excel': 'excel',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+        'application/pdf': 'pdf',
+        'text/html': 'html',
+        'application/json': 'json',
+        'application/xml': 'xml',
+        'text/plain': 'txt',
     }
     row = 0
     col = 0
@@ -125,6 +129,57 @@ class FileGenerator:
         response['Content-Disposition'] = (
             'attachment;filename=' + self.get_filename(ext)
         )
+        return response
+
+    # PDF
+    def iter_items_pdf(self, items):
+        headers = ''.join(f'<th>{field}</th>' for field in self.fields)
+        rows = ''.join(
+            f'<tr>{"".join(f"<td>{i if i is not None else ""}</td>" for i in item)}</tr>'
+            for item in items
+        )
+        return f'<table><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
+
+    def generate_pdf_from_html(self, output_path=None):
+        from datetime import datetime
+
+        import pdfkit
+
+        html_string = Template(self.html).render(Context({
+            'table': self.iter_items_pdf(self.items),
+            'document_name': self.filename,
+        }))
+        # Date du jour formatée
+        today = datetime.today().strftime('%d/%m/%Y')
+
+        # Texte de pied de page avec pagination
+        footer_text = f"Octolo certifié en date du {today} - Page [page] sur [topage]"
+
+        # Options wkhtmltopdf
+        options = {
+            'page-size': 'A4',
+            'orientation': 'Landscape',
+            'margin-top': '20mm',
+            'margin-bottom': '20mm',
+            'margin-left': '20mm',
+            'margin-right': '20mm',
+            'encoding': 'UTF-8',
+            'enable-local-file-access': None,
+            'footer-center': footer_text,
+            'footer-font-size': '10',
+            'footer-line': '',  # Ligne de séparation (optionnel)
+        }
+        return pdfkit.from_string(html_string, output_path, options=options)
+
+    def file_pdf(self, ext, ct):
+        return self.generate_pdf_from_html(output_path=self.get_filename('pdf'))
+
+    def http_pdf(self, ext, ct):
+        pdf_bytes = self.generate_pdf_from_html(False)
+        print('-------------------')
+        print('filename', self.get_filename('pdf'))
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename={self.get_filename("pdf")}'
         return response
 
     def response_file(self, ct):
