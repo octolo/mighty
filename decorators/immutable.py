@@ -1,7 +1,6 @@
 from django.db import models
 
 
-# FIXME Immutabled field seems to be useless but called in Role.vue
 def ImmutabledModel(**kwargs):
     def decorator(obj):
         obj.immutable_config = kwargs
