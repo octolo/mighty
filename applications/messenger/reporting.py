@@ -46,7 +46,8 @@ def generate_missive_report(**kwargs):
     if mode := kwargs.get('mode'):
         missives = missives.filter(mode__in=mode)
 
-    missives = missives
+    print('missives count:', missives.count())
+    print(missives)
 
     if additional_fields := kwargs.get('additional_fields'):
         fields.extend(field for field, path in additional_fields.items() if field not in fields)
@@ -76,12 +77,15 @@ def generate_missive_report(**kwargs):
                         row[field] = getattr_recursive(missive, path, default='', default_on_error=True)
                 writer.writerow(row)
             except Exception as e:
+                print(f"Error processing missive {missive.id}: {e}")
                 pass
         return tmpfile
 
 def reporting_missive(email, **kwargs):
     additional_fields = kwargs.get('additional_fields', {})
     additional_fields.update(settings.MISSIVE_REPORTING_ADDITIONAL_FIELDS)
+    print("Generating missive report with additional fields:", additional_fields)
+    print("Report generation parameters:", kwargs)
     csvfile = generate_missive_report(additional_fields=additional_fields, **kwargs)
     missive = Missive(mode='EMAIL', target=email, subject='Missive Report', html='Please find the attached report.')
     csvfile = open(csvfile.name, 'rb')

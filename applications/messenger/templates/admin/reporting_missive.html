@@ -14,10 +14,20 @@
 
 {% block content %}
 <div id="content-main">
+    {% if form_valid %}
+    <div class="success">
+        <p>{% translate "Report generated successfully." %}</p>
+        <a href="">{% translate "New report" %}</a>
+    </div>
+    {% else %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Generate">
     </form>
+    {% endif %}
 </div>
 {% endblock %}
+
+
+<a href="">refresh</a>

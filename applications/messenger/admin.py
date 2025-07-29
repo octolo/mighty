@@ -1,7 +1,7 @@
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.template.response import TemplateResponse
-from django.http import FileResponse
+from django.contrib import messages
 
 from mighty.admin.models import BaseAdmin
 from mighty.applications.address import fields as addr_fields
@@ -172,6 +172,10 @@ class MissiveAdmin(BaseAdmin):
         extra_context['form'] = generate_form
         if generate_form.is_valid():
             generate_form.generate_report()
+            extra_context['form_valid'] = True
+            messages.success(
+                request, "Report generated successfully."
+            )
         return self.admincustom_view(
             request,
             object_id,
