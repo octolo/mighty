@@ -15,6 +15,7 @@ from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
 from mighty.functions import get_logger, setting
 from mighty.models import Missive
+from mighty.functions.facilities import getattr_recursive
 
 logger = get_logger()
 
