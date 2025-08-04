@@ -2,14 +2,16 @@ from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.template.response import TemplateResponse
 from django.contrib import messages
+from django.urls import path
 
 from mighty.admin.models import BaseAdmin
 from mighty.applications.address import fields as addr_fields
 from mighty.applications.messenger import fields, forms
 
+import json
+
 
 class MissiveAdmin(BaseAdmin):
-    change_form_template = 'admin/change_form_missives.html'
     view_on_site = False
     list_display = ('target', 'subject', 'mode', 'status')
     search_fields = ('target',)
@@ -93,56 +95,96 @@ class MissiveAdmin(BaseAdmin):
         ),
     )
 
-    def html_view(self, request, object_id, extra_context=None):
-        opts = self.model._meta
+    viewer_view_template = 'admin/missive/viewer.html'
+    viewer_view_suffix = 'viewer'
+    viewer_view_path = '<path:object_id>/viewer/'
+    viewer_view_object_tools = {'name': 'Viewer', 'url': 'viewer'}
+
+    def viewer_view(self, request, object_id, extra_context=None):
+        extra_context = extra_context or {}
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object(request, unquote(object_id), to_field)
-        context = {
-            **self.admin_site.each_context(request),
-            'object_name': str(opts.verbose_name),
-            'object': obj,
-            'opts': opts,
-            'app_label': opts.app_label,
-            'media': self.media,
-        }
+        missive = self.get_object(request, unquote(object_id), to_field)
+        extra_context['object'] = missive
         request.current_app = self.admin_site.name
-        return TemplateResponse(request, 'admin/missive.html', context)
+        return self.admincustom_view(
+            request,
+            object_id,
+            extra_context,
+            urlname=self.get_admin_urlname(self.check_view_suffix),
+            template=self.viewer_view_template,
+        )
+
+    check_view_template = 'admin/missive/check.html'
+    check_view_suffix = 'check'
+    check_view_path = '<path:object_id>/check/'
+    check_view_object_tools = {'name': 'Check', 'url': 'check'}
 
     def check_view(self, request, object_id, extra_context=None):
-        opts = self.model._meta
+        extra_context = extra_context or {}
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object(request, unquote(object_id), to_field)
-        context = {
-            **self.admin_site.each_context(request),
-            'object_name': str(opts.verbose_name),
-            'object': obj,
-            'opts': opts,
-            'app_label': opts.app_label,
-            'media': self.media,
-            'callback': obj.check_status(),
-            'js_admin': obj.js_admin,
-        }
-        request.current_app = self.admin_site.name
-        return TemplateResponse(request, 'admin/missive_check.html', context)
+        missive = self.get_object(request, unquote(object_id), to_field)
+        missive_status = missive.check_status()
+        missive_status = json.dumps(missive_status, indent=2)
+        extra_context.update({'missive_status': missive_status})
+        return self.admincustom_view(
+            request,
+            object_id,
+            extra_context,
+            urlname=self.get_admin_urlname(self.check_view_suffix),
+            template=self.check_view_template,
+        )
 
-    def check_documents(self, request, object_id, extra_context=None):
-        opts = self.model._meta
+    documents_view_template = 'admin/missive/check.html'
+    documents_view_suffix = 'documents'
+    documents_view_path = '<path:object_id>/documents/'
+    documents_view_object_tools = {'name': 'Documents', 'url': 'documents'}
+
+    def documents_view(self, request, object_id, extra_context=None):
+        extra_context = extra_context or {}
         to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-        obj = self.get_object(request, unquote(object_id), to_field)
-        context = {
-            **self.admin_site.each_context(request),
-            'object_name': str(opts.verbose_name),
-            'object': obj,
-            'opts': opts,
-            'app_label': opts.app_label,
-            'media': self.media,
-            'callback': obj.check_documents(),
-            'js_admin': obj.js_admin,
-        }
-        request.current_app = self.admin_site.name
-        return TemplateResponse(request, 'admin/missive_check.html', context)
+        missive = self.get_object(request, unquote(object_id), to_field)
+        missive_status = missive.check_documents()
+        missive_status = json.dumps(missive_status, indent=2)
+        extra_context.update({'missive_status': missive_status})
+        return self.admincustom_view(
+            request,
+            object_id,
+            extra_context,
+            urlname=self.get_admin_urlname(self.documents_view_suffix),
+            template=self.documents_view_template,
+        )
 
-    missivecancel_view_template = 'admin/missivecancel.html'
+    recipients_view_template = 'admin/missive/recipients.html'
+    recipients_view_suffix = 'recipients'
+    recipients_view_path = '<path:object_id>/recipients/'
+    recipients_view_object_tools = {'name': 'Recipients', 'url': 'recipients'}
+
+    def recipients_view(self, request, object_id, extra_context=None):
+        extra_context = extra_context or {}
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        missive = self.get_object(request, unquote(object_id), to_field)
+        prooflist = missive.get_prooflist()
+        if len(prooflist):
+            extra_context['proof_header'] = prooflist[0].keys()
+        extra_context['downloads'] = [
+            'content_proof_embedded_document_url',
+            'deposit_proof_url',
+            'content_proof_url',
+        ]
+        extra_context['proof_list'] = missive.get_prooflist()
+        recipient = request.GET.get('recipent')
+        download = request.GET.get('download')
+        if recipient and download:
+            return missive.download_proof(recipient=recipient, download=download, http_response=True)
+        return self.admincustom_view(
+            request,
+            object_id,
+            extra_context,
+            urlname=self.get_admin_urlname(self.recipients_view_suffix),
+            template=self.recipients_view_template,
+        )
+
+    missivecancel_view_template = 'admin/missive/cancel.html'
     missivecancel_view_suffix = 'missivecancel'
     missivecancel_view_path = '<path:object_id>/missivecancel/'
     missivecancel_view_object_tools = {'name': 'Cancel', 'url': 'missivecancel'}
@@ -161,7 +203,7 @@ class MissiveAdmin(BaseAdmin):
             template=self.missivecancel_view_template,
         )
 
-    reporting_view_template = 'admin/reporting_missive.html'
+    reporting_view_template = 'admin/missive/reporting.html'
     reporting_view_suffix = 'reporting'
     reporting_view_path = 'reporting/'
     reporting_view_object_tools = {'name': 'Reporting', 'url': 'reporting', 'list': True}
@@ -185,25 +227,39 @@ class MissiveAdmin(BaseAdmin):
         )
 
     def get_urls(self):
-        from django.urls import path
-
         urls = super().get_urls()
-        info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
             path(
-                '<path:object_id>/html/',
-                self.wrap(self.html_view),
-                name='{}_{}_html'.format(*info),
+                self.viewer_view_path,
+                self.wrap(
+                    self.viewer_view,
+                    object_tools=self.viewer_view_object_tools,
+                ),
+                name=self.get_admin_urlname(self.viewer_view_suffix),
             ),
             path(
-                '<path:object_id>/check/',
-                self.wrap(self.check_view),
-                name='{}_{}_check'.format(*info),
+                self.check_view_path,
+                self.wrap(
+                    self.check_view,
+                    object_tools=self.check_view_object_tools,
+                ),
+                name=self.get_admin_urlname(self.check_view_suffix),
             ),
             path(
-                '<path:object_id>/documents/',
-                self.wrap(self.check_documents),
-                name='{}_{}_documents'.format(*info),
+                self.documents_view_path,
+                self.wrap(
+                    self.documents_view,
+                    object_tools=self.documents_view_object_tools,
+                ),
+                name=self.get_admin_urlname(self.documents_view_suffix),
+            ),
+            path(
+                self.recipients_view_path,
+                self.wrap(
+                    self.recipients_view,
+                    object_tools=self.recipients_view_object_tools,
+                ),
+                name=self.get_admin_urlname(self.recipients_view_suffix),
             ),
             path(
                 self.missivecancel_view_path,

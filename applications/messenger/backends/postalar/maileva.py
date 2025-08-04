@@ -3,28 +3,42 @@
 
 import json
 import os
+import tempfile
+import threading
+import time
 from uuid import uuid4
 
 import requests
+from django.conf import settings
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template import Template
-from django.conf import settings
+from django.utils.text import get_valid_filename
 
 from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
-from mighty.functions import get_logger, setting
-from mighty.models import Missive
+from mighty.functions import setting
 from mighty.functions.facilities import getattr_recursive
+from mighty.models import Missive
 
 
-logger = get_logger()
-
+MAILEVA_COLOR_FIRST_C4 = 0.73
+MAILEVA_COLOR_NEXT_C4 = 0.48
+MAILEVA_NB_FIRST_C4 = 0.48
+MAILEVA_NB_NEXT_C4 = 0.23
+MAILEVA_ARCHIVING_LTE3_FIRST = 0.03
+MAILEVA_ARCHIVING_LTE6_FIRST = 0.03
+MAILEVA_ARCHIVING_LTE10_FIRST = 0.03
+MAILEVA_ARCHIVING_LTE3_NEXT = 0.03
+MAILEVA_ARCHIVING_LTE6_NEXT = 0.03
+MAILEVA_ARCHIVING_LTE10_NEXT = 0.03
 
 class MissiveBackend(MissiveBackend):
+    """ Maileva backend for sending postal missives."""
     resource_type = 'registered_mail/v4/sendings'
     callback_url = MightyConfig.webhook + '/wbh/messenger/postalar/'
-    api_sandbox = {
+    api_sandbox = {  # noqa: RUF012
         'webhook': 'https://api.sandbox.maileva.net/notification_center/v4/subscriptions',
         'auth': 'https://connexion.sandbox.maileva.net/auth/realms/services/protocol/openid-connect/token',
         'sendings': 'https://api.sandbox.maileva.net/registered_mail/v4/sendings',
@@ -32,8 +46,11 @@ class MissiveBackend(MissiveBackend):
         'recipients': 'https://api.sandbox.maileva.net/registered_mail/v4/sendings/%s/recipients',
         'submit': 'https://api.sandbox.maileva.net/registered_mail/v4/sendings/%s/submit',
         'cancel': 'https://api.sandbox.maileva.com/registered_mail/v4/sendings/%s',
+        'prooflist': 'https://api.sandbox.maileva.net/registered_mail/v4/global_deposit_proofs?sending_id=%s',
+        'proof': 'https://api.sandbox.maileva.net/registered_mail/v4/global_deposit_proofs/%s',
+        'proofdownload': 'https://api.sandbox.maileva.net/registered_mail/v4%s',
     }
-    api_official = {
+    api_official = {  # noqa: RUF012
         'webhook': 'https://api.maileva.com/notification_center/v4/subscriptions',
         'auth': 'https://connexion.maileva.com/auth/realms/services/protocol/openid-connect/token',
         'sendings': 'https://api.maileva.com/registered_mail/v4/sendings',
@@ -41,8 +58,11 @@ class MissiveBackend(MissiveBackend):
         'recipients': 'https://api.maileva.com/registered_mail/v4/sendings/%s/recipients',
         'submit': 'https://api.maileva.com/registered_mail/v4/sendings/%s/submit',
         'cancel': 'https://api.maileva.com/registered_mail/v4/sendings/%s',
+        'prooflist': 'https://api.maileva.com/registered_mail/v4/global_deposit_proofs?sending_id=%s',
+        'proof': 'https://api.maileva.com/registered_mail/v4/global_deposit_proofs/%s',
+        'proofdownload': 'https://api.maileva.com/registered_mail/v4%s',
     }
-    status_ref = {
+    status_ref = {  # noqa: RUF012
         'PENDING': _c.STATUS_PENDING,
         'ACCEPTED': _c.STATUS_ACCEPTED,
         'PROCESSED': _c.STATUS_PROCESSED,
@@ -50,13 +70,13 @@ class MissiveBackend(MissiveBackend):
         'REJECTED': _c.STATUS_REJECTED,
         'PROCESSED_WITH_ERRORS': _c.STATUS_PROCESSED,
     }
-    events = [
+    events = [  # noqa: RUF012
         'ON_STATUS_ACCEPTED',
         'ON_STATUS_REJECTED',
         'ON_STATUS_PROCESSED',
         'ON_DEPOSIT_PROOF_RECEIVED',
     ]
-    fields = ['denomination', 'fullname', 'complement', 'address']
+    fields = ['denomination', 'fullname', 'complement', 'address']  # noqa: RUF012
     user_cache = None
     sending_id = None
     access_token = None
@@ -64,26 +84,25 @@ class MissiveBackend(MissiveBackend):
     header_offset = 72
     js_admin = False
     page = 0
-    _logger = logger
 
     # PRICE
-    color_first_c4 = setting('MAILEVA_COLOR_FIRST_C4', 0.73)
-    color_next_c4 = setting('MAILEVA_COLOR_NEXT_C4', 0.48)
-    nb_first_c4 = setting('MAILEVA_NB_FIRST_C4', 0.48)
-    nb_next_c4 = setting('MAILEVA_NB_NEXT_C4', 0.23)
-    archiving_lte3_first = setting('MAILEVA_ARCHIVING_LTE3_FIRST', 0.03)
-    archiving_lte6_first = setting('MAILEVA_ARCHIVING_LTE6_FIRST', 0.03)
-    archiving_lte10_first = setting('MAILEVA_ARCHIVING_LTE10_FIRST', 0.03)
-    archiving_lte3_next = setting('MAILEVA_ARCHIVING_LTE3_NEXT', 0.03)
-    archiving_lte6_next = setting('MAILEVA_ARCHIVING_LTE6_NEXT', 0.03)
-    archiving_lte10_next = setting('MAILEVA_ARCHIVING_LTE10_NEXT', 0.03)
+    color_first_c4 = setting('MAILEVA_COLOR_FIRST_C4', MAILEVA_COLOR_FIRST_C4)
+    color_next_c4 = setting('MAILEVA_COLOR_NEXT_C4', MAILEVA_COLOR_NEXT_C4)
+    nb_first_c4 = setting('MAILEVA_NB_FIRST_C4', MAILEVA_NB_FIRST_C4)
+    nb_next_c4 = setting('MAILEVA_NB_NEXT_C4', MAILEVA_NB_NEXT_C4)
+    archiving_lte3_first = setting('MAILEVA_ARCHIVING_LTE3_FIRST', MAILEVA_ARCHIVING_LTE3_FIRST)
+    archiving_lte6_first = setting('MAILEVA_ARCHIVING_LTE6_FIRST', MAILEVA_ARCHIVING_LTE6_FIRST)
+    archiving_lte10_first = setting('MAILEVA_ARCHIVING_LTE10_FIRST', MAILEVA_ARCHIVING_LTE10_FIRST)
+    archiving_lte3_next = setting('MAILEVA_ARCHIVING_LTE3_NEXT', MAILEVA_ARCHIVING_LTE3_NEXT)
+    archiving_lte6_next = setting('MAILEVA_ARCHIVING_LTE6_NEXT', MAILEVA_ARCHIVING_LTE6_NEXT)
+    archiving_lte10_next = setting('MAILEVA_ARCHIVING_LTE10_NEXT', MAILEVA_ARCHIVING_LTE10_NEXT)
 
     # CONFIG
-    color_printing = setting('MAILEVA_COLOR_PRINTING', False)
-    duplex_printing = bool(setting('MAILEVA_DUPLEX_PRINTING', True))
-    optional_address_sheet = bool(setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True))
+    color_printing = setting('MAILEVA_COLOR_PRINTING', False)  # noqa: FBT003
+    duplex_printing = bool(setting('MAILEVA_DUPLEX_PRINTING', True))  # noqa: FBT003
+    optional_address_sheet = bool(setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True))  # noqa: FBT003
     archiving_duration = setting('MAILEVA_ARCHIVING_DURATION', 0)
-    notification_email = setting('MAILEVA_NOTIFICATION', False)
+    notification_email = setting('MAILEVA_NOTIFICATION', False)  # noqa: FBT003
 
     # SENDER
     sender_address_line_1 = setting('MAILEVA_SENDER1')
@@ -102,8 +121,8 @@ class MissiveBackend(MissiveBackend):
     field_type = 'trace_json.status.envelope_type'
     field_class = 'trace_json.recipients.recipients.0.postage_class'
 
-
     def __init__(self, missive, *args, **kwargs):
+        """Initialize the Maileva backend with missive and configuration."""
         super().__init__(missive, *args, **kwargs)
         self.color_first_c4 = kwargs.get('color_first_c4', self.color_first_c4)
         self.color_next_c4 = kwargs.get('color_next_c4', self.color_next_c4)
@@ -206,7 +225,6 @@ class MissiveBackend(MissiveBackend):
             'sender_address_line_5': self.sender_address_line_5,
             'sender_address_line_6': self.sender_address_line_6,
             'sender_country_code': self.sender_country_code,
-            #'notification_treat_undelivered_mail': undelivered,
             'envelope_windows_type': 'DOUBLE',
         }
 
@@ -268,7 +286,6 @@ class MissiveBackend(MissiveBackend):
 
     def valid_response(self, response):
         if response.status_code not in {200, 201, 204}:
-            self._logger.warning(f'Maileva - {response.content!s}')
             self.missive.trace = str(response.content)
             if str(response.status_code).startswith('4'):
                 try:
@@ -280,7 +297,6 @@ class MissiveBackend(MissiveBackend):
                     self.missive.code_error = 'unknown'
             self.in_error = True
             return False
-        self._logger.warning(f'Maileva - {response.content!s}')
         return True
 
     def authentication(self):
@@ -298,14 +314,11 @@ class MissiveBackend(MissiveBackend):
         return False
 
     def create_sending(self):
-        print("self.postal_data: ", self.postal_data)
         response = requests.post(
             self.api_url['sendings'],
             headers=self.api_headers,
             json=self.postal_data,
         )
-        print("response: ", response.content)
-        print("json: ", response.json())
         self.sending_id = response.json()['id']
         self.missive.partner_id = self.sending_id
         return self.valid_response(response)
@@ -334,11 +347,6 @@ class MissiveBackend(MissiveBackend):
 
     def postal_attachments(self):
         if self.missive.attachments:
-            import os
-            import tempfile
-
-            from django.utils.text import get_valid_filename
-
             for document in self.missive.attachments:
                 suffix = get_valid_filename(os.path.basename(str(document)))
                 with tempfile.NamedTemporaryFile(
@@ -350,7 +358,6 @@ class MissiveBackend(MissiveBackend):
 
     def add_recipients(self):
         api = self.api_url['recipients'] % self.sending_id
-        print(self.target_data)
         response = requests.post(
             api, headers=self.api_headers, json=self.target_data
         )
@@ -458,26 +465,33 @@ class MissiveBackend(MissiveBackend):
             archive=self.prince_info['archiving_duration'],
         )
 
-    def check_postalar(self):
+    def get_status(self):
         if self.authentication():
-            # status
             url = self.api_url['sendings'] + '/' + self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
-            rjson_status = response.json()
-            # recipents
+            return response.json()
+        return {'status': 'ERROR', 'message': 'Authentication failed'}
+
+    def get_recipients(self):
+        if self.authentication():
             url = self.api_url['recipients'] % self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
-            rjson_recipients = response.json()
-            rjson = {
-                'status': rjson_status,
-                'recipients': rjson_recipients,
-            }
-            self.missive.trace = str(rjson)
-            if 'status' in rjson_status:
-                self.missive.status = self.status_ref[rjson_status['status']]
-            self.missive.save()
-            return rjson
-        return None
+            return response.json()
+        return {'recipients': []}
+
+    def check_postalar(self):
+        rjson_status = self.get_status()
+        rjson_recipients = self.get_recipients()
+        rjson = {
+            'status': rjson_status,
+            'recipients': rjson_recipients,
+        }
+        self.missive.trace = str(rjson)
+        status_value = rjson_status.get('status')
+        if status_value:
+            self.missive.status = self.status_ref.get(status_value, self.missive.status)
+        self.missive.save()
+        return rjson
 
     def cancel(self):
         if self.authentication():
@@ -486,6 +500,60 @@ class MissiveBackend(MissiveBackend):
             if self.valid_response(response):
                 self.missive.status = _c.STATUS_CANCELLED
             self.missive.save()
+
+    def get_prooflist(self):
+        recipients = self.get_recipients()['recipients']
+        return [{
+            'id': recipient['id'],
+            'custom_id': recipient['custom_id'],
+            'custom_data': recipient['custom_data'],
+            'status': recipient['last_main_delivery_status']['label'],
+            'postage_price': recipient['postage_price'],
+            'postage_class': recipient['postage_class'],
+            'registered_number': recipient['registered_number'],
+        } for recipient in recipients]
+
+    def http_response_proof(self, url, recipient, download, response=True):
+        self._logger.info(f'http_response_proof {url} {recipient} {download}')
+
+        # Créer un fichier temporaire
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        resp = requests.get(url, stream=True, headers=self.api_headers)
+        resp.raise_for_status()
+        for chunk in resp.iter_content(chunk_size=8192):
+            if chunk:
+                tmp_file.write(chunk)
+        tmp_file.close()
+        if response:
+            file = open(tmp_file.name, 'rb')
+            response = FileResponse(file, as_attachment=True, filename=f'{recipient["id"]}_{download}.pdf')
+
+            # Supprimer le fichier après un petit délai
+            def cleanup(path, f):
+                time.sleep(5)  # délai pour laisser le serveur envoyer le fichier
+                f.close()
+                try:
+                    os.remove(path)
+                except FileNotFoundError:
+                    pass
+            threading.Thread(target=cleanup, args=(tmp_file.name, file)).start()
+            return response
+        return tmp_file.name
+
+    def file_proof(self, url, recipient, download):
+        return self.http_response_proof(url, recipient, download, response=False)
+
+    def download_proof(self, recipient, download, http_response=False):
+        recipients = self.get_recipients()['recipients']
+        recipient = next((r for r in recipients if r['id'] == recipient), None)
+        if recipient:
+            url = recipient.get(download, None)
+            if url:
+                api = self.api_url['proofdownload'] % url
+                if http_response:
+                    return self.http_response_proof(api, recipient, download)
+                return self.file_proof(api, recipient, download)
+        return None
 
     def get_price(self):
         return getattr_recursive(self.missive, self.field_price, default='', default_on_error=True)

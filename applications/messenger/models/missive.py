@@ -60,6 +60,15 @@ class Missive(AddressNoBase):
     def cancel_missive(self):
         return self.get_backend().cancel()
 
+    def get_prooflist(self):
+        return self.get_backend().get_prooflist()
+
+    def get_proof(self, **kwargs):
+        return self.get_backend().get_proof(**kwargs)
+
+    def download_proof(self, **kwargs):
+        return self.get_backend().download_proof(**kwargs)
+
     def get_price(self):
         backend = self.get_backend()
         return backend.get_price()

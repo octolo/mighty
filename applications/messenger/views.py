@@ -32,7 +32,6 @@ class EmailViewer(DetailView):
         obj = self.get_object()
         return obj.template or super().get_template_names()
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class WebhookMessenger(JsonView):
     backend_path = missive_backend_email()
@@ -70,18 +69,3 @@ class WebhookWeb(WebhookMessenger):
 
 class WebhookApp(WebhookMessenger):
     backend_path = missive_backend_app()
-
-
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-#
-# class WebhookMessenger(APIView):
-#    permission_classes = ()
-#
-#    def get(self, request, format=None):
-#        print("get")
-#        return Response({"status": "ok"})
-#
-#    def post(self, request, format=None):
-#        print("post", request.POST)
-#        return Response({"status": "ok"})

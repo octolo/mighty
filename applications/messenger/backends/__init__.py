@@ -1,6 +1,5 @@
 import os
 import tempfile
-
 import pdfkit
 from django.core.mail import EmailMessage
 from django.core.mail.message import make_msgid
@@ -111,7 +110,6 @@ class MissiveBackend(EnableLogger):
             self.missive.logs[key] = [log]
 
     def postal_add_attachment(self, attachment):
-        logs.append(os.path.basename(attachment.name))
         self.add_log_array('attachments', attachment.name)
 
     def postal_attachments(self):
@@ -189,6 +187,15 @@ class MissiveBackend(EnableLogger):
 
     def cancel(self):
         return NotImplementedError('Cancel mode not implemented')
+
+    def get_prooflist(self):
+        return NotImplementedError('Get proof mode not implemented')
+
+    def get_proof(self, **kwargs):
+        return NotImplementedError('Get proof mode not implemented')
+
+    def download_proof(self, http_response=False, **kwargs):
+        return NotImplementedError('Download proof mode not implemented')
 
     def get_class(self):
         return NotImplementedError('Get class mode not implemented')

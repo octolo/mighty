@@ -1,11 +1,11 @@
 default_app_config = 'mighty.applications.logger.apps.LoggerConfig'
 
 import logging
-
 from django.utils.functional import cached_property
 
 
 class EnableLogger:
+    """Enable logger for the application."""
     cache_logger = None
 
     def reload_logger(self):
@@ -16,6 +16,10 @@ class EnableLogger:
         if not self.cache_logger:
             self.reload_logger()
         return self.cache_logger
+
+    @property
+    def _logger(self):
+        return self.logger
 
     class locally:
         logs = []
