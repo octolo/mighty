@@ -76,7 +76,7 @@ class Base(models.Model):
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
     logs = JSONField(blank=True, null=True, default=dict)
     is_disable = models.BooleanField(
-        _.is_disable, default=False, editable=False
+        _.is_disable, default=False
     )
     is_immutable = models.BooleanField(default=False)
     search = models.TextField(db_index=True, blank=True, null=True)
