@@ -54,6 +54,7 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     phone = models.CharField(
         _user.phone, blank=True, null=True, db_index=True, max_length=255
     )
+    beta_tester = models.BooleanField(default=False)
 
     @staticmethod
     def validate_unique_email(email, pk=None):

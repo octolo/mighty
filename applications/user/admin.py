@@ -198,7 +198,14 @@ class UserAdmin(UserAdmin, BaseAdmin):
         (None, {'classes': ('wide',), 'fields': get_form_fields()}),
     )
     readonly_fields = ('method', 'channel', 'addr_backend_id')
-    list_display = ('username', 'email', 'phone', 'date_create', 'is_active')
+    list_display = (
+        'username',
+        'email',
+        'phone',
+        'date_create',
+        'is_active',
+        'beta_tester',
+    )
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
@@ -207,6 +214,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
             'style',
             'gender',
             'sentry_replay',
+            'beta_tester',
             *address_fields,
         )
         self.fieldsets[3][1]['fields'] += ('first_connection',)
