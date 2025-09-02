@@ -46,9 +46,6 @@ def generate_missive_report(**kwargs):
     if mode := kwargs.get('mode'):
         missives = missives.filter(mode__in=mode)
 
-    print('missives count:', missives.count())
-    print(missives)
-
     if additional_fields := kwargs.get('additional_fields'):
         fields.extend(field for field, path in additional_fields.items() if field not in fields)
 
@@ -84,8 +81,6 @@ def generate_missive_report(**kwargs):
 def reporting_missive(email, **kwargs):
     additional_fields = kwargs.get('additional_fields', {})
     additional_fields.update(settings.MISSIVE_REPORTING_ADDITIONAL_FIELDS)
-    print("Generating missive report with additional fields:", additional_fields)
-    print("Report generation parameters:", kwargs)
     csvfile = generate_missive_report(additional_fields=additional_fields, **kwargs)
     missive = Missive(mode='EMAIL', target=email, subject='Missive Report', html='Please find the attached report.')
     csvfile = open(csvfile.name, 'rb')
