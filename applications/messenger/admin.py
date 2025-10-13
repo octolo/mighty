@@ -1,14 +1,13 @@
+import json
+
+from django.contrib import messages
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
-from django.template.response import TemplateResponse
-from django.contrib import messages
 from django.urls import path
 
 from mighty.admin.models import BaseAdmin
 from mighty.applications.address import fields as addr_fields
 from mighty.applications.messenger import fields, forms
-
-import json
 
 
 class MissiveAdmin(BaseAdmin):
@@ -175,7 +174,9 @@ class MissiveAdmin(BaseAdmin):
         recipient = request.GET.get('recipent')
         download = request.GET.get('download')
         if recipient and download:
-            return missive.download_proof(recipient=recipient, download=download, http_response=True)
+            return missive.download_proof(
+                recipient=recipient, download=download, http_response=True
+            )
         return self.admincustom_view(
             request,
             object_id,
@@ -206,18 +207,24 @@ class MissiveAdmin(BaseAdmin):
     reporting_view_template = 'admin/missive/reporting.html'
     reporting_view_suffix = 'reporting'
     reporting_view_path = 'reporting/'
-    reporting_view_object_tools = {'name': 'Reporting', 'url': 'reporting', 'list': True}
+    reporting_view_object_tools = {
+        'name': 'Reporting',
+        'url': 'reporting',
+        'list': True,
+    }
 
-    def reporting_view(self, request, object_id=None, form_url=None, extra_context=None):
+    def reporting_view(
+        self, request, object_id=None, form_url=None, extra_context=None
+    ):
         extra_context = extra_context or {}
-        generate_form = forms.MissiveReportingForm(request.POST or None, request.FILES or None)
+        generate_form = forms.MissiveReportingForm(
+            request.POST or None, request.FILES or None
+        )
         extra_context['form'] = generate_form
         if generate_form.is_valid():
             generate_form.generate_report()
             extra_context['form_valid'] = True
-            messages.success(
-                request, "Report generated successfully."
-            )
+            messages.success(request, 'Report generated successfully.')
         return self.admincustom_view(
             request,
             object_id,
