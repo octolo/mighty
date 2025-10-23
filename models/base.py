@@ -4,6 +4,7 @@ import operator
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db import models
@@ -75,9 +76,7 @@ class Base(models.Model):
     is_immutable_delete = True
     uid = models.UUIDField(unique=True, default=uuid4, editable=False)
     logs = JSONField(blank=True, null=True, default=dict)
-    is_disable = models.BooleanField(
-        _.is_disable, default=False
-    )
+    is_disable = models.BooleanField(_.is_disable, default=False)
     is_immutable = models.BooleanField(default=False)
     search = models.TextField(db_index=True, blank=True, null=True)
     date_create = models.DateTimeField(
@@ -599,12 +598,22 @@ class Base(models.Model):
         return self.update_by.split('.')[0]
 
     @property
+    def update_by_user(self):
+        UserModel = get_user_model()
+        return UserModel.objects.get(id=self.update_by_id)
+
+    @property
     def create_by_username(self):
         return self.create_by.split('.')[1]
 
     @property
     def update_by_username(self):
         return self.update_by.split('.')[1]
+
+    @property
+    def create_by_user(self):
+        UserModel = get_user_model()
+        return UserModel.objects.get(id=self.create_by_id)
 
     @property
     def fields_changed(self):

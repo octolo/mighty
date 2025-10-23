@@ -3,6 +3,7 @@ from functools import cached_property
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
+
 from mighty.fields import JSONField, RichTextField
 from mighty.filegenerator import FileGenerator
 from mighty.functions import getattr_recursive
@@ -193,7 +194,10 @@ class Reporting(Base):
 
     def reporting_get_data_json_max_multiple(self, cfg):
         if cfg['data'] not in self.json_length:
-            max_length = max(len(getattr_recursive(pp, cfg['data'], default=[])) for pp in self.reporting_queryset)
+            max_length = max(
+                len(getattr_recursive(pp, cfg['data'], default=[]))
+                for pp in self.reporting_queryset
+            )
             self.json_length[cfg['data']] = max_length
         return self.json_length.get(cfg['data'], 0)
 
@@ -234,6 +238,7 @@ class Reporting(Base):
             items=items,
             fields=self.reporting_fields,
             html=self.html_pdf,
+            queryset=self.reporting_queryset,
         )
 
     def reporting_file_response(self, response, file_type, *args, **kwargs):
@@ -243,7 +248,9 @@ class Reporting(Base):
             return self.reporting_file_generator.response_http(file_type)
         if response == 'email':
             from django.template import Context, Template
+
             from mighty.models import Missive
+
             file = self.reporting_file_generator.file_csv(file_type, None)
             missive = Missive(
                 target=self.email_target,

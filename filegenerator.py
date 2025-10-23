@@ -1,5 +1,6 @@
 import csv
 import os
+import pathlib
 import shutil
 import tempfile
 from tempfile import NamedTemporaryFile
@@ -10,9 +11,10 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.template import Context, Template
 from django.template.loader import get_template
 from django.utils.text import get_valid_filename
+from openpyxl import Workbook
+
 from mighty.apps import MightyConfig as conf
 from mighty.functions import make_searchable
-from openpyxl import Workbook
 
 
 class StreamingBuffer:
@@ -43,6 +45,7 @@ class FileGenerator:
         return {v: k for k, v in self.ct_list.items()}
 
     def __init__(self, *args, **kwargs):
+        print(kwargs.get('queryset'))
         for name, data in kwargs.items():
             setattr(self, name, data)
 
@@ -135,7 +138,7 @@ class FileGenerator:
     def iter_items_pdf(self, items):
         headers = ''.join(f'<th>{field}</th>' for field in self.fields)
         rows = ''.join(
-            f'<tr>{"".join(f"<td>{i if i is not None else ""}</td>" for i in item)}</tr>'
+            f'<tr>{"".join(f"<td>{i if i is not None else ''}</td>" for i in item)}</tr>'
             for item in items
         )
         return f'<table><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table>'
@@ -145,15 +148,21 @@ class FileGenerator:
 
         import pdfkit
 
-        html_string = Template(self.html).render(Context({
-            'table': self.iter_items_pdf(self.items),
-            'document_name': self.filename,
-        }))
+        html_string = Template(self.html).render(
+            Context({
+                'table': self.iter_items_pdf(self.items),
+                'items': self.items,
+                'document_name': self.filename,
+                'queryset': self.queryset,
+            })
+        )
         # Date du jour formatée
         today = datetime.today().strftime('%d/%m/%Y')
 
         # Texte de pied de page avec pagination
-        footer_text = f"Octolo certifié en date du {today} - Page [page] sur [topage]"
+        footer_text = (
+            f'Octolo certifié en date du {today} - Page [page] sur [topage]'
+        )
 
         # Options wkhtmltopdf
         options = {
@@ -179,7 +188,9 @@ class FileGenerator:
         print('-------------------')
         print('filename', self.get_filename('pdf'))
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename={self.get_filename("pdf")}'
+        response['Content-Disposition'] = (
+            f'inline; filename={self.get_filename("pdf")}'
+        )
         return response
 
     def response_file(self, ct):
@@ -251,12 +262,12 @@ def generate_pdf(**kwargs):
 
     # a verifier
     if footer:
-        os.remove(footer_html.name)
+        pathlib.Path(footer_html.name).unlink()
     if header:
-        os.remove(header_html.name)
+        pathlib.Path(header_html.name).unlink()
     if as_string:
         tmp_pdf.close()
-        os.remove(final_pdf)
+        pathlib.Path(final_pdf).unlink()
         return content_html
     return final_pdf, tmp_pdf
 
