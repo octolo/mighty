@@ -1,154 +1,250 @@
 import json
-import os
+import logging
 import tempfile
+from pathlib import Path
+from typing import Any, ClassVar
 
 import pdfkit
 import pypandoc
-
 from django.http import FileResponse, HttpResponse
 from django.template import Context, Template
-from django.template.loader import get_template
-from mighty.apps import MightyConfig as conf
-from mighty.functions import setting
+from django.template.loader import get_template, select_template
+
+from mighty.apps import MightyConfig
 from mighty.views.crud import DetailView
+
+logger = logging.getLogger(__name__)
 
 
 class PDFView(DetailView):
+    """View for generating PDF and Word documents from HTML templates."""
+
     cache_object = None
-    tmp_files = []
-    post_data = {}
+    tmp_files: ClassVar[list[str]] = []
+    post_data: ClassVar[dict[str, Any]] = {}
     in_browser = False
 
     # Configurables
     pdf_name = 'file.pdf'
-    options = conf.pdf_options.copy()
-    header_tpl = conf.pdf_header
-    footer_tpl = conf.pdf_footer
-    content_html = conf.pdf_content
-    config = {}
+    options: ClassVar[dict[str, Any]] = MightyConfig.pdf_options.copy()
+    header_tpl = MightyConfig.pdf_header
+    footer_tpl = MightyConfig.pdf_footer
+    content_html = MightyConfig.pdf_content
+    config: ClassVar[dict[str, Any]] = {}
+
+    @property
+    def current_config(self) -> dict[str, Any]:
+        """Get current configuration."""
+        return self.config
+
+    @property
+    def filename(self) -> str:
+        """Get PDF filename."""
+        return self.pdf_name
 
     def post(self, request, *args, **kwargs):
+        """Handle POST request by parsing JSON data."""
         self.post_data = json.loads(request.body.decode('utf-8'))
         return self.get(request, *args, **kwargs)
 
     def get_object(self):
+        """Get the cached object or fetch it from parent class."""
         if not self.cache_object:
             self.cache_object = super().get_object()
         return self.cache_object
 
     def get_context_data(self, **kwargs):
+        """Get context data for template rendering."""
         return Context({'obj': self.get_object()})
 
-    def has_option(self, key):
-        return self.request.GET.get(key, self.get_config().get(key, False))
+    def has_option(self, key: str) -> bool:
+        """Check if an option is enabled in request or config."""
+        config_value = self.config.get(key, False)
+        return bool(self.request.GET.get(key, config_value))
 
-    def get_config(self):
-        return self.config
-
-    def get_pdf_name(self):
-        return self.pdf_name
-
-    def build_html_file(self, html_content):
-        tmp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        tmp_file.write(html_content.encode('utf-8'))
-        tmp_file.close()
-        self.tmp_files.append(tmp_file.name)
-        return tmp_file.name
-
-    def render_section(self, template_str, context):
+    def render_section(self, template_str: str, context: Context) -> str:
+        """Render a template section with given context."""
         return Template(template_str).render(context)
 
-    def build_header_html(self):
-        if self.has_option('header_enable'):
-            html = self.render_section(self.get_header(), self.get_context_data())
-            return self.build_html_file(html)
-        return ''
+    def build_template_content(self, context: Context) -> str:
+        """Build rendered template content."""
+        # Check if there's a custom get_template method (like in ConvenePDFView)
+        if hasattr(self, 'get_template') and callable(self.get_template):
+            # Use the custom get_template method for backward compatibility
+            return self.get_template(context)
 
-    def build_footer_html(self):
-        if self.has_option('footer_enable'):
-            html = self.render_section(self.get_footer(), self.get_context_data())
-            return self.build_html_file(html)
-        return ''
-
-    def get_header(self):
-        return ''  # à personnaliser si nécessaire
-
-    def get_footer(self):
-        return ''  # à personnaliser si nécessaire
-
-    def get_template(self, context):
-        template_name = self.get_template_names()
-        template = get_template(template_name)
+        # Standard template resolution
+        template_names = self.get_template_names()
+        # Handle case where get_template_names() returns a list
+        if isinstance(template_names, list):
+            template = select_template(template_names)
+        else:
+            template = get_template(template_names)
         return self.content_html % template.render(context)
 
-    def prepare_options(self):
+    def render_to_response(self, context, **response_kwargs):
+        """Render the final response (PDF or Word document)."""
+        self._prepare_pdf_options()
+        self.html_content = self.build_template_content(context)
+
+        # Handle Word export first
+        if self.post_data.get('action') == 'word':
+            return self._create_word_response(context)
+
+        # Generate PDF, save if requested, otherwise create temporary
+        pdf_path = (
+            self._save_pdf()
+            if self.request.GET.get('save')
+            else self._generate_pdf_file(self.html_content)
+        )
+
+        # Handle browser or download response
+        return (
+            self._create_browser_response(pdf_path)
+            if self.in_browser
+            else self._create_download_response(pdf_path)
+        )
+
+    def _create_temp_html_file(self, html_content: str) -> str:
+        """Create a temporary HTML file and return its path."""
+        with tempfile.NamedTemporaryFile(
+            suffix='.html', delete=False
+        ) as temp_file:
+            temp_file_path = temp_file.name
+
+        with Path(temp_file_path).open('wb') as temp_file:
+            temp_file.write(html_content.encode('utf-8'))
+        self.tmp_files.append(temp_file_path)
+        return temp_file_path
+
+    def _build_header_html(self) -> str:
+        """Build header HTML if enabled."""
         if self.has_option('header_enable'):
-            self.options['--header-html'] = self.build_header_html()
+            html = self.render_section(
+                self._get_header_template(), self.get_context_data()
+            )
+            return self._create_temp_html_file(html)
+        return ''
+
+    def _build_footer_html(self) -> str:
+        """Build footer HTML if enabled."""
         if self.has_option('footer_enable'):
-            self.options['--footer-html'] = self.build_footer_html()
-        self.options['orientation'] = self.get_config().get('orientation', 'Portrait')
+            html = self.render_section(
+                self._get_footer_template(), self.get_context_data()
+            )
+            return self._create_temp_html_file(html)
+        return ''
+
+    def _get_header_template(self) -> str:
+        """Get header template."""
+        return ''
+
+    def _get_footer_template(self) -> str:
+        """Get footer template."""
+        return ''
+
+    def _prepare_pdf_options(self) -> dict[str, Any]:
+        """Prepare PDF generation options."""
+        if self.has_option('header_enable'):
+            self.options['--header-html'] = self._build_header_html()
+        if self.has_option('footer_enable'):
+            self.options['--footer-html'] = self._build_footer_html()
+        self.options['orientation'] = self.current_config.get(
+            'orientation', 'Portrait'
+        )
         return self.options
 
-    def generate_pdf_file(self, html_content):
-        tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=False)
-        pdfkit.from_string(html_content, tmp_pdf.name, options=self.options)
-        self.tmp_files.append(tmp_pdf.name)
-        return tmp_pdf.name
+    def _generate_pdf_file(self, html_content: str) -> str:
+        """Generate PDF file from HTML content and return file path."""
+        with tempfile.NamedTemporaryFile(
+            suffix='.pdf', delete=False
+        ) as temp_file:
+            temp_file_path = temp_file.name
 
-    def clean_tmp(self):
-        for path in self.tmp_files:
-            if os.path.exists(path):
-                os.remove(path)
+        pdfkit.from_string(html_content, temp_file_path, options=self.options)
+        self.tmp_files.append(temp_file_path)
+        return temp_file_path
+
+    def _cleanup_temp_files(self) -> None:
+        """Clean up temporary files."""
+        for file_path in self.tmp_files:
+            try:
+                path_obj = Path(file_path)
+                if path_obj.exists():
+                    path_obj.unlink()
+            except (FileNotFoundError, OSError) as error:
+                logger.debug(
+                    'File already cleaned up: %s - %s', file_path, error
+                )
         self.tmp_files.clear()
 
-    def render_to_word(self, context):
-        html_content = Template(self.post_data.get('raw_template')).render(context)
-        tmp_docx = tempfile.NamedTemporaryFile(suffix='.docx', delete=False)
-        output_path = tmp_docx.name
-        tmp_docx.close()
+    def _create_word_response(self, context: Context) -> HttpResponse:
+        """Create Word document response."""
+        html_content = Template(self.post_data.get('raw_template')).render(
+            context
+        )
+        return self._generate_docx_response(html_content)
 
-        pypandoc.convert_text(html_content, 'docx', format='html', outputfile=output_path)
+    def _generate_docx_response(self, html_content: str) -> HttpResponse:
+        """Generate DOCX response from HTML content."""
+        with tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False
+        ) as temp_file:
+            output_path = temp_file.name
 
-        with open(output_path, 'rb') as f:
-            docx_data = f.read()
+        pypandoc.convert_text(
+            html_content, 'docx', format='html', outputfile=output_path
+        )
 
-        os.remove(output_path)
+        docx_data = Path(output_path).read_bytes()
+        Path(output_path).unlink(missing_ok=True)
+
         response = HttpResponse(
             docx_data,
-            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            content_type=(
+                'application/vnd.openxmlformats-'
+                'officedocument.wordprocessingml.document'
+            ),
         )
-        response['Content-Disposition'] = f'attachment; filename="{self.get_pdf_name().replace(".pdf", ".docx")}"'
+        docx_filename = self.filename.replace('.pdf', '.docx')
+        response['Content-Disposition'] = (
+            f'attachment; filename="{docx_filename}"'
+        )
         return response
 
-    def save_pdf(self):
-        return self.generate_pdf_file(self.html_content)
+    def _save_pdf(self) -> str:
+        """Save PDF and return file path."""
+        return self._generate_pdf_file(self.html_content)
 
-    def render_to_response(self, context, **response_kwargs):
-        self.prepare_options()
-        self.html_content = self.get_template(context)
-
-        # Sauvegarde PDF si demandé + génération unique du PDF
-        if self.request.GET.get('save'):
-            pdf_path = self.save_pdf()  # Modifie save_pdf pour qu'elle renvoie le chemin du fichier
+    def _create_browser_response(self, pdf_path: str) -> FileResponse:
+        """Create browser response for PDF viewing."""
+        try:
+            # Read the file content into memory since we need to clean up temp files
+            pdf_data = Path(pdf_path).read_bytes()
+            response = HttpResponse(pdf_data, content_type='application/pdf')
+            response['Content-Disposition'] = (
+                f'inline; filename="{self.filename}"'
+            )
+        except (FileNotFoundError, OSError):
+            logger.exception('Failed to read PDF file')
+            self._cleanup_temp_files()
+            raise
         else:
-            # Générer le PDF temporaire sans sauvegarder si pas de demande save
-            pdf_path = self.generate_pdf_file(self.html_content)
-
-        # Word export
-        if self.post_data.get('action') == 'word':
-            return self.render_to_word(context)
-
-        # Si rendu en navigateur
-        if self.in_browser:
-            response = FileResponse(open(pdf_path, 'rb'), filename=self.get_pdf_name())
-            self.clean_tmp()
+            self._cleanup_temp_files()
             return response
 
-        # Sinon renvoyer le PDF en téléchargement
-        with open(pdf_path, 'rb') as f:
-            pdf_data = f.read()
-
-        response = HttpResponse(pdf_data, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{self.get_pdf_name()}"'
-        self.clean_tmp()
-        return response
+    def _create_download_response(self, pdf_path: str) -> HttpResponse:
+        """Create download response for PDF."""
+        try:
+            pdf_data = Path(pdf_path).read_bytes()
+            response = HttpResponse(pdf_data, content_type='application/pdf')
+            response['Content-Disposition'] = (
+                f'attachment; filename="{self.filename}"'
+            )
+        except (FileNotFoundError, OSError):
+            logger.exception('Failed to read PDF file')
+            self._cleanup_temp_files()
+            raise
+        else:
+            self._cleanup_temp_files()
+            return response
