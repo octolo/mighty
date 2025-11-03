@@ -9,14 +9,29 @@
 &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'change' original.pk|admin_urlquote %}">{{ original|truncatewords:"18" }}</a>
-&rsaquo; check
+&rsaquo; {% translate 'Check' %}
 </div>
 {% endblock %}
 
 {% block content %}
 <div id="content-main">
     <div class="module">
+        <h2>Vérification de la missive</h2>
         <pre id="log-module">{{ missive_status }}</pre>
+
+        {% if missive_documents %}
+        <h2>Documents</h2>
+        <pre id="log-module">{{ missive_documents }}</pre>
+        {% endif %}
+
+        {% if missive_proofs %}
+        <h2>{% translate 'Proofs' %}</h2>
+        {% for proof in missive_proofs %}
+        <div>
+            <a href="?proof={{ proof }}">{{ proof }}</a>
+        </div>
+        {% endfor %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -92,6 +92,9 @@ class MissiveBackend(MissiveBackend):
             self.missive.logs['attachments'] = logs
         return attachments
 
+    def check_documents(self):
+        return []
+
     def setup_template_params(self, data):
         if data['template_id'] == 1:
             data['params'] = {

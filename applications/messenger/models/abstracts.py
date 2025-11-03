@@ -73,6 +73,8 @@ class MessengerModel(Base):
             return self.first_name + ' ' + self.last_name
         if self.last_name or self.first_name:
             return self.first_name or self.last_name
+        if self.denomination:
+            return self.denomination
         return None
 
     def need_to_send(self):

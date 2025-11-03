@@ -21,6 +21,8 @@ from mighty.apps import MightyConfig
 from mighty.functions import setting
 from mighty.functions.facilities import getattr_recursive
 from mighty.models import Missive
+import pathlib
+import contextlib
 
 
 MAILEVA_COLOR_FIRST_C4 = 0.73
@@ -36,6 +38,7 @@ MAILEVA_ARCHIVING_LTE10_NEXT = 0.03
 
 class MissiveBackend(MissiveBackend):
     """ Maileva backend for sending postal missives."""
+    has_proofs = True
     resource_type = 'registered_mail/v4/sendings'
     callback_url = MightyConfig.webhook + '/wbh/messenger/postalar/'
     api_sandbox = {  # noqa: RUF012
@@ -50,7 +53,7 @@ class MissiveBackend(MissiveBackend):
         'proof': 'https://api.sandbox.maileva.net/registered_mail/v4/global_deposit_proofs/%s',
         'proofdownload': 'https://api.sandbox.maileva.net/registered_mail/v4%s',
     }
-    api_official = {  # noqa: RUF012
+    api_sandbox = {  # noqa: RUF012
         'webhook': 'https://api.maileva.com/notification_center/v4/subscriptions',
         'auth': 'https://connexion.maileva.com/auth/realms/services/protocol/openid-connect/token',
         'sendings': 'https://api.maileva.com/registered_mail/v4/sendings',
@@ -62,6 +65,12 @@ class MissiveBackend(MissiveBackend):
         'proof': 'https://api.maileva.com/registered_mail/v4/global_deposit_proofs/%s',
         'proofdownload': 'https://api.maileva.com/registered_mail/v4%s',
     }
+    proof_keys = [
+        'content_proof_embedded_document',
+        'deposit_proof',
+        'content_proof',
+        'acknowledgement_of_receipt',
+    ]
     status_ref = {  # noqa: RUF012
         'PENDING': _c.STATUS_PENDING,
         'ACCEPTED': _c.STATUS_ACCEPTED,
@@ -502,58 +511,48 @@ class MissiveBackend(MissiveBackend):
             self.missive.save()
 
     def get_prooflist(self):
-        recipients = self.get_recipients()['recipients']
-        return [{
-            'id': recipient['id'],
-            'custom_id': recipient['custom_id'],
-            'custom_data': recipient['custom_data'],
-            'status': recipient['last_main_delivery_status']['label'],
-            'postage_price': recipient['postage_price'],
-            'postage_class': recipient['postage_class'],
-            'registered_number': recipient['registered_number'],
-        } for recipient in recipients]
+        proofs = self.get_recipients()
+        proofs = proofs.get('recipients', [])[0]
+        return [kp for kp in self.proof_keys if kp + '_url' in proofs]
 
-    def http_response_proof(self, url, recipient, download, response=True):
-        self._logger.info(f'http_response_proof {url} {recipient} {download}')
+    def download_proof(self, proof, http_response=True):
+        proofs = self.get_recipients()
+        proofs = proofs.get('recipients', [])[0]
+        proof_url = proofs.get(proof + '_url', None)
 
-        # Créer un fichier temporaire
+        if not proof:
+            return None
+
+        proof_url = self.api_url['proofdownload'] % proof_url
         tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-        resp = requests.get(url, stream=True, headers=self.api_headers)
+        resp = requests.get(proof_url, stream=True, headers=self.api_headers)
         resp.raise_for_status()
+
         for chunk in resp.iter_content(chunk_size=8192):
             if chunk:
                 tmp_file.write(chunk)
         tmp_file.close()
-        if response:
-            file = open(tmp_file.name, 'rb')
-            response = FileResponse(file, as_attachment=True, filename=f'{recipient["id"]}_{download}.pdf')
 
-            # Supprimer le fichier après un petit délai
-            def cleanup(path, f):
-                time.sleep(5)  # délai pour laisser le serveur envoyer le fichier
-                f.close()
-                try:
-                    os.remove(path)
-                except FileNotFoundError:
-                    pass
-            threading.Thread(target=cleanup, args=(tmp_file.name, file)).start()
-            return response
-        return tmp_file.name
+        if not http_response:
+            return tmp_file.name
 
-    def file_proof(self, url, recipient, download):
-        return self.http_response_proof(url, recipient, download, response=False)
+        name = self.missive.fullname
+        file = open(tmp_file.name, 'rb')
+        date = time.strftime('%Y%m%d_%H%M%S')
+        filename = get_valid_filename(f'{name}_{proof}_{date}.pdf')
 
-    def download_proof(self, recipient, download, http_response=False):
-        recipients = self.get_recipients()['recipients']
-        recipient = next((r for r in recipients if r['id'] == recipient), None)
-        if recipient:
-            url = recipient.get(download, None)
-            if url:
-                api = self.api_url['proofdownload'] % url
-                if http_response:
-                    return self.http_response_proof(api, recipient, download)
-                return self.file_proof(api, recipient, download)
-        return None
+        print("filename:", filename)
+        response = FileResponse(file, as_attachment=True, filename=filename)
+
+        # Supprimer le fichier après un petit délai
+        def cleanup(path, f):
+            time.sleep(15)  # délai pour laisser le serveur envoyer le fichier
+            f.close()
+            with contextlib.suppress(FileNotFoundError):
+                pathlib.Path(path).unlink()
+        threading.Thread(target=cleanup, args=(tmp_file.name, file)).start()
+
+        return response
 
     def get_price(self):
         return getattr_recursive(self.missive, self.field_price, default='', default_on_error=True)

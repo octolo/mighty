@@ -20,6 +20,7 @@ class MissiveBackend(EnableLogger):
     postal = None
     path_base_doc = None
     js_admin = True
+    has_proofs = False
 
     def __init__(self, missive, *args, **kwargs):
         self.missive = missive
@@ -189,10 +190,14 @@ class MissiveBackend(EnableLogger):
         return NotImplementedError('Cancel mode not implemented')
 
     def get_prooflist(self):
-        return NotImplementedError('Get proof mode not implemented')
+        if self.has_proofs:
+            return NotImplementedError('Get proof mode not implemented')
+        return []
 
     def get_proof(self, **kwargs):
-        return NotImplementedError('Get proof mode not implemented')
+        if self.has_proofs:
+            return NotImplementedError('Get proof mode not implemented')
+        return None
 
     def download_proof(self, http_response=False, **kwargs):
         return NotImplementedError('Download proof mode not implemented')
