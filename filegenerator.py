@@ -45,7 +45,6 @@ class FileGenerator:
         return {v: k for k, v in self.ct_list.items()}
 
     def __init__(self, *args, **kwargs):
-        print(kwargs.get('queryset'))
         for name, data in kwargs.items():
             setattr(self, name, data)
 
@@ -185,8 +184,6 @@ class FileGenerator:
 
     def http_pdf(self, ext, ct):
         pdf_bytes = self.generate_pdf_from_html(False)
-        print('-------------------')
-        print('filename', self.get_filename('pdf'))
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = (
             f'inline; filename={self.get_filename("pdf")}'
