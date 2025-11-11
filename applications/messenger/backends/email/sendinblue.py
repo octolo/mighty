@@ -10,6 +10,7 @@ from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
 from mighty.functions import setting
+import pathlib
 
 
 class MissiveBackend(MissiveBackend):
@@ -82,13 +83,24 @@ class MissiveBackend(MissiveBackend):
             logs = []
             for document in self.missive.attachments:
                 if setting('MISSIVE_SERVICE', False):
-                    attachments.append({
-                        'content': base64.b64encode(document.read()).decode(
-                            'utf-8'
-                        ),
-                        'name': os.path.basename(document.name),
-                    })
-                logs.append(os.path.basename(document.name))
+                    if isinstance(document, str):
+                        document_name = pathlib.Path(document).name
+                        document_content = open(document, 'rb').read()
+                        attachments.append({
+                            'content': base64.b64encode(document_content).decode(
+                                'utf-8'
+                            ),
+                            'name': document_name,
+                        })
+                        logs.append(document_name)
+                    else:
+                        attachments.append({
+                            'content': base64.b64encode(document.read()).decode(
+                                'utf-8'
+                            ),
+                            'name': pathlib.Path(document.name).name,
+                        })
+                        logs.append(pathlib.Path(document.name).name)
             self.missive.logs['attachments'] = logs
         return attachments
 

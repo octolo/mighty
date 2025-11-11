@@ -9,6 +9,7 @@ import requests
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template import Template
+import pathlib
 
 from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
@@ -319,7 +320,10 @@ class MissiveBackend(MissiveBackend):
         self.priority += 1
         api = self.api_url['documents'] % self.sending_id
         headers = self.api_headers
-        doc_name = os.path.basename(attachment.name)
+        if isinstance(attachment, str):
+            doc_name = pathlib.Path(attachment).name
+        else:
+            doc_name = pathlib.Path(attachment.name).name
         files = {'document': (doc_name, attachment)}
         data = {
             'metadata': json.dumps({

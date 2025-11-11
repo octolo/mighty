@@ -357,11 +357,15 @@ class MissiveBackend(MissiveBackend):
     def postal_attachments(self):
         if self.missive.attachments:
             for document in self.missive.attachments:
-                suffix = get_valid_filename(os.path.basename(str(document)))
-                with tempfile.NamedTemporaryFile(
-                    suffix=suffix, delete=False
-                ) as tmp_pdf:
-                    tmp_pdf.write(document.read())
+                if isinstance(document, str):
+                    doc_name = pathlib.Path(document).name
+                    doc_read = open(document, 'rb')
+                else:
+                    doc_name = pathlib.Path(document.name).name
+                    doc_read = document
+                suffix = get_valid_filename(doc_name)
+                with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_pdf:
+                    tmp_pdf.write(doc_read.read())
                     self.postal_add_attachment(tmp_pdf)
         return not self.in_error
 
@@ -540,8 +544,6 @@ class MissiveBackend(MissiveBackend):
         file = open(tmp_file.name, 'rb')
         date = time.strftime('%Y%m%d_%H%M%S')
         filename = get_valid_filename(f'{name}_{proof}_{date}.pdf')
-
-        print("filename:", filename)
         response = FileResponse(file, as_attachment=True, filename=filename)
 
         # Supprimer le fichier après un petit délai
