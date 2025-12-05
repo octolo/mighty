@@ -43,7 +43,6 @@ table { width: 100%; }
         history.append(p);
     }
     setTimeout(function() {
-        alert('ok');
         ws.send('supervision.join', {channel: '{{ room }}'});
     }, 5000);
 </script>
