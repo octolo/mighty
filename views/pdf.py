@@ -59,7 +59,7 @@ class PDFView(DetailView):
 
     def has_option(self, key: str) -> bool:
         """Check if an option is enabled in request or config."""
-        config_value = self.config.get(key, False)
+        config_value = self.current_config.get(key, False)
         return bool(self.request.GET.get(key, config_value))
 
     def render_section(self, template_str: str, context: Context) -> str:
