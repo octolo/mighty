@@ -99,7 +99,7 @@ class AddressNoBase(models.Model):
 
     @property
     def has_address(self):
-        return bool(self.address)
+        return self.locality and self.country_code
 
     def clean_address(self):
         if not self.has_address:
@@ -213,8 +213,10 @@ class AddressNoBase(models.Model):
 
     def format_universal(self):
         tpl = ''
+        if self.complement:
+            tpl += '%(complement)s'
         if self.address:
-            tpl += '%(address)s'
+            tpl += ', %(address)s' if len(tpl) else '%(address)s'
         if self.postal_code:
             tpl += ', %(postal_code)s' if len(tpl) else '%(postal_code)s'
         if self.locality:
@@ -223,6 +225,13 @@ class AddressNoBase(models.Model):
             tpl += ', %(state)s' if len(tpl) else '%(state)s'
         if self.country:
             tpl += ', %(country)s' if len(tpl) else '%(country)s'
+        if self.cedex:
+            tpl += ', CEDEX %(cedex_code)s' if len(tpl) else 'CEDEX %(cedex_code)s'
+        if self.cedex_code:
+            tpl += ', CEDEX %(cedex_code)s' if len(tpl) else 'CEDEX %(cedex_code)s'
+        if self.special:
+            tpl += ', %(special)s' if len(tpl) else '%(special)s'
+
         return tpl % ({
             field: getattr(self, field) for field in self.fields_used
         })
