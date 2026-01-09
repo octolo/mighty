@@ -1,5 +1,3 @@
-import json
-
 from django.contrib import messages
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
@@ -134,6 +132,10 @@ class MissiveAdmin(BaseAdmin):
         # documents
         missive_documents = missive.check_documents()
         extra_context.update({'missive_documents': missive_documents})
+
+        # invoice
+        missive_invoice = missive.get_invoice()
+        extra_context['missive_invoice'] = missive_invoice
 
         # proofs
         missive_proofs = missive.get_prooflist()

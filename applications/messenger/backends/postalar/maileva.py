@@ -53,6 +53,7 @@ class MissiveBackend(MissiveBackend):
         'prooflist': 'https://api.sandbox.maileva.net/registered_mail/v4/global_deposit_proofs?sending_id=%s',
         'proof': 'https://api.sandbox.maileva.net/registered_mail/v4/global_deposit_proofs/%s',
         'proofdownload': 'https://api.sandbox.maileva.net/registered_mail/v4%s',
+        'invoice': 'https://api.sandbox.maileva.com/billing/v1/recipient_items?user_reference=%s',
     }
     api_official = {  # noqa: RUF012
         'webhook': 'https://api.maileva.com/notification_center/v4/subscriptions',
@@ -65,6 +66,7 @@ class MissiveBackend(MissiveBackend):
         'prooflist': 'https://api.maileva.com/registered_mail/v4/global_deposit_proofs?sending_id=%s',
         'proof': 'https://api.maileva.com/registered_mail/v4/global_deposit_proofs/%s',
         'proofdownload': 'https://api.maileva.com/registered_mail/v4%s',
+        'invoice': 'https://api.maileva.com/billing/v1/recipient_items?user_reference=%s',
     }
     proof_keys = [
         'content_proof_embedded_document',
@@ -124,7 +126,7 @@ class MissiveBackend(MissiveBackend):
     duplex_printing = bool(setting('MAILEVA_DUPLEX_PRINTING', True))  # noqa: FBT003
     optional_address_sheet = bool(
         setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True)
-    )  # noqa: FBT003
+    )
     archiving_duration = setting('MAILEVA_ARCHIVING_DURATION', 0)
     notification_email = setting('MAILEVA_NOTIFICATION', False)  # noqa: FBT003
 
@@ -507,12 +509,21 @@ class MissiveBackend(MissiveBackend):
             return response.json()
         return {'recipients': []}
 
+    def get_invoice(self):
+        if self.authentication():
+            api = self.api_url['invoice'] % self.missive.msg_id
+            response = requests.get(api, headers=self.api_headers)
+            return response.json()
+        return {'invoice': []}
+
     def check_postalar(self):
         rjson_status = self.get_status()
         rjson_recipients = self.get_recipients()
+        rjson_invoice = self.get_invoice()
         rjson = {
             'status': rjson_status,
             'recipients': rjson_recipients,
+            'invoice': rjson_invoice,
         }
         self.missive.trace = str(rjson)
         status_value = rjson_status.get('status')
@@ -562,7 +573,6 @@ class MissiveBackend(MissiveBackend):
         date = time.strftime('%Y%m%d_%H%M%S')
         filename = get_valid_filename(f'{name}_{proof}_{date}.pdf')
 
-        print('filename:', filename)
         response = FileResponse(file, as_attachment=True, filename=filename)
 
         # Supprimer le fichier après un petit délai
@@ -580,6 +590,15 @@ class MissiveBackend(MissiveBackend):
         return getattr_recursive(
             self.missive, self.field_price, default='', default_on_error=True
         )
+
+    def get_price_infos(self):
+        items = getattr_recursive(
+            self.missive,
+            'trace_json.invoice.items',
+            default={},
+            default_on_error=True,
+        )
+        return {item['label']: item['amount'] for item in items}
 
     def get_billed_page(self):
         return getattr_recursive(

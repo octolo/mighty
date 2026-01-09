@@ -57,6 +57,16 @@ class Missive(AddressNoBase):
         backend = self.get_backend()
         return getattr(backend, f'check_{self.mode.lower()}')()
 
+    def get_invoice(self):
+        if hasattr(self.get_backend(), 'get_invoice'):
+            return self.get_backend().get_invoice()
+        return None
+
+    def get_price_infos(self):
+        if hasattr(self.get_backend(), 'get_price_infos'):
+            return self.get_backend().get_price_infos()
+        return {}
+
     def cancel_missive(self):
         return self.get_backend().cancel()
 
@@ -100,6 +110,7 @@ class Missive(AddressNoBase):
     @property
     def trace_json(self):
         import ast
+
         return ast.literal_eval(self.trace) if self.trace else {}
 
     @property

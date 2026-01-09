@@ -14,8 +14,8 @@ from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
 from mighty.functions import get_logger, setting
-from mighty.models import Missive
 from mighty.functions.facilities import getattr_recursive
+from mighty.models import Missive
 
 logger = get_logger()
 
@@ -31,6 +31,7 @@ class MissiveBackend(MissiveBackend):
         'recipients': 'https://api.maileva.com/mail/v2/sendings/%s/recipients',
         'submit': 'https://api.maileva.com/mail/v2/sendings/%s/submit',
         'cancel': 'https://api.maileva.com/mail/v2/sendings/%s',
+        'invoice': 'https://api.maileva.com/billing/v1/recipient_items?user_reference=%s',
     }
     api_official = {
         'webhook': 'https://api.maileva.com/notification_center/v2/subscriptions',
@@ -40,6 +41,7 @@ class MissiveBackend(MissiveBackend):
         'recipients': 'https://api.maileva.com/mail/v2/sendings/%s/recipients',
         'submit': 'https://api.maileva.com/mail/v2/sendings/%s/submit',
         'cancel': 'https://api.maileva.com/mail/v2/sendings/%s',
+        'invoice': 'https://api.maileva.com/billing/v1/recipient_items?user_reference=%s',
     }
     status_ref = {
         'PENDING': _c.STATUS_PENDING,
@@ -80,7 +82,9 @@ class MissiveBackend(MissiveBackend):
     # CONFIG
     color_printing = setting('MAILEVA_COLOR_PRINTING', False)
     duplex_printing = bool(setting('MAILEVA_DUPLEX_PRINTING', True))
-    optional_address_sheet = bool(setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True))
+    optional_address_sheet = bool(
+        setting('MAILEVA_OPTIONAL_ADDRESS_SHEET', True)
+    )
     archiving_duration = setting('MAILEVA_ARCHIVING_DURATION', 0)
     notification_email = setting('MAILEVA_NOTIFICATION', False)
 
@@ -96,11 +100,12 @@ class MissiveBackend(MissiveBackend):
     field_price = 'trace_json.recipients.recipients.0.postage_price'
     field_billed_page = 'trace_json.status.billed_pages_count'
     field_external_reference = 'trace_json.status.reference'
-    field_external_status = 'trace_json.recipients.recipients.0.last_main_delivery_status.label'
+    field_external_status = (
+        'trace_json.recipients.recipients.0.last_main_delivery_status.label'
+    )
     field_color = 'trace_json.status.color_printing'
     field_type = 'trace_json.status.envelope_type'
     field_class = 'trace_json.recipients.recipients.0.postage_class'
-
 
     def __init__(self, missive, *args, **kwargs):
         super().__init__(missive, *args, **kwargs)
@@ -205,7 +210,7 @@ class MissiveBackend(MissiveBackend):
             'sender_address_line_5': self.sender_address_line_5,
             'sender_address_line_6': self.sender_address_line_6,
             'sender_country_code': self.sender_country_code,
-            #'notification_treat_undelivered_mail': undelivered,
+            # 'notification_treat_undelivered_mail': undelivered,
             'envelope_windows_type': 'DOUBLE',
         }
 
@@ -446,6 +451,22 @@ class MissiveBackend(MissiveBackend):
             archive=self.prince_info['archiving_duration'],
         )
 
+    def get_invoice(self):
+        if self.authentication():
+            api = self.api_url['invoice'] % self.missive.msg_id
+            response = requests.get(api, headers=self.api_headers)
+            return response.json()
+        return {'invoice': []}
+
+    def get_price_infos(self):
+        items = getattr_recursive(
+            self.missive,
+            'trace_json.invoice.items',
+            default={},
+            default_on_error=True,
+        )
+        return {item['label']: item['amount'] for item in items}
+
     def check_postal(self):
         if self.authentication():
             # status
@@ -456,9 +477,11 @@ class MissiveBackend(MissiveBackend):
             url = self.api_url['recipients'] % self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
             rjson_recipients = response.json()
+            rjson_invoice = self.get_invoice()
             rjson = {
                 'status': rjson_status,
                 'recipients': rjson_recipients,
+                'invoice': rjson_invoice,
             }
             self.missive.trace = str(rjson)
             if 'status' in rjson_status:
@@ -476,22 +499,45 @@ class MissiveBackend(MissiveBackend):
             self.missive.save()
 
     def get_price(self):
-        return getattr_recursive(self.missive, self.field_price, default='', default_on_error=True)
+        return getattr_recursive(
+            self.missive, self.field_price, default='', default_on_error=True
+        )
 
     def get_billed_page(self):
-        return getattr_recursive(self.missive, self.field_billed_page, default='', default_on_error=True)
+        return getattr_recursive(
+            self.missive,
+            self.field_billed_page,
+            default='',
+            default_on_error=True,
+        )
 
     def get_external_reference(self):
-        return getattr_recursive(self.missive, self.field_external_reference, default='', default_on_error=True)
+        return getattr_recursive(
+            self.missive,
+            self.field_external_reference,
+            default='',
+            default_on_error=True,
+        )
 
     def get_external_status(self):
-        return getattr_recursive(self.missive, self.field_external_status, default='', default_on_error=True)
+        return getattr_recursive(
+            self.missive,
+            self.field_external_status,
+            default='',
+            default_on_error=True,
+        )
 
     def get_color(self):
-        return getattr_recursive(self.missive, self.field_color, default='', default_on_error=True)
+        return getattr_recursive(
+            self.missive, self.field_color, default='', default_on_error=True
+        )
 
     def get_class(self):
-        return getattr_recursive(self.missive, self.field_class, default='', default_on_error=True)
+        return getattr_recursive(
+            self.missive, self.field_class, default='', default_on_error=True
+        )
 
     def get_type(self):
-        return getattr_recursive(self.missive, self.field_type, default='', default_on_error=True)
+        return getattr_recursive(
+            self.missive, self.field_type, default='', default_on_error=True
+        )

@@ -24,6 +24,11 @@
         <pre id="log-module">{{ missive_documents }}</pre>
         {% endif %}
 
+        {% if missive_invoice %}
+        <h2>Invoice</h2>
+        <pre id="log-module">{{ missive_invoice }}</pre>
+        {% endif %}
+
         {% if missive_proofs %}
         <h2>{% translate 'Proofs' %}</h2>
         {% for proof in missive_proofs %}
