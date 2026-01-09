@@ -233,6 +233,3 @@ class MissiveBackend(EnableLogger):
 
     def get_price_infos(self):
         return {}
-
-
-g
