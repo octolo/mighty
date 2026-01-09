@@ -216,6 +216,9 @@ class MissiveBackend(EnableLogger):
     def get_price(self):
         return NotImplementedError('Get price mode not implemented')
 
+    def get_invoice(self):
+        return []
+
     def get_billed_page(self):
         return NotImplementedError('Get billed page mode not implemented')
 
