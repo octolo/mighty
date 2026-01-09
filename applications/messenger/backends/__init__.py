@@ -1,5 +1,7 @@
 import os
+import pathlib
 import tempfile
+
 import pdfkit
 from django.core.mail import EmailMessage
 from django.core.mail.message import make_msgid
@@ -157,13 +159,13 @@ class MissiveBackend(EnableLogger):
                 },
             )
             self.postal_add_attachment(tmp_pdf)
-        os.remove(footer_html.name)
-        os.remove(header_html.name)
+        pathlib.Path(footer_html.name).unlink()
+        pathlib.Path(header_html.name).unlink()
 
     def send_postal(self):
         self.postal_base()
         self.postal_attachments()
-        os.remove(self.path_base_doc)
+        pathlib.Path(self.path_base_doc).unlink()
         self.missive.to_sent()
         self.missive.save()
         return self.missive.status
@@ -225,3 +227,6 @@ class MissiveBackend(EnableLogger):
 
     def get_color(self):
         return NotImplementedError('Get color mode not implemented')
+
+    def get_price_infos(self):
+        return NotImplementedError('Get price infos mode not implemented')
