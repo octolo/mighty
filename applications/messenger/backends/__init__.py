@@ -229,4 +229,7 @@ class MissiveBackend(EnableLogger):
         return NotImplementedError('Get color mode not implemented')
 
     def get_price_infos(self):
-        return NotImplementedError('Get price infos mode not implemented')
+        return {}
+
+
+g
