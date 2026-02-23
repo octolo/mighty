@@ -81,6 +81,7 @@ class MissiveBackend(MissiveBackend):
         if self.missive.attachments:
             logs = []
             for document in self.missive.attachments:
+                document.seek(0)
                 if setting('MISSIVE_SERVICE', False):
                     attachments.append({
                         'content': base64.b64encode(document.read()).decode(
