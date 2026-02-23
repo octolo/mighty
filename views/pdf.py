@@ -147,8 +147,12 @@ class PDFView(DetailView):
         """Prepare PDF generation options."""
         if self.has_option('header_enable'):
             self.options['--header-html'] = self._build_header_html()
+        else:
+            self.options['margin-top'] = '0.30in'
         if self.has_option('footer_enable'):
             self.options['--footer-html'] = self._build_footer_html()
+        else:
+            self.options['margin-bottom'] = '0.30in'
         self.options['orientation'] = self.current_config.get(
             'orientation', 'Portrait'
         )
@@ -160,7 +164,6 @@ class PDFView(DetailView):
             suffix='.pdf', delete=False
         ) as temp_file:
             temp_file_path = temp_file.name
-
         pdfkit.from_string(html_content, temp_file_path, options=self.options)
         self.tmp_files.append(temp_file_path)
         return temp_file_path
