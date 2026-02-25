@@ -226,9 +226,9 @@ class AddressNoBase(models.Model):
         if self.country:
             tpl += ', %(country)s' if len(tpl) else '%(country)s'
         if self.cedex:
-            tpl += ', CEDEX %(cedex_code)s' if len(tpl) else 'CEDEX %(cedex_code)s'
+            tpl += ', %(cedex)s' if len(tpl) else '%(cedex)s'
         if self.cedex_code:
-            tpl += ', CEDEX %(cedex_code)s' if len(tpl) else 'CEDEX %(cedex_code)s'
+            tpl += ', %(cedex_code)s' if len(tpl) else '%(cedex_code)s'
         if self.special:
             tpl += ', %(special)s' if len(tpl) else '%(special)s'
 
