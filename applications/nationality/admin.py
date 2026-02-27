@@ -26,17 +26,17 @@ class TranslatorAdmin(BaseAdmin):
 
     # @never_cache
     def csv_view(self, request, object_id=None, extra_context=None):
-        from mighty.filegenerator import FileGenerator
+        from configuration.apps.pkg.file_maker.utils import DataExporter
         from mighty.models import TranslateDict
 
         items = []
         for td in TranslateDict.objects.all():
             for key, tr in td.one_dim_format.items():
                 items.append([key, tr])
-        fg = FileGenerator(
+        exporter = DataExporter(
             filename='exporttr', items=items, fields=('path', 'translation')
         )
-        return fg.response_http('csv')
+        return exporter.as_csv_response()
         # import csv
         # from django.http import StreamingHttpResponse
         # response = HttpResponse(

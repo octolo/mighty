@@ -2,7 +2,6 @@ import os
 import pathlib
 import tempfile
 
-import pdfkit
 from django.core.mail import EmailMessage
 from django.core.mail.message import make_msgid
 from django.template import Context, Template
@@ -124,43 +123,29 @@ class MissiveBackend(EnableLogger):
         return Template(self.missive.html).render(context)
 
     def postal_base(self):
+        from configuration.apps.pkg.file_maker.utils import DocumentGenerator
+
         context = Context()
 
         # header
-        header = self.missive.header_html
-        header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        header_html.write(Template(header).render(context).encode('utf-8'))
-        header_html.close()
+        header = Template(self.missive.header_html).render(context)
 
         # footer
-        footer = self.missive.footer_html
-        footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        footer_html.write(Template(footer).render(context).encode('utf-8'))
-        footer_html.close()
+        footer = Template(self.missive.footer_html).render(context)
 
-        # first file
+        # Generate PDF using DocumentGenerator
         with tempfile.NamedTemporaryFile(
             suffix='postalfirstpage.pdf', delete=False
         ) as tmp_pdf:
             content_html = self.postal_template(context)
-            pdfkit.from_string(
-                content_html,
-                tmp_pdf.name,
-                options={
-                    'encoding': 'UTF-8',
-                    '--header-html': header_html.name,
-                    '--footer-html': footer_html.name,
-                    'page-size': 'A4',
-                    'margin-top': '0.75in',
-                    'margin-right': '0.75in',
-                    'margin-bottom': '0.75in',
-                    'margin-left': '0.75in',
-                    'custom-header': [('Accept-Encoding', 'gzip')],
-                },
-            )
+            pdf_bytes = DocumentGenerator(
+                html=content_html,
+                header=header,
+                footer=footer,
+            ).write_pdf()
+            tmp_pdf.write(pdf_bytes)
+            tmp_pdf.flush()
             self.postal_add_attachment(tmp_pdf)
-        pathlib.Path(footer_html.name).unlink()
-        pathlib.Path(header_html.name).unlink()
 
     def send_postal(self):
         self.postal_base()

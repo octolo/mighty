@@ -4,8 +4,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
+from configuration.apps.pkg.file_maker.utils import DataExporter
 from mighty.fields import JSONField, RichTextField
-from mighty.filegenerator import FileGenerator
 from mighty.functions import getattr_recursive
 from mighty.models.base import Base
 from mighty.translates import reporting as _
@@ -233,12 +233,10 @@ class Reporting(Base):
     @property
     def reporting_file_generator(self):
         items = self.reporting_items
-        return FileGenerator(
+        return DataExporter(
             filename=self.reporting_export_name,
             items=items,
             fields=self.reporting_fields,
-            html=self.html_pdf,
-            queryset=self.reporting_queryset,
         )
 
     def reporting_file_response(self, response, file_type, *args, **kwargs):

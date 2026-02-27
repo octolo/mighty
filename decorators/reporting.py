@@ -1,7 +1,7 @@
 from django.db import models
 
+from configuration.apps.pkg.file_maker.utils import DataExporter
 from mighty import translates as _
-from mighty.filegenerator import FileGenerator
 
 reporting_fields = (
     'reporting_frequency',
@@ -113,7 +113,7 @@ def ReportingModel(**kwargs):
                 return rc
 
             def reporting_file_generator(self, name, fields, items):
-                return FileGenerator(filename=name, items=items, fields=fields)
+                return DataExporter(filename=name, items=items, fields=fields)
 
             def reporting_process_cfg(
                 self, reporting, file_type, response='http', *args, **kwargs
