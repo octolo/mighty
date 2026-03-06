@@ -77,9 +77,11 @@
 <li><a href="{{ variables_url }}">Variables</a></li>
 {% endif %}
 
-{% for oti in object_tools_items %}
+{% if mighty_object_tools_items %}
+{% for oti in mighty_object_tools_items %}
 <li><a href="{% url opts|admin_urlname:oti.url original.pk|admin_urlquote %}">{{ oti.name }}</a></li>
 {% endfor %}
+{% endif %}
 
 {{ block.super }}
 {% endblock %}

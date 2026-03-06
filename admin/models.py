@@ -112,7 +112,7 @@ class BaseAdmin(admin.ModelAdmin):
         )
 
     def render_admin_custom(self, request, context, template, obj=None):
-        context['object_tools_items'] = self.object_tools_items
+        context['mighty_object_tools_items'] = self.object_tools_items
         app_label = self.opts.app_label
         view_on_site_url = self.get_view_on_site_url(obj)
         context.update({
@@ -279,7 +279,7 @@ class BaseAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        extra_context['object_tools_items'] = [
+        extra_context['mighty_object_tools_items'] = [
             item for item in self.object_tools_items if item.get('list')
         ]
         return super().changelist_view(request, extra_context=extra_context)
@@ -288,7 +288,7 @@ class BaseAdmin(admin.ModelAdmin):
         self, request, object_id=None, form_url='', extra_context=None
     ):
         extra_context = extra_context or {}
-        extra_context['object_tools_items'] = [
+        extra_context['mighty_object_tools_items'] = [
             item for item in self.object_tools_items if not item.get('list')
         ]
         return super().changeform_view(
@@ -298,7 +298,7 @@ class BaseAdmin(admin.ModelAdmin):
     def render_admin_form(
         self, request, context, form_url='', obj=None, template=None
     ):
-        context['object_tools_items'] = self.object_tools_items
+        context['mighty_object_tools_items'] = self.object_tools_items
         app_label = self.opts.app_label
         preserved_filters = self.get_preserved_filters(request)
         form_url = add_preserved_filters(
