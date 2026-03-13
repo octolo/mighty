@@ -299,6 +299,11 @@ class ParamMultiChoicesFilter(ParamFilter):
             if self.is_array:
                 return [value for value in values if value in self.choices]
             return values if values in self.choices else None
+        # Single value from query string is a str; list(str) would split into chars
+        if values is None:
+            return []
+        if isinstance(values, str):
+            return [values] if values else []
         return list(values)
 
 
