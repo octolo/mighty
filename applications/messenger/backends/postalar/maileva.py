@@ -378,10 +378,16 @@ class MissiveBackend(MissiveBackend):
     def postal_attachments(self):
         if self.missive.attachments:
             for document in self.missive.attachments:
-                suffix = get_valid_filename(os.path.basename(str(document)))
+                raw_name = getattr(document, 'name', None)
+                if raw_name:
+                    suffix = get_valid_filename(os.path.basename(raw_name))
+                else:
+                    suffix = 'attachment.pdf'
                 with tempfile.NamedTemporaryFile(
                     suffix=suffix, delete=False
                 ) as tmp_pdf:
+                    if hasattr(document, 'seek'):
+                        document.seek(0)
                     tmp_pdf.write(document.read())
                     self.postal_add_attachment(tmp_pdf)
         return not self.in_error

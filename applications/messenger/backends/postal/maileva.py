@@ -324,7 +324,12 @@ class MissiveBackend(MissiveBackend):
         self.priority += 1
         api = self.api_url['documents'] % self.sending_id
         headers = self.api_headers
-        doc_name = os.path.basename(attachment.name)
+        if hasattr(attachment, 'seek'):
+            attachment.seek(0)
+        name_attr = getattr(attachment, 'name', None)
+        doc_name = os.path.basename(name_attr) if name_attr else 'attachment'
+        if not doc_name:
+            doc_name = 'attachment'
         files = {'document': (doc_name, attachment)}
         data = {
             'metadata': json.dumps({
