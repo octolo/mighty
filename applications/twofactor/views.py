@@ -7,8 +7,6 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
-
-from mighty.applications.messenger import choices
 from mighty.applications.twofactor import translates as _
 from mighty.applications.twofactor import use_twofactor
 from mighty.applications.twofactor.apps import TwofactorConfig as conf
@@ -18,6 +16,8 @@ from mighty.applications.twofactor.forms import (
     TwoFactorCodeForm,
     TwoFactorSearchForm,
 )
+
+from mighty.applications.messenger import choices
 from mighty.applications.user.forms import UserCreationForm
 from mighty.functions import masking_email, masking_phone
 from mighty.views import BaseView, FormView, TemplateView
@@ -136,8 +136,8 @@ class Register(LoginStepSearch):
 
     def form_valid(self, form):
         user = form.save()
-        if 'groups_onsave' in settings.TWOFACTOR:
-            for group in settings.TWOFACTOR['groups_onsave']:
+        if hasattr(settings, 'MISSIVE_GROUPS_ONSAVE'):
+            for group in settings.MISSIVE_GROUPS_ONSAVE:
                 group = Group.objects.get(name=group)
                 user.groups.add(group)
         self.set_session_with_uid(str(user.uid))

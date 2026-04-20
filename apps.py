@@ -56,7 +56,6 @@ class Config:
         ],
         'user': [
             'User',
-            'Twofactor',
             'Trashmail',
             'MergeableAccount',
         ],
@@ -91,9 +90,6 @@ class Config:
         'custom-header': [('Accept-Encoding', 'gzip')],
     }
     urls_admin_to_add = []
-    pdf_header = 'document_header_template.html'
-    pdf_footer = 'document_footer_template.html'
-    pdf_content = 'document_content_template.html'
 
     class Directory:
         app = os.path.dirname(os.path.realpath(__file__))

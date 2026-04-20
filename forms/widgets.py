@@ -2,11 +2,11 @@ from django.forms.widgets import DateInput, Textarea, TimeInput
 
 
 class Document(Textarea):
-    input_type = 'document'
+    input_type = 'richedit'
 
 
 class Classic(Textarea):
-    input_type = 'classic'
+    input_type = 'richedit'
 
 
 class DateInput(DateInput):

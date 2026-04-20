@@ -2,7 +2,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, JsonResponse
 
 from mighty.applications.nationality.apps import NationalityConfig
-from mighty.applications.twofactor.apps import TwofactorConfig
 from mighty.applications.user import get_form_fields
 from mighty.apps import MightyConfig as conf
 from mighty.functions import setting
@@ -13,9 +12,6 @@ from mighty.views.template import TemplateView
 base_config = {
     'base': {
         'logo': conf.logo,
-        'email': TwofactorConfig.method.email,
-        'sms': TwofactorConfig.method.sms,
-        'basic': TwofactorConfig.method.basic,
         'languages': NationalityConfig.availables,
         'fields': get_form_fields(),
     }

@@ -49,7 +49,7 @@ if 'mighty.applications.nationality' in settings.INSTALLED_APPS:
     from mighty.applications.nationality import urls as urls_nationality
 
     api_urlpatterns += urls_nationality.urlpatterns
-    if hasattr(urls_nationality, 'api_urlpatterns'):
+    if hasattr(urls_nationality, 'api_urlpatterns'):  # noqa: WPS226
         api_urlpatterns += urls_nationality.api_urlpatterns
 
 # Enable app user
@@ -92,25 +92,3 @@ if 'mighty.applications.address' in settings.INSTALLED_APPS:
 
     if hasattr(urls_address, 'api_urlpatterns'):
         api_urlpatterns += urls_address.api_urlpatterns
-
-# Enable app shop
-if 'mighty.applications.shop' in settings.INSTALLED_APPS:
-    from mighty.applications.shop import urls as urls_shop
-
-    urlpatterns += urls_shop.urlpatterns
-    if hasattr(urls_shop, 'api_urlpatterns'):
-        api_urlpatterns += urls_shop.api_urlpatterns
-    if hasattr(urls_shop, 'webhooks_urlpatterns'):
-        webhooks_urlpatterns += urls_shop.webhooks_urlpatterns
-
-# Enable app grapher
-if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
-    from mighty.applications.grapher import urls as urls_grapher
-
-    urlpatterns += urls_grapher.urlpatterns
-
-
-# Enable app chat
-# if "mighty.applications.chat" in settings.INSTALLED_APPS:
-#    from mighty.applications.chat.urls import urlpatterns as urls_chat
-#    urlpatterns += urls_chat

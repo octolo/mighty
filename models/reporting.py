@@ -4,11 +4,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
-from mighty.fields import JSONField, RichTextField
-from mighty.filegenerator import FileGenerator
+from mighty.fields import JSONField
 from mighty.functions import getattr_recursive
 from mighty.models.base import Base
 from mighty.translates import reporting as _
+from server.apps.pkg.file_generator.utils import ExportGenerator
 
 
 class Reporting(Base):
@@ -68,8 +68,8 @@ class Reporting(Base):
     cfg_csv = JSONField(_.cfg_csv, default=dict, blank=True, null=True)
     can_pdf = models.BooleanField(_.can_pdf, default=False)
     cfg_pdf = JSONField(_.cfg_pdf, default=dict, blank=True, null=True)
-    html_pdf = RichTextField(_.html_pdf, blank=True, null=True)
-    email_html = RichTextField(_.email_html, blank=True, null=True)
+    html_pdf = models.TextField(_.html_pdf, blank=True, null=True)
+    email_html = models.TextField(_.email_html, blank=True, null=True)
     related_obj = None
     kwargs = {}
     json_length = {}
@@ -233,12 +233,10 @@ class Reporting(Base):
     @property
     def reporting_file_generator(self):
         items = self.reporting_items
-        return FileGenerator(
+        return ExportGenerator(
             filename=self.reporting_export_name,
             items=items,
             fields=self.reporting_fields,
-            html=self.html_pdf,
-            queryset=self.reporting_queryset,
         )
 
     def reporting_file_response(self, response, file_type, *args, **kwargs):

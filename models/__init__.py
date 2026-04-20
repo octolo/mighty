@@ -176,14 +176,6 @@ if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:
         pass
 
 
-# Twofactor
-if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
-    from mighty.applications.twofactor.models import Twofactor
-
-    class Twofactor(Twofactor):
-        pass
-
-
 # Extend
 if 'mighty.applications.extend' in settings.INSTALLED_APPS:
     from mighty.applications.extend import models as models_extend

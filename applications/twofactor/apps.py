@@ -1,8 +1,6 @@
 from django.apps import AppConfig
 from django.conf import settings
 
-from mighty import over_config
-
 
 class Config:
     groups_onsave = []
@@ -24,8 +22,23 @@ class Config:
         phone = r'^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$'
 
 
-if hasattr(settings, 'TWOFACTOR'):
-    over_config(Config, settings.TWOFACTOR)
+# Use new MISSIVE_* settings instead of deprecated TWOFACTOR
+if hasattr(settings, 'MISSIVE_GROUPS_ONSAVE'):
+    Config.groups_onsave = settings.MISSIVE_GROUPS_ONSAVE
+if hasattr(settings, 'MISSIVE_MAIL_PROTECT_SPAM'):
+    Config.mail_protect_spam = settings.MISSIVE_MAIL_PROTECT_SPAM
+if hasattr(settings, 'MISSIVE_SMS_PROTECT_SPAM'):
+    Config.sms_protect_spam = settings.MISSIVE_SMS_PROTECT_SPAM
+if hasattr(settings, 'MISSIVE_MINUTES_ALLOWED'):
+    Config.minutes_allowed = settings.MISSIVE_MINUTES_ALLOWED
+if hasattr(settings, 'MISSIVE_EMAIL_CODE_TEMPLATE'):
+    Config.email_code = settings.MISSIVE_EMAIL_CODE_TEMPLATE
+if hasattr(settings, 'MISSIVE_EMAIL_TEMPLATE'):
+    Config.email_template = settings.MISSIVE_EMAIL_TEMPLATE
+if hasattr(settings, 'MISSIVE_ACCOUNTS_MARKET'):
+    Config.accounts_market = settings.MISSIVE_ACCOUNTS_MARKET
+if hasattr(settings, 'MISSIVE_OTP_TEMPLATE_ID'):
+    Config.template_id = settings.MISSIVE_OTP_TEMPLATE_ID
 
 
 class TwofactorConfig(AppConfig, Config):

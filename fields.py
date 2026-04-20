@@ -1,19 +1,7 @@
-from django.conf import settings
-from django.db.models import TextField
-
 try:
     from django.db.models import JSONField
 except Exception:
     from jsonfield import JSONField  # noqa
-
-
-def RichTextField(*args, **kwargs):
-    if 'django_ckeditor_5' in settings.INSTALLED_APPS:
-        from django_ckeditor_5.fields import CKEditor5Field
-
-        return CKEditor5Field(*args, **kwargs)
-    return TextField(*args, **kwargs)
-
 
 # Fields mighty
 uid = ('uid',)

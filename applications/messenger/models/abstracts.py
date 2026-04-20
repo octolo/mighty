@@ -14,7 +14,7 @@ from mighty.applications.messenger import (
     missive_backend_web,
 )
 from mighty.applications.messenger.apps import MessengerConfig as conf
-from mighty.fields import JSONField, RichTextField
+from mighty.fields import JSONField
 from mighty.functions import get_model, masking_email, masking_phone, url_domain
 from mighty.models.base import Base
 
@@ -42,13 +42,9 @@ class MessengerModel(Base):
     last_name = models.CharField(max_length=255, blank=True, null=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
 
-    header_html = RichTextField(blank=True, null=True)
-    footer_html = RichTextField(blank=True, null=True)
-
     subject = models.CharField(max_length=255, blank=True, null=True)
     template = models.CharField(max_length=255, blank=True, null=True)
 
-    html = RichTextField(blank=True, null=True)
     txt = models.TextField(blank=True, null=True)
     preheader = models.TextField(blank=True, null=True)
 
