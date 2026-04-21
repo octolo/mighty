@@ -8,7 +8,6 @@ class RoleAdmin(BaseAdmin):
     search_fields = ('name', 'group__search')
     list_display = ('name', 'is_immutable', 'group')
     fieldsets = ((None, {'classes': ('wide',), 'fields': fields.role}),)
-    readonly_fields = ('number', 'three_first')
 
 
 class TenantAdmin(BaseAdmin):
