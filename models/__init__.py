@@ -176,48 +176,11 @@ if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:
         pass
 
 
-# Twofactor
-if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
-    from mighty.applications.twofactor.models import Twofactor
-
-    class Twofactor(Twofactor):
-        pass
-
-
 # Extend
 if 'mighty.applications.extend' in settings.INSTALLED_APPS:
     from mighty.applications.extend import models as models_extend
 
     class Key(models_extend.Key):
-        pass
-
-
-# Shop
-if 'mighty.applications.shop' in settings.INSTALLED_APPS:
-    from mighty.applications.shop import models as models_shop
-
-    class ShopService(models_shop.ShopService):
-        pass
-
-    class Offer(models_shop.Offer):
-        pass
-
-    class Subscription(models_shop.Subscription):
-        pass
-
-    class Discount(models_shop.Discount):
-        pass
-
-    class ShopItem(models_shop.ShopItem):
-        pass
-
-    class Bill(models_shop.Bill):
-        pass
-
-    class PaymentMethod(models_shop.PaymentMethod):
-        pass
-
-    class SubscriptionRequest(models_shop.SubscriptionRequest):
         pass
 
 

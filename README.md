@@ -8,7 +8,7 @@ How to add mighty to your project.
 Add dependencies
 ```python
 INSTALLED_APPS += [
-    'phonenumber_field', 
+    'phonenumber_field',
     'django_json_widget',
 ]
 ```
@@ -19,7 +19,6 @@ INSTALLED_APPS += [
     'mighty', # adds powerful tools that facilitate application development
     'mighty.applications.user', # Improves user with multiple mails and phones
     'mighty.applications.nationality', # Create a nationality object (automatically add nationality to users)
-    'mighty.applications.twofactor', # Enable a twofactor method authentication
     'mighty.applications.grapher', # Enable an application to generate svg or canvas graphics
 ]
 ```

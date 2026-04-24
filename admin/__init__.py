@@ -3,15 +3,11 @@ from django.contrib import admin
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
+
 from mighty import fields
 from mighty import models as all_models
 from mighty.admin.models import BaseAdmin
-from mighty.admin.site import AdminSite
 from mighty.apps import MightyConfig as conf
-
-mysite = AdminSite()
-admin.site = mysite
-admin.sites.site = mysite
 
 
 ###########################
@@ -50,42 +46,59 @@ class BackendAdmin(BaseAdmin):
 @admin.register(all_models.Reporting)
 class ReportingAdmin(BaseAdmin):
     view_on_site = False
-    fieldsets = ((None, {'classes': ('wide',), 'fields': (
-        'name',
-        'is_detail',
-        'file_name',
-        'content_type',
-        'target',
-        'manager',
-        'config',
-    )}),)
+    fieldsets = (
+        (
+            None,
+            {
+                'classes': ('wide',),
+                'fields': (
+                    'name',
+                    'is_detail',
+                    'file_name',
+                    'content_type',
+                    'target',
+                    'manager',
+                    'config',
+                ),
+            },
+        ),
+    )
     list_display = ('name', 'content_type', 'target')
     search_fields = ('service',)
     raw_id_fields = ('content_type', 'target')
 
     def custom_fieldset(self, model, admin_site):
-        self.add_field('filter', (
-            'filter_config',
-            'filter_related',
-            'filter_request',
-        ))
-        self.add_field('excel', (
-            'can_excel',
-            'cfg_excel',
-        ))
-        self.add_field('csv', (
-            'can_csv',
-            'cfg_csv',
-        ))
-        self.add_field('pdf', (
-            'can_pdf',
-            'cfg_pdf',
-            'html_pdf',
-        ))
-        self.add_field('email', (
-            'email_html',
-        ))
-
+        self.add_field(
+            'filter',
+            (
+                'filter_config',
+                'filter_related',
+                'filter_request',
+            ),
+        )
+        self.add_field(
+            'excel',
+            (
+                'can_excel',
+                'cfg_excel',
+            ),
+        )
+        self.add_field(
+            'csv',
+            (
+                'can_csv',
+                'cfg_csv',
+            ),
+        )
+        self.add_field(
+            'pdf',
+            (
+                'can_pdf',
+                'cfg_pdf',
+                'html_pdf',
+            ),
+        )
+        self.add_field('email', ('email_html',))
 
 
 @admin.register(all_models.RegisterTask)
@@ -309,52 +322,6 @@ if 'mighty.applications.dataprotect' in settings.INSTALLED_APPS:
 
     @admin.register(all_models.UserDataProtect)
     class UserDataProtectAdmin(admin_dataprotect.UserDataProtectAdmin):
-        pass
-
-
-# Twofactor
-if 'mighty.applications.twofactor' in settings.INSTALLED_APPS:
-    from mighty.applications.twofactor import admin as admin_twofactor
-
-    @admin.register(all_models.Twofactor)
-    class TwofactorAdmin(admin_twofactor.TwofactorAdmin):
-        pass
-
-
-# Shop
-if 'mighty.applications.shop' in settings.INSTALLED_APPS:
-    from mighty.applications.shop import admin as admin_shop
-
-    @admin.register(all_models.ShopService)
-    class ShopServiceAdmin(admin_shop.ServiceAdmin):
-        pass
-
-    @admin.register(all_models.ShopItem)
-    class ShopItemAdmin(admin_shop.ItemAdmin):
-        pass
-
-    @admin.register(all_models.Offer)
-    class OfferAdmin(admin_shop.OfferAdmin):
-        pass
-
-    @admin.register(all_models.Subscription)
-    class SubscriptionAdmin(admin_shop.SubscriptionAdmin):
-        pass
-
-    @admin.register(all_models.Bill)
-    class BillAdmin(admin_shop.BillAdmin):
-        pass
-
-    @admin.register(all_models.Discount)
-    class DiscountAdmin(admin_shop.DiscountAdmin):
-        pass
-
-    @admin.register(all_models.PaymentMethod)
-    class PaymentMethodAdmin(admin_shop.PaymentMethodAdmin):
-        pass
-
-    @admin.register(all_models.SubscriptionRequest)
-    class SubscriptionRequestAdmin(admin_shop.SubscriptionRequestAdmin):
         pass
 
 

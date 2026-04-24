@@ -93,16 +93,6 @@ if 'mighty.applications.address' in settings.INSTALLED_APPS:
     if hasattr(urls_address, 'api_urlpatterns'):
         api_urlpatterns += urls_address.api_urlpatterns
 
-# Enable app shop
-if 'mighty.applications.shop' in settings.INSTALLED_APPS:
-    from mighty.applications.shop import urls as urls_shop
-
-    urlpatterns += urls_shop.urlpatterns
-    if hasattr(urls_shop, 'api_urlpatterns'):
-        api_urlpatterns += urls_shop.api_urlpatterns
-    if hasattr(urls_shop, 'webhooks_urlpatterns'):
-        webhooks_urlpatterns += urls_shop.webhooks_urlpatterns
-
 # Enable app grapher
 if 'mighty.applications.grapher' in settings.INSTALLED_APPS:
     from mighty.applications.grapher import urls as urls_grapher

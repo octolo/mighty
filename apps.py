@@ -45,18 +45,8 @@ class Config:
             'Nationality',
             'Translator',
         ],
-        'shop': [
-            'Service',
-            'Offer',
-            'Subscription',
-            'Discount',
-            'Bill',
-            'PaymentMethod',
-            'SubscriptionRequest',
-        ],
         'user': [
             'User',
-            'Twofactor',
             'Trashmail',
             'MergeableAccount',
         ],
