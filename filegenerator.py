@@ -254,7 +254,10 @@ def generate_pdf(**kwargs):
         pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)
-        final_pdf = tempfile.gettempdir() + '/' + valid_file_name
+        # Use a unique per-call temp directory to avoid collisions on a fixed
+        # path like /tmp/<file_name> (which fails with PermissionError on
+        # rootless/distroless containers when the file already exists).
+        final_pdf = str(pathlib.Path(tempfile.mkdtemp()) / valid_file_name)
         shutil.copyfile(path_tmp, final_pdf)
 
     # a verifier
@@ -267,10 +270,3 @@ def generate_pdf(**kwargs):
         pathlib.Path(final_pdf).unlink()
         return content_html
     return final_pdf, tmp_pdf
-
-
-# def remove_tmpdf(files):
-#    for f in files:
-#        if hasattr(f, "close"):
-#            f.close()
-#        #os.remove(f.)
