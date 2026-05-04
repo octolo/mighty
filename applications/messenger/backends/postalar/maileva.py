@@ -53,7 +53,7 @@ class MissiveBackend(MissiveBackend):
         'prooflist': 'https://api.sandbox.maileva.net/registered_mail/v4/global_deposit_proofs?sending_id=%s',
         'proof': 'https://api.sandbox.maileva.net/registered_mail/v4/global_deposit_proofs/%s',
         'proofdownload': 'https://api.sandbox.maileva.net/registered_mail/v4%s',
-        'invoice': 'https://api.sandbox.maileva.com/billing/v1/recipient_items?user_reference=%s',
+        'invoice': 'https://api.sandbox.maileva.net/billing/v1/recipient_items?user_reference=%s',
     }
     api_official = {  # noqa: RUF012
         'webhook': 'https://api.maileva.com/notification_center/v4/subscriptions',
@@ -256,11 +256,10 @@ class MissiveBackend(MissiveBackend):
             'envelope_windows_type': 'DOUBLE',
         }
 
-        if self.missive.model == _c.MODE_POSTALAR:
-            base.update({
-                'acknowledgement_of_receipt': True,
-                'acknowledgement_of_receipt_scanning': False,
-            })
+        base.update({
+            'acknowledgement_of_receipt': True,
+            'acknowledgement_of_receipt_scanning': False,
+        })
 
         return base
 
@@ -389,6 +388,8 @@ class MissiveBackend(MissiveBackend):
                     if hasattr(document, 'seek'):
                         document.seek(0)
                     tmp_pdf.write(document.read())
+                    tmp_pdf.flush()
+                    os.fsync(tmp_pdf.fileno())
                     self.postal_add_attachment(tmp_pdf)
         return not self.in_error
 
@@ -505,32 +506,43 @@ class MissiveBackend(MissiveBackend):
         if self.authentication():
             url = self.api_url['sendings'] + '/' + self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
-            return response.json()
+            try:
+                return response.json()
+            except Exception:
+                return {'status': 'ERROR', 'message': 'Empty response'}
         return {'status': 'ERROR', 'message': 'Authentication failed'}
 
     def get_recipients(self):
         if self.authentication():
             url = self.api_url['recipients'] % self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
-            return response.json()
+            try:
+                return response.json()
+            except Exception:
+                return {'recipients': []}
         return {'recipients': []}
 
     def get_invoice(self):
         if self.authentication():
             api = self.api_url['invoice'] % self.missive.msg_id
             response = requests.get(api, headers=self.api_headers)
-            return response.json()
+            try:
+                return response.json()
+            except Exception:
+                return {'invoice': []}
         return {'invoice': []}
 
     def check_postalar(self):
         rjson_status = self.get_status()
         rjson_recipients = self.get_recipients()
-        rjson_invoice = self.get_invoice()
         rjson = {
             'status': rjson_status,
             'recipients': rjson_recipients,
-            'invoice': rjson_invoice,
         }
+        # Maileva sandbox does not generate billing items, so calling
+        # ``get_invoice`` returns empty/non-JSON bodies. Only fetch in prod.
+        if settings.IS_PROD:
+            rjson['invoice'] = self.get_invoice()
         self.missive.trace = str(rjson)
         status_value = rjson_status.get('status')
         if status_value:

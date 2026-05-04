@@ -24,14 +24,14 @@ class MissiveBackend(MissiveBackend):
     resource_type = 'mail/v2/sendings'
     callback_url = MightyConfig.webhook + '/wbh/messenger/postal/'
     api_sandbox = {
-        'webhook': 'https://api.maileva.com/notification_center/v2/subscriptions',
-        'auth': 'https://connexion.maileva.com/auth/realms/services/protocol/openid-connect/token',
-        'sendings': 'https://api.maileva.com/mail/v2/sendings',
-        'documents': 'https://api.maileva.com/mail/v2/sendings/%s/documents',
-        'recipients': 'https://api.maileva.com/mail/v2/sendings/%s/recipients',
-        'submit': 'https://api.maileva.com/mail/v2/sendings/%s/submit',
-        'cancel': 'https://api.maileva.com/mail/v2/sendings/%s',
-        'invoice': 'https://api.maileva.com/billing/v1/recipient_items?user_reference=%s',
+        'webhook': 'https://api.sandbox.maileva.net/notification_center/v2/subscriptions',
+        'auth': 'https://connexion.sandbox.maileva.net/auth/realms/services/protocol/openid-connect/token',
+        'sendings': 'https://api.sandbox.maileva.net/mail/v2/sendings',
+        'documents': 'https://api.sandbox.maileva.net/mail/v2/sendings/%s/documents',
+        'recipients': 'https://api.sandbox.maileva.net/mail/v2/sendings/%s/recipients',
+        'submit': 'https://api.sandbox.maileva.net/mail/v2/sendings/%s/submit',
+        'cancel': 'https://api.sandbox.maileva.net/mail/v2/sendings/%s',
+        'invoice': 'https://api.sandbox.maileva.net/billing/v1/recipient_items?user_reference=%s',
     }
     api_official = {
         'webhook': 'https://api.maileva.com/notification_center/v2/subscriptions',
@@ -214,7 +214,7 @@ class MissiveBackend(MissiveBackend):
             'envelope_windows_type': 'DOUBLE',
         }
 
-        if self.missive.model == _c.MODE_POSTALAR:
+        if self.missive.mode == _c.MODE_POSTALAR:
             base.update({
                 'acknowledgement_of_receipt': True,
                 'acknowledgement_of_receipt_scanning': False,
@@ -482,12 +482,14 @@ class MissiveBackend(MissiveBackend):
             url = self.api_url['recipients'] % self.missive.partner_id
             response = requests.get(url, headers=self.api_headers)
             rjson_recipients = response.json()
-            rjson_invoice = self.get_invoice()
             rjson = {
                 'status': rjson_status,
                 'recipients': rjson_recipients,
-                'invoice': rjson_invoice,
             }
+            # Maileva sandbox does not generate billing items, so calling
+            # ``get_invoice`` returns empty/non-JSON bodies. Only fetch in prod.
+            if settings.IS_PROD:
+                rjson['invoice'] = self.get_invoice()
             self.missive.trace = str(rjson)
             if 'status' in rjson_status:
                 self.missive.status = self.status_ref[rjson_status['status']]
