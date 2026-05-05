@@ -7,6 +7,7 @@ from tempfile import NamedTemporaryFile
 
 import pdfkit
 from django.conf import settings
+from django.contrib.staticfiles.finders import find as find_static_file
 from django.http import HttpResponse, StreamingHttpResponse
 from django.template import Context, Template
 from django.template.loader import get_template
@@ -20,6 +21,39 @@ from mighty.functions import make_searchable
 class StreamingBuffer:
     def write(self, value):
         return value
+
+
+def _build_pdf_font_face_style():
+    fonts = {}
+    fonts.update(getattr(settings, 'PDFMAKER', {}).get('fonts', {}))
+    fonts.update(getattr(settings, 'FONTS_FILES_WEASYPRINT', {}))
+
+    rules = []
+    for font_file, font_name in fonts.items():
+        font_path = find_static_file(f'fonts/{font_file}')
+        if not font_path:
+            continue
+        rules.extend([
+            '@font-face {',
+            f"  font-family: '{font_name}';",
+            f"  src: url('file://{font_path}') format('truetype');",
+            '  font-style: normal;',
+            '  font-weight: 400;',
+            '}',
+        ])
+
+    if not rules:
+        return ''
+    return '<style>' + '\n'.join(rules) + '</style>'
+
+
+def _inject_font_style_in_head(html):
+    style = _build_pdf_font_face_style()
+    if not style:
+        return html
+    if '</head>' in html:
+        return html.replace('</head>', f'{style}</head>', 1)
+    return style + html
 
 
 class FileGenerator:
@@ -155,6 +189,7 @@ class FileGenerator:
                 'queryset': self.queryset,
             })
         )
+        html_string = _inject_font_style_in_head(html_string)
         # Date du jour formatée
         today = datetime.today().strftime('%d/%m/%Y')
 
@@ -251,6 +286,7 @@ def generate_pdf(**kwargs):
             get_template(conf.pdf_content).render({'content': content_html}),
         )
         content_html = Template(content_tpl).render(Context(context))
+        content_html = _inject_font_style_in_head(content_html)
         pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)

@@ -55,12 +55,16 @@ class FileMakerPDF:
 
     # Font rules
     def get_font_rule(self, font, name):
+        font_path = find_static_file(f'fonts/{font}')
+        if not font_path:
+            logging.warning('Font not found: %s', font)
+            return ''
         return '\n'.join([
             '@font-face {',
             f"    font-family: '{name}';",
-            '    src: url(file://{});'.format(
-                find_static_file(f'fonts/{font}')
-            ),
+            f"    src: url('file://{font_path}') format('truetype');",
+            '    font-style: normal;',
+            '    font-weight: 400;',
             '}',
         ])
 

@@ -6,6 +6,8 @@ from typing import Any, ClassVar
 
 import pdfkit
 import pypandoc
+from django.conf import settings
+from django.contrib.staticfiles.finders import find as find_static_file
 from django.http import FileResponse, HttpResponse
 from django.template import Context, Template
 from django.template.loader import get_template, select_template
@@ -145,6 +147,7 @@ class PDFView(DetailView):
 
     def _prepare_pdf_options(self) -> dict[str, Any]:
         """Prepare PDF generation options."""
+        self.options['enable-local-file-access'] = None
         if self.has_option('header_enable'):
             self.options['--header-html'] = self._build_header_html()
         else:
@@ -158,8 +161,37 @@ class PDFView(DetailView):
         )
         return self.options
 
+    def _inject_font_face_style(self, html_content: str) -> str:
+        """Inject configured @font-face rules into HTML head for wkhtmltopdf."""
+        fonts: dict[str, str] = {}
+        fonts.update(getattr(settings, 'PDFMAKER', {}).get('fonts', {}))
+        fonts.update(getattr(settings, 'FONTS_FILES_WEASYPRINT', {}))
+
+        rules: list[str] = []
+        for font_file, font_name in fonts.items():
+            font_path = find_static_file(f'fonts/{font_file}')
+            if not font_path:
+                continue
+            rules.extend([
+                '@font-face {',
+                f"  font-family: '{font_name}';",
+                f"  src: url('file://{font_path}') format('truetype');",
+                '  font-style: normal;',
+                '  font-weight: 400;',
+                '}',
+            ])
+
+        if not rules:
+            return html_content
+
+        style_block = '<style>' + '\n'.join(rules) + '</style>'
+        if '</head>' in html_content:
+            return html_content.replace('</head>', f'{style_block}</head>', 1)
+        return style_block + html_content
+
     def _generate_pdf_file(self, html_content: str) -> str:
         """Generate PDF file from HTML content and return file path."""
+        html_content = self._inject_font_face_style(html_content)
         with tempfile.NamedTemporaryFile(
             suffix='.pdf', delete=False
         ) as temp_file:
