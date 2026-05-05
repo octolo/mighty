@@ -287,6 +287,7 @@ def generate_pdf(**kwargs):
         )
         content_html = Template(content_tpl).render(Context(context))
         content_html = _inject_font_style_in_head(content_html)
+        options['enable-local-file-access'] = None
         pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)
