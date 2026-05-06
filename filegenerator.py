@@ -283,7 +283,10 @@ def generate_pdf(**kwargs):
             content_html = get_template(content).render(context)
         content_tpl = kwargs.get(
             'conf_content',
-            get_template(conf.pdf_content).render({'content': content_html}),
+            get_template(conf.pdf_content).render({
+                'content': content_html,
+                'body_lead': '<br/>' if header else '',
+            }),
         )
         content_html = Template(content_tpl).render(Context(context))
         content_html = _inject_font_style_in_head(content_html)
