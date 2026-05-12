@@ -1,10 +1,6 @@
 import copy
 import json
 import logging
-import os
-import shutil
-import struct
-import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any, ClassVar
@@ -18,6 +14,10 @@ from django.template import Context, Template
 from django.template.loader import get_template, select_template
 
 from mighty.apps import MightyConfig
+from mighty.filegenerator import (
+    auto_margin_bottom_from_footer,
+    auto_margin_top_from_header,
+)
 from mighty.views.crud import DetailView
 
 logger = logging.getLogger(__name__)
@@ -161,204 +161,6 @@ class PDFView(DetailView):
         """Get footer template."""
         return ''
 
-    @staticmethod
-    def _wkhtmltoimage_bin() -> str | None:
-        path = shutil.which('wkhtmltoimage')
-        if path:
-            return path
-        wkpdf = shutil.which('wkhtmltopdf')
-        if wkpdf:
-            sibling = Path(wkpdf).with_name('wkhtmltoimage')
-            if sibling.is_file():
-                return str(sibling)
-        return None
-
-    def _pdf_screen_dpi(self) -> int:
-        raw = self.options.get('dpi')
-        if raw in (None, ''):
-            return 96
-        try:
-            return int(raw)
-        except (TypeError, ValueError):
-            return 96
-
-    @staticmethod
-    def _a4_page_width_mm(orientation: str) -> float:
-        if (orientation or 'Portrait').lower() == 'landscape':
-            return 297.0
-        return 210.0
-
-    def _page_width_px_for_pdf(self, orientation: str) -> int:
-        mm = self._a4_page_width_mm(orientation)
-        dpi = self._pdf_screen_dpi()
-        return max(1, int(round(mm / 25.4 * dpi)))
-
-    @staticmethod
-    def _read_png_pixel_height(png_path: Path) -> int:
-        with png_path.open('rb') as f:
-            if f.read(8) != b'\x89PNG\r\n\x1a\n':
-                msg = 'not a PNG'
-                raise ValueError(msg)
-            while True:
-                chunk_head = f.read(8)
-                if len(chunk_head) < 8:
-                    msg = 'truncated PNG'
-                    raise ValueError(msg)
-                chunk_len, chunk_type = struct.unpack('>I4s', chunk_head)
-                chunk_data = f.read(chunk_len)
-                f.read(4)
-                if chunk_type == b'IHDR':
-                    _, height = struct.unpack('>II', chunk_data[:8])
-                    return height
-
-    def _run_wkhtmltoimage(
-        self,
-        bin_path: str,
-        source_html_path: Path,
-        png_path: Path,
-        width_px: int,
-    ) -> bool:
-        html_abs = str(source_html_path.resolve())
-        png_abs = str(png_path.resolve())
-        base = [
-            bin_path,
-            '--quiet',
-            '--javascript-delay',
-            '200',
-            '--width',
-            str(width_px),
-            html_abs,
-            png_abs,
-        ]
-        for with_local_access in (True, False):
-            cmd = list(base)
-            if with_local_access:
-                cmd.insert(1, '--enable-local-file-access')
-            try:
-                subprocess.run(
-                    cmd,
-                    check=True,
-                    capture_output=True,
-                    timeout=45,
-                    text=True,
-                )
-            except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
-                logger.warning('wkhtmltoimage failed: %s', exc)
-                return False
-            except subprocess.CalledProcessError as exc:
-                err = (exc.stderr or exc.stdout or '')[:800]
-                logger.debug(
-                    'wkhtmltoimage exit %s (local=%s): %s',
-                    exc.returncode,
-                    with_local_access,
-                    err,
-                )
-                continue
-            else:
-                return True
-        return False
-
-    def _auto_margin_top_from_header(
-        self,
-        header_html_path: str,
-        orientation: str,
-    ) -> str | None:
-        """Derive ``margin-top`` from rendered header height (wkhtml stack).
-
-        wkhtmltopdf reserves a fixed band; it does not grow with header HTML.
-        Optional keys on ``current_config``:
-
-        - ``auto_header_margin`` (default: on): set ``False`` to skip probing.
-        - ``header_margin_padding_mm``: extra space under the header (default 3).
-        - ``header_margin_top_min_in`` / ``header_margin_top_max_in``: clamps.
-        """
-        if self.current_config.get('auto_header_margin') is False:
-            return None
-        bin_path = self._wkhtmltoimage_bin()
-        if not bin_path:
-            return None
-        width_px = self._page_width_px_for_pdf(orientation)
-        dpi = self._pdf_screen_dpi()
-        fd, png_name = tempfile.mkstemp(suffix='.png')
-        os.close(fd)
-        png_path = Path(png_name)
-        header_path = Path(header_html_path)
-        try:
-            if not self._run_wkhtmltoimage(
-                bin_path, header_path, png_path, width_px
-            ):
-                return None
-            height_px = self._read_png_pixel_height(png_path)
-        except ValueError:
-            logger.warning('Header height probe returned an invalid PNG')
-            return None
-        finally:
-            png_path.unlink(missing_ok=True)
-
-        if height_px < 8:
-            return None
-
-        padding_mm = float(
-            self.current_config.get('header_margin_padding_mm', 3),
-        )
-        height_in = (height_px / dpi) + (padding_mm / 25.4)
-        min_in = float(self.current_config.get('header_margin_top_min_in', 0.35))
-        max_in = float(self.current_config.get('header_margin_top_max_in', 3.0))
-        height_in = max(min_in, min(max_in, height_in))
-        return f'{height_in:.3f}in'
-
-    def _auto_margin_bottom_from_footer(
-        self,
-        footer_html_path: str,
-        orientation: str,
-    ) -> str | None:
-        """Derive ``margin-bottom`` from rendered footer height (wkhtml stack).
-
-        Optional keys on ``current_config``:
-
-        - ``auto_footer_margin`` (default: on): set ``False`` to skip probing.
-        - ``footer_margin_padding_mm``: extra space above the footer (default 0).
-        - ``footer_margin_bottom_min_in`` / ``footer_margin_bottom_max_in``: clamps.
-        """
-        if self.current_config.get('auto_footer_margin') is False:
-            return None
-        bin_path = self._wkhtmltoimage_bin()
-        if not bin_path:
-            return None
-        width_px = self._page_width_px_for_pdf(orientation)
-        dpi = self._pdf_screen_dpi()
-        fd, png_name = tempfile.mkstemp(suffix='.png')
-        os.close(fd)
-        png_path = Path(png_name)
-        footer_path = Path(footer_html_path)
-        try:
-            if not self._run_wkhtmltoimage(
-                bin_path, footer_path, png_path, width_px
-            ):
-                return None
-            height_px = self._read_png_pixel_height(png_path)
-        except ValueError:
-            logger.warning('Footer height probe returned an invalid PNG')
-            return None
-        finally:
-            png_path.unlink(missing_ok=True)
-
-        if height_px < 8:
-            return None
-
-        padding_mm = float(
-            self.current_config.get('footer_margin_padding_mm', 0),
-        )
-        height_in = (height_px / dpi) + (padding_mm / 25.4)
-        min_in = float(
-            self.current_config.get('footer_margin_bottom_min_in', 0.25),
-        )
-        max_in = float(
-            self.current_config.get('footer_margin_bottom_max_in', 3.0),
-        )
-        height_in = max(min_in, min(max_in, height_in))
-        return f'{height_in:.3f}in'
-
     def _prepare_pdf_options(self) -> dict[str, Any]:
         """Prepare PDF generation options.
 
@@ -388,8 +190,8 @@ class PDFView(DetailView):
             if margin_top:
                 self.options['margin-top'] = margin_top
             else:
-                auto_top = self._auto_margin_top_from_header(
-                    header_path, orientation
+                auto_top = auto_margin_top_from_header(
+                    header_path, orientation, self.options, self.current_config
                 )
                 if auto_top:
                     self.options['margin-top'] = auto_top
@@ -406,8 +208,8 @@ class PDFView(DetailView):
             if margin_bottom:
                 self.options['margin-bottom'] = margin_bottom
             else:
-                auto_bottom = self._auto_margin_bottom_from_footer(
-                    footer_path, orientation
+                auto_bottom = auto_margin_bottom_from_footer(
+                    footer_path, orientation, self.options, self.current_config
                 )
                 if auto_bottom:
                     self.options['margin-bottom'] = auto_bottom
