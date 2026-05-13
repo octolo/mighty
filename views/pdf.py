@@ -175,6 +175,10 @@ class PDFView(DetailView):
         Footer is analogous: ``margin-bottom`` can be sized to the footer
         HTML (``auto_footer_margin``, optional overrides) instead of keeping
         a large default bottom margin.
+
+        Horizontal margins default to ``MightyConfig.pdf_options``; set
+        ``margin_left`` / ``margin-left`` or ``margin_right`` / ``margin-right``
+        on ``current_config`` to override (e.g. convocation layout).
         """
         self.options = copy.deepcopy(MightyConfig.pdf_options)
         self.options['enable-local-file-access'] = None
@@ -218,6 +222,14 @@ class PDFView(DetailView):
             self.options['margin-bottom'] = (
                 self._pdf_margin_side_from_config('bottom') or '0.30in'
             )
+
+        margin_left = self._pdf_margin_side_from_config('left')
+        if margin_left:
+            self.options['margin-left'] = margin_left
+
+        margin_right = self._pdf_margin_side_from_config('right')
+        if margin_right:
+            self.options['margin-right'] = margin_right
 
         self.options['orientation'] = orientation
         return self.options

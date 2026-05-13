@@ -63,15 +63,26 @@ def HeritToMessenger(**kwargs):
 
 
 def AccessToMissive(**kwargs):
+    """Attach reverse generic relations to Missive.
+
+    Without ``on_delete``, Django defaults GenericRelation to CASCADE: deleting
+    the hosting instance would delete related missives. Here the default is
+    SET_NULL so deleting the content object only clears ``content_type`` /
+    ``object_id`` on Missive (fields must stay nullable on the missive model).
+
+    Pass ``on_delete=models.CASCADE`` to restore cascade deletion.
+    """
     def decorator(obj):
         if 'mighty.applications.messenger' in settings.INSTALLED_APPS:
+            fk = kwargs.get('foreignkey', 'mighty.Missive')
+            on_delete = kwargs.get('on_delete', SET_NULL)
             obj.add_to_class(
                 'missives',
-                GenericRelation(kwargs.get('foreignkey', 'mighty.Missive')),
+                GenericRelation(fk, on_delete=on_delete),
             )
             obj.add_to_class(
                 'messenger_missives',
-                GenericRelation(kwargs.get('foreignkey', 'mighty.Missive')),
+                GenericRelation(fk, on_delete=on_delete),
             )
         return obj
 

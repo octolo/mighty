@@ -24,7 +24,10 @@ def MissiveFollower(**kwargs):
                 blank=kwargs.get('blank', True),
                 null=kwargs.get('null', True),
             )
-            missives = GenericRelation(user_conf.ForeignKey.missive)
+            missives = GenericRelation(
+                user_conf.ForeignKey.missive,
+                on_delete=kwargs.get('on_delete', models.SET_NULL),
+            )
 
             class Meta(obj.Meta):
                 abstract = True
