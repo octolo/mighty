@@ -17,6 +17,7 @@ from mighty.apps import MightyConfig
 from mighty.filegenerator import (
     auto_margin_bottom_from_footer,
     auto_margin_top_from_header,
+    inject_justify_overflow_guard,
 )
 from mighty.views.crud import DetailView
 
@@ -265,6 +266,7 @@ class PDFView(DetailView):
     def _generate_pdf_file(self, html_content: str) -> str:
         """Generate PDF file from HTML content and return file path."""
         html_content = self._inject_font_face_style(html_content)
+        html_content = inject_justify_overflow_guard(html_content)
         with tempfile.NamedTemporaryFile(
             suffix='.pdf', delete=False
         ) as temp_file:

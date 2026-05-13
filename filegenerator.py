@@ -241,6 +241,38 @@ def _inject_font_style_in_head(html):
     return style + html
 
 
+WKHTML_JUSTIFY_OVERFLOW_GUARD = """<style type="text/css">
+/* wkhtmltopdf (QtWebKit) bug: with text-align: justify the last glyph of a
+   line can be painted past the content edge and clipped. Add a right-side
+   buffer ONLY on elements that ask for justified text so the visible
+   layout (and non-justified blocks) stay untouched. */
+[align="justify"],
+[style*="text-align: justify"],
+[style*="text-align:justify"],
+.text-justify,
+.ql-align-justify,
+.fr-text-justify {
+    padding-right: 3mm !important;
+    margin-right: 1mm !important;
+    box-sizing: border-box !important;
+}
+</style>"""
+
+
+def inject_justify_overflow_guard(html: str) -> str:
+    """Inject the wkhtmltopdf justify-overflow guard CSS in <head>.
+
+    Safe to call multiple times; we only insert once.
+    """
+    if 'wkhtmltopdf (QtWebKit) bug' in html:
+        return html
+    if '</head>' in html:
+        return html.replace(
+            '</head>', f'{WKHTML_JUSTIFY_OVERFLOW_GUARD}</head>', 1,
+        )
+    return WKHTML_JUSTIFY_OVERFLOW_GUARD + html
+
+
 class FileGenerator:
     filename = None
     items = []
@@ -491,6 +523,7 @@ def generate_pdf(**kwargs):
         )
         content_html = Template(content_tpl).render(Context(context))
         content_html = _inject_font_style_in_head(content_html)
+        content_html = inject_justify_overflow_guard(content_html)
         options['enable-local-file-access'] = None
         pdfkit.from_string(content_html, tmp_pdf.name, options=options)
         path_tmp = tmp_pdf.name
