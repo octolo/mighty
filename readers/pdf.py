@@ -1,5 +1,5 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 
 from mighty.readers.reader import Reader
 
