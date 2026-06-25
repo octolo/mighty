@@ -544,3 +544,202 @@ def generate_pdf(**kwargs):
         pathlib.Path(final_pdf).unlink()
         return content_html
     return final_pdf, tmp_pdf
+
+
+DOCX_EXPORT_JUSTIFY_CSS = """<style type="text/css">
+[align="justify"],
+[style*="text-align: justify"],
+[style*="text-align:justify"],
+.text-justify,
+.ql-align-justify,
+.fr-text-justify {
+    text-align: justify;
+}
+</style>"""
+
+DOCX_EXPORT_IMAGE_CSS = """<style type="text/css">
+.fr-element.fr-view table img,
+.fr-view table img {
+    width: 120px !important;
+    height: 60px !important;
+    max-width: 120px !important;
+    max-height: 60px !important;
+    display: block;
+    margin: 0 auto;
+}
+</style>"""
+
+DOCX_SIGNATURE_IMG_WIDTH_PX = 120
+DOCX_SIGNATURE_IMG_HEIGHT_PX = 60
+DOCX_SIGNATURE_IMG_STYLE = (
+    f'width:{DOCX_SIGNATURE_IMG_WIDTH_PX}px;'
+    f'height:{DOCX_SIGNATURE_IMG_HEIGHT_PX}px;'
+    'display:block;margin:0 auto'
+)
+
+
+def build_docx_html_document(body_html: str) -> str:
+    """Full HTML document for Word export (same table/justify CSS as PDF)."""
+    doc_css = get_template('document_css_template.html').render()
+    return (
+        '<!DOCTYPE html>\n<html lang="fr">\n<head>\n'
+        '<meta charset="UTF-8">\n'
+        f'{doc_css}\n{DOCX_EXPORT_JUSTIFY_CSS}\n{DOCX_EXPORT_IMAGE_CSS}\n'
+        '</head>\n<body>\n'
+        f'<div class="fr-element fr-view">{body_html or ""}</div>\n'
+        '</body>\n</html>'
+    )
+
+
+def _enhance_justify_for_docx(html: str) -> str:
+    """Inline justify on Froala class blocks (CSS classes are lost in RTF)."""
+    import re
+
+    def _add_justify_style(match: re.Match) -> str:
+        tag = match.group(1)
+        attrs = match.group(2)
+        if 'text-align' in attrs.lower():
+            return match.group(0)
+        return f'<{tag}{attrs} style="text-align:justify">'
+
+    return re.sub(
+        r'<(p|div)([^>]*class="[^"]*fr-text-justify[^"]*"[^>]*)>',
+        _add_justify_style,
+        html,
+        flags=re.IGNORECASE,
+    )
+
+
+def _resize_data_uri_image(src: str, max_width: int, max_height: int) -> str | None:
+    """Downscale embedded signature so Word/Docs do not use the native pixel size."""
+    import base64
+    import io
+    import re
+
+    match = re.match(r'data:image/([^;]+);base64,(.+)', src, re.IGNORECASE | re.DOTALL)
+    if not match:
+        return None
+    fmt = match.group(1).upper().replace('JPG', 'JPEG')
+    if fmt not in {'PNG', 'JPEG', 'GIF', 'WEBP'}:
+        fmt = 'PNG'
+    try:
+        from PIL import Image
+
+        raw = base64.b64decode(match.group(2), validate=False)
+        image = Image.open(io.BytesIO(raw))
+        image.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+        buffer = io.BytesIO()
+        save_fmt = 'PNG' if fmt == 'WEBP' else fmt
+        image.save(buffer, format=save_fmt)
+        encoded = base64.b64encode(buffer.getvalue()).decode('ascii')
+        mime = save_fmt.lower()
+        return f'data:image/{mime};base64,{encoded}'
+    except Exception:
+        logger.debug('Could not resize embedded image for docx export', exc_info=True)
+        return None
+
+
+def _normalize_img_tag_for_docx(tag: str) -> str:
+    """Rebuild ``img`` with fixed dimensions (Word ignores max-width/max-height)."""
+    import re
+
+    src_match = re.search(r'src\s*=\s*"([^"]*)"', tag, re.IGNORECASE)
+    if not src_match:
+        return tag
+    src = src_match.group(1)
+    if src.lower().startswith('data:image'):
+        resized = _resize_data_uri_image(
+            src,
+            DOCX_SIGNATURE_IMG_WIDTH_PX,
+            DOCX_SIGNATURE_IMG_HEIGHT_PX,
+        )
+        if resized:
+            src = resized
+    width = DOCX_SIGNATURE_IMG_WIDTH_PX
+    height = DOCX_SIGNATURE_IMG_HEIGHT_PX
+    return (
+        f'<img src="{src}" width="{width}" height="{height}" '
+        f'style="{DOCX_SIGNATURE_IMG_STYLE}" />'
+    )
+
+
+def _enhance_signature_images_for_docx(html: str) -> str:
+    import re
+
+    return re.sub(
+        r'<img\b[^>]*>',
+        lambda match: _normalize_img_tag_for_docx(match.group(0)),
+        html,
+        flags=re.IGNORECASE,
+    )
+
+
+def _enhance_tables_for_docx(html: str) -> str:
+    """HTML border attributes help the Office File API preserve table grids."""
+    import re
+
+    return re.sub(
+        r'<table(?![^>]*\bborder=)',
+        '<table border="1" cellpadding="6" cellspacing="0" '
+        'style="border-collapse:collapse;width:100%;table-layout:fixed"',
+        html,
+        flags=re.IGNORECASE,
+    )
+
+
+def _convert_html_to_docx_via_office_api(html: str) -> bytes | None:
+    import requests
+
+    base_url = getattr(
+        settings,
+        'OFFICE_FILE_API_URL',
+        'http://office-file-api:8080',
+    )
+    try:
+        rtf_response = requests.post(
+            f'{base_url}/api/conversion/html-to-rtf',
+            json={'htmlContent': html},
+            timeout=60,
+        )
+        rtf_response.raise_for_status()
+        docx_response = requests.post(
+            f'{base_url}/api/conversion/rtf-to-docx',
+            json={'rtfContent': rtf_response.text},
+            timeout=60,
+        )
+        docx_response.raise_for_status()
+        return docx_response.content
+    except Exception:
+        logger.warning(
+            'Office File API html→rtf→docx failed, falling back to pandoc',
+            exc_info=True,
+        )
+        return None
+
+
+def _convert_html_to_docx_via_pandoc(html: str) -> bytes:
+    import pypandoc
+
+    with NamedTemporaryFile(suffix='.docx', delete=False) as tmp:
+        output_path = tmp.name
+    try:
+        pypandoc.convert_text(
+            html,
+            'docx',
+            format='html',
+            outputfile=output_path,
+        )
+        return Path(output_path).read_bytes()
+    finally:
+        Path(output_path).unlink(missing_ok=True)
+
+
+def convert_html_to_docx_bytes(html: str) -> bytes:
+    """Convert HTML to DOCX; prefers Office File API for table borders / justify."""
+    html = _enhance_justify_for_docx(html)
+    html = _enhance_signature_images_for_docx(html)
+    html = _enhance_tables_for_docx(html)
+    docx = _convert_html_to_docx_via_office_api(html)
+    if docx is not None:
+        return docx
+    return _convert_html_to_docx_via_pandoc(html)

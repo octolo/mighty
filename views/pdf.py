@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 import pdfkit
-import pypandoc
 from django.conf import settings
 from django.contrib.staticfiles.finders import find as find_static_file
 from django.http import FileResponse, HttpResponse
@@ -17,11 +16,22 @@ from mighty.apps import MightyConfig
 from mighty.filegenerator import (
     auto_margin_bottom_from_footer,
     auto_margin_top_from_header,
+    build_docx_html_document,
+    convert_html_to_docx_bytes,
     inject_justify_overflow_guard,
 )
 from mighty.views.crud import DetailView
 
 logger = logging.getLogger(__name__)
+
+
+def wrap_editor_html_for_render(content_str: str) -> str:
+    """Wrap Froala editor HTML so ``dyntpl`` and Paris timezone apply."""
+    return (
+        f"{{% load tz dyntpl %}}{{% timezone 'Europe/Paris' %}}"
+        f"{content_str or ''}"
+        f"{{% endtimezone %}}"
+    )
 
 
 class PDFView(DetailView):
@@ -290,24 +300,16 @@ class PDFView(DetailView):
 
     def _create_word_response(self, context: Context) -> HttpResponse:
         """Create Word document response."""
-        html_content = Template(self.post_data.get('raw_template')).render(
-            context
-        )
+        raw = self.post_data.get('raw_template') or ''
+        html_content = Template(
+            wrap_editor_html_for_render(raw),
+        ).render(context)
         return self._generate_docx_response(html_content)
 
     def _generate_docx_response(self, html_content: str) -> HttpResponse:
-        """Generate DOCX response from HTML."""
-        with tempfile.NamedTemporaryFile(
-            suffix='.docx', delete=False
-        ) as temp_file:
-            output_path = temp_file.name
-
-        pypandoc.convert_text(
-            html_content, 'docx', format='html', outputfile=output_path
-        )
-
-        docx_data = Path(output_path).read_bytes()
-        Path(output_path).unlink(missing_ok=True)
+        """Generate DOCX response from rendered editor HTML."""
+        wrapped_html = build_docx_html_document(html_content)
+        docx_data = convert_html_to_docx_bytes(wrapped_html)
 
         response = HttpResponse(
             docx_data,
