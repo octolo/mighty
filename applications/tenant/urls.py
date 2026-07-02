@@ -18,11 +18,12 @@ api_urlpatterns = [
                 views.CurrentTenant.as_view(),
                 name='api-tenant-current',
             ),
-            path(
-                '<uuid:uid>/current/sesame/',
-                views.Sesame.as_view(),
-                name='api-tenant-sesame',
-            ),
+            # DISABLED
+            # path(
+            #     '<uuid:uid>/current/sesame/',
+            #     views.Sesame.as_view(),
+            #     name='api-tenant-sesame',
+            # ),
             path(
                 'role/',
                 include([
