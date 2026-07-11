@@ -1,5 +1,6 @@
 import copy
 import csv
+import datetime
 import logging
 import os
 import pathlib
@@ -16,6 +17,7 @@ from django.contrib.staticfiles.finders import find as find_static_file
 from django.http import HttpResponse, StreamingHttpResponse
 from django.template import Context, Template
 from django.template.loader import get_template
+from django.utils import timezone
 from django.utils.text import get_valid_filename
 from openpyxl import Workbook
 
@@ -208,6 +210,15 @@ class StreamingBuffer:
         return value
 
 
+def excel_cell_value(value):
+    """Return a value openpyxl can write (Excel has no timezone support)."""
+    if isinstance(value, datetime.datetime) and value.tzinfo is not None:
+        return timezone.make_naive(value)
+    if isinstance(value, datetime.time) and value.tzinfo is not None:
+        return value.replace(tzinfo=None)
+    return value
+
+
 def _build_pdf_font_face_style():
     fonts = {}
     fonts.update(getattr(settings, 'PDFMAKER', {}).get('fonts', {}))
@@ -322,7 +333,7 @@ class FileGenerator:
     # EXCEL
     def iter_items_xls(self, items, ws):
         for row in self.iter_rows:
-            ws.append(row)
+            ws.append([excel_cell_value(cell) for cell in row])
 
     def file_xlsx(self, ext, ct):
         return self.file_xls(ext, ct)
