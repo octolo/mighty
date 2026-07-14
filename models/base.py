@@ -6,7 +6,11 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import FieldDoesNotExist, ValidationError
+from django.core.exceptions import (
+    FieldDoesNotExist,
+    ObjectDoesNotExist,
+    ValidationError,
+)
 from django.db import models
 from django.db.models.options import Options
 from django.template.loader import get_template
@@ -632,9 +636,15 @@ class Base(models.Model):
             self.update_by = f'{user.id}.{user.username}'
 
     def property_change(self, prop):
-        return not self._unmodified or getattr(
-            self._unmodified, prop
-        ) != getattr(self, prop)
+        if not self._unmodified:
+            return True
+        try:
+            return getattr(self._unmodified, prop) != getattr(self, prop)
+        except ObjectDoesNotExist:
+            # Reverse relation cached on the live instance (e.g. a not-yet-saved
+            # one-to-one) but absent from the ``_unmodified`` snapshot: not a
+            # tracked scalar change, so treat it as unchanged instead of raising.
+            return False
 
     def get_model(self, label, app):
         return get_model(label, app)

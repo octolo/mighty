@@ -746,6 +746,7 @@ class BaseAdmin(admin.ModelAdmin):
     def get_urls(self):
         from django.urls import path
 
+        self.object_tools_items = []
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
