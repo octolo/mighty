@@ -97,6 +97,14 @@ class MissiveBackend(MissiveBackend):
     js_admin = False
     page = 0
 
+    # Shared across instances so a report checking many missives reuses a single
+    # OAuth token and a pooled HTTP connection instead of re-authenticating and
+    # reopening a TLS connection for every call.
+    _token_lock = threading.Lock()
+    _shared_token = None
+    _token_expiry = 0.0
+    _session = None
+
     # PRICE
     color_first_c4 = setting('MAILEVA_COLOR_FIRST_C4', MAILEVA_COLOR_FIRST_C4)
     color_next_c4 = setting('MAILEVA_COLOR_NEXT_C4', MAILEVA_COLOR_NEXT_C4)
@@ -140,6 +148,7 @@ class MissiveBackend(MissiveBackend):
     sender_country_code = setting('MAILEVA_SENDERC')
 
     field_price = 'trace_json.recipients.recipients.0.postage_price'
+    field_price_infos = 'trace_json.invoice.items'
     field_billed_page = 'trace_json.status.billed_pages_count'
     field_external_reference = 'trace_json.status.reference'
     field_external_status = (
@@ -326,7 +335,22 @@ class MissiveBackend(MissiveBackend):
             return False
         return True
 
+    @property
+    def session(self):
+        cls = type(self)
+        if cls._session is None:
+            with cls._token_lock:
+                if cls._session is None:
+                    cls._session = requests.Session()
+        return cls._session
+
     def authentication(self):
+        cls = type(self)
+        now = time.monotonic()
+        with cls._token_lock:
+            if cls._shared_token and now < cls._token_expiry:
+                self.access_token = cls._shared_token
+                return True
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         auth = (setting('MAILEVA_CLIENTID'), setting('MAILEVA_SECRET'))
         data = {
@@ -334,16 +358,22 @@ class MissiveBackend(MissiveBackend):
             'username': setting('MAILEVA_USERNAME'),
             'password': setting('MAILEVA_PASSWORD'),
         }
-        response = requests.post(
+        response = self.session.post(
             self.api_url['auth'], headers=headers, auth=auth, data=data
         )
         if self.valid_response(response):
-            self.access_token = response.json()['access_token']
+            payload = response.json()
+            self.access_token = payload['access_token']
+            with cls._token_lock:
+                cls._shared_token = self.access_token
+                # Refresh slightly early to avoid using a token that expires
+                # mid-request.
+                cls._token_expiry = now + payload.get('expires_in', 300) - 60
             return True
         return False
 
     def create_sending(self):
-        response = requests.post(
+        response = self.session.post(
             self.api_url['sendings'],
             headers=self.api_headers,
             json=self.postal_data,
@@ -355,7 +385,7 @@ class MissiveBackend(MissiveBackend):
     def check_documents(self):
         if self.authentication():
             url = self.api_url['documents'] % self.missive.partner_id
-            response = requests.get(url, headers=self.api_headers)
+            response = self.session.get(url, headers=self.api_headers)
             return response.json()
         return None
 
@@ -370,7 +400,7 @@ class MissiveBackend(MissiveBackend):
             'document': (doc_name, open(attachment.name, 'rb').read()),
             'metadata': ('metadata', json.dumps(data), 'application/json'),
         }
-        response = requests.post(api, headers=headers, files=files)
+        response = self.session.post(api, headers=headers, files=files)
         self.valid_response(response)
         self.add_log_array('attachments', doc_name)
 
@@ -395,14 +425,14 @@ class MissiveBackend(MissiveBackend):
 
     def add_recipients(self):
         api = self.api_url['recipients'] % self.sending_id
-        response = requests.post(
+        response = self.session.post(
             api, headers=self.api_headers, json=self.target_data
         )
         return self.valid_response(response)
 
     def submit(self):
         api = self.api_url['submit'] % self.sending_id
-        response = requests.post(api, headers=self.api_headers)
+        response = self.session.post(api, headers=self.api_headers)
         return self.valid_response(response)
 
     def enable_webhooks(self):
@@ -410,7 +440,7 @@ class MissiveBackend(MissiveBackend):
             wdata = self.webhook_data
             wdata['event_type'] = event
             api = self.api_url['webhook']
-            response = requests.post(api, headers=self.api_headers, json=wdata)
+            response = self.session.post(api, headers=self.api_headers, json=wdata)
             self.valid_response(response)
 
     def on_webhook(self, request):
@@ -505,7 +535,7 @@ class MissiveBackend(MissiveBackend):
     def get_status(self):
         if self.authentication():
             url = self.api_url['sendings'] + '/' + self.missive.partner_id
-            response = requests.get(url, headers=self.api_headers)
+            response = self.session.get(url, headers=self.api_headers)
             try:
                 return response.json()
             except Exception:
@@ -515,7 +545,7 @@ class MissiveBackend(MissiveBackend):
     def get_recipients(self):
         if self.authentication():
             url = self.api_url['recipients'] % self.missive.partner_id
-            response = requests.get(url, headers=self.api_headers)
+            response = self.session.get(url, headers=self.api_headers)
             try:
                 return response.json()
             except Exception:
@@ -525,7 +555,7 @@ class MissiveBackend(MissiveBackend):
     def get_invoice(self):
         if self.authentication():
             api = self.api_url['invoice'] % self.missive.msg_id
-            response = requests.get(api, headers=self.api_headers)
+            response = self.session.get(api, headers=self.api_headers)
             try:
                 return response.json()
             except Exception:
@@ -541,8 +571,10 @@ class MissiveBackend(MissiveBackend):
         }
         # Maileva sandbox does not generate billing items, so calling
         # ``get_invoice`` returns empty/non-JSON bodies. Only fetch in prod.
-        if settings.IS_PROD:
+        try:
             rjson['invoice'] = self.get_invoice()
+        except Exception:
+            rjson['invoice'] = []
         self.missive.trace = str(rjson)
         status_value = rjson_status.get('status')
         if status_value:
@@ -555,7 +587,7 @@ class MissiveBackend(MissiveBackend):
     def cancel(self):
         if self.authentication():
             api = self.api_url['cancel'] % self.missive.partner_id
-            response = requests.delete(api, headers=self.api_headers)
+            response = self.session.delete(api, headers=self.api_headers)
             if self.valid_response(response):
                 self.missive.status = _c.STATUS_CANCELLED
             self.missive.save()
@@ -575,7 +607,7 @@ class MissiveBackend(MissiveBackend):
 
         proof_url = self.api_url['proofdownload'] % proof_url
         tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
-        resp = requests.get(proof_url, stream=True, headers=self.api_headers)
+        resp = self.session.get(proof_url, stream=True, headers=self.api_headers)
         resp.raise_for_status()
 
         for chunk in resp.iter_content(chunk_size=8192):
@@ -612,11 +644,19 @@ class MissiveBackend(MissiveBackend):
     def get_price_infos(self):
         items = getattr_recursive(
             self.missive,
-            'trace_json.invoice.items',
+            self.field_price_infos,
             default={},
             default_on_error=True,
         )
-        return {item['label']: item['amount'] for item in items}
+        # A trace that is not a mapping (raw error body of a failed send) is
+        # returned untraversed, so only trust an actual list of priced items.
+        if not isinstance(items, list):
+            return {}
+        return {
+            item['label']: item['amount']
+            for item in items
+            if isinstance(item, dict) and 'label' in item and 'amount' in item
+        }
 
     def get_billed_page(self):
         return getattr_recursive(

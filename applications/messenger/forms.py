@@ -1,6 +1,10 @@
+from base64 import b64encode
+
 from django import forms
+from django.core.validators import FileExtensionValidator
+
 from .choices import MODE
-from .reporting import task_reporting_missive
+from .reporting import SUMMARY_GROUP_BY, task_reporting_missive
 
 
 class MissiveReportingForm(forms.Form):
@@ -25,6 +29,32 @@ class MissiveReportingForm(forms.Form):
         widget=forms.CheckboxSelectMultiple(),
         required=False,
     )
+    summary = forms.BooleanField(
+        label='Summary',
+        help_text=(
+            'Add the totals per company to the email body, and a second CSV.'
+        ),
+        required=False,
+    )
+    margin = forms.FloatField(
+        label='Margin (%)',
+        help_text=(
+            'Percentage added to the printing costs in the summary; postage'
+            ' is always passed on at cost.'
+        ),
+        required=False,
+        min_value=0,
+        initial=0,
+    )
+    template = forms.FileField(
+        label='Excel template',
+        help_text=(
+            'Optional xlsx template holding {{ tag }} placeholders: one filled'
+            ' workbook per company is attached as a zip archive.'
+        ),
+        required=False,
+        validators=[FileExtensionValidator(['xlsx'])],
+    )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -44,6 +74,13 @@ class MissiveReportingForm(forms.Form):
         since = self.cleaned_data.get('since')
         until = self.cleaned_data.get('until')
         mode = self.cleaned_data.get('mode')
+        summary = self.cleaned_data.get('summary')
+        template = self.cleaned_data.get('template')
+
+        # The worker runs in another container, so the template travels with
+        # the task rather than through a temporary file.
+        if template:
+            template = b64encode(template.read()).decode()
 
         # Generate the report
         report_file = task_reporting_missive(
@@ -51,6 +88,9 @@ class MissiveReportingForm(forms.Form):
             since=since,
             until=until,
             mode=mode,
+            summary=SUMMARY_GROUP_BY if summary else None,
+            template=template or None,
+            margin=self.cleaned_data.get('margin') or 0.0,
         )
 
         return report_file
