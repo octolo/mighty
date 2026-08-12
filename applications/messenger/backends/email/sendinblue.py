@@ -1,6 +1,7 @@
 import base64
 import contextlib
 import json
+import logging
 import os
 
 import sib_api_v3_sdk
@@ -10,6 +11,8 @@ from mighty.applications.messenger import choices as _c
 from mighty.applications.messenger.backends import MissiveBackend
 from mighty.apps import MightyConfig
 from mighty.functions import setting
+
+logger = logging.getLogger(__name__)
 
 
 class MissiveBackend(MissiveBackend):
@@ -35,9 +38,43 @@ class MissiveBackend(MissiveBackend):
         'loadedByProxy': _c.STATUS_SENT,
     }
 
-    def update_event(self, event):
+    @staticmethod
+    def truncate_code_error(reason):
+        if not reason:
+            return None
+        # Missive.code_error is CharField(max_length=255)
+        return reason[:255]
+
+    @staticmethod
+    def event_to_dict(event):
+        if isinstance(event, dict):
+            return event
+        return {
+            'event': getattr(event, 'event', None),
+            'message_id': getattr(event, 'message_id', None),
+            'email': getattr(event, 'email', None),
+            'date': getattr(event, 'date', None),
+            'reason': getattr(event, 'reason', None),
+            'tag': getattr(event, 'tag', None),
+            'subject': getattr(event, 'subject', None),
+        }
+
+    def update_event(self, event, events=None):
+        changed = False
+        if events is not None:
+            self.missive.trace = repr(events)
+            changed = True
+            if event in self.STATUS and self.STATUS[event] == _c.STATUS_ERROR:
+                reason = next(
+                    (e.get('reason') for e in events if e.get('reason')),
+                    None,
+                )
+                if reason:
+                    self.missive.code_error = self.truncate_code_error(reason)
         if event in self.STATUS:
             self.missive.status = self.STATUS[event]
+            changed = True
+        if changed:
             self.missive.save()
 
     def on_webhook(self, request):
@@ -65,6 +102,138 @@ class MissiveBackend(MissiveBackend):
         event = api_response.events[0].event
         self.update_event(event)
         return api_response
+
+    @classmethod
+    def sync_email_statuses(
+        cls,
+        days=90,
+        start_date=None,
+        end_date=None,
+        limit=2500,
+        progress=None,
+        progress_every=100,
+    ):
+        """
+        Refresh missive statuses from Brevo in a few API calls.
+
+        Fetches the unaggregated event report (no messageId filter), keeps
+        events per message id (latest first), then updates matching missives
+        (status, trace, code_error) by partner_id.
+
+        ``progress`` is an optional callable(str) for progress messages.
+        """
+        from mighty.models import Missive
+
+        def report(message):
+            if progress:
+                progress(message)
+
+        backend = cls(missive=None)
+        params = {'limit': limit, 'sort': 'desc'}
+        if start_date and end_date:
+            params['start_date'] = str(start_date)
+            params['end_date'] = str(end_date)
+        else:
+            params['days'] = days
+
+        report('Fetching Brevo event report…')
+        events_by_message_id = {}
+        offset = 0
+        page = 0
+        total_events = 0
+        while True:
+            page += 1
+            report(f'  Brevo page {page} (offset={offset})…')
+            api_response = backend.api_instance.get_email_event_report(
+                offset=offset, **params
+            )
+            events = api_response.events or []
+            if not events:
+                report(f'  Brevo page {page}: empty, stop.')
+                break
+            total_events += len(events)
+            for event in events:
+                message_id = event.message_id
+                if not message_id:
+                    continue
+                events_by_message_id.setdefault(message_id, []).append(
+                    cls.event_to_dict(event)
+                )
+            report(
+                f'  Brevo page {page}: +{len(events)} events '
+                f'({total_events} total, '
+                f'{len(events_by_message_id)} message ids)'
+            )
+            if len(events) < limit:
+                break
+            offset += limit
+
+        if not events_by_message_id:
+            report('No Brevo events in range.')
+            return {'events': 0, 'updated': 0}
+
+        missives = Missive.objects.filter(
+            partner_id__in=events_by_message_id.keys()
+        ).only('id', 'partner_id', 'status', 'trace', 'code_error')
+        missive_total = missives.count()
+        report(
+            f'Updating {missive_total} missive(s) from '
+            f'{len(events_by_message_id)} Brevo message(s)…'
+        )
+
+        updated = 0
+        errors = 0
+        processed = 0
+        for missive in missives.iterator(chunk_size=500):
+            processed += 1
+            events = events_by_message_id.get(missive.partner_id) or []
+            if not events:
+                continue
+            event_name = events[0]['event']
+            status = cls.STATUS.get(event_name)
+            if not status:
+                continue
+            trace = repr(events)
+            reason = next(
+                (e.get('reason') for e in events if e.get('reason')),
+                None,
+            )
+            code_error = (
+                cls.truncate_code_error(reason)
+                if status == _c.STATUS_ERROR
+                else None
+            )
+            fields = []
+            if missive.status != status:
+                missive.status = status
+                fields.append('status')
+            if missive.trace != trace:
+                missive.trace = trace
+                fields.append('trace')
+            if code_error and missive.code_error != code_error:
+                missive.code_error = code_error
+                fields.append('code_error')
+            if fields:
+                try:
+                    missive.save(update_fields=fields)
+                    updated += 1
+                except Exception as exc:
+                    errors += 1
+                    logger.warning(
+                        'Cannot update missive %s from Brevo sync: %s',
+                        missive.id,
+                        exc,
+                    )
+            if processed % progress_every == 0 or processed == missive_total:
+                report(
+                    f'  progress {processed}/{missive_total} '
+                    f'(updated={updated}, errors={errors})'
+                )
+
+        report(
+            f'Brevo sync finished: {updated} updated, {errors} error(s).'
+        )
+        return {'events': len(events_by_message_id), 'updated': updated}
 
     @property
     def api_instance(self):

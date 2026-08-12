@@ -168,6 +168,15 @@ class MissiveAdmin(BaseAdmin):
             template=self.missivecancel_view_template,
         )
 
+    firstpage_view_suffix = 'firstpage'
+    firstpage_view_path = '<path:object_id>/firstpage/'
+    firstpage_view_object_tools = {'name': 'First page', 'url': 'firstpage'}
+
+    def firstpage_view(self, request, object_id, extra_context=None):
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        missive = self.get_object(request, unquote(object_id), to_field)
+        return missive.download_postal_firstpage()
+
     reporting_view_template = 'admin/missive/reporting.html'
     reporting_view_suffix = 'reporting'
     reporting_view_path = 'reporting/'
@@ -223,6 +232,14 @@ class MissiveAdmin(BaseAdmin):
                     object_tools=self.missivecancel_view_object_tools,
                 ),
                 name=self.get_admin_urlname(self.missivecancel_view_suffix),
+            ),
+            path(
+                self.firstpage_view_path,
+                self.wrap(
+                    self.firstpage_view,
+                    object_tools=self.firstpage_view_object_tools,
+                ),
+                name=self.get_admin_urlname(self.firstpage_view_suffix),
             ),
             path(
                 self.reporting_view_path,

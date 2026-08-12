@@ -79,6 +79,12 @@ class Missive(AddressNoBase):
     def download_proof(self, **kwargs):
         return self.get_backend().download_proof(**kwargs)
 
+    def generate_postal_firstpage(self):
+        return self.get_backend().generate_postal_firstpage()
+
+    def download_postal_firstpage(self):
+        return self.get_backend().download_postal_firstpage()
+
     def get_price(self):
         backend = self.get_backend()
         return backend.get_price()

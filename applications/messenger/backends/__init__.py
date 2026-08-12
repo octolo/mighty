@@ -121,30 +121,38 @@ class MissiveBackend(EnableLogger):
                 self.postal_add_attachment(document)
 
     def postal_template(self, context):
-        return Template(self.missive.html).render(context)
+        return Template(self.missive.html or '').render(context)
 
-    def postal_base(self):
+    def generate_postal_firstpage(self):
+        """Generate the postal first-page PDF and return its filesystem path.
+
+        Caller is responsible for deleting the returned file.
+        """
         context = Context()
 
-        # header
-        header = self.missive.header_html
         header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        header_html.write(Template(header).render(context).encode('utf-8'))
+        header_html.write(
+            Template(self.missive.header_html or '')
+            .render(context)
+            .encode('utf-8')
+        )
         header_html.close()
 
-        # footer
-        footer = self.missive.footer_html
         footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        footer_html.write(Template(footer).render(context).encode('utf-8'))
+        footer_html.write(
+            Template(self.missive.footer_html or '')
+            .render(context)
+            .encode('utf-8')
+        )
         footer_html.close()
 
-        # first file
-        with tempfile.NamedTemporaryFile(
+        tmp_pdf = tempfile.NamedTemporaryFile(
             suffix='postalfirstpage.pdf', delete=False
-        ) as tmp_pdf:
-            content_html = self.postal_template(context)
+        )
+        tmp_pdf.close()
+        try:
             pdfkit.from_string(
-                content_html,
+                self.postal_template(context),
                 tmp_pdf.name,
                 options={
                     'encoding': 'UTF-8',
@@ -158,14 +166,57 @@ class MissiveBackend(EnableLogger):
                     'custom-header': [('Accept-Encoding', 'gzip')],
                 },
             )
-            self.postal_add_attachment(tmp_pdf)
-        pathlib.Path(footer_html.name).unlink()
-        pathlib.Path(header_html.name).unlink()
+            # Rewrite pages: sandbox WAF often blocks raw wkhtmltopdf output.
+            try:
+                from io import BytesIO
+
+                from pypdf import PdfReader, PdfWriter
+
+                with open(tmp_pdf.name, 'rb') as handle:
+                    raw = handle.read()
+                reader = PdfReader(BytesIO(raw))
+                writer = PdfWriter()
+                for page in reader.pages:
+                    writer.add_page(page)
+                with open(tmp_pdf.name, 'wb') as handle:
+                    writer.write(handle)
+            except Exception:
+                pass
+        finally:
+            pathlib.Path(header_html.name).unlink(missing_ok=True)
+            pathlib.Path(footer_html.name).unlink(missing_ok=True)
+        return tmp_pdf.name
+
+    def download_postal_firstpage(self):
+        """Generate the first-page PDF and return it as a download response."""
+        from io import BytesIO
+
+        from django.http import FileResponse
+
+        path = self.generate_postal_firstpage()
+        try:
+            with open(path, 'rb') as handle:
+                content = handle.read()
+        finally:
+            pathlib.Path(path).unlink(missing_ok=True)
+        filename = f'postalfirstpage_{self.missive.pk}.pdf'
+        return FileResponse(
+            BytesIO(content), as_attachment=True, filename=filename
+        )
+
+    def postal_base(self):
+        path = self.generate_postal_firstpage()
+        try:
+            with open(path, 'rb') as handle:
+                self.postal_add_attachment(handle)
+        finally:
+            pathlib.Path(path).unlink(missing_ok=True)
 
     def send_postal(self):
         self.postal_base()
         self.postal_attachments()
-        pathlib.Path(self.path_base_doc).unlink()
+        if self.path_base_doc:
+            pathlib.Path(self.path_base_doc).unlink(missing_ok=True)
         self.missive.to_sent()
         self.missive.save()
         return self.missive.status

@@ -329,7 +329,7 @@ class MissiveBackend(MissiveBackend):
                         self.missive.code_error = response.json()['code']
                     else:
                         self.missive.code_error = response.json()['error']
-                except:
+                except Exception:
                     self.missive.code_error = 'unknown'
             self.in_error = True
             return False
@@ -390,7 +390,6 @@ class MissiveBackend(MissiveBackend):
         return None
 
     def postal_add_attachment(self, attachment):
-        self._logger.info(f'postal_add_attachment {attachment.name}')
         self.priority += 1
         api = self.api_url['documents'] % self.sending_id
         headers = self.api_headers
