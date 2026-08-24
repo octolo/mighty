@@ -215,6 +215,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
             'gender',
             'sentry_replay',
             'beta_tester',
+            'preferred_language',
             *address_fields,
         )
         self.fieldsets[3][1]['fields'] += ('first_connection',)

@@ -99,6 +99,11 @@ class User(AbstractUser, Base, Image, AddressNoBase):
     )
     first_connection = models.DateTimeField(blank=True, null=True)
     sentry_replay = models.BooleanField(default=False)
+    preferred_language = models.CharField(
+        max_length=10,
+        choices=settings.LANGUAGES,
+        default='fr',
+    )
 
     if conf.cgu:
         cgu = models.BooleanField(_user.cgu, default=False)
