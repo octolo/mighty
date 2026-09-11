@@ -216,6 +216,8 @@ def excel_cell_value(value):
         return timezone.make_naive(value)
     if isinstance(value, datetime.time) and value.tzinfo is not None:
         return value.replace(tzinfo=None)
+    if isinstance(value, (dict, list, tuple, set)):
+        return str(value)
     return value
 
 
