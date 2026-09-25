@@ -21,6 +21,10 @@ from mighty.functions import get_backends
 logger = logging.getLogger(__name__)
 
 
+class PostalSendingDisabled(Exception):
+    """Raised when postal delivery is disabled for provider maintenance."""
+
+
 def send_missive(missive):
     for backend, _backend_path in get_backends(
         [missive.backend],
@@ -79,6 +83,10 @@ def send_sms(**kwargs):
 
 
 def send_postal(ar=False, **kwargs):
+    if not getattr(settings, 'MAILEVA_POSTAL_ENABLED', False):
+        raise PostalSendingDisabled(
+            'Postal sending is temporarily unavailable.'
+        )
     return send_missive_type(
         **kwargs,
         mode=MODE_POSTALAR if ar else MODE_POSTAL,
