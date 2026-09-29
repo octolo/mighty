@@ -1,4 +1,37 @@
+from collections.abc import Mapping
+from functools import cached_property
+
 from django.template import Context, Template
+
+
+class LazyTemplateVariables(Mapping):
+    """Compile template variables only when their value is requested."""
+
+    def __init__(self, owner, variables):
+        """Index templates without compiling their values."""
+        self.owner = owner
+        self.variables = {
+            variable.name: variable.template for variable in variables
+        }
+        self.compiled = {}
+
+    def __getitem__(self, name):
+        """Compile and cache the requested template variable."""
+        if name not in self.variables:
+            raise KeyError(name)
+        if name not in self.compiled:
+            self.compiled[name] = self.owner.eve_get_template_variable_compiled(
+                self.variables[name]
+            )
+        return self.compiled[name]
+
+    def __iter__(self):
+        """Iterate over available variable names."""
+        return iter(self.variables)
+
+    def __len__(self):
+        """Return the number of available variables."""
+        return len(self.variables)
 
 
 def EnableVariableEditorModel(**kwargs):
@@ -59,14 +92,12 @@ def EnableVariableEditorModel(**kwargs):
                 return qs
 
             # Return qs template variable model
-            @property
+            @cached_property
             def eve_tv(self):
-                return {
-                    tvar.name: self.eve_get_template_variable_compiled(
-                        tvar.template
-                    )
-                    for tvar in self.eve_template_variable_qs_version()
-                }
+                return LazyTemplateVariables(
+                    self,
+                    self.eve_template_variable_qs_version(),
+                )
 
             @property
             def eve_tv2(self):
