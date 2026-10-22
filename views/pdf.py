@@ -5,7 +5,6 @@ import tempfile
 from pathlib import Path
 from typing import Any, ClassVar
 
-import pdfkit
 from django.conf import settings
 from django.contrib.staticfiles.finders import find as find_static_file
 from django.http import FileResponse, HttpResponse
@@ -14,11 +13,9 @@ from django.template.loader import get_template, select_template
 
 from mighty.apps import MightyConfig
 from mighty.filegenerator import (
-    auto_margin_bottom_from_footer,
-    auto_margin_top_from_header,
     build_docx_html_document,
     convert_html_to_docx_bytes,
-    inject_justify_overflow_guard,
+    render_weasyprint_pdf,
 )
 from mighty.views.crud import DetailView
 
@@ -29,8 +26,8 @@ def wrap_editor_html_for_render(content_str: str) -> str:
     """Wrap Froala editor HTML so ``dyntpl`` and Paris timezone apply."""
     return (
         f"{{% load tz dyntpl %}}{{% timezone 'Europe/Paris' %}}"
-        f"{content_str or ''}"
-        f"{{% endtimezone %}}"
+        f'{content_str or ""}'
+        f'{{% endtimezone %}}'
     )
 
 
@@ -132,26 +129,13 @@ class PDFView(DetailView):
             else self._create_download_response(pdf_path)
         )
 
-    def _create_temp_html_file(self, html_content: str) -> str:
-        """Create a temporary HTML file and return its path."""
-        with tempfile.NamedTemporaryFile(
-            suffix='.html', delete=False
-        ) as temp_file:
-            temp_file_path = temp_file.name
-
-        with Path(temp_file_path).open('wb') as temp_file:
-            temp_file.write(html_content.encode('utf-8'))
-        self.tmp_files.append(temp_file_path)
-        return temp_file_path
-
     def _build_header_html(self) -> str:
         """Build header HTML if enabled."""
         if self.has_option('header_enable'):
             html = self.render_section(
                 self._get_header_template(), self.get_context_data()
             )
-            html = self._inject_font_face_style(html)
-            return self._create_temp_html_file(html)
+            return self._inject_font_face_style(html)
         return ''
 
     def _build_footer_html(self) -> str:
@@ -160,8 +144,7 @@ class PDFView(DetailView):
             html = self.render_section(
                 self._get_footer_template(), self.get_context_data()
             )
-            html = self._inject_font_face_style(html)
-            return self._create_temp_html_file(html)
+            return self._inject_font_face_style(html)
         return ''
 
     def _get_header_template(self) -> str:
@@ -173,66 +156,30 @@ class PDFView(DetailView):
         return ''
 
     def _prepare_pdf_options(self) -> dict[str, Any]:
-        """Prepare PDF generation options.
-
-        Options are reset from defaults on each run so `--header-html` /
-        `--footer-html` and margins from a previous request cannot leak.
-
-        When the page header is off, top margin is reduced (or set via
-        ``margin_top`` / ``margin-top`` on ``current_config``). When the
-        header is on, ``margin-top`` is inferred from the rendered header
-        height unless ``margin_top`` / ``margin-top`` is set in ``current_config``.
-
-        Footer is analogous: ``margin-bottom`` can be sized to the footer
-        HTML (``auto_footer_margin``, optional overrides) instead of keeping
-        a large default bottom margin.
+        """Prepare WeasyPrint settings and rendered running elements.
 
         Horizontal margins default to ``MightyConfig.pdf_options``; set
         ``margin_left`` / ``margin-left`` or ``margin_right`` / ``margin-right``
         on ``current_config`` to override (e.g. convocation layout).
         """
         self.options = copy.deepcopy(MightyConfig.pdf_options)
-        self.options['enable-local-file-access'] = None
-
         header_on = self.has_option('header_enable')
         footer_on = self.has_option('footer_enable')
         orientation = self.current_config.get('orientation', 'Portrait')
-
-        if header_on:
-            header_path = self._build_header_html()
-            self.options['--header-html'] = header_path
-            margin_top = self._pdf_margin_side_from_config('top')
-            if margin_top:
-                self.options['margin-top'] = margin_top
-            else:
-                auto_top = auto_margin_top_from_header(
-                    header_path, orientation, self.options, self.current_config
-                )
-                if auto_top:
-                    self.options['margin-top'] = auto_top
-        else:
-            self.options.pop('--header-html', None)
-            self.options['margin-top'] = (
-                self._pdf_margin_side_from_config('top') or '0.30in'
-            )
-
-        if footer_on:
-            footer_path = self._build_footer_html()
-            self.options['--footer-html'] = footer_path
-            margin_bottom = self._pdf_margin_side_from_config('bottom')
-            if margin_bottom:
-                self.options['margin-bottom'] = margin_bottom
-            else:
-                auto_bottom = auto_margin_bottom_from_footer(
-                    footer_path, orientation, self.options, self.current_config
-                )
-                if auto_bottom:
-                    self.options['margin-bottom'] = auto_bottom
-        else:
-            self.options.pop('--footer-html', None)
-            self.options['margin-bottom'] = (
-                self._pdf_margin_side_from_config('bottom') or '0.30in'
-            )
+        self.header_html = self._build_header_html() if header_on else None
+        self.footer_html = self._build_footer_html() if footer_on else None
+        self.options['margin-top'] = self._pdf_margin_side_from_config(
+            'top'
+        ) or (
+            self.options.get('margin-top', '0.75in') if header_on else '0.30in'
+        )
+        self.options['margin-bottom'] = self._pdf_margin_side_from_config(
+            'bottom'
+        ) or (
+            self.options.get('margin-bottom', '0.75in')
+            if footer_on
+            else '0.30in'
+        )
 
         margin_left = self._pdf_margin_side_from_config('left')
         if margin_left:
@@ -246,7 +193,7 @@ class PDFView(DetailView):
         return self.options
 
     def _inject_font_face_style(self, html_content: str) -> str:
-        """Inject configured @font-face rules into HTML head for wkhtmltopdf."""
+        """Inject configured @font-face rules into HTML for WeasyPrint."""
         fonts: dict[str, str] = {}
         fonts.update(getattr(settings, 'PDFMAKER', {}).get('fonts', {}))
         fonts.update(getattr(settings, 'FONTS_FILES_WEASYPRINT', {}))
@@ -276,12 +223,18 @@ class PDFView(DetailView):
     def _generate_pdf_file(self, html_content: str) -> str:
         """Generate PDF file from HTML content and return file path."""
         html_content = self._inject_font_face_style(html_content)
-        html_content = inject_justify_overflow_guard(html_content)
         with tempfile.NamedTemporaryFile(
             suffix='.pdf', delete=False
         ) as temp_file:
             temp_file_path = temp_file.name
-        pdfkit.from_string(html_content, temp_file_path, options=self.options)
+        render_weasyprint_pdf(
+            html_content,
+            output_path=temp_file_path,
+            header_html=self.header_html,
+            footer_html=self.footer_html,
+            options=self.options,
+            base_url=str(settings.STATIC_ROOT),
+        )
         self.tmp_files.append(temp_file_path)
         return temp_file_path
 

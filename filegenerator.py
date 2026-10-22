@@ -1,17 +1,16 @@
 import copy
 import csv
 import datetime
+import json
 import logging
 import os
 import pathlib
 import shutil
-import struct
-import subprocess
 import tempfile
+from html.parser import HTMLParser
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-import pdfkit
 from django.conf import settings
 from django.contrib.staticfiles.finders import find as find_static_file
 from django.http import HttpResponse, StreamingHttpResponse
@@ -20,6 +19,7 @@ from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.text import get_valid_filename
 from openpyxl import Workbook
+from weasyprint import HTML
 
 from mighty.apps import MightyConfig as conf
 from mighty.functions import make_searchable
@@ -27,182 +27,149 @@ from mighty.functions import make_searchable
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Shared PDF margin helpers — used by both generate_pdf and PDFView so they
-# produce identical top/bottom margins for the same header/footer HTML.
-# ---------------------------------------------------------------------------
+class _HTMLDocumentParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.head = []
+        self.body = []
+        self.in_head = False
 
-def get_wkhtmltoimage_bin() -> str | None:
-    path = shutil.which('wkhtmltoimage')
-    if path:
-        return path
-    wkpdf = shutil.which('wkhtmltopdf')
-    if wkpdf:
-        sibling = Path(wkpdf).with_name('wkhtmltoimage')
-        if sibling.is_file():
-            return str(sibling)
-    return None
+    @property
+    def target(self):
+        return self.head if self.in_head else self.body
 
+    def handle_starttag(self, tag, attrs):
+        if tag == 'head':
+            self.in_head = True
+        elif tag == 'body':
+            return
+        elif tag != 'html':
+            self.target.append(self.get_starttag_text())
 
-def read_png_pixel_height(png_path: Path) -> int:
-    with png_path.open('rb') as f:
-        if f.read(8) != b'\x89PNG\r\n\x1a\n':
-            raise ValueError('not a PNG')
-        while True:
-            chunk_head = f.read(8)
-            if len(chunk_head) < 8:
-                raise ValueError('truncated PNG')
-            chunk_len, chunk_type = struct.unpack('>I4s', chunk_head)
-            chunk_data = f.read(chunk_len)
-            f.read(4)
-            if chunk_type == b'IHDR':
-                _, height = struct.unpack('>II', chunk_data[:8])
-                return height
+    def handle_startendtag(self, tag, attrs):
+        self.target.append(self.get_starttag_text())
 
+    def handle_endtag(self, tag):
+        if tag == 'head':
+            self.in_head = False
+        elif tag != 'html':
+            self.target.append(f'</{tag}>')
 
-def a4_page_width_mm(orientation: str) -> float:
-    if (orientation or 'Portrait').lower() == 'landscape':
-        return 297.0
-    return 210.0
+    def handle_data(self, data):
+        self.target.append(data)
 
+    def handle_entityref(self, name):
+        self.target.append(f'&{name};')
 
-def pdf_screen_dpi(options: dict | None = None) -> int:
-    raw = (options or {}).get('dpi')
-    if raw in (None, ''):
-        return 96
-    try:
-        return int(raw)
-    except (TypeError, ValueError):
-        return 96
+    def handle_charref(self, name):
+        self.target.append(f'&#{name};')
+
+    def handle_comment(self, data):
+        self.target.append(f'<!--{data}-->')
 
 
-def page_width_px_for_pdf(options: dict | None, orientation: str) -> int:
-    mm = a4_page_width_mm(orientation)
-    dpi = pdf_screen_dpi(options)
-    return max(1, int(round(mm / 25.4 * dpi)))
+def _split_html_document(source: str) -> tuple[str, str]:
+    parser = _HTMLDocumentParser()
+    parser.feed(source or '')
+    return ''.join(parser.head), ''.join(parser.body)
 
 
-def run_wkhtmltoimage(
-    bin_path: str,
-    source_html_path: Path,
-    png_path: Path,
-    width_px: int,
-) -> bool:
-    html_abs = str(source_html_path.resolve())
-    png_abs = str(png_path.resolve())
-    base = [
-        bin_path, '--quiet', '--javascript-delay', '200',
-        '--width', str(width_px), html_abs, png_abs,
+def render_weasyprint_pdf(
+    html_content: str,
+    output_path: str | None = None,
+    *,
+    header_html: str | None = None,
+    footer_html: str | None = None,
+    options: dict | None = None,
+    base_url: str | None = None,
+) -> bytes | bool:
+    """Render HTML, optional running header/footer, and page settings to PDF."""
+    options = options or {}
+    main_head, main_body = _split_html_document(html_content)
+    header_head, header_body = _split_html_document(header_html or '')
+    footer_head, footer_body = _split_html_document(footer_html or '')
+    page_size = options.get('page-size', 'A4')
+    orientation = str(options.get('orientation', 'Portrait')).lower()
+    size = f'{page_size} {orientation}'
+    margins = {
+        side: options.get(f'margin-{side}', '0.75in')
+        for side in ('top', 'right', 'bottom', 'left')
+    }
+    page_rules = [
+        f'@page {{ size: {size}; margin: {margins["top"]} '
+        f'{margins["right"]} {margins["bottom"]} {margins["left"]};'
     ]
-    for with_local_access in (True, False):
-        cmd = list(base)
-        if with_local_access:
-            cmd.insert(1, '--enable-local-file-access')
-        try:
-            subprocess.run(cmd, check=True, capture_output=True, timeout=45, text=True)
-        except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
-            logger.warning('wkhtmltoimage failed: %s', exc)
-            return False
-        except subprocess.CalledProcessError as exc:
-            logger.debug(
-                'wkhtmltoimage exit %s (local=%s): %s',
-                exc.returncode, with_local_access,
-                (exc.stderr or exc.stdout or '')[:800],
-            )
-            continue
+    if header_body:
+        page_rules.append(
+            '@top-center { content: element(octolo-pdf-header); }'
+        )
+    footer_center = options.get('footer-center')
+    if footer_body or footer_center:
+        if footer_body:
+            footer_content = 'element(octolo-pdf-footer)'
         else:
-            return True
-    return False
-
-
-def auto_margin_top_from_header(
-    header_html_path: str,
-    orientation: str,
-    options: dict | None = None,
-    config: dict | None = None,
-) -> str | None:
-    """Return ``margin-top`` sized to the rendered header height.
-
-    Returns ``None`` on failure so the caller keeps its default margin.
-    Optional config keys: ``header_margin_padding_mm`` (default 3),
-    ``header_margin_top_min_in`` (default 0.35),
-    ``header_margin_top_max_in`` (default 3.0).
-    Pass ``config={'auto_header_margin': False}`` to skip probing.
-    """
-    config = config or {}
-    if config.get('auto_header_margin') is False:
-        return None
-    bin_path = get_wkhtmltoimage_bin()
-    if not bin_path:
-        return None
-    dpi = pdf_screen_dpi(options)
-    width_px = page_width_px_for_pdf(options, orientation)
-    fd, png_name = tempfile.mkstemp(suffix='.png')
-    os.close(fd)
-    png_path = Path(png_name)
-    try:
-        if not run_wkhtmltoimage(bin_path, Path(header_html_path), png_path, width_px):
-            return None
-        height_px = read_png_pixel_height(png_path)
-    except ValueError:
-        logger.warning('Header height probe returned an invalid PNG')
-        return None
-    finally:
-        png_path.unlink(missing_ok=True)
-
-    if height_px < 8:
-        return None
-    padding_mm = float(config.get('header_margin_padding_mm', 3))
-    height_in = (height_px / dpi) + (padding_mm / 25.4)
-    min_in = float(config.get('header_margin_top_min_in', 0.35))
-    max_in = float(config.get('header_margin_top_max_in', 3.0))
-    height_in = max(min_in, min(max_in, height_in))
-    return f'{height_in:.3f}in'
-
-
-def auto_margin_bottom_from_footer(
-    footer_html_path: str,
-    orientation: str,
-    options: dict | None = None,
-    config: dict | None = None,
-) -> str | None:
-    """Return ``margin-bottom`` sized to the rendered footer height.
-
-    Returns ``None`` on failure so the caller keeps its default margin.
-    Optional config keys: ``footer_margin_padding_mm`` (default 0),
-    ``footer_margin_bottom_min_in`` (default 0.25),
-    ``footer_margin_bottom_max_in`` (default 3.0).
-    Pass ``config={'auto_footer_margin': False}`` to skip probing.
-    """
-    config = config or {}
-    if config.get('auto_footer_margin') is False:
-        return None
-    bin_path = get_wkhtmltoimage_bin()
-    if not bin_path:
-        return None
-    dpi = pdf_screen_dpi(options)
-    width_px = page_width_px_for_pdf(options, orientation)
-    fd, png_name = tempfile.mkstemp(suffix='.png')
-    os.close(fd)
-    png_path = Path(png_name)
-    try:
-        if not run_wkhtmltoimage(bin_path, Path(footer_html_path), png_path, width_px):
-            return None
-        height_px = read_png_pixel_height(png_path)
-    except ValueError:
-        logger.warning('Footer height probe returned an invalid PNG')
-        return None
-    finally:
-        png_path.unlink(missing_ok=True)
-
-    if height_px < 8:
-        return None
-    padding_mm = float(config.get('footer_margin_padding_mm', 0))
-    height_in = (height_px / dpi) + (padding_mm / 25.4)
-    min_in = float(config.get('footer_margin_bottom_min_in', 0.25))
-    max_in = float(config.get('footer_margin_bottom_max_in', 3.0))
-    height_in = max(min_in, min(max_in, height_in))
-    return f'{height_in:.3f}in'
+            footer_content = (
+                json.dumps(str(footer_center), ensure_ascii=False)
+                .replace('[page]', '" counter(page) "')
+                .replace('[topage]', '" counter(pages) "')
+            )
+        footer_size = options.get('footer-font-size')
+        footer_font = f' font-size: {footer_size}pt;' if footer_size else ''
+        page_rules.append(
+            f'@bottom-center {{ content: {footer_content};{footer_font} }}'
+        )
+    page_rules.append('}')
+    timestamp = (
+        timezone.localtime() if settings.USE_TZ else datetime.datetime.now()
+    )
+    substitutions = {
+        'date': timestamp.strftime('%A, %B %d, %Y'),
+        'isodate': timestamp.date().isoformat(),
+        'time': timestamp.strftime('%H:%M'),
+    }
+    substitution_css = ''.join(
+        f'.octolo-pdf-header .{name}::before,'
+        f'.octolo-pdf-footer .{name}::before '
+        f'{{ content: {json.dumps(value, ensure_ascii=False)}; }}'
+        for name, value in substitutions.items()
+    )
+    document = (
+        '<!doctype html><html><head>'
+        f'{main_head}{header_head}{footer_head}'
+        '<style>'
+        + ''.join(page_rules)
+        + '.octolo-pdf-header { position: running(octolo-pdf-header); }'
+        + '.octolo-pdf-footer { position: running(octolo-pdf-footer); }'
+        + '.octolo-pdf-header .page::before,'
+        + '.octolo-pdf-footer .page::before,'
+        + '.octolo-pdf-header .frompage::before,'
+        + '.octolo-pdf-footer .frompage::before,'
+        + '.octolo-pdf-header .sitepage::before,'
+        + '.octolo-pdf-footer .sitepage::before { content: counter(page); }'
+        + '.octolo-pdf-header .topage::before,'
+        + '.octolo-pdf-footer .topage::before,'
+        + '.octolo-pdf-header .sitepages::before,'
+        + '.octolo-pdf-footer .sitepages::before { content: counter(pages); }'
+        + substitution_css
+        + '</style></head><body>'
+        + (
+            f'<div class="octolo-pdf-header">{header_body}</div>'
+            if header_body
+            else ''
+        )
+        + (
+            f'<div class="octolo-pdf-footer">{footer_body}</div>'
+            if footer_body
+            else ''
+        )
+        + main_body
+        + '</body></html>'
+    )
+    pdf_bytes = HTML(string=document, base_url=base_url).write_pdf()
+    if output_path:
+        Path(output_path).write_bytes(pdf_bytes)
+        return True
+    return pdf_bytes
 
 
 class StreamingBuffer:
@@ -252,38 +219,6 @@ def _inject_font_style_in_head(html):
     if '</head>' in html:
         return html.replace('</head>', f'{style}</head>', 1)
     return style + html
-
-
-WKHTML_JUSTIFY_OVERFLOW_GUARD = """<style type="text/css">
-/* wkhtmltopdf (QtWebKit) bug: with text-align: justify the last glyph of a
-   line can be painted past the content edge and clipped. Add a right-side
-   buffer ONLY on elements that ask for justified text so the visible
-   layout (and non-justified blocks) stay untouched. */
-[align="justify"],
-[style*="text-align: justify"],
-[style*="text-align:justify"],
-.text-justify,
-.ql-align-justify,
-.fr-text-justify {
-    padding-right: 3mm !important;
-    margin-right: 1mm !important;
-    box-sizing: border-box !important;
-}
-</style>"""
-
-
-def inject_justify_overflow_guard(html: str) -> str:
-    """Inject the wkhtmltopdf justify-overflow guard CSS in <head>.
-
-    Safe to call multiple times; we only insert once.
-    """
-    if 'wkhtmltopdf (QtWebKit) bug' in html:
-        return html
-    if '</head>' in html:
-        return html.replace(
-            '</head>', f'{WKHTML_JUSTIFY_OVERFLOW_GUARD}</head>', 1,
-        )
-    return WKHTML_JUSTIFY_OVERFLOW_GUARD + html
 
 
 class FileGenerator:
@@ -409,8 +344,6 @@ class FileGenerator:
     def generate_pdf_from_html(self, output_path=None):
         from datetime import datetime
 
-        import pdfkit
-
         html_string = Template(self.html).render(
             Context({
                 'table': self.iter_items_pdf(self.items),
@@ -428,7 +361,7 @@ class FileGenerator:
             f'Octolo certifié en date du {today} - Page [page] sur [topage]'
         )
 
-        # Options wkhtmltopdf
+        # Page layout and footer for WeasyPrint.
         options = {
             'page-size': 'A4',
             'orientation': 'Landscape',
@@ -436,13 +369,15 @@ class FileGenerator:
             'margin-bottom': '20mm',
             'margin-left': '20mm',
             'margin-right': '20mm',
-            'encoding': 'UTF-8',
-            'enable-local-file-access': None,
             'footer-center': footer_text,
             'footer-font-size': '10',
-            'footer-line': '',  # Ligne de séparation (optionnel)
         }
-        return pdfkit.from_string(html_string, output_path, options=options)
+        return render_weasyprint_pdf(
+            html_string,
+            output_path=output_path,
+            options=options,
+            base_url=str(settings.STATIC_ROOT),
+        )
 
     def file_pdf(self, ext, ct):
         return self.generate_pdf_from_html(output_path=self.get_filename('pdf'))
@@ -473,53 +408,35 @@ def generate_pdf(**kwargs):
     content = kwargs.get('content', False)
     content_html = kwargs.get('content_html', False)
     as_string = kwargs.get('as_string', False)
-    orientation = options.get('orientation', 'Portrait')
     context.update({
         'static': os.path.abspath(settings.STATIC_ROOT),
     })
 
-    # header
+    header_html = None
     if header:
         header_tpl = kwargs.get(
             'conf_header',
             get_template(conf.pdf_header).render({'header': header}),
         )
         context.update({'header_html': header})
-        header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        header_html.write(
-            Template(header_tpl).render(Context(context)).encode('utf-8')
-        )
-        header_html.close()
-        header = header_html
-        options['--header-html'] = header_html.name
-        auto_top = auto_margin_top_from_header(
-            header_html.name, orientation, options
-        )
-        if auto_top:
-            options['margin-top'] = auto_top
+        header_html = Template(header_tpl).render(Context(context))
     else:
-        options['margin-top'] = '0.30in'
+        options['margin-top'] = kwargs.get('margin_top') or options.get(
+            'margin-top', '0.30in'
+        )
 
+    footer_html = None
     if footer:
         footer_tpl = kwargs.get(
             'conf_footer',
             get_template(conf.pdf_footer).render({'footer': footer}),
         )
         context.update({'footer_html': footer})
-        footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        footer_html.write(
-            Template(footer_tpl).render(Context(context)).encode('utf-8')
-        )
-        footer_html.close()
-        footer = footer_html
-        options['--footer-html'] = footer_html.name
-        auto_bottom = auto_margin_bottom_from_footer(
-            footer_html.name, orientation, options
-        )
-        if auto_bottom:
-            options['margin-bottom'] = auto_bottom
+        footer_html = Template(footer_tpl).render(Context(context))
     else:
-        options['margin-bottom'] = '0.30in'
+        options['margin-bottom'] = kwargs.get('margin_bottom') or options.get(
+            'margin-bottom', '0.30in'
+        )
 
     if (content or content_html) and file_name:
         tmp_pdf = tempfile.NamedTemporaryFile(suffix='.pdf', delete=True)
@@ -536,9 +453,14 @@ def generate_pdf(**kwargs):
         )
         content_html = Template(content_tpl).render(Context(context))
         content_html = _inject_font_style_in_head(content_html)
-        content_html = inject_justify_overflow_guard(content_html)
-        options['enable-local-file-access'] = None
-        pdfkit.from_string(content_html, tmp_pdf.name, options=options)
+        render_weasyprint_pdf(
+            content_html,
+            output_path=tmp_pdf.name,
+            header_html=header_html,
+            footer_html=footer_html,
+            options=options,
+            base_url=str(settings.STATIC_ROOT),
+        )
         path_tmp = tmp_pdf.name
         valid_file_name = get_valid_filename(file_name)
         # Use a unique per-call temp directory to avoid collisions on a fixed
@@ -548,10 +470,6 @@ def generate_pdf(**kwargs):
         shutil.copyfile(path_tmp, final_pdf)
 
     # a verifier
-    if footer:
-        pathlib.Path(footer_html.name).unlink()
-    if header:
-        pathlib.Path(header_html.name).unlink()
     if as_string:
         tmp_pdf.close()
         pathlib.Path(final_pdf).unlink()
@@ -623,13 +541,17 @@ def _enhance_justify_for_docx(html: str) -> str:
     )
 
 
-def _resize_data_uri_image(src: str, max_width: int, max_height: int) -> str | None:
+def _resize_data_uri_image(
+    src: str, max_width: int, max_height: int
+) -> str | None:
     """Downscale embedded signature so Word/Docs do not use the native pixel size."""
     import base64
     import io
     import re
 
-    match = re.match(r'data:image/([^;]+);base64,(.+)', src, re.IGNORECASE | re.DOTALL)
+    match = re.match(
+        r'data:image/([^;]+);base64,(.+)', src, re.IGNORECASE | re.DOTALL
+    )
     if not match:
         return None
     fmt = match.group(1).upper().replace('JPG', 'JPEG')
@@ -648,7 +570,9 @@ def _resize_data_uri_image(src: str, max_width: int, max_height: int) -> str | N
         mime = save_fmt.lower()
         return f'data:image/{mime};base64,{encoded}'
     except Exception:
-        logger.debug('Could not resize embedded image for docx export', exc_info=True)
+        logger.debug(
+            'Could not resize embedded image for docx export', exc_info=True
+        )
         return None
 
 

@@ -2,7 +2,7 @@ import os
 import pathlib
 import tempfile
 
-import pdfkit
+from django.conf import settings
 from django.core.mail import EmailMessage
 from django.core.mail.message import make_msgid
 from django.template import Context, Template
@@ -11,6 +11,7 @@ from mighty.applications.logger import EnableLogger
 from mighty.applications.messenger import choices
 from mighty.applications.messenger.apps import MessengerConfig as conf  # noqa
 from mighty.apps import MightyConfig as MightyConfig
+from mighty.filegenerator import render_weasyprint_pdf
 from mighty.functions import setting
 from mighty.models import Missive  # noqa
 
@@ -129,62 +130,38 @@ class MissiveBackend(EnableLogger):
         Caller is responsible for deleting the returned file.
         """
         context = Context()
-
-        header_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        header_html.write(
-            Template(self.missive.header_html or '')
-            .render(context)
-            .encode('utf-8')
-        )
-        header_html.close()
-
-        footer_html = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        footer_html.write(
-            Template(self.missive.footer_html or '')
-            .render(context)
-            .encode('utf-8')
-        )
-        footer_html.close()
-
+        header_html = Template(self.missive.header_html or '').render(context)
+        footer_html = Template(self.missive.footer_html or '').render(context)
         tmp_pdf = tempfile.NamedTemporaryFile(
             suffix='postalfirstpage.pdf', delete=False
         )
         tmp_pdf.close()
         try:
-            pdfkit.from_string(
+            render_weasyprint_pdf(
                 self.postal_template(context),
-                tmp_pdf.name,
+                output_path=tmp_pdf.name,
+                header_html=header_html,
+                footer_html=footer_html,
                 options={
-                    'encoding': 'UTF-8',
-                    '--header-html': header_html.name,
-                    '--footer-html': footer_html.name,
                     'page-size': 'A4',
                     'margin-top': '0.75in',
                     'margin-right': '0.75in',
                     'margin-bottom': '0.75in',
                     'margin-left': '0.75in',
-                    'custom-header': [('Accept-Encoding', 'gzip')],
                 },
+                base_url=str(settings.STATIC_ROOT),
             )
-            # Rewrite pages: sandbox WAF often blocks raw wkhtmltopdf output.
-            try:
-                from io import BytesIO
+            from io import BytesIO
 
-                from pypdf import PdfReader, PdfWriter
+            from pypdf import PdfReader, PdfWriter
 
-                with open(tmp_pdf.name, 'rb') as handle:
-                    raw = handle.read()
-                reader = PdfReader(BytesIO(raw))
-                writer = PdfWriter()
-                for page in reader.pages:
-                    writer.add_page(page)
-                with open(tmp_pdf.name, 'wb') as handle:
-                    writer.write(handle)
-            except Exception:
-                pass
+            reader = PdfReader(BytesIO(pathlib.Path(tmp_pdf.name).read_bytes()))
+            writer = PdfWriter()
+            for page in reader.pages:
+                writer.add_page(page)
+            writer.write(tmp_pdf.name)
         finally:
-            pathlib.Path(header_html.name).unlink(missing_ok=True)
-            pathlib.Path(footer_html.name).unlink(missing_ok=True)
+            tmp_pdf.close()
         return tmp_pdf.name
 
     def download_postal_firstpage(self):
