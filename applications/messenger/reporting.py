@@ -140,7 +140,7 @@ def build_missive_row(missive, additional_fields=None):
     def trace_path(field_attr):
         path = getattr(backend, field_attr, None)
         if path and path.startswith(TRACE_PREFIX):
-            return path[len(TRACE_PREFIX):]
+            return path[len(TRACE_PREFIX) :]
         return None
 
     # Parse the (potentially large) trace once and read every column from it,
@@ -150,19 +150,32 @@ def build_missive_row(missive, additional_fields=None):
     # Only hit the provider (network + save) when the billing data is not
     # already stored on the missive, and when there is a provider reference to
     # ask about: sends that failed before submission never got a partner_id.
-    # The billed pages and the invoice come from two different provider calls,
-    # so both have to be in the trace before the check can be skipped.
-    billing_paths = [
-        path
-        for path in (
-            trace_path('field_billed_page'), trace_path('field_price_infos')
+    # Either the invoice items or the recipient postage + billed pages are
+    # enough to price the row without re-querying the provider.
+    billed_page_path = trace_path('field_billed_page')
+    price_infos_path = trace_path('field_price_infos')
+    price_path = trace_path('field_price')
+    has_billed_page = bool(
+        billed_page_path
+        and getattr_recursive(
+            trace, billed_page_path, default=None, default_on_error=True
         )
-        if path
-    ]
-    already_billed = bool(billing_paths) and all(
-        getattr_recursive(trace, path, default=None, default_on_error=True)
-        for path in billing_paths
     )
+    has_price = bool(
+        (
+            price_infos_path
+            and getattr_recursive(
+                trace, price_infos_path, default=None, default_on_error=True
+            )
+        )
+        or (
+            price_path
+            and getattr_recursive(
+                trace, price_path, default=None, default_on_error=True
+            )
+        )
+    )
+    already_billed = has_billed_page and has_price
     if (
         not already_billed
         and missive.partner_id
@@ -178,12 +191,12 @@ def build_missive_row(missive, additional_fields=None):
     def from_trace(field_attr, getter):
         path = trace_path(field_attr)
         if path:
-            return getattr_recursive(
+            val = getattr_recursive(
                 trace, path, default='', default_on_error=True
             )
-        return getter()
+            if val not in ('', None):
+                return val
 
-    price_infos = backend.get_price_infos()
     row = {
         'date_send': missive.date_create,
         'target': missive.target,
@@ -320,20 +333,23 @@ def split_price_columns(names):
     return SummaryColumns(postage, printing)
 
 
-def creation_day(value):
-    """Local day of a report timestamp, which is stored in UTC."""
+def creation_day(value, period='day'):
+    """Local day (or month) of a report timestamp, which is stored in UTC."""
     try:
         moment = datetime.fromisoformat(value)
     except (TypeError, ValueError):
         return value or 'unknown'
     if timezone.is_aware(moment):
         moment = timezone.localtime(moment)
+    if period == 'month':
+        return moment.strftime('%Y-%m')
     return moment.date().isoformat()
 
 
 def new_totals(columns):
     return {
         'missives': 0,
+        'internationaux': 0,
         'billed_page': 0,
         'prices': dict.fromkeys(columns.prices, 0.0),
     }
@@ -341,20 +357,31 @@ def new_totals(columns):
 
 def add_totals(totals, data):
     totals['missives'] += data['missives']
+    totals['internationaux'] += data['internationaux']
     totals['billed_page'] += data['billed_page']
     for column, amount in data['prices'].items():
         totals['prices'][column] += amount
 
 
-def summarize_report(path, group_by, additional_fields=None):
+def is_international_row(row):
+    postage_class = str(row.get('class') or '').upper()
+    if 'INTERNATIONAL' in postage_class:
+        return True
+    try:
+        return float(row.get('Recommandé international') or 0) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def summarize_report(path, group_by, additional_fields=None, period='day'):
     """
     Aggregate the billed columns of a generated report.
 
     Price columns are the ones the backends add from the provider invoice, so
     everything that is neither a standard field nor an additional field.
 
-    :return: the price columns, and per ``group_by`` value and creation day the
-        number of missives, the billed pages and the total of each price column
+    :return: the price columns, and per ``group_by`` value and creation period
+        the number of missives, the billed pages and the total of each column
     """
     extra_columns = set(additional_fields or ())
     summary = {}
@@ -368,10 +395,12 @@ def summarize_report(path, group_by, additional_fields=None):
         for row in reader:
             key = (
                 row.get(group_by) or 'unknown',
-                creation_day(row.get(SUMMARY_DATE_COLUMN)),
+                creation_day(row.get(SUMMARY_DATE_COLUMN), period=period),
             )
             group = summary.setdefault(key, new_totals(columns))
             group['missives'] += 1
+            if is_international_row(row):
+                group['internationaux'] += 1
             try:
                 group['billed_page'] += int(float(row['billed_page']))
             except (TypeError, ValueError, KeyError):
@@ -412,6 +441,7 @@ def summary_header(columns, group_by):
         group_by,
         'date',
         'missives',
+        'internationaux',
         *columns.postage,
         COLUMN_DISBURSEMENTS,
         'billed_page',
@@ -430,6 +460,7 @@ def summary_row(group, day, data, columns, margin=0.0):
         group,
         day,
         str(data['missives']),
+        str(data['internationaux']),
         *(f'{prices[column]:.2f}' for column in columns.postage),
         f'{computed[COLUMN_DISBURSEMENTS]:.2f}',
         str(data['billed_page']),
@@ -463,6 +494,7 @@ def company_tag_values(columns, summary, group_by, margin=0.0):
         values[group] = {
             group_by: group,
             'missives': data['missives'],
+            'internationaux': data['internationaux'],
             'billed_page': data['billed_page'],
             **{
                 column: round(data['prices'][column], 2)
@@ -504,7 +536,9 @@ def summary_html(table):
     )
 
 
-def reporting_missive(email, summary=None, template=None, margin=0.0, **kwargs):
+def reporting_missive(
+    email, summary=None, template=None, margin=0.0, period='day', **kwargs
+):
     """
     Send the report by email.
 
@@ -528,7 +562,7 @@ def reporting_missive(email, summary=None, template=None, margin=0.0, **kwargs):
 
     if summary:
         columns, grouped = summarize_report(
-            csvfile.name, summary, additional_fields
+            csvfile.name, summary, additional_fields, period=period
         )
         table = summary_table(columns, grouped, summary, margin)
         paths.append(write_summary_csv(table))

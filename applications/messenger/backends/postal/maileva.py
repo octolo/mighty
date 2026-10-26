@@ -2,6 +2,7 @@
 # https://secure2.recette.maileva.com/
 
 import json
+import math
 import os
 import threading
 import time
@@ -109,7 +110,7 @@ class MissiveBackend(MissiveBackend):
 
     field_price = 'trace_json.recipients.recipients.0.postage_price'
     field_price_infos = 'trace_json.invoice.items'
-    field_billed_page = 'trace_json.status.billed_pages_count'
+    field_billed_page = 'trace_json.recipients.recipients.0.billed_pages_count'
     field_external_reference = 'trace_json.status.reference'
     field_external_status = (
         'trace_json.recipients.recipients.0.last_main_delivery_status.label'
@@ -369,7 +370,9 @@ class MissiveBackend(MissiveBackend):
                 'name': doc_name,
             })
         }
-        response = self.session.post(api, headers=headers, files=files, data=data)
+        response = self.session.post(
+            api, headers=headers, files=files, data=data
+        )
         self.valid_response(response)
         self.add_log_array('attachments', doc_name)
 
@@ -396,7 +399,9 @@ class MissiveBackend(MissiveBackend):
             wdata = self.webhook_data
             wdata['event_type'] = event
             api = self.api_url['webhook']
-            response = self.session.post(api, headers=self.api_headers, json=wdata)
+            response = self.session.post(
+                api, headers=self.api_headers, json=wdata
+            )
             self.valid_response(response)
 
     def on_webhook(self, request):
@@ -504,16 +509,61 @@ class MissiveBackend(MissiveBackend):
         )
         # A trace that is not a mapping (raw error body of a failed send) is
         # returned untraversed, so only trust an actual list of priced items.
-        if not isinstance(items, list):
+        if isinstance(items, list) and items:
+            return {
+                item['label']: item['amount']
+                for item in items
+                if isinstance(item, dict)
+                and 'label' in item
+                and 'amount' in item
+            }
+        return self.estimate_price_infos()
+
+    def estimate_price_infos(self):
+        billed_pages = self.get_billed_page()
+        try:
+            billed_pages = int(billed_pages)
+        except (TypeError, ValueError):
+            billed_pages = 0
+        if billed_pages <= 0:
             return {}
-        return {
-            item['label']: item['amount']
-            for item in items
-            if isinstance(item, dict) and 'label' in item and 'amount' in item
+
+        postage = self.get_price()
+        try:
+            postage = float(postage)
+        except (TypeError, ValueError):
+            postage = math.pi if billed_pages <= 10 else 5.15
+
+        color = bool(self.get_color())
+        envelope = str(self.get_type() or 'C4').upper()
+        is_c4 = envelope == 'C4'
+        first_label = (
+            'Courrier France 1ere P (C4)'
+            if is_c4
+            else 'Courrier 1ere Page (C6)'
+        )
+        next_label = (
+            'Courrier Page Suiv Fr (C4)' if is_c4 else 'Courrier Page Suiv (C6)'
+        )
+        first_cost = self.color_first_c4 if color else self.nb_first_c4
+        next_cost = self.color_next_c4 if color else self.nb_next_c4
+
+        prices = {
+            'Affranchissement Courrier Simple': round(postage, 2),
+            first_label: round(float(first_cost), 3),
         }
+        if billed_pages > 1:
+            prices[next_label] = round((billed_pages - 1) * float(next_cost), 3)
+        return prices
 
     def check_postal(self):
         if self.authentication():
+            prev_invoice = getattr_recursive(
+                self.missive,
+                'trace_json.invoice',
+                default=None,
+                default_on_error=True,
+            )
             # status
             url = self.api_url['sendings'] + '/' + self.missive.partner_id
             response = self.session.get(url, headers=self.api_headers)
@@ -529,9 +579,16 @@ class MissiveBackend(MissiveBackend):
             # Maileva sandbox does not generate billing items, so calling
             # ``get_invoice`` returns empty/non-JSON bodies. Only fetch in prod.
             try:
-                rjson['invoice'] = self.get_invoice()
+                invoice = self.get_invoice()
             except Exception:
-                rjson['invoice'] = []
+                invoice = []
+            if (
+                not (isinstance(invoice, dict) and invoice.get('items'))
+                and isinstance(prev_invoice, dict)
+                and prev_invoice.get('items')
+            ):
+                invoice = prev_invoice
+            rjson['invoice'] = invoice
             self.missive.trace = str(rjson)
             if 'status' in rjson_status:
                 self.missive.status = self.status_ref[rjson_status['status']]
@@ -553,12 +610,26 @@ class MissiveBackend(MissiveBackend):
         )
 
     def get_billed_page(self):
-        return getattr_recursive(
-            self.missive,
+        for path in (
             self.field_billed_page,
+            'trace_json.status.billed_pages_count',
+        ):
+            val = getattr_recursive(
+                self.missive, path, default='', default_on_error=True
+            )
+            if val not in ('', None):
+                return val
+        pages = getattr_recursive(
+            self.missive,
+            'trace_json.status.pages_count',
             default='',
             default_on_error=True,
         )
+        try:
+            pages = int(pages)
+        except (TypeError, ValueError):
+            return ''
+        return max(1, (pages + 1) // 2) if pages > 0 else ''
 
     def get_external_reference(self):
         return getattr_recursive(

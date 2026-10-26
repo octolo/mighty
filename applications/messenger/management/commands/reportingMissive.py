@@ -66,6 +66,12 @@ class Command(BaseCommand):
                 'postage is always passed on at cost.'
             ),
         )
+        parser.add_argument(
+            '--period',
+            choices=('day', 'month'),
+            default='day',
+            help='Group summary dates by day or by month (default: day).',
+        )
 
     def handle(self, *args, **options):
         since, until = options['since'], options['until']
@@ -90,6 +96,7 @@ class Command(BaseCommand):
                     else None
                 ),
                 margin=options['margin'],
+                period=options['period'],
                 **filters,
             )
             self.stdout.write(
@@ -119,6 +126,7 @@ class Command(BaseCommand):
                 additional_fields,
                 template,
                 options['margin'],
+                options['period'],
             )
 
     def write_summary(
@@ -129,8 +137,11 @@ class Command(BaseCommand):
         additional_fields,
         template=None,
         margin=0.0,
+        period='day',
     ):
-        columns, summary = summarize_report(path, group_by, additional_fields)
+        columns, summary = summarize_report(
+            path, group_by, additional_fields, period=period
+        )
         table = summary_table(columns, summary, group_by, margin)
         write_summary_csv(table, f'{basename}_summary.csv')
         self.stdout.write(
@@ -174,7 +185,9 @@ class Command(BaseCommand):
             )
 
     def print_table(self, table):
-        widths = [max(len(row[i]) for row in table) for i in range(len(table[0]))]
+        widths = [
+            max(len(row[i]) for row in table) for i in range(len(table[0]))
+        ]
         self.stdout.write('')
         for row in table:
             cells = [row[0].ljust(widths[0])]

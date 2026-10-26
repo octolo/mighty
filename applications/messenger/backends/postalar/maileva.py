@@ -28,6 +28,20 @@ MAILEVA_COLOR_FIRST_C4 = 0.73
 MAILEVA_COLOR_NEXT_C4 = 0.48
 MAILEVA_NB_FIRST_C4 = 0.48
 MAILEVA_NB_NEXT_C4 = 0.23
+MAILEVA_LREL_NB_FIRST_C4 = 1.268
+MAILEVA_LREL_NB_FIRST_C6 = 1.077
+MAILEVA_LREL_NB_NEXT_C4 = 0.19
+MAILEVA_LREL_NB_NEXT_C6 = 0.19
+MAILEVA_POSTAGE_FR = (
+    (5, 6.14),
+    (6, 7.12),
+    (999, 7.96),
+)
+MAILEVA_POSTAGE_INTL = (
+    (5, 8.35),
+    (6, 9.74),
+    (999, 10.57),
+)
 MAILEVA_ARCHIVING_LTE3_FIRST = 0.03
 MAILEVA_ARCHIVING_LTE6_FIRST = 0.03
 MAILEVA_ARCHIVING_LTE10_FIRST = 0.03
@@ -110,6 +124,18 @@ class MissiveBackend(MissiveBackend):
     color_next_c4 = setting('MAILEVA_COLOR_NEXT_C4', MAILEVA_COLOR_NEXT_C4)
     nb_first_c4 = setting('MAILEVA_NB_FIRST_C4', MAILEVA_NB_FIRST_C4)
     nb_next_c4 = setting('MAILEVA_NB_NEXT_C4', MAILEVA_NB_NEXT_C4)
+    lrel_nb_first_c4 = setting(
+        'MAILEVA_LREL_NB_FIRST_C4', MAILEVA_LREL_NB_FIRST_C4
+    )
+    lrel_nb_first_c6 = setting(
+        'MAILEVA_LREL_NB_FIRST_C6', MAILEVA_LREL_NB_FIRST_C6
+    )
+    lrel_nb_next_c4 = setting(
+        'MAILEVA_LREL_NB_NEXT_C4', MAILEVA_LREL_NB_NEXT_C4
+    )
+    lrel_nb_next_c6 = setting(
+        'MAILEVA_LREL_NB_NEXT_C6', MAILEVA_LREL_NB_NEXT_C6
+    )
     archiving_lte3_first = setting(
         'MAILEVA_ARCHIVING_LTE3_FIRST', MAILEVA_ARCHIVING_LTE3_FIRST
     )
@@ -439,7 +465,9 @@ class MissiveBackend(MissiveBackend):
             wdata = self.webhook_data
             wdata['event_type'] = event
             api = self.api_url['webhook']
-            response = self.session.post(api, headers=self.api_headers, json=wdata)
+            response = self.session.post(
+                api, headers=self.api_headers, json=wdata
+            )
             self.valid_response(response)
 
     def on_webhook(self, request):
@@ -562,6 +590,12 @@ class MissiveBackend(MissiveBackend):
         return {'invoice': []}
 
     def check_postalar(self):
+        prev_invoice = getattr_recursive(
+            self.missive,
+            'trace_json.invoice',
+            default=None,
+            default_on_error=True,
+        )
         rjson_status = self.get_status()
         rjson_recipients = self.get_recipients()
         rjson = {
@@ -571,9 +605,16 @@ class MissiveBackend(MissiveBackend):
         # Maileva sandbox does not generate billing items, so calling
         # ``get_invoice`` returns empty/non-JSON bodies. Only fetch in prod.
         try:
-            rjson['invoice'] = self.get_invoice()
+            invoice = self.get_invoice()
         except Exception:
-            rjson['invoice'] = []
+            invoice = []
+        if (
+            not (isinstance(invoice, dict) and invoice.get('items'))
+            and isinstance(prev_invoice, dict)
+            and prev_invoice.get('items')
+        ):
+            invoice = prev_invoice
+        rjson['invoice'] = invoice
         self.missive.trace = str(rjson)
         status_value = rjson_status.get('status')
         if status_value:
@@ -606,7 +647,9 @@ class MissiveBackend(MissiveBackend):
 
         proof_url = self.api_url['proofdownload'] % proof_url
         tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
-        resp = self.session.get(proof_url, stream=True, headers=self.api_headers)
+        resp = self.session.get(
+            proof_url, stream=True, headers=self.api_headers
+        )
         resp.raise_for_status()
 
         for chunk in resp.iter_content(chunk_size=8192):
@@ -649,21 +692,105 @@ class MissiveBackend(MissiveBackend):
         )
         # A trace that is not a mapping (raw error body of a failed send) is
         # returned untraversed, so only trust an actual list of priced items.
-        if not isinstance(items, list):
+        if isinstance(items, list) and items:
+            return {
+                item['label']: item['amount']
+                for item in items
+                if isinstance(item, dict)
+                and 'label' in item
+                and 'amount' in item
+            }
+        return self.estimate_price_infos()
+
+    def _fallback_postage(self, is_intl):
+        sheets = getattr_recursive(
+            self.missive,
+            'trace_json.status.sheets_count',
+            default=0,
+            default_on_error=True,
+        )
+        try:
+            sheets = int(sheets)
+        except (TypeError, ValueError):
+            sheets = 0
+        table = MAILEVA_POSTAGE_INTL if is_intl else MAILEVA_POSTAGE_FR
+        for max_sheets, amount in table:
+            if sheets <= max_sheets:
+                return amount
+        return table[-1][1]
+
+    def estimate_price_infos(self):
+        billed_pages = self.get_billed_page()
+        try:
+            billed_pages = int(billed_pages)
+        except (TypeError, ValueError):
+            billed_pages = 0
+        if billed_pages <= 0:
             return {}
-        return {
-            item['label']: item['amount']
-            for item in items
-            if isinstance(item, dict) and 'label' in item and 'amount' in item
+
+        postage_class = str(self.get_class() or '')
+        country = getattr_recursive(
+            self.missive,
+            'trace_json.recipients.recipients.0.country_code',
+            default='FR',
+            default_on_error=True,
+        )
+        is_intl = postage_class == 'INTERNATIONAL_REGISTERED_MAIL_AR' or bool(
+            country and str(country).upper() != 'FR'
+        )
+        postage = self.get_price()
+        try:
+            postage = float(postage)
+        except (TypeError, ValueError):
+            postage = self._fallback_postage(is_intl)
+
+        postage_label = (
+            'Recommandé international' if is_intl else 'LREL J3 avec AR'
+        )
+        envelope = str(self.get_type() or 'C4').upper()
+        is_c4 = envelope == 'C4'
+        first_label = (
+            '1ere Page N&B (Maileva LREL C4)'
+            if is_c4
+            else '1ere Page N&B (Maileva LREL C6)'
+        )
+        next_label = (
+            'Page Suiv N&B (Maileva LREL C4)'
+            if is_c4
+            else 'Page Suiv N&B (Maileva LREL C6)'
+        )
+        first_cost = self.lrel_nb_first_c4 if is_c4 else self.lrel_nb_first_c6
+        next_cost = self.lrel_nb_next_c4 if is_c4 else self.lrel_nb_next_c6
+
+        prices = {
+            postage_label: round(postage, 2),
+            first_label: round(float(first_cost), 3),
         }
+        if billed_pages > 1:
+            prices[next_label] = round((billed_pages - 1) * float(next_cost), 3)
+        return prices
 
     def get_billed_page(self):
-        return getattr_recursive(
-            self.missive,
+        for path in (
             self.field_billed_page,
+            'trace_json.recipients.recipients.0.billed_pages_count',
+        ):
+            val = getattr_recursive(
+                self.missive, path, default='', default_on_error=True
+            )
+            if val not in ('', None):
+                return val
+        pages = getattr_recursive(
+            self.missive,
+            'trace_json.status.pages_count',
             default='',
             default_on_error=True,
         )
+        try:
+            pages = int(pages)
+        except (TypeError, ValueError):
+            return ''
+        return max(1, pages - 1) if pages > 0 else ''
 
     def get_external_reference(self):
         return getattr_recursive(
