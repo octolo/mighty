@@ -279,6 +279,7 @@ class BaseAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
+        extra_context.setdefault('object_tools_items', [])
         extra_context['mighty_object_tools_items'] = [
             item for item in self.object_tools_items if item.get('list')
         ]
@@ -288,6 +289,7 @@ class BaseAdmin(admin.ModelAdmin):
         self, request, object_id=None, form_url='', extra_context=None
     ):
         extra_context = extra_context or {}
+        extra_context.setdefault('object_tools_items', [])
         extra_context['mighty_object_tools_items'] = [
             item for item in self.object_tools_items if not item.get('list')
         ]

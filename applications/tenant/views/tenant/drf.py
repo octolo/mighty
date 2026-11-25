@@ -19,13 +19,13 @@ class TenantList(TenantBase, ListAPIView):
 class TenantDetail(TenantBase, RetrieveAPIView):
     def get(self, request, uid, action=None, format=None):
         tenant = self.get_object()
-        return Response(self.get_fields(tenant))
+        return Response(self.get_fields(tenant, include_related_objects=True))
 
 
 class CurrentTenant(TenantBase, RetrieveAPIView):
     def get(self, request, uid, action=None, format=None):
         tenant = self.get_object()
-        return Response(self.get_fields(tenant))
+        return Response(self.get_fields(tenant, include_related_objects=True))
 
 
 class TenantModelViewSet(ModelViewSet, TenantAccess):

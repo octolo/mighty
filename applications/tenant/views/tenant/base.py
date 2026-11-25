@@ -55,8 +55,8 @@ class TenantBase:
     # def get_queryset(self, queryset=None):
     #    return self.queryset.filter(user=self.request.user)
 
-    def get_fields(self, tenant):
-        return {
+    def get_fields(self, tenant, include_related_objects=False):
+        fields = {
             'uid': tenant.uid,
             'status': tenant.status,
             'company_representative': tenant.company_representative,
@@ -70,6 +70,29 @@ class TenantBase:
                 {'uid': role.uid, 'name': role.name}
                 for role in tenant.roles.all()
             ],
+        }
+        if include_related_objects:
+            fields['related_objects'] = self.get_related_objects(tenant)
+        return fields
+
+    def get_related_objects(self, tenant):
+        return {
+            relation.get_accessor_name(): [
+                {
+                    'id': str(related_object.pk),
+                    'uid': str(related_object.uid)
+                    if hasattr(related_object, 'uid')
+                    else None,
+                    'representation': str(related_object),
+                }
+                for related_object in getattr(
+                    tenant, relation.get_accessor_name()
+                ).all()
+            ]
+            for relation in tenant._meta.get_fields()
+            if relation.auto_created
+            and not relation.concrete
+            and relation.one_to_many
         }
 
     def get_tenants(self):

@@ -18,7 +18,7 @@ class TenantList(TenantBase, ListView):
 @method_decorator(login_required, name='dispatch')
 class TenantDetail(TenantBase, DetailView):
     def get_context_data(self, **kwargs):
-        return self.get_fields(self.get_object())
+        return self.get_fields(self.get_object(), include_related_objects=True)
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, safe=False, **response_kwargs)
@@ -28,7 +28,7 @@ class TenantDetail(TenantBase, DetailView):
 class CurrentTenant(TenantBase, DetailView):
     def get_context_data(self, **kwargs):
         tenant = self.get_object()
-        return self.get_fields(tenant)
+        return self.get_fields(tenant, include_related_objects=True)
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context, safe=False, **response_kwargs)

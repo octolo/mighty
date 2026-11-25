@@ -1,9 +1,8 @@
 {% extends "admin/change_form.html" %}
 {% load admin_urls mighty %}
-
 {% block extrastyle %}
-{{ block.super }}
-<style>
+    {{ block.super }}
+    <style>
 .disablelink {
     margin: 0px!important;
     background: coral!important;
@@ -44,67 +43,67 @@
     display: flex;
     align-items: baseline;
 }
-</style>
+    </style>
 {% endblock %}
-
 {% block object-tools-items %}
-{% if original.cache %}
-{% url opts|admin_urlname:'cache_field' original.pk|admin_urlquote as cache_url %}
-<li><a href="{{ cache_url }}">Cache field</a></li>
-{% endif %}
-{% if original.logs %}
-{% url opts|admin_urlname:'logs_field' original.pk|admin_urlquote as logs_url %}
-<li><a href="{{ logs_url }}">Logs field</a></li>
-{% endif %}
-{% if original.timeline_model %}
-{% url opts|admin_urlname:'timeline' content_type_id original.pk|admin_urlquote as timeline_url %}
-<li><a href="{{ timeline_url }}">{% verbose_name_plural original.timeline_model %}</a></li>
-{% endif %}
-{% if original.source_model %}
-{% url opts|admin_urlname:'source' original.pk|admin_urlquote as source_url %}
-<li><a href="{{ source_url }}">{% verbose_name_plural original.source_model %}</a></li>
-{% endif %}
-{% if original.enable_model_change_log %}
-{% url opts|admin_urlname:'modelchangelog' original.pk|admin_urlquote as modelchangelog_url %}
-<li><a href="{{ modelchangelog_url }}">Model change logs</a></li>
-{% endif %}
-{% if original.model_activate_file %}
-{% url opts|admin_urlname:'filemetadata' original.pk|admin_urlquote as filemetadata_url %}
-<li><a href="{{ filemetadata_url }}">File meta data</a></li>
-{% endif %}
-{% if original.has_eve_variable_template %}
-{% url opts|admin_urlname:'variables' original.pk|admin_urlquote as variables_url %}
-<li><a href="{{ variables_url }}">Variables</a></li>
-{% endif %}
-
-{% if mighty_object_tools_items %}
-{% for oti in mighty_object_tools_items %}
-<li><a href="{% url opts|admin_urlname:oti.url original.pk|admin_urlquote %}">{{ oti.name }}</a></li>
-{% endfor %}
-{% endif %}
-
-{{ block.super }}
+    {% if original.cache %}
+        {% url opts|admin_urlname:'cache_field' original.pk|admin_urlquote as cache_url %}
+        <li><a href="{{ cache_url }}">Cache field</a></li>
+    {% endif %}
+    {% if original.logs %}
+        {% url opts|admin_urlname:'logs_field' original.pk|admin_urlquote as logs_url %}
+        <li><a href="{{ logs_url }}">Logs field</a></li>
+    {% endif %}
+    {% if original.timeline_model %}
+        {% url opts|admin_urlname:'timeline' content_type_id original.pk|admin_urlquote as timeline_url %}
+        <li><a href="{{ timeline_url }}">{% verbose_name_plural original.timeline_model %}</a></li>
+    {% endif %}
+    {% if original.source_model %}
+        {% url opts|admin_urlname:'source' original.pk|admin_urlquote as source_url %}
+        <li><a href="{{ source_url }}">{% verbose_name_plural original.source_model %}</a></li>
+    {% endif %}
+    {% if original.enable_model_change_log %}
+        {% url opts|admin_urlname:'modelchangelog' original.pk|admin_urlquote as modelchangelog_url %}
+        <li><a href="{{ modelchangelog_url }}">Model change logs</a></li>
+    {% endif %}
+    {% if original.model_activate_file %}
+        {% url opts|admin_urlname:'filemetadata' original.pk|admin_urlquote as filemetadata_url %}
+        <li><a href="{{ filemetadata_url }}">File meta data</a></li>
+    {% endif %}
+    {% if original.has_eve_variable_template %}
+        {% url opts|admin_urlname:'variables' original.pk|admin_urlquote as variables_url %}
+        <li><a href="{{ variables_url }}">Variables</a></li>
+    {% endif %}
+    {% if mighty_object_tools_items %}
+        {% for oti in mighty_object_tools_items %}
+            <li><a href="{% url opts|admin_urlname:oti.url original.pk|admin_urlquote %}">{{ oti.name }}</a></li>
+        {% endfor %}
+    {% endif %}
+    {% if object_tools_items %}
+        {% for item in object_tools_items %}
+            <li><a href="{{ item.url }}">{{ item.label }}</a></li>
+        {% endfor %}
+    {% endif %}
+    {{ block.super }}
 {% endblock %}
-
 {% block object-tools %}
-{{ block.super }}
-{% if original.can_use_task %}
-<div class="submit-row form-list">
-<form method="POST" action="{{ original.admin_task_url }}">
-    {% csrf_token %}
-    {{ original.form_task.as_table }}
-    <input type="submit" value="Start">
-</form>
-</div>
-{% endif %}
-
-{% if original.reporting_enable %}
-<div class="submit-row form-list">
-    <form method="GET" action="{{ original.reporting_admin_url }}">
-        {% csrf_token %}
-        {{ original.reporting_form }}
-        <input type="submit" value="Download">
-    </form>
-</div>
-{% endif %}
+    {{ block.super }}
+    {% if original.can_use_task %}
+        <div class="submit-row form-list">
+            <form method="POST" action="{{ original.admin_task_url }}">
+                {% csrf_token %}
+                {{ original.form_task.as_table }}
+                <input type="submit" value="Start">
+            </form>
+        </div>
+    {% endif %}
+    {% if original.reporting_enable %}
+        <div class="submit-row form-list">
+            <form method="GET" action="{{ original.reporting_admin_url }}">
+                {% csrf_token %}
+                {{ original.reporting_form }}
+                <input type="submit" value="Download">
+            </form>
+        </div>
+    {% endif %}
 {% endblock %}
