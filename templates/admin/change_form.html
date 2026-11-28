@@ -79,11 +79,6 @@
             <li><a href="{% url opts|admin_urlname:oti.url original.pk|admin_urlquote %}">{{ oti.name }}</a></li>
         {% endfor %}
     {% endif %}
-    {% if object_tools_items %}
-        {% for item in object_tools_items %}
-            <li><a href="{{ item.url }}">{{ item.label }}</a></li>
-        {% endfor %}
-    {% endif %}
     {{ block.super }}
 {% endblock %}
 {% block object-tools %}
